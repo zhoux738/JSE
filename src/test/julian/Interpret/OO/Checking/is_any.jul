@@ -1,0 +1,9 @@
+class Car {
+}
+int i = 5;
+string s = "";
+Car c = new Car();
+
+bool ic = i is Any;
+bool sc = s is Any;
+bool cc = c is Any;

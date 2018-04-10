@@ -1,0 +1,17 @@
+module System.Collection;
+
+/*
+ * A container to hold script objects or values of various types.
+ *
+ * Since Julian doesn't support generic programming, the type of stored values can be arbitrary and mixed.
+ */ 
+interface Container {
+	
+	/*
+	 * Get the size of this container. Size is refers to the current count of items stored in the container,
+	 * and is different from - more precisely less than or equal to - the container's capacity.
+	 *
+	 * [return] The current count of stored items.
+	 */
+	int size();
+}

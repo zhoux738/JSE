@@ -1,0 +1,16 @@
+import System.Concurrency;
+
+// Test handle
+
+Promise p0 = Promise.start((res, handle)=> {
+	return 5;
+}).then((res, handle)=> { // reject from continuation
+	handle.reject(new Exception("failed!")); 
+}).error((ex, handle)=> { // reject from on-error callback
+	handle.reject(new Exception("epically " + ex.getMessage()));
+}).error((ex)=> { // restore state
+	return ex.getMessage();
+});
+
+string msg1 = p0.getResult(true);
+//Console.println(msg1);

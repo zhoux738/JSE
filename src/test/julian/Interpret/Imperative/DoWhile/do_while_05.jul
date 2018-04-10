@@ -1,0 +1,4 @@
+int i = 3;
+do {
+	continue;
+}while(i<2);

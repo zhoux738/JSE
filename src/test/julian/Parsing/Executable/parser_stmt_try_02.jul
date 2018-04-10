@@ -1,0 +1,10 @@
+try {
+	f();
+	return;
+} catch (Exception1 e1) {
+	g1();
+} catch (Exception2 e2) {
+	g2();
+} finally {
+	h();
+}

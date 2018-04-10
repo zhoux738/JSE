@@ -1,0 +1,35 @@
+module M;
+
+import System;
+import System.IO;
+import X.Y.Z as XYZ;
+
+public interface IMachine {
+	void run();
+}
+
+public class Car : IMachine {
+	
+	private static int speed = 50;
+	private int speed;
+	
+	public Car(int speed) : this(50){
+		
+	}
+	
+	public Car(int speed){
+		this.speed = speed;
+	}
+	
+	public void run(){
+		System.Console.println("Running at " + speed);
+	}
+	
+	public int getSpeed(){
+		return speed;
+	}
+	
+}
+
+IMachine m = new Car(30);
+m.run();

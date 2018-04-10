@@ -1,0 +1,23 @@
+class Person {
+
+	private string name;
+	
+	Person(string n){
+		name = n;
+	}
+}
+
+class Employee : Person {
+	
+	Employee(string name) : super(name){ }
+	
+	Function getNameProvider(){
+		return () => name; // Access to the private member of its parent class will be faulted.
+	}
+	
+}
+
+Employee e = new Employee("Pollack");
+var f = e.getNameProvider();
+string s = f();
+Console.println(s);

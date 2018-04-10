@@ -1,0 +1,23 @@
+import System;
+
+class Car1 {
+	int start(){ return 50; }
+	int start(int speed){ return speed; }
+}
+
+class Car2 {
+	int start(int speed){ return speed; }
+	int start(){ return 50; }
+}
+
+Car1 c1 = new Car1();
+int speed11 = c1.start();
+//Console.println(speed11);
+int speed12 = c1.start(75);
+//Console.println(speed12);
+
+Car2 c2 = new Car2();
+int speed21 = c2.start(100);
+//Console.println(speed21);
+int speed22 = c2.start();
+//Console.println(speed22);

@@ -1,0 +1,5 @@
+string combine(int i, string s){
+	return i + s;
+}
+
+string s1 = combine.invoke(1, "a", "b");

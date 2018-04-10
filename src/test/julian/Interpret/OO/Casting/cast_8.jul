@@ -1,0 +1,13 @@
+class Vehicle {
+  string name;
+  string toString(){
+  	return name;
+  }
+}
+
+Vehicle v = new Vehicle();
+v.name = "Suzuki";
+string s1 = (string)v;
+
+var t = v;
+string s2 = (string)t;

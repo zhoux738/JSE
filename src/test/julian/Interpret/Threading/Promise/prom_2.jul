@@ -1,0 +1,22 @@
+import System.Concurrency;
+
+Promise p1 = Promise.start(()=> {
+	return 5;
+}).then((res) => {
+	return res+1;
+});
+
+Thread.sleep(50);
+
+var p2a = p1.then((res) => {
+	return res+1;
+});
+
+var p2b = p1.then((res) => {
+	return res*2;
+});
+
+
+int result2b = p2b.getResult(true);
+int result2a = p2a.getResult(true);
+int result1 = p1.getResult(true);

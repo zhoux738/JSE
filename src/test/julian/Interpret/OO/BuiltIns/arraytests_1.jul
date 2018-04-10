@@ -1,0 +1,2 @@
+int[] arr = new int[]{ 100, 200, 300 };
+string s = arr.toString();

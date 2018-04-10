@@ -1,0 +1,40 @@
+// String immutability B
+
+class MyClass {
+
+	static string svar;
+	
+	string ivar;
+	
+	MyClass(string ivar){
+		this.ivar = ivar;
+	}
+	
+	void set(string ivar){
+		this.ivar = ivar;
+	}
+	
+	string get(){
+		return this.ivar;
+	}	
+}
+
+string s1 = "abc";
+MyClass mc = new MyClass(s1);
+
+s1 = "xyz";
+string s2 = mc.ivar;
+mc.ivar = "uvw";
+string s3 = mc.ivar;
+
+string s4 = "abc";
+MyClass.svar = s4;
+s4 = "xyz";
+string s5 = MyClass.svar;
+MyClass.svar = "uvw";
+string s6 = MyClass.svar;
+
+mc = new MyClass("def");
+string s7 = mc.get();
+mc.set("ghi");
+string s8 = mc.get();

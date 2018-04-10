@@ -1,0 +1,6 @@
+[Mapped(className="info.jultest.test.hosted.classes.Obj1")]
+class Obj1 : PlatformObject {
+	int pfHashCode(){ return 4; }
+}
+
+Obj1 inst;

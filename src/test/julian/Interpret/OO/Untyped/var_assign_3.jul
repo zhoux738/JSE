@@ -1,0 +1,6 @@
+// mutual assignment between untyped and typed value
+int a = 3;
+var v1 = a;
+int b = v1;
+var v2 = b;
+var v3 = v2;

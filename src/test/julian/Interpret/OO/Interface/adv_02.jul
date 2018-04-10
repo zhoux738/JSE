@@ -1,0 +1,22 @@
+import System;
+
+interface ITax {
+	int getRate();
+}
+
+class FederalTax : ITax {
+	public int getRate(){
+		return 7;
+	}
+}
+
+class StateTax : FederalTax {
+	public int getRate(){
+		int base = super.getRate();
+		return base + 5;
+	}
+}
+
+StateTax st = new StateTax();
+ITax tax = st;
+int rate = tax.getRate();

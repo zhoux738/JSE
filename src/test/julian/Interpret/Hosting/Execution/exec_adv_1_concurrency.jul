@@ -1,0 +1,30 @@
+import System.Concurrency;
+
+[Mapped(className="info.jultest.test.hosted.classes.AdvClass1")]
+class AdvClass1 {
+
+}
+
+AdvClass1 inst1 = new AdvClass1();
+AdvClass1 inst2 = new AdvClass1();
+
+Thread t1 = Thread.create(() => {
+	for(int i = 0; i < 100; i++){
+		inst1.increment(1);
+	}
+});
+
+Thread t2 = Thread.create(() => {
+	for(int i = 0; i < 100; i++){
+		inst2.increment(2);
+	}
+});
+	
+t1.start();
+t2.start();
+
+t1.join();
+t2.join();
+
+int v1 = inst1.getResult();
+int v2 = inst2.getResult();

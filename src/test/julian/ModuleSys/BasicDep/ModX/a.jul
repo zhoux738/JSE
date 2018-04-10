@@ -1,0 +1,7 @@
+module ModuleSys.BasicDep.ModX;
+
+import ModuleSys.BasicDep.ModY;
+
+class Xa {
+
+}

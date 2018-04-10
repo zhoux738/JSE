@@ -1,0 +1,18 @@
+import System.Lang;
+
+bool res1, res2;
+int i1, i2;
+
+try {
+	i2 = -2147483648;
+	i2 = -2147483649;
+} catch (IllegalLiteralException e) {
+	res2 = true;
+}
+
+try {
+	i1 = 2147483647;
+	i1 = 2147483648;
+} catch (IllegalLiteralException e) {
+	res1 = true;
+}

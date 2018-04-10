@@ -1,0 +1,15 @@
+string loop(int total, int ignored) {
+	for(int i = 0; i<total; i++){
+		if (i == ignored){
+			continue;
+		}
+		
+		for(int j = 0; i<2; i++){
+			j = i + j;
+		}
+	}
+	
+	return total + "/" + ignored;
+}
+
+string str = loop(2, 1);

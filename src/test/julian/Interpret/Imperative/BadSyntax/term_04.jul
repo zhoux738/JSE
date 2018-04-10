@@ -1,0 +1,11 @@
+// common logic control - if/else
+
+bool[] bs = new bool[5];
+
+try { if(true		} catch (Exception e) { bs[0] = true; }
+try { if(true)		} catch (Exception e) { bs[1] = true; }
+try { if(true) a	} catch (Exception e) { bs[2] = true; }
+try { if(true) a+	} catch (Exception e) { bs[3] = true; }
+try { if(true) a+3	} catch (Exception e) { bs[4] = true; }
+
+

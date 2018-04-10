@@ -1,0 +1,10 @@
+// Cyclic extension
+interface I1 : I2 {
+
+}
+
+interface I2 : I1 {
+
+}
+
+I1 i;

@@ -1,0 +1,17 @@
+import System.Concurrency;
+import System;
+
+void g(){
+	throw new Exception("g() threw this.");
+}
+
+void f(){
+	g();
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+t.start();
+t.join();
+
+int i = 5;

@@ -1,0 +1,20 @@
+// variable name and enum name overlap - try enum first
+enum Element {
+	air, fire, water, earth
+}
+
+int fire = 4;
+
+Element ele = Element.fire;
+
+string s = "N";
+switch( ele ){
+case fire:
+  s = "F";
+  break;
+case water:
+  s = "W";
+  break;
+default:
+  s = "Unknown";
+}

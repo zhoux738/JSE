@@ -1,0 +1,11 @@
+module M1.M2.M3;
+
+import M4;
+import M5.M6;
+import M7.M8 as M78;
+
+class C {
+
+}
+
+C c = new C();

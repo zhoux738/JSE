@@ -1,0 +1,5 @@
+var fun(var v){
+	return v;
+}
+int a = fun(3);
+string b = fun("xyz");

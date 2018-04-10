@@ -1,0 +1,4 @@
+// bind a as int
+
+a = a + 1;
+

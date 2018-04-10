@@ -1,0 +1,11 @@
+import System.Lang;
+
+string abc = "abc";
+bool t = true, f = false;
+char x = 'x', y = 'y';
+int zero = 0, five = 5;
+float pi = 3.14, e = 2.72;
+
+string abc_t_x_zero_pi = abc + t + x + zero + pi;
+string f_abc_five_x_e = f + abc + five + x + e;
+string five_abc_y_abc_e_abc_abc  = five + abc + y + abc + e + abc + abc;

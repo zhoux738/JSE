@@ -1,0 +1,19 @@
+// assign an instance of subclass to a variable with parent class as declared type 
+class Person {
+
+	int age;
+	
+	int getAge(){
+		return age;
+	}
+}
+
+class Employee : Person {
+
+	string job;
+	
+}
+
+Person e = new Employee();
+e.age = 32;
+int i = e.getAge();

@@ -1,0 +1,19 @@
+class C1 {
+
+	public C1() : super(){
+	
+	}
+	
+	public C1() : this(){
+	
+	}
+	
+	public C1() : super("hello", 5){
+	
+	}
+	
+	public C1() : this(1.2, true){
+	
+	}
+
+}

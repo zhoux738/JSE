@@ -1,0 +1,7 @@
+abstract class Item {
+	
+	abstract string doWork();
+	
+}
+
+Item item = new Item();

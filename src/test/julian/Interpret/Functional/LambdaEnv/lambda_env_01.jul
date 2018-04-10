@@ -1,0 +1,12 @@
+//LambdaEnvTests
+
+Function f = null;
+
+if(true){
+	int c = 5;
+	f = (int x) => { return x + c; };
+}
+
+int a = f(3);
+
+//dprint(a); // output: 8

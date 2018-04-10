@@ -1,0 +1,19 @@
+// subclass inherits methods
+class Person {
+
+	int age;
+	
+	int getAge(){
+		return age;
+	}
+}
+
+class Employee : Person {
+
+	string job;
+	
+}
+
+Employee e = new Employee();
+e.age = 32;
+int i = e.getAge();

@@ -1,0 +1,11 @@
+// Extends one interface
+
+interface IPerson {
+	void speak();
+}
+
+interface IEmployee : IPerson {
+	void work();
+}
+
+IEmployee employee1;

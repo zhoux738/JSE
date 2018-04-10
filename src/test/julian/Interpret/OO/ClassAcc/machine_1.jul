@@ -1,0 +1,18 @@
+abstract class MachineBase {
+	protected abstract int runCore();
+
+	int run(){
+		return runCore() * 2;
+	}
+}
+
+class Machine : MachineBase {
+	protected int runCore(){
+		return 5;
+	}
+}
+
+Machine m = new Machine();
+int i = m.run();
+
+//Console.println(i);

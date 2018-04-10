@@ -1,0 +1,46 @@
+// overwrite hashCode and equals
+import System.Collection;
+
+class Key {
+	static bool hcCalled;
+	static bool eqCalled;
+	
+	private int k1;
+	private string k2;
+	Key(int k1, string k2){
+		this.k1 = k1;
+		this.k2 = k2;
+	}
+	
+	int hashCode(){
+		Key.hcCalled = true;
+		return k1;
+	}
+	
+	bool equals(Object another){
+		Key.eqCalled = true;
+		return this.k1 == another.k1 && this.k2 == another.k2;
+	}
+}
+
+Key ka = new Key(1, "a");
+Key kb = new Key(1, "b");
+
+Map m = new Map();
+m.put(ka, "obj1");
+m.put(kb, "obj2");
+int size1 = m.size(); // = 2. hashCode() same, but equals() different.
+
+m.remove(new Key(1, "a"));
+int size2 = m.size(); // = 1
+
+bool b1 = Key.hcCalled;
+bool b2 = Key.eqCalled;
+
+var val = m[kb]; // = "obj2"
+
+m.remove(new Key(1, "c"));
+int size3 = m.size(); // = 1. hashCode() same, but equals() different.
+
+//var a = m.get(ka);
+//var b = m.get(kb);

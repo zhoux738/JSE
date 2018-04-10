@@ -1,0 +1,17 @@
+import System;
+
+ProcessConfig pc = new ProcessConfig();
+pc.addEnvArg("a", "b");
+Process p = new Process(
+	"java", 
+	new String[]{
+		"-classpath", 
+		cp, 
+		"info.jultest.apps.DumpEnv", 
+		"a=b"
+	}, 
+	pc);
+p.start();
+
+int res = p.wait();
+//Console.println(res);

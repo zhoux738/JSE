@@ -1,0 +1,10 @@
+import System.IO;
+
+FileStream fs = new FileStream(path, FileMode.OPEN);
+
+char c0 = (char)fs.read();
+byte[] bs = new byte[3];
+int total = fs.read(bs, 0, 3);
+int end = fs.read();
+
+fs.close();

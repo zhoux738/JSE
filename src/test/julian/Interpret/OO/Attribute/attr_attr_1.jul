@@ -1,0 +1,25 @@
+// attribute on class
+//module Test;
+
+import System;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.ATTRIBUTE)] 
+attribute Unchecked {
+	
+}
+
+[Unchecked]
+attribute Author {
+
+	string name;
+	
+	int year;
+	
+}
+
+[Author(name="Liam", year=1980)]
+class MyClass {
+
+}
+
+MyClass mc;

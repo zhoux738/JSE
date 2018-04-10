@@ -1,0 +1,9 @@
+//LambdaExprTests
+
+//expect ')' to end a lambda 
+int fun(int i, Function f){
+	return f(i);
+}
+
+int a = fun(10, i=>i*2);
+//dprint(a); // output: 20

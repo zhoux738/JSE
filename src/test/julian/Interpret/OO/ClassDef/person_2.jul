@@ -1,0 +1,12 @@
+// A basic self-reference test
+class Person {
+
+	Person father;
+	
+	string getName(){
+		return name;
+	}
+	
+}
+
+Person p;

@@ -1,0 +1,14 @@
+float f1 = 2.3;
+float f2 = 4.0;
+
+float sum1 = f1 + f2;
+float sum2 = f1 + 10;
+float diff1 = f1 - f2;
+float diff2 = f2 - f1;
+float diff3 = f2 - f2;
+float product = f1 * f2;
+float quotient1 = f1 / f2;
+float quotient3 = f2 / f2;
+
+f1 += 1;
+f2 -= 1;

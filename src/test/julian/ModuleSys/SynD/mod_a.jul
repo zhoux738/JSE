@@ -1,0 +1,6 @@
+module ModuleSys.SynD;
+
+class MyClass {
+	int i = 2; 
+
+// class body unclosed - a fatal syntax error (do not delete the following empty line)

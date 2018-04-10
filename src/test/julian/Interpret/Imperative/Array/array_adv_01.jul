@@ -1,0 +1,2 @@
+string[] arr = new string[]{"a", };
+string s = arr[0];

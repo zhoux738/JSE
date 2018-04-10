@@ -1,0 +1,22 @@
+import System.Concurrency;
+import System;
+
+ThreadState ready = ThreadState.DONE;
+ThreadState running;
+ThreadState done;
+
+void f(){
+	running = Thread.getCurrent().getState();
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+ready = t.getState();
+t.start();
+
+t.join();
+done = t.getState();
+
+string s1 = (string)ready;
+string s2 = (string)running;
+string s3 = (string)done;

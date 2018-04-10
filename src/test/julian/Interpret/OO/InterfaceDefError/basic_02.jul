@@ -1,0 +1,6 @@
+
+interface I {
+	int fun(){}
+}
+
+I i;

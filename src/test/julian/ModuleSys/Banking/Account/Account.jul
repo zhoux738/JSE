@@ -1,0 +1,98 @@
+module ModuleSys.Banking.Account;
+
+import System.Collection;
+
+import ModuleSys.Banking.Bank;
+
+enum AccountType {
+	CHECKING,
+	SAVING
+}
+
+// Exposed to customer
+class Account {
+	private AccountType acctype;
+	private int accountNum;
+	private int routingNum;
+	protected float balance;
+	Account(AccountType acctype, int accountNum, int routingNum) {
+		//Console.println("DEBUG: this.accountNum=" + this.accountNum);
+		this.accountNum = accountNum;
+		this.routingNum = routingNum;
+		this.acctype = acctype;
+	}
+	int getAccountNum() {
+		return accountNum;
+	}
+	int getRoutingNum() {
+		return routingNum;
+	}
+	float getBalance(){
+		return balance;
+	}
+	AccountType getAccountType() {
+		return acctype;
+	}
+}
+
+// Maintained by bank
+class AccountInfo : Account { // JAVA
+
+	List listeners = new List(); // JAVA
+	
+	float intRate;
+
+	AccountInfo(AccountType acctype, int accountNum, int routingNum, float intRate)
+		: super(acctype, accountNum, routingNum) { // JAVA
+		this.intRate = intRate;
+	}
+
+	void adjustBalance(float balance){
+		this.balance += balance;
+	}
+	
+	float getInterestRate(){
+		return intRate;
+	}
+	
+	void resgiterListener(Function f) {
+		listeners.add(f);
+	}
+	
+	void notify(AccountEvent e) {
+		for(Function f : listeners){
+			f(e); // JAVA
+		}
+	}
+}
+
+class AccountEvent {
+	private AccountEventType type;
+	private BankService place;
+	private float value;
+	
+	public AccountEvent(AccountEventType type, BankService place, float value) {
+		this.type = type;
+		this.place = place;
+		this.value = value;
+	}
+	
+	AccountEventType getType() {
+		return type;
+	}
+	
+	BankService getPlace() {
+		return place;
+	}
+	
+	float getValue() {
+		return value;
+	}
+}
+
+enum AccountEventType {
+	TRANSFER,
+	WITHDRAW,
+	DEPOSIT,
+	AUTOPAY
+}

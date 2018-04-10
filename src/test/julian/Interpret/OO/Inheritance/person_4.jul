@@ -1,0 +1,18 @@
+// assign an instance of class A to a variable whose declared type is not 
+// an ancestor of A
+class Person {
+
+	int age;
+}
+
+class Employee : Person {
+
+	string job;
+	
+}
+
+class Dog {
+
+}
+
+Dog d = new Employee();

@@ -1,0 +1,476 @@
+module System.Concurrency;
+
+import System.Collection;
+
+/*
+ * The state of a promise.
+ *
+ * A promise goes through a very simple life cycle. It starts with [PENDING](#PENDING), during which it either
+ * runs a business function, or waits to be settled by a handle. The promise eventually gets settled in either 
+ * of two possible states. If the function runs to end successfully, or the handle calls 
+ * [resolve](PromiseHandle#resolve), the promise is [resolved](#RESOLVED); if the function throws an exception,
+ * or the handle calls [reject](PromiseHandle#reject), the promise ends up [rejected](#REJECTED).
+ */
+public enum PromiseState {
+	/* The promise is pending to settle. */
+    PENDING,
+	/* The promise is resolved. A result can be returned now immediately. */
+    RESOLVED,
+	/* The promise is rejected. An exception can be returned now immediately. */
+    REJECTED
+}
+
+/*
+ * The default exception to return or throw upon demand of a rejected promised. This class is mostly used
+ * by the system to facilitate faulting process, but a user's promise callback usually throws more specific
+ * exceptions.
+ */
+public class PromiseRejectedException : Exception {
+
+	/*
+	 * Create a standard PromiseRejectedException instance. The users, however, usually just fault the promise
+	 * by throwing a more specific exception.
+	 *
+	 * [param: msg] A message to describe the reason for rejection.
+	 */
+	public PromiseRejectedException(string msg) : super(msg) { }
+}
+
+internal class PromiseQueue {
+
+	private static int s_timeout = 10; // millisec
+	
+    internal BlockingQueue bq;
+    internal Lock qlck;
+    internal bool finished;
+
+    PromiseQueue(Promise prom) {
+        qlck = new Lock();
+        bq = new BlockingQueue();
+        bq.enqueue(prom);
+        Thread t = Thread.create(_poll);
+        t.start();
+    }
+
+    private void _poll() {
+        while (true) {
+            Promise p = null;
+            sync (qlck) {
+                try {
+                    // Get the next promise
+                    p = bq.pull(PromiseQueue.s_timeout, true); // 2nd arg: should throw if time out
+                } catch (Exception te) {
+                    finished = true;
+                    break;
+                }
+            }
+
+            PromiseHandle handle = p.handle;
+            Promise prev = p.prev;
+            if (prev == null) {
+                // No previous promise. Simply execute the next promise's success callback. without data.
+                try {
+                    Function s = p.s;
+                    if (s != null) {
+                        _invoke(p, s, null, handle);
+                    }
+                    handle.resolve();
+                } catch (Exception ex) {
+                    handle.setState(PromiseState.REJECTED, true, null, ex, true); // Upon exception, must set it to REJECTED
+                }
+            } else {
+                // Wait until we get completion notification
+                while (prev.state == PromiseState.PENDING) {
+                    sync (prev.plck) {
+                        prev.plck.wait();
+                    }
+                }
+
+                switch (prev.state) {
+                    case PENDING:
+                        throw new JSEError("Processing a promise while its predecessor is still pending. This should not happen.");
+                    case RESOLVED:
+                        // If the previous one is resolved, execute the next promise's on-success with data.
+                        try {
+                            Function s = p.s;
+                            if (s != null) {
+                            	// Invoke the callback. If it returns a Promise, wait on it.
+                        		_invoke(p, s, prev.getResult(false), handle);
+                            } else {
+                                p.result = prev.result; // carry over data for the next promise's data handler
+                            }
+                    		handle.resolve();
+                        } catch (Exception ex) {
+                    		handle.setState(PromiseState.REJECTED, true, null, ex, true); // Upon exception, must set it to REJECTED
+                        }
+                        break;
+                    case REJECTED:
+                        // If the previous one is rejected, execute the next promise's on-error with exception.
+                        try {
+                            Function e = p.e;
+                            if (e != null) {
+                        		_invoke(p, e, prev.getResult(false), handle);
+                    			handle.resolve();
+                            } else {
+                				// prev.ex: carry over exception for the next promise's exception handler
+                    			handle.setState(PromiseState.REJECTED, true, null, prev.ex, true); // Upon exception, must set it to REJECTED
+                            }
+                        } catch (Exception ex) {
+                    		handle.setState(PromiseState.REJECTED, true, null, ex, true); // Upon exception, must set it to REJECTED
+                        }
+                        break;
+                }
+            }
+        }
+    }
+    
+    // Invoke the callback. If it returns a Promise, wait on it.
+    private void _invoke(Promise p, Function f, var data, PromiseHandle handle){
+		var r = f.invoke(data, handle);
+    	if (r is Promise){
+    		r = r.getResult(true);
+    	}
+        p.result = r;
+    }
+}
+
+/*
+ * A handle exposed to the callback to manipulate promise result explicitly.
+ *
+ * The promise normally sets its state by convention. If the function running in the promise completes successfully it will
+ * set the promise to [RESOLVED](PromiseState#RESOLVED). If the function throws an exception which went unhandled the promise
+ * will turn to [REJECTED](PromiseState#REJECTED). By the time a follow-up promise runs the state is reset to PENDING, but
+ * depending on what continuation function gets invoked the state may get carried over from the previous promise.
+ *
+ * Without explicit interference through the handle, the RESOLVED state will continue to be propagated down the chain, unless
+ * the continuation function on success throws; the REJECTED state will do the same, unless the continuation function on error 
+ * completes successfully.
+ *
+ * Through the handle, however, the continuation logic can explicitly set the state of the current promise. This is useful in
+ * many scenarios, such as forcing the abortion without exception-based logic control, or restoring the state in a promise
+ * handling a rejected antecedent. Moreover this can be used to control the state of a [synthesized promise](DeferredPromise).
+ *
+ * Once the promise is resolved this way, it cannot be explicitly set to REJECTED through the same handle. However, a following
+ * unhandled exception within the same callback may overwrite the state.
+ */
+public class PromiseHandle {
+
+	private Promise prom;
+    
+    internal PromiseHandle(Promise prom){
+		this.prom = prom;    
+    }
+    
+    /*
+     * Resolve the promise controlled by this handle, without setting any data. Calling [Promise.getResult()](Promise#getResult)
+     * will return null.
+     */
+    public void resolve(){
+    	setState(PromiseState.RESOLVED, false, null, null, false); // resolve without data update
+    }
+    
+    /*
+     * Resolve the promise controlled by this handle with specific data.
+     *
+     * [param: result] The end result to settle this promise. This is the value to be returned by [Promise.getResult()](Promise#getResult).
+     */
+    public void resolve(var result){
+    	setState(PromiseState.RESOLVED, false, result, null, true);
+    }
+    
+    /*
+     * Reject the promise controlled by this handle, with a default cause. Calling [Promise.getResult()](Promise#getResult)
+     * will return or throw a [PromiseRejectedException].
+     */
+    public void reject(){
+    	reject((string)null);
+    }
+    
+    /*
+     * Reject the promise controlled by this handle, with a specified message. Calling [Promise.getResult()](Promise#getResult)
+     * will return or throw a [PromiseRejectedException] that contains this message.
+     *
+     * [param: msg] A message to initialize [PromiseRejectedException].
+     */
+    public void reject(string msg){
+    	setState(
+    		PromiseState.REJECTED, 
+    		false,
+    		null, 
+    		new PromiseRejectedException(
+    			msg != null ? "The promise was rejected: " + msg : "The promise was rejected."), 
+    		true);
+    }
+
+    /*
+     * Reject the promise controlled by this handle, with a specified exception. Calling [Promise.getResult()](Promise#getResult)
+     * will return or throw this exception.
+     *
+     * [param: ex] An exception to set as the cause of rejection.
+     */    
+    public void reject(Exception ex){
+    	if (ex == null){
+    		throw new ArgumentException("ex");
+    	}
+    	setState(PromiseState.REJECTED, false, null, ex, true);
+    }
+    
+    // If owState == false, this method will be effectively called only once. As soon as the 
+    // state transitions off of PENDING, it can no longer be modified.
+    // The data (result/ex) will be updated only if owData == true and the state is changed too.
+    internal void setState(
+    	PromiseState state, bool owState, 
+    	var result, Exception ex, bool owData){
+    	if (prom.state == PromiseState.PENDING && state != PromiseState.PENDING) {
+    		sync (prom.plck) {
+    			if (owState || prom.state == PromiseState.PENDING) {
+    				prom.state = state;		
+	    			if (owData) {
+	    				prom.result = result;
+	    				prom.ex = ex;
+	    			}
+	    			prom.plck.notify();
+    			}
+    		}
+    	}
+    }
+}
+
+/*
+ * A deferred promise that starts in the [PENDING](PromiseState#PENDING) state. It exposes a [PromiseHandle]
+ * which can be used to set the state of this promise.
+ */
+public class DeferredPromise : Promise {
+
+    /*
+     * Create a deferred promise.
+     */
+	DeferredPromise() : super(){}
+	
+	/*
+     * Get a handle to this promise.
+     *
+     * [see: PromiseHandle]
+     * [return] A handle to control this promise.
+     */
+	PromiseHandle getHandle(){
+		return handle;
+	}
+}
+
+/*
+ * This class represents a promise that a certain operation will eventually arrive at a conclusion, upon 
+ * which a result or exception can be demanded.
+ *
+ * The promise is the primary means in Julian to perform asynchronous programming. Its API is heavily 
+ * inspired by JavaScript. In general, a user creates a Promise with a [Function](Function), and continues
+ * it with following operations that can be triggered either on successful completion or abortion. The
+ * continuation itself is a new promise, thus enabling the creation of the promise chain, which would run
+ * on its own thread, without blocking the thread from which the chain is created and invoked.
+ *
+ * Many I/O APIs provides asynchronous methods which return Promises. These API serve as the starting point
+ * for most users in their asynchronous programming. However, the programmers may also create their own 
+ * Promises and even control their completion through a handle. See [DeferredPromise] for more details.
+ */
+public class Promise {
+
+    internal PromiseState state;
+    internal Promise prev;
+    internal var result;
+    internal Exception ex;
+    internal Lock plck;
+    internal PromiseHandle handle;
+
+    // Function promised to finish
+    internal Function s; // on success
+    internal Function e; // on error
+
+    /* [nodoc] */
+    protected PromiseQueue queue;
+
+    /*
+     * Create a promise and start immediately.
+     *
+     * [param: f] A function to call with this promise.
+     */
+    public Promise(Function f) {
+    	_init(f);
+        // Start a new polling thread      
+        this.queue = new PromiseQueue(this);
+    }
+    
+    /*
+     * Create a promise but assign no operation to it. Therefore the promise will
+     * linger on [PENDING](PromiseState#PENDING) state.
+     *
+     * This constructor is reserved only for subclasses and is subject to removal in the future.
+     */
+    protected Promise() {
+        _init(null);
+    }
+
+    // Try an existing queue but can also default to creating a new one
+    private Promise(Function s, Function e, Promise prev) {
+    	_init(s);
+        this.e = e;
+
+        // Try to push to the existing queue
+        bool pushed = false;
+        
+        PromiseQueue q = prev.queue;
+        if (q != null && !q.finished) {
+            sync (q.qlck) {
+                if (!q.finished) {
+                    this.queue = q;
+                    this.prev = prev;
+                    prev.queue.bq.enqueue(this);
+                    pushed = true;
+                }
+            }
+        }
+
+        if (!pushed) {
+            // Start a new polling thread
+            this.prev = prev;
+            this.queue = new PromiseQueue(this);
+        }
+    }
+
+    private void _init(Function s) {
+        this.s = s;
+        this.plck = new Lock();
+        this.state = PromiseState.PENDING;
+        this.handle = new PromiseHandle(this);
+    }
+
+    private Promise _continue(Function s, Function e) {
+        return new Promise(s, e, this);
+    }
+
+    // Public API
+
+	/*
+	 * A factory method to start a promise with a specified function.
+	 *
+     * [param: f] A function to call with this promise.
+	 * [return] A promise that has been kicked off with the given function.
+	 */
+    public static Promise start(Function f) {
+        return new Promise(f);
+    }
+    
+    /*
+     * A factory method to create a [deferred promise](DeferredPromise), which is now 
+     * staying on [PENDING](PromiseState#PENDING) state.
+     *
+     * [see: DeferredPromise]
+     * [return] A promise that is pending.
+     */
+	public static DeferredPromise defer() {
+		return new DeferredPromise();
+	}
+    
+    /*
+     * Continue this promise with one of two function, one for resolution, the other rejection.
+     *
+     * The function to continue with can take up to two arguments: the first one an untyped value which is
+     * either the result produced by the previous promise, or exception that faulted the previous promise.
+     * The second value is a [PromiseHandle] referring to the current promise. Since this function is to be
+     * invoked dynamically, it's legal to pass any number of arguments, although only the first two will be 
+     * heeded.
+     * 
+     * [param: s] The function to continue upon resolution.
+     * [param: e] The function to continue upon rejection.
+     * [return] A new promise within which one of the two given functions is invoked.
+     */
+    public Promise then(Function s, Function e) {
+        return _continue(s, e);
+    }
+
+    /*
+     * Continue this promise with a function on resolution. If this promise eventually rejects, the given
+     * function won't run, and the exception will be propagated to the new promise. See 
+     * [then(Function s, Function e)](#then(Function s, Function e)) for more details about the Function's signature.
+     *
+     * [param: s] The function to continue upon success.
+     * [return] A new promise within which the given function is invoked, if the current one resolves. If the current one rejects,
+     * the exception is propagated to the new promise, which would not run the given function.
+     */
+    public Promise then(Function s) {
+        return _continue(s, null);
+    }
+
+    /*
+     * Continue this promise with a function on rejection. If this promise eventually resolves, the given
+     * function won't run, and the result will be propagated to the new promise. See 
+     * [then(Function s, Function e)](#then(Function s, Function e)) for more details about the Function's signature.
+     *
+     * [param: e] The function to continue upon error.
+     * [return] A new promise within which the given function is invoked, if the current one rejects. If the current one resolves,
+     * the result is propagated to the new promise, which would not run the given function.
+     */
+    public Promise error(Function e) {
+        return _continue(null, e);
+    }
+
+    /*
+     * Always continue this promise with a function on settlement of this promise. See 
+     * [then(Function s, Function e)](#then(Function s, Function e)) for more details about the Function's signature.
+     * 
+     * [param: f] The function to continue upon settlement, regardless of the result.
+     * [return] A new promise within which the given function is invoked.
+     */
+    public Promise fin(Function f) {
+        return _continue(f, f);
+    }
+
+	/*
+	 * Get the result or faulting exception of this promise.
+	 *
+	 * This method will block if the promise has not completed yet.
+	 *
+	 * [param: throwOnError] true to re-throw the faulting exception if the promise rejected.
+	 * [return] the result, or exception in case of rejection.
+	 */
+    public var getResult(bool throwOnError) {
+        // Wait until we get completion notification
+        while (state == PromiseState.PENDING) {
+            sync (plck) {
+                plck.wait();
+            }
+        }
+
+        if (ex != null) {
+            if (throwOnError) {
+                throw ex;
+            } else {
+                return ex;
+            }
+        } else {
+            return result;
+        }
+    }
+    
+    /*
+	 * Get a textual description of this promise at its current state. If the promise is settled, the string representation of
+	 * the result, or the error message of the faulting exception, will be included in this message.
+	 *
+	 * [return] a textual description of this promise at its current state.
+	 */
+    public string toString() {
+        string str = null;
+        switch (state) {
+            case RESOLVED:
+                str = result.ToString();
+                break;
+            case REJECTED:
+                str = ex.Message;
+                break;
+            default:
+                str = "?";
+                break;
+        }
+        
+        return state + "[" + str + "]";
+    }
+}

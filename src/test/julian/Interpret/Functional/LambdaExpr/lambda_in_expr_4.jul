@@ -1,0 +1,9 @@
+//LambdaExprTests
+
+int fun(Function f, int i){
+	return f(i, i);
+}
+
+var result = fun((var i1, var i2)=>i1+i2, 3);
+
+//dprint(result); // output: 6

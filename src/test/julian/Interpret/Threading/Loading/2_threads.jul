@@ -1,0 +1,69 @@
+import System.Concurrency;
+import System;
+
+// When we refer to C1, it will trigger loading of C2, C3, ... C7
+// When we refer to C7, it will trigger loading of C6, C5, ... C1
+// C1 => C2 <=> C3 ... C5 <=> C6 <= C7
+
+class C1 {
+	int value = 1;
+	C2 next;
+}
+
+class C2 {
+	int value = 2;
+	C1 prev;
+	C3 next;
+}
+
+class C3 {
+	int value = 3;
+	C2 prev;
+	C4 next;
+}
+
+class C4 {
+	int value = 4;
+	C3 prev;
+	C5 next;
+}
+
+class C5 {
+	int value = 5;
+	C4 prev;
+	C6 next;
+}
+
+class C6 {
+	int value = 6;
+	C5 prev;
+	C7 next;
+}
+
+class C7 {
+	int value = 7;
+	C6 prev;
+}
+
+int v1, v7;
+
+void f1(){
+	C1 c = new C1();
+	v1 = c.value;
+}
+
+void f7(){
+	C7 c = new C7();
+	v7 = c.value;
+}
+
+Thread t1 = new Thread(f1, "t1", ThreadPriority.NORMAL);
+Thread t7 = new Thread(f7, "t7", ThreadPriority.NORMAL);
+
+t1.start();
+t7.start();
+t1.join();
+t7.join();
+
+//Console.println(v1);
+//Console.println(v7);

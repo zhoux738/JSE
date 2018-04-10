@@ -1,0 +1,10 @@
+//LambdaEnvTests
+
+Function[] funs = new Function[2];
+
+for(var i = 0; i<2; i++){
+	funs[i] = (int x) => { return x + i; };
+}
+
+int a1 = funs[0](5);
+int a2 = funs[1](5);

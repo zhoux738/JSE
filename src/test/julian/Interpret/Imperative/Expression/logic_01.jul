@@ -1,0 +1,14 @@
+bool a = true;
+bool b = false;
+bool c1 = a && b;			//false
+bool c2 = a || b;			//true
+bool c3 = !(c1 && c2);		//true
+bool c4 = !!c3;				//true
+
+bool d = true;
+bool c5 = a && b || d;		//true
+bool c6 = a && (b || d);	//true
+
+d = false;
+bool c7 = a && b || d;		//false
+bool c8 = a && (b || d);	//false

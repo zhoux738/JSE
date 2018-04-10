@@ -1,0 +1,16 @@
+import System.Concurrency;
+
+Lock lck = new Lock();
+int waited = -2;
+
+void f(){
+	sync(lck){
+		waited = lck.wait(10);
+	}
+	//Console.println(waited);
+}
+
+Thread t1 = Thread.create(f);
+
+t1.start();
+t1.join();

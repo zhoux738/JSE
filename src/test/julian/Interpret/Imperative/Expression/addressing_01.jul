@@ -1,0 +1,42 @@
+class Car {
+	string name;
+	int[] specNum;
+	Car(string name){
+		this.name = name;
+	}
+}
+
+class CarInfo {
+	Car car;
+	CarInfo(Car car){
+		this.car = car;
+	}
+}
+
+class Dealership {
+	CarInfo[] repo;
+	Dealership(CarInfo[] repo){
+		this.repo = repo;
+	}
+}
+
+CarInfo[] infoArr = new CarInfo[]{
+	new CarInfo(new Car("Toyota")),
+	new CarInfo(new Car("Honda")),
+	new CarInfo(new Car("Nissan"))
+};
+
+// index-dot-dot
+string s0 = infoArr[0].car.name;
+
+// dot-index-dot 
+Dealership ds = new Dealership(infoArr);
+string s1 = ds.repo[1].car.name;
+
+// dot-dot-index
+ds.repo[2].car.specNum = new int[]{100,200,300};
+CarInfo ci = ds.repo[2];
+string s2 = "num=" + ci.car.specNum[0];
+
+// index-dot-index
+string s3 = "num=" + ds.repo[2].car.specNum[0];

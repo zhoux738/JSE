@@ -1,0 +1,8 @@
+// abstract and static method
+class Item {
+	
+	abstract static void doWork(){}
+	
+}
+
+Item item;

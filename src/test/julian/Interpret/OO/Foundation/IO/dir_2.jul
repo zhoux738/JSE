@@ -1,0 +1,29 @@
+import System.IO;
+
+//path is set in unit test upfront.
+Directory dir = new Directory(path);
+Item[] items = dir.listAll();
+string file1 = "", file2 = "", dir1 = "";
+bool file1b = false, file2b = false, dir1b = false;
+
+for(int i=0;i<items.length;i++){
+	Item item = items[i];
+	string name = item.getName();
+	bool isf = item.isFile();
+
+	if(name == "dir1"){
+		dir1 = name;
+		dir1b = isf;
+		Directory d0 = (Directory) item;
+	} else if(name == "file1"){
+		file1 = name;
+		file1b = isf;
+		File f1 = (File) item;
+	} else if(name == "file2"){
+		file2 = name;
+		file2b = isf;
+		File f2 = (File) item;
+	}
+	
+	//dprint(name);
+}

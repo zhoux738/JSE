@@ -1,0 +1,10 @@
+import System.Concurrency;
+
+// Test error() to catch previous ex and restore state.
+Promise p0 = Promise.start(()=> {
+	throw new Exception("failed!");
+}).error(ex => {
+	return ex.getMessage();
+});
+
+string msg = p0.getResult(true);

@@ -1,0 +1,23 @@
+package info.julang.typesystem.jclass.jufc;
+
+import info.julang.modulesystem.prescanning.RawScriptInfo;
+
+import java.util.Map;
+
+/**
+ * This source file is automatically generated.
+ */
+class SystemRawScriptInfoInitializer {
+
+    static void initialize(Map<String, SystemRawScriptInfoFactory<? extends RawScriptInfo>> map){
+#foreach( $class_info in $tv_class_infos )
+        #set( $mod = $class_info.Module )
+        #set( $cn = $class_info.ClassName )
+        
+        map.put("$class_info.Path", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.$mod${c_dot}AOTRawScriptInfo${c_dollar}$cn>(
+            info.julang.typesystem.jclass.jufc.$mod${c_dot}AOTRawScriptInfo${c_dollar}$cn${c_dot}class));
+#end
+    }
+    
+}

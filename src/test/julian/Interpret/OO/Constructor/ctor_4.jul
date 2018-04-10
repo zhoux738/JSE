@@ -1,0 +1,32 @@
+// Constructor forward call
+class Person {
+	
+	int age;
+
+	Person(int age){
+		this.age = age;
+	}
+		
+}
+
+class Employee : Person {
+
+	string job;
+	
+	bool legal;
+	
+	Employee(int age, string job) : this(age, job, age > 18) {
+		
+	}
+	
+	Employee(int age, string job, bool legal) : super(age) {
+		this.job = job;
+		this.legal = legal;
+	}
+		
+}
+
+Employee e = new Employee(32, "Programmer");
+int age = e.age;
+string job = e.job;
+bool legal = e.legal;

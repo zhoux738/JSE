@@ -1,0 +1,91 @@
+@echo off
+setlocal EnableDelayedExpansion
+
+set CURRDIR=%~dp0
+set WRAPPER_FILE=%~f0
+set LIBDIR=%CURRDIR%lib
+
+:PROCESS_ARG
+set ARG=%1
+if '%ARG%' == '' (
+  goto MAIN
+) else (
+  if /I '%ARG%' == '/u' set UPDATE=Y
+  if /I '%ARG%' == '-u' set UPDATE=Y
+  shift
+  goto PROCESS_ARG
+)
+
+:MAIN
+set Version=@Version@
+
+if '%Version%' == '' (
+	echo No JSE version is specified.
+	goto FAIL
+)
+
+set JAR_FILE=%LIBDIR%\JSE-%Version%.jar
+
+if not exist %JAR_FILE% (
+	echo No JSE jar is found underneath %LIBDIR%.
+	goto FAIL
+)
+
+REM Remove the extension (.jar)
+SET JAR_FILE_BASE=%JAR_FILE:~0,-4%
+
+if '%UPDATE%' == 'Y' (
+	REM Read properties
+	for /F "eol=; tokens=1,2 delims=^=" %%G in (JSE.properties) do (
+	  if /I '%%G' == 'UpdateServer' set UpdateServer=%%H
+	)
+
+	REM Download latest file
+	java -jar %JAR_FILE% -so-1 !UpdateServer!
+	REM Returned 0: downloaded, 1: not downloaded
+	if errorlevel 1 goto AFTER_SWP
+	
+:AFTER_UPD
+	REM Delete previous backups
+	REM Redirection is necessary otherwise it would report "Could Not Find ..." if no backup files are present
+	del /Q /F %LIBDIR%\*.BAK 2> nul
+	del /Q /F %LIBDIR%\*.cmd.BAK 2> nul
+		
+	REM Back up current files
+	ren %JAR_FILE% JSE-%Version%.BAK
+	copy /Y %WRAPPER_FILE% %LIBDIR%\jse.cmd.BAK 1> nul
+	
+	REM Rename the temp jar file to jar file
+	for /R "%LIBDIR%" %%G IN (JSE-*.TEMP) do (
+		ren "%%G" "%%~nG.jar"
+	)
+	
+	REM Replace the current batch file
+	del /Q /F %WRAPPER_FILE% 2> nul
+	for /R "%LIBDIR%" %%G IN (jse.cmd.TEMP) do (
+		copy /Y "%%G" %WRAPPER_FILE% 1> nul
+		del /Q /F "%%G" 2> nul
+	)
+	
+	echo Binaries updated.
+	goto SUCC
+	
+:AFTER_SWP
+	echo No upgrade performed.
+	goto SUCC
+) else (
+	REM Call JSE
+	java -jar %JAR_FILE% %*
+	endlocal
+	exit /b !ERRORLEVEL!
+)
+
+REM cleanup sections
+
+:FAIL
+endlocal
+exit /b 1
+
+:SUCC
+endlocal
+exit /b

@@ -1,0 +1,13 @@
+enum Planet {
+
+	Venus = 10,
+	
+	Earth,
+	
+	Mars = 30
+	
+}
+
+int o1 = Planet.Venus.ordinal;
+int o2 = Planet.Earth.ordinal;
+int o3 = Planet.Mars.ordinal;

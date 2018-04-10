@@ -1,0 +1,23 @@
+// Default constructor forward call
+class Person {
+	
+	string species;
+
+	Person(){
+		this.species = "human";
+	}
+
+}
+
+class Citizen : Person {
+
+	int age; 
+
+	Citizen(int age) {
+		this.age = age;	
+	}
+}
+
+Citizen c = new Citizen(34);
+int age = c.age;
+string sp = c.species;

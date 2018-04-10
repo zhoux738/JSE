@@ -1,0 +1,11 @@
+// return from try block
+
+int fun(){
+	try {
+		throw new Exception("Ex 1");
+	} finally {
+		throw new Exception("Ex 2");
+	}
+}
+
+fun();

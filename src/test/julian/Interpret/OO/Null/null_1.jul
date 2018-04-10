@@ -1,0 +1,14 @@
+class Person {
+	
+	string name;
+	
+	Person(string name){
+		this.name = name;
+	}
+	
+}
+
+Person p = new Person("Rudolf");
+string s = p.name;
+p = null;
+string s2 = p.name;

@@ -1,0 +1,7 @@
+// Cannot access to internal member of a class defined in different module
+
+import ModuleSys.IntA;
+//import ModuleSys.IntB;
+
+CA ca = new CA();
+ca.fun(3);

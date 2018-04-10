@@ -1,0 +1,7 @@
+[
+	{
+		"module_dirs" : ["."],
+		"script_file" : "Application/banking_3.jul",
+		"exit_code" : 0
+	}
+]

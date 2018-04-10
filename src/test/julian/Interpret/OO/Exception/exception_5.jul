@@ -1,0 +1,19 @@
+//import System;
+
+void funA(int i){
+	funB(i);
+}
+
+void funB(int i){
+	try{
+		funC(i);
+	} catch (Exception ex) {
+		throw new Exception("funC failed.", ex);
+	}
+}
+
+void funC(int i){
+	int x = i / 0;
+}
+
+funA(5);

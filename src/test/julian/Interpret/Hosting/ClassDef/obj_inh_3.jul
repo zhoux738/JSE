@@ -1,0 +1,22 @@
+[Mapped(className="info.jultest.test.hosted.classes.GObj")]
+interface IGObj {
+
+}
+
+[Mapped(className="info.jultest.test.hosted.classes.GTree")]
+class GTree: IGObj {
+
+}
+
+[Mapped(className="info.jultest.test.hosted.classes.GBlob")]
+class GBlob: IGObj {
+
+}
+
+IGObj o1 = new GBlob(10);
+IGObj o2 = new GBlob(20);
+IGObj o3 = new GBlob(30);
+GTree t1 = new GTree(new IGObj[]{o1, o2});
+GTree t2 = new GTree(new IGObj[]{t1, o3});
+
+int v = t2.hash();

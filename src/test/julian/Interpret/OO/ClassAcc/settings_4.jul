@@ -1,0 +1,12 @@
+// static initializer tests
+class Settings {
+
+	static const int volume = 100;
+	
+	static int getVolume(){
+		return volume;
+	}
+}
+
+int vv1 = Settings.volume;
+int vv2 = Settings.getVolume();

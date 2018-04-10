@@ -1,0 +1,22 @@
+class Settings {
+
+	static int volume;
+	
+	static int getVolume(){
+		return volume;
+	}
+	
+	static void setVolume(int vol){
+		volume = vol;
+	}
+	
+	static int getVolume2(){
+		return getVolume();
+	}
+}
+
+Settings.volume = 10;
+int volVal = Settings.getVolume();
+
+Settings.setVolume(20);
+int volVal2 = Settings.getVolume2();

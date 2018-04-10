@@ -1,0 +1,8 @@
+import System;
+
+int x = 10, y = 20;
+try {
+	x = 70;
+} finally {
+	y = 140;
+}

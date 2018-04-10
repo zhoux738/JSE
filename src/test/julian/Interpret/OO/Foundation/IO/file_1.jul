@@ -1,0 +1,9 @@
+import System.IO;
+
+//path is set in unit test upfront.
+File file = new File(path);
+string fname = file.getName();
+string contents = file.readAllText();
+//dprint(contents);
+string p = file.getPath();
+bool e = file.exists();

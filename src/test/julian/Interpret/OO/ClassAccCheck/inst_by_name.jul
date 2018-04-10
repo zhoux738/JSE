@@ -1,0 +1,23 @@
+class Person {
+
+	private string name;
+	
+	Person(string n){
+		name = n;
+	}
+}
+
+class Employee : Person {
+	
+	Employee(string name) : super(name){ }
+	
+	String getName(){
+		String n = name;// Access to the private member of its parent class will be faulted.
+		return n; 
+	}
+	
+}
+
+Employee e = new Employee("Pollack");
+string n = e.getName();
+Console.println(n);

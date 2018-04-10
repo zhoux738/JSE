@@ -1,0 +1,35 @@
+// Two threads trying to access to the same List in the same time, one doing R/W the other only R => both should succeed
+import System.Concurrency;
+import System.Collection;
+import System;
+
+// Initialize
+int total = 100, unit = 10, sum = 0;
+List values = new List();
+while(total > 0){
+	values.add(unit);
+	total--;
+}
+
+void f1(){
+	for(int i : values){
+		values[i] = values[i]; // R/W
+	}
+}
+
+void f2(){
+	int size = values.size();
+	for(int i = 0; i < size; i++){
+		sum += values[i]; // R
+	}
+}
+
+Thread t1 = Thread.create(f1);
+Thread t2 = Thread.create(f2);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();
+
+//Console.println(sum);

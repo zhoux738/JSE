@@ -1,0 +1,23 @@
+import System;
+
+interface IPlayer {
+	void addLife(int life); 
+	int getLife();
+}
+
+class Player : IPlayer {
+	private int life = 0;
+	public void addLife(int life){
+		this.life += life;
+	}
+	public int getLife(){
+		return life;
+	}
+}
+
+IPlayer player = new Player();
+player.addLife(3);
+Player player2 = (Player) player;
+player2.addLife(7);
+int life1 = player.getLife();
+int life2 = player2.getLife();

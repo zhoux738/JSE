@@ -1,0 +1,181 @@
+module System.Collection;
+
+import System;
+
+// The key is wrapped in an internal class HashKey, which is wrapped on the platform
+// end by an interop class that is then used as the key for Java's HashMap class. 
+// Convoluted, this is how both hashCode() and equals() defined in Julian can get 
+// invoked by Java's HashMap.  
+
+/*
+ * A hash map to store data based on the calculated hash value, allowing fast element-targeting
+ * operation at O(1) cost.
+ *
+ * An object stored in map will provide its hash through [Object.hashCode()](Object#hashCode()) method. A primitive
+ * value will convert is numeric value into an integer to be used as hash. For example, byte value
+ * simply promotes the value to integer, and a float value get floored to an integer. 
+ *
+ * The hashcode is only a means to locate the slot in the map, but doesn't have to be unique. The
+ * uniqueness is determined by [Object.equals()](Object#equals(Object)) method. When putting a value into a map, if the
+ * slot suggested by the hashcode is already occupied, Object.equals() is called between the 
+ * new object and existing one. If the method returns true, the new object is not added; otherwise,
+ * the object will be added anyway. If there is more than one object using that slot, each of
+ * them will be compared against before the new object can be cleared of its uniqueness and added.
+ * The multiple objects stored on the same map slot are internally organized by a linked list. In
+ * best practice, try to make the hashcode as unique as possible to improve the performance, and 
+ * always pay attention to equals() to ensure its proper functioning in determining the logical 
+ * equality between two objects.
+ *
+ * Julian supports map operation at language level. Use indexer syntax to achieve easy access:
+ * [code]
+ *    map[key] = value1;
+ *    var value2 = map[key];
+ * [code: end]
+ *
+ * Map is iterable. Each value returned during iteration is an [Entry]. Example:
+ * [code]
+ *    for (var entry : map) {
+ *      Console.println(entry.key + "=" + entry.value);
+ *    }
+ * [code: end]
+ * 
+ * The methods of this class are NOT thread safe.
+ */
+[Bridged(apiset="System.Collection.Map")]
+class Map : Container {
+
+	/*
+	 * Create a new map instance.
+	 */
+	[Bridged(name="ctor")]
+	hosted Map();
+	
+	[Bridged(name="put")]
+	private hosted void _put(var key, var value);
+	[Bridged(name="hasKey")]
+	private hosted bool _hasKey(var key);
+	[Bridged(name="remove")]
+	private hosted var _remove(var key);
+	[Bridged(name="get")]
+	private hosted var _get(var key);
+	[Bridged(name="size")]
+	private hosted int _size();
+	
+	/*
+	 * Put a key/value pair into the map. The key's hashCode() is to calculate the storage
+	 * location, and its equals() method is used to determine the uniqueness.
+	 *
+	 * [param: key] The key to the map.
+	 * [param: value] The value to store under this key. Can be null.
+	 */
+	void put(var key, var value){
+		var k = convert(key);
+		_put(k, value);
+	}
+	
+	/*
+	 * Check if the specified key exists in the map, without getting the value associated with it.
+	 *
+	 * [param: key] The key to the map.
+	 * [return] true if the key exists; false otherwise.
+	 */
+	bool hasKey(var key){
+		var k = convert(key);
+		return _hasKey(k);
+	}
+	
+	/*
+	 * Remove the specified key from the the map.
+	 *
+	 * [param: key] The key to the map.
+	 * [return] If the key existed, the value associated with this key; otherwise, null. Note if the value 
+	 * is null this method cannot tell if a value of null has been removed or the key didn't exist. If such
+	 * information is required, call [hasKey](#hasKey) beforehand.
+	 */
+	var remove(var key){
+		var k = convert(key);
+		return _remove(k);
+	}
+	
+	/*
+	 * Get the value from the the map by the specified key.
+	 *
+	 * [param: key] The key to the map.
+	 * [return] If the key existed, the value associated with this key; otherwise, null. Note if the value 
+	 * is null this method cannot tell if a value of null has been retrieved or the key didn't exist. If such
+	 * information is required, call [hasKey](#hasKey) beforehand.
+	 */
+	var get(var key){
+		var k = convert(key);
+		return _get(k);
+	}
+	
+	/*
+	 * The size of map.
+	 */
+	int size(){
+		return _size();
+	}
+	
+	private HashKey convert(var key){
+		if (key == null){
+			throw new ArgumentException("key");
+		}
+		
+		return new HashKey(key);
+	}
+}
+
+/*
+ * A key-value pair from the map.
+ */
+class Entry {
+
+	/* 
+	 * The key to the map. If it's an Object, [hashCode()](type: Object#hashCode) will be called to get its hash;
+	 * if primitive, it will be converted to an integer as the hash.
+	 */
+	var key;
+	
+	/* 
+	 * The value stored under this key. 
+	 */
+	var value;
+	
+	/*
+	 * Create a new Entry with given key and value. While this constructor is left to open access, it's almost useless
+	 * for users since no other foundation API use this in a parameter type.
+	 *
+	 * [param: key] The key for this entry.
+	 * [param: value] The value stored in this entry.
+	 */
+	Entry(var key, var value){
+		this.key = key;
+		this.value = value;
+	}
+}
+
+internal class HashKey {
+	
+	private var raw;
+	
+	internal HashKey(var raw){
+		this.raw = raw;
+	}
+	
+	// Get original key - used for iteration
+	internal var getKey(){
+		return raw;
+	}
+	
+	// Get hashcode produced from the original key - used indirectly by platform Map
+	internal var getHashCode(){
+		return raw is Object ? raw.hashCode() : raw;
+	}
+	
+	// Delegate equals() call to the original key - used indirectly by platform Map
+	internal bool equals(var another){
+		HashKey hk = (HashKey)another;
+		return raw is Object ? raw.equals(hk.raw) : raw == hk.raw;
+	}
+}

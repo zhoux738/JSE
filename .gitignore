@@ -1,0 +1,12 @@
+.metadata
+.settings
+.classpath
+.project
+target
+release/**
+doc/**
+*.xml.tmp
+.idea/
+.DS_Store
+../*.iml
+

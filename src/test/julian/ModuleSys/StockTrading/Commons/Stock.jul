@@ -1,0 +1,22 @@
+module ModuleSys.StockTrading.Commons;
+
+class Stock {
+	string name;
+	int price;
+	Stock(string name, int price){
+		this.name = name;
+		this.price = price;
+	}
+	
+	string getName(){
+		return name;
+	}	
+	
+	int getPrice(){
+		return price;
+	}
+	
+	void updatePrice(int delta){
+		price += delta;
+	}
+}

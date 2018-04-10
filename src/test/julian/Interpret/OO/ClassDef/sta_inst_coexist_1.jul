@@ -1,0 +1,12 @@
+class Item {
+	
+	static int a = 3;
+	int a;
+	
+}
+
+Item item = new Item();
+item.a = 5;
+
+int a = Item.a;
+int b = item.a;

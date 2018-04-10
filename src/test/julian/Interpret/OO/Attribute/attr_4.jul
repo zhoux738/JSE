@@ -1,0 +1,23 @@
+// attribute on constructor
+
+import System;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.CONSTRUCTOR)] 
+attribute Author {
+
+	string name;
+	
+	int year;
+	
+}
+
+class MyClass {
+
+	[Author(name="Liam", year=1980)]
+	MyClass() {
+	
+	}
+	
+}
+
+MyClass mc = new MyClass();

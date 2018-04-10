@@ -1,0 +1,33 @@
+module m1;
+import m2;
+import m3.F as F;
+
+enum E{}
+
+attribute A{}
+
+public abstract class C {
+	private static const int a = 2;
+	protected bool b;
+	public string c;
+	private C(){};
+	public C(int a) : this(){}
+	public C(int a, var b, char c, string s, float f) : super(a){}
+	public void fm1(){}
+	abstract void fm0();
+	public hosted fh();
+	int fm2(int x){
+		bool b = x is int;
+		try {
+			while(b){
+				do{
+					break;
+				} while (false);
+				continue;
+			}			
+		} 
+		catch (Exception e) { } 
+		finally { }
+		return 1;
+	}
+}

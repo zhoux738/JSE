@@ -1,0 +1,4 @@
+//LambdaBlockTests
+
+Function f = () => { return 8; };
+int a = f();

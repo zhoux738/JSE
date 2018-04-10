@@ -1,0 +1,31 @@
+import System.Collection;
+import System.Concurrency;
+
+BlockingQueue bq = new BlockingQueue();
+
+int needed = 100;
+int sum = 0;
+void f1(){
+	while(needed > 0){
+		sum += bq.pull(1000, true);
+		needed--;
+	}
+}
+
+void f2(){
+	while(true){
+		if (needed <= 0){
+			break;
+		}
+		Thread.sleep(1);
+		bq.enqueue(5);
+	}
+}
+
+Thread t1 = Thread.create(f1);
+Thread t2 = Thread.create(f2);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();

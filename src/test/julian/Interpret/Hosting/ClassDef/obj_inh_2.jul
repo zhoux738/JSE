@@ -1,0 +1,11 @@
+[Mapped(className="info.jultest.test.hosted.classes.Vehicle")]
+class Vehicle : Car {
+
+}
+
+[Mapped(className="info.jultest.test.hosted.classes.Car")]
+class Car {
+
+}
+
+Vehicle v;

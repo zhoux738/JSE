@@ -1,0 +1,4 @@
+Function f = (int i) => i + 5;
+int s8 = f.invoke(3);
+
+int s9 = ((int i) => i + 5).invoke(4);

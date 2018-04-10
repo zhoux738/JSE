@@ -1,0 +1,13 @@
+class A : C {
+
+}
+
+class B : A {
+
+}
+
+class C : B {
+
+}
+
+C c = new C();

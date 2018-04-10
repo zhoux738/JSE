@@ -1,0 +1,9 @@
+//LambdaExprTests
+
+int callbackFunc(Function f, int i){
+	return f(i);
+}
+
+int a = callbackFunc((int x) => x + 5, 3);
+
+//dprint(a); // output: 8

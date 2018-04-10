@@ -1,0 +1,18 @@
+// Must inherit only one class
+class P1 {
+
+}
+
+class P2 {
+
+}
+
+interface I {
+
+}
+
+class C : P1, I, P2 {
+
+}
+
+C c;

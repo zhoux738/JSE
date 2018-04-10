@@ -1,0 +1,14 @@
+int arg = 20;
+
+void foo(int a, string s){
+  int result = bar(a, s);
+  print("done: " + result);
+}
+
+int bar(int i, string s){
+  int val = i + s.length;
+  return val * val;
+}
+
+foo(arg, "a");
+

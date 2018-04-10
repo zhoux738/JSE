@@ -1,0 +1,18 @@
+import System;
+
+class Echoer {
+	public var echo(){ 
+		return "something"; 
+	}
+	
+	public var echo(var v){ 
+		return v; 
+	}
+}
+
+Echoer e = new Echoer();
+string s = e.echo("hello");
+int i = e.echo(5);
+
+
+

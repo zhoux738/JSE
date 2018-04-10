@@ -1,0 +1,5 @@
+class B : Integer {
+	void fun(){}
+}
+
+B a = new B();

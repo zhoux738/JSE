@@ -1,0 +1,28 @@
+import System;
+
+interface IFlyable {
+	int fly();
+}
+
+class Car {
+	public int run(){ return 80; }
+}
+
+class DeLorean : Car, IFlyable {
+	public int fly(){ return 300; }
+	public int run(){ return 88; }
+}
+
+DeLorean del = new DeLorean();
+int r1 = del.run();
+int r2 = del.fly();
+
+Car car = del;
+int r3 = car.run();
+
+bool caught;
+try {
+  car.fly();
+} catch (UnknownMemberException ume) {
+  caught = true;
+}

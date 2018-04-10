@@ -1,0 +1,8 @@
+public class C1 {
+	int i;
+
+	[Anno(val=-5.3, val2=false)]
+	public C1(){
+	
+	}
+}

@@ -1,0 +1,5 @@
+// assign typed value to untyped value
+var v = 3;
+int a = v;
+v = "xyz";
+string b = v;

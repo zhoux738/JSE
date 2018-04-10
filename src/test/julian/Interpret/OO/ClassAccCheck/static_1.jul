@@ -1,0 +1,12 @@
+class Settings {
+	private static int Volume = 100;
+}
+
+class Settings2 {
+	public static int getSetting(){
+		return Settings.Volume;
+	}
+}
+
+int vol = Settings2.getSetting();
+//Console.println(vol);

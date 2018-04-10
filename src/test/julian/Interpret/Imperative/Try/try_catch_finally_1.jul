@@ -1,0 +1,17 @@
+import System;
+
+class Exception2 : Exception {
+	Exception2(string msg) : super(msg) { }
+}
+
+int x = 10, y = 20, z = 30, u = 40;
+try {
+	throw new Exception("message");
+	x = 70;
+} catch (Exception ex) {
+	y = 140;
+} catch (Exception2 ex) {
+	z = 210;
+} finally {
+	u = 280;
+}

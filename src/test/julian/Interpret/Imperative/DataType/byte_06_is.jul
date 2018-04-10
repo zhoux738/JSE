@@ -1,0 +1,11 @@
+byte b0 = 0;
+bool z1 = b0 is byte;
+b0 = b0 + 127;
+bool z2 = b0 is byte;
+int i0 = b0 + 1;
+b0 = i0; // overflow
+bool z3 = b0 is byte;
+bool z4 = i0 is int;
+
+var v1 = b0;
+bool z5 = v1 is byte;

@@ -1,0 +1,8 @@
+class C1 {
+	private int i = 5;
+	protected byte b = i / 2;
+	public bool z = false;
+	private static int i2 = sfun();
+	protected static byte b2 = i - 1;
+	public static bool z2 = !z2;
+}

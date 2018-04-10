@@ -1,0 +1,16 @@
+// The trivial case:
+// Call an interface method on an object both of whose declared and runtime 
+// class point to the same concrete class which implements the interface.
+
+interface IAnimal {
+	int getLifeExpectancy();
+}
+
+class Person : IAnimal {
+	public int getLifeExpectancy(){
+		return 80;
+	}
+}
+
+Person person = new Person();
+int life = person.getLifeExpectancy();

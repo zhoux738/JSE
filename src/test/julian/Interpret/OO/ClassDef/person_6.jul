@@ -1,0 +1,13 @@
+// Instance field initializer
+class Person {
+	
+	int age = 32;
+
+	string name = "Patrick";
+	string account = name + "_acc";
+	
+}
+
+Person p = new Person();
+int age = p.age;
+string account = p.account;

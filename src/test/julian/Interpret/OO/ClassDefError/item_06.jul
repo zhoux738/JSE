@@ -1,0 +1,8 @@
+// illegal order of modifiers
+class Item {
+	
+	int static doWork(){}
+	
+}
+
+Item item;

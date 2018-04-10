@@ -1,0 +1,12 @@
+//LambdaExprTests
+
+//expect ',' to end a lambda 
+int fun(Function f, int i){
+	//Console.println(i);
+	int x = f(i);
+	//Console.println(x);
+	return x;
+}
+
+int a = fun(i=>i*2, 10);
+//dprint(a); // output: 20

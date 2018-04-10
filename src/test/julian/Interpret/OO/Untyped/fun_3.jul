@@ -1,0 +1,5 @@
+var fun(var v){
+	v = "xyz";
+	return v;
+}
+var a = fun(3); // when passing 3, it gets converted to an untyped var

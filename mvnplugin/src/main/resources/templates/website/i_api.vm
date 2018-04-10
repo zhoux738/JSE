@@ -1,0 +1,27 @@
+#* Parameters:
+   tv_module (string: can be "")
+   tv_name (string)
+   tv_prefix (string)
+*#
+#foreach( $item in $tv_root.Items )
+#if( $item.Module )
+#if( $item.Name == $tv_module )
+                          <li class="nav-item">
+                            <a class="nav-link" data-toggle="collapse" data-target="${c_sharp}$item.Name" href="${c_sharp}" aria-expanded="true">$item.Name</a>
+                            <ul id=$item.Name class="collapse show">
+#else
+                          <li class="nav-item">
+                            <a class="nav-link collapsed" data-toggle="collapse" data-target="${c_sharp}$item.Name" href="${c_sharp}">$item.Name</a>
+                            <ul id=$item.Name class="collapse">
+#end
+#foreach( $subitem in $item.Items )
+                              <li><a class="apiRef#if( $subitem.Name == $tv_name ) active#end" href="$tv_prefix${item.Name}/${subitem.Name}.html">$subitem.Name</a></li>
+#end
+                            </ul>
+                          </li>
+#else
+                          <li class="nav-item">
+                            <a class="nav-link apiRef#if( $item.Name == $tv_name ) active#end" href="$tv_prefix${item.Name}.html">$item.Name</a>
+                          </li>
+#end
+#end

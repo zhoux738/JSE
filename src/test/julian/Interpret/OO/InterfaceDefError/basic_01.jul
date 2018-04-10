@@ -1,0 +1,6 @@
+
+interface I {
+	private int fun();
+}
+
+I i;

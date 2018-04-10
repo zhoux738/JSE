@@ -1,0 +1,34 @@
+public class C1 {
+
+	/*
+	 * comments not physically aside
+	 */
+
+	public static void fun1(){ }
+	
+	/*
+	 * comments separated by //
+	 */
+	// something irrelevant
+	static void fun2(){ }
+
+	/*
+	 * not relevant
+	 */
+
+	/*
+	 * only care the immediately preceding block
+	 */
+	int fun3(int a) { return a; }
+	
+	void noDoc(){ }
+}
+
+/*
+ * interface type doc
+ */
+interface I1 {
+
+	/* interface method doc */
+	void fun();
+}

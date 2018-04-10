@@ -1,0 +1,8 @@
+// multiple access modifiers
+class Item {
+	
+	private protected doWork(){}
+	
+}
+
+Item item;

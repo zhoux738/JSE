@@ -1,0 +1,25 @@
+int a = 0;
+bool fun(){
+	a++;
+	return false;
+}
+
+// fun() not run
+bool res1 = false && fun();
+int a1 = a;
+
+// fun() run
+bool res2 = true && fun();
+int a2 = a;
+
+// fun() not run
+bool res3 = 1 > 2 && fun();
+int a3 = a;
+
+// fun() run twice
+bool res4 = fun() || fun();
+int a4 = a;
+
+// first fun()
+bool res5 = !fun() || fun();
+int a5 = a;

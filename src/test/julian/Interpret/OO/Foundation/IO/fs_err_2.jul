@@ -1,0 +1,4 @@
+import System.IO;
+
+// File doesn't exist
+FileStream fs = new FileStream("", FileMode.OPEN);

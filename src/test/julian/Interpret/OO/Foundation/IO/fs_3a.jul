@@ -1,0 +1,7 @@
+import System.IO;
+
+FileStream fs = new FileStream(path, FileMode.APPEND);
+byte[] bs = new byte[]{98, 99};
+fs.write(bs, 0, 2);
+fs.flush();
+fs.close();

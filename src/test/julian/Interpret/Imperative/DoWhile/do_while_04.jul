@@ -1,0 +1,4 @@
+int i = 3;
+do {
+	break;
+}while(i<5);

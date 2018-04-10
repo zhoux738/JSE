@@ -1,0 +1,21 @@
+//LambdaEnvTests
+
+class Person {
+
+	string name;
+	
+	Function getName(){
+		return (string name) => { 
+			return this.name + name;
+		};
+	}
+	
+}
+
+Person p = new Person();
+p.name = "a";
+
+Function f = p.getName();
+
+string x1 = f("b");
+string x2 = p.name;

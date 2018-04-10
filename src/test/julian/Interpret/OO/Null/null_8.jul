@@ -1,0 +1,15 @@
+class C {
+	int v;
+	int x(C c){
+		return c != null ? c.v : -1;
+	}
+	int x(C c, int defVal){
+		return c != null ? c.v : defVal;
+	}
+}
+
+C c = new C();
+c.v = 10;
+
+int r1 = c.x(c);
+int r2 = c.x(null);

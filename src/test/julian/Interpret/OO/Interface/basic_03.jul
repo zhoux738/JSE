@@ -1,0 +1,27 @@
+import System;
+
+interface I3 {
+	int doSomething3();
+}
+
+interface I2 : I3 {
+	int doSomething2();
+}
+
+interface I1 {
+	int doSomething1();
+}
+
+class Mono : I1, I2 {
+	public int doSomething1(){return 1;}
+	public int doSomething2(){return 2;}
+	public int doSomething3(){return 3;}
+}
+
+Mono mno = new Mono();
+I1 i1 = mno;
+I2 i2 = mno;
+I3 i3 = mno;
+int life1 = i1.doSomething1();
+int life2 = i2.doSomething2();
+int life3 = i3.doSomething3();

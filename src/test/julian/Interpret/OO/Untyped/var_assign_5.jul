@@ -1,0 +1,15 @@
+int[] arr = new int[]{1,2,3};
+
+var v = arr;
+
+int v0a = v[0];
+v[0] = 10;
+int v0b = v[0];
+int v0c = arr[0];
+
+arr[0] = 20;
+int v0d = v[0];
+
+// arr and v are references, so change to either one should take effect on the other too.
+
+v = "abc";

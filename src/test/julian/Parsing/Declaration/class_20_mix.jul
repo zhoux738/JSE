@@ -1,0 +1,22 @@
+class MyClass : Parent, IMovable {
+	private static int SEQ = 0;
+	private int s = 5;
+	
+	public MyClass(int speed){
+	}
+	
+	public MyClass() : this(5){
+	}
+	
+	public void go(){
+
+	}
+	
+	private int getSpeed(){
+
+	}
+	
+	public static int getTotal(){
+
+	}
+}

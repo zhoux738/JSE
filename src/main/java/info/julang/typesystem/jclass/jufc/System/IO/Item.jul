@@ -1,0 +1,52 @@
+module System.IO;
+
+/*
+ * A file system item. Can be a file or directory.
+ *
+ * When using this and other FS APIs, it's common to deal with paths. Unless noted, a path
+ * can be either absolute or relative (to working directory of the current process). A path
+ * comprises of one or more sections, and in case of relative path the path can be even empty.
+ * These section are separated by a path separator, which can differ based on the OS. However,
+ * Julian recognizes both '/' (POSIX) and '\' (Windows) as the equally legal path separator.
+ */
+interface Item {
+
+	/*
+	 * Get the name of this item. This is only the simple name (with extension part) under the path. 
+	 */
+	string getName();
+	
+	/*
+	 * Create this item.
+	 *
+	 * [return] True if the item was successfully created.
+	 */
+	bool create();
+	
+	/*
+	 * Delete this item.
+	 *
+	 * [return] True if the item was successfully deleted.
+	 */
+	bool delete();
+	
+	/*
+	 * Get the absolute path of this item. This doesn't include the name.
+	 */
+	string getPath();
+	
+	/*
+	 * Whether this item exist on file system.
+	 *
+	 * [return] True if the item exists.
+	 */
+	bool exists();
+	
+	/*
+	 * Whether this item is a file
+	 *
+	 * [return] True if the item is a file; false a directory.
+	 */
+	bool isFile();
+	
+}

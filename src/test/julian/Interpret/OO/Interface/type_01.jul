@@ -1,0 +1,14 @@
+import System;
+
+interface IAnimal {
+	int getLifeExpectancy();
+}
+
+class Person : IAnimal {
+	public int getLifeExpectancy(){
+		return 80;
+	}
+}
+
+IAnimal animal = new Person();
+int life = animal.getLifeExpectancy();

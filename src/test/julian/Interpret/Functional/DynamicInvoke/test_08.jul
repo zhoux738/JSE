@@ -1,0 +1,19 @@
+class Vehicle {
+
+	int speed = 5;
+
+	int accelerate(int val){
+		this.speed += val;
+		return speed;
+	}
+	
+	int accelerate(){
+		return accelerate(1);
+	}
+}
+
+Vehicle v = new Vehicle();
+
+int s6 = v.accelerate.invoke(); // exact match
+int s9 = v.accelerate.invoke(3); // exact match
+int s14 = v.accelerate.invoke(5, 7); // excessive

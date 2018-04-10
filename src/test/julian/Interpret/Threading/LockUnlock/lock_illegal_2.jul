@@ -1,0 +1,7 @@
+import System.Concurrency;
+import System;
+
+Lock lock = new Lock();
+lock.lock();
+lock.unlock();
+lock.unlock();

@@ -1,0 +1,16 @@
+import System.Concurrency;
+import System;
+
+int value = 0;
+
+void f(){
+	value = 5;
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+t.start();
+t.join();
+t.join();
+
+//Console.println(value);

@@ -1,0 +1,12 @@
+public class C1 {
+	[Anno(val=5.3, val2=true)]
+	private int c(){
+	
+	}
+	
+	[Anno()]
+	[Anno2]
+	static string s(){
+	
+	}
+}

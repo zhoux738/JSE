@@ -1,0 +1,12 @@
+//LambdaBlockTests
+
+Function f = (v) => { 
+	if(v == 10){
+		v = "a";
+	} else if(v == "a"){
+		v = 10;
+	}
+	return v;
+};
+var v1 = f(10);
+var v2 = f("a");

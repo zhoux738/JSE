@@ -1,0 +1,15 @@
+// The most basic case when using an interface:
+// Call an interface method on an object whose class implements the interface
+
+interface IAnimal {
+	int getLifeExpectancy();
+}
+
+class Person : IAnimal {
+	public int getLifeExpectancy(){
+		return 80;
+	}
+}
+
+IAnimal person = new Person();
+int life = person.getLifeExpectancy();

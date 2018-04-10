@@ -1,0 +1,11 @@
+class C {
+
+}
+
+interface I {
+
+	public abstract bool[] m1();
+	
+	abstract C m2(char c);
+
+}

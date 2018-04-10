@@ -1,0 +1,9 @@
+int a = 0;
+
+void fun(int i){
+	a = a + i;
+}
+
+fun(3, 7);
+
+// Console.println(a); // output: 3

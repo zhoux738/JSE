@@ -1,0 +1,64 @@
+void buildMaxHeapify(int[] data){
+	int startIndex = getParentIndex(data.length - 1);
+	for (int i = startIndex; i >= 0; i--) {
+		maxHeapify(data, data.length, i);
+	}
+}
+	
+void maxHeapify(int[] data, int heapSize, int index){
+	int left = getChildLeftIndex(index);
+	int right = getChildRightIndex(index);
+	int largest = index;
+	if (left < heapSize && data[index] < data[left]) {
+			largest = left;
+	}
+	if (right < heapSize && data[largest] < data[right]) {
+			largest = right;
+	}
+	if (largest != index) {
+		int temp = data[index];
+		data[index] = data[largest];
+		data[largest] = temp;
+		maxHeapify(data, heapSize, largest);
+	}
+}
+	
+void heapSort(int[] data) {
+	for (int i = data.length - 1; i > 0; i--) {
+		int temp = data[0];
+		data[0] = data[i];
+		data[i] = temp;
+		maxHeapify(data, i, 0);
+	}
+}
+
+int getParentIndex(int current){
+	return (current - 1) / 2;
+}
+ 
+int getChildLeftIndex(int current){
+	return current * 2 + 1;
+}
+ 
+int getChildRightIndex(int current){
+	return current * 2 + 2;
+}
+
+int[] a = new int[]{ 3, 5, 3, 6, 4, 7, 5, 7, 4 };
+buildMaxHeapify(a);
+heapSort(a);
+
+/**
+string arr2str(int[] a){
+	string s = "[";
+	for(int i=0; i<a.length; i++){
+		s += a[i];
+		if(i+1<a.length){
+			s += ", ";
+		}
+	}
+	s += "]";
+	return s;
+}
+dprint(arr2str(a));
+//*/

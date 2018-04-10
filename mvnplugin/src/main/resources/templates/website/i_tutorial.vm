@@ -1,0 +1,10 @@
+#* Parameters:
+   tv_module (string: can be "")
+   tv_name (string)
+   tv_prefix (string)
+*#
+#foreach( $item in $tv_root.Items )
+                          <li class="nav-item">
+                            <a class="nav-link apiRef#if( $item.Title == $tv_name ) active#end" href="$tv_prefix${item.Name}.html">$item.Title</a>
+                          </li>
+#end

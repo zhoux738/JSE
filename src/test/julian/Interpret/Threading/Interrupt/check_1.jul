@@ -1,0 +1,18 @@
+import System.Concurrency;
+import System;
+
+bool chk0 = false, chk1 = false, chk2 = false;
+
+void f(){
+	chk0 = Thread.checkInterruption();
+	Thread.getCurrent().interrupt();
+	chk1 = Thread.checkInterruption();
+	chk2 = Thread.checkInterruption();
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+t.start();
+t.join();
+
+// Console.println(total);

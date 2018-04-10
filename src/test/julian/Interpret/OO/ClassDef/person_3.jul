@@ -1,0 +1,17 @@
+// A basic dependency reference test
+class Family {
+
+	Person father;
+	
+	Person mother;
+}
+
+class Person {
+
+	string getName(){
+		return name;
+	}
+	
+}
+
+Family f;

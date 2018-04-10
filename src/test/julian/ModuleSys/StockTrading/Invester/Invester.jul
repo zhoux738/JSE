@@ -1,0 +1,64 @@
+module ModuleSys.StockTrading.Invester;
+
+import ModuleSys.StockTrading.Commons;
+
+class StockPossesion {
+	Stock stock;
+	int count;
+	
+	StockPossesion(Stock stock, int count){
+		this.stock = stock;
+		this.count = count;
+	}
+	
+	Stock getStock(){
+		return stock;
+	}
+	
+	int getCount(){
+		return count;
+	}
+	
+	void updateCount(int change){
+		count += change;
+	}
+}
+
+class Invester {
+	string name;
+	StockPossesion[] portfolio;
+	
+	Invester(string name, StockPossesion[] portfolio){
+		this.name = name;
+		this.portfolio = portfolio;
+	}
+	
+	string getName(){
+		return name;
+	}		
+	
+	void buy(string stkName, int count){
+		StockPossesion sp = getStockPossesion(stkName);
+		if(sp != null){
+			sp.updateCount(count);
+		}
+	}
+	
+	int getPortfolioValue(){
+		int total = 0;
+		for(int i=0;i<portfolio.length;i++){
+			int price = portfolio[i].getStock().getPrice();
+			total += price * portfolio[i].getCount();
+		}
+		return total;
+	}
+	
+	StockPossesion getStockPossesion(string name){
+		for(int i=0;i<portfolio.length;i++){
+			if(portfolio[i].getStock().getName() == name){
+				return portfolio[i];
+			}
+		}
+		return null;
+	}
+}

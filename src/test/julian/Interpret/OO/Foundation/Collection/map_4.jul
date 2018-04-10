@@ -1,0 +1,26 @@
+// put (overwrite), get, remove, size
+import System.Collection;
+
+Map m = new Map();
+m.put(100, 3);
+m.put('b', "xyz");
+m.put(true, true);
+
+int size1 = m.size();
+
+var a = m.get(50+50);
+var b = m.get('b');
+var c = m.get(!false);
+
+// Overwrite
+m.put("de", "delta");
+m.put("d" + "e", "gamma");
+
+var d = m.get("de");
+
+m.put(101, "epsilon");
+var e1 = m.remove(101);
+var e2 = m.get(101);
+var nex = e2 == null;
+
+int size2 = m.size();

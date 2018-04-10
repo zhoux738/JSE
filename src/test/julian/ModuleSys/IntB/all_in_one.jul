@@ -1,0 +1,18 @@
+module ModuleSys.IntB;
+
+class CB {
+
+	internal int forbid(int val){
+		return val;
+	}
+
+}
+
+class CB2 {
+	
+	int fun(int val){
+		CB cb = new CB();
+		return cb.forbid(val); // same module - ok
+	}
+
+}

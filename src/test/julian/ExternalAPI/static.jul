@@ -1,0 +1,12 @@
+import System.Concurrency;
+
+class MyClass {
+  static int Value = 0;
+}
+
+for(int i = 0; i < times; i++){
+	Thread.sleep(sleepInterval);
+	MyClass.Value += base;
+}
+
+return MyClass.Value;

@@ -1,0 +1,11 @@
+module ModuleSys.Banking.Commons;
+
+class Customer {
+	String name;
+	int ssn;
+	
+	public Customer(String name, int ssn) {
+		this.name = name;
+		this.ssn = ssn;
+	}
+}

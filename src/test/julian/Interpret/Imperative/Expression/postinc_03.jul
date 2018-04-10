@@ -1,0 +1,10 @@
+class C {
+	static int SM = 100;
+	int im = 200;
+}
+
+C.SM++;
+int a = C.SM;
+C c = new C();
+c.im++;
+int b = c.im;

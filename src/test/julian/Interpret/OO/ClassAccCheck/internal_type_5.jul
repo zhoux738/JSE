@@ -1,0 +1,20 @@
+// Cannot access to internal type defined in a different module
+
+internal class MyClass2 {
+	int fun(){
+		return 5;
+	}
+}
+
+public class MyClass {
+	MyClass2 m2;
+	
+	int fun(){
+		m2 = new MyClass2();
+		return m2.fun();
+	}
+}
+
+MyClass mc = new MyClass();
+
+int vc = mc.fun();

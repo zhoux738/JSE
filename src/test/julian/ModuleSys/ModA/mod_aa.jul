@@ -1,0 +1,7 @@
+module ModuleSys.ModA;
+
+[MyAttr1()]
+[MyAttr2(Name="Aaron")]
+class MyClass {
+
+}

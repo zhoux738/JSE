@@ -1,0 +1,51 @@
+import System.IO;
+
+bool[] res = new bool[5];
+bool[] ast = new bool[3];
+
+// Cannot write a file that is read-only
+FileStream fs = new FileStream(path, FileMode.OPEN);
+try {
+	ast[0] = !fs.canWrite();
+	fs.write(97);
+} catch (IOException e) {
+	res[0] = true;
+} finally {
+	fs.close();
+	
+	// Once closed, no more operations
+	try {
+		fs.read();
+	} catch (IOException e) {
+		res[1] = true;
+	}
+}
+
+// Cannot read a file that is write-only
+fs = new FileStream(path, FileMode.APPEND);
+try {
+	ast[1] = !fs.canRead();
+	fs.read();
+} catch (IOException e) {
+	res[2] = true;
+} finally {
+	fs.close();
+	
+	// Once closed, no more operations
+	try {
+		fs.close();
+	} catch (IOException e) {
+		res[3] = true;
+	}
+}
+
+// Forbidden operations
+fs = new FileStream(path, FileMode.OPEN);
+try {
+	ast[2] = !fs.canMark();
+	fs.reset();
+} catch (IOException e) {
+	res[4] = true;
+} finally {
+	fs.close();
+}

@@ -1,0 +1,21 @@
+import System.Lang;
+
+int[] src = new int[]{10,20,30};
+int[] dst1 = new int[3];
+
+bool[] res = new bool[3];
+try {
+	Array.copy(src, -1, dst1, 0, 1);
+} catch (System.Lang.RuntimeCheckException e){
+	res[0] = true;
+}
+try {
+	Array.copy(src, 0, dst1, -1, 1);
+} catch (System.Lang.RuntimeCheckException e){
+	res[1] = true;
+}
+try {
+	Array.copy(src, 0, dst1, 0, -1);
+} catch (System.Lang.RuntimeCheckException e){
+	res[2] = true;
+}

@@ -1,0 +1,5 @@
+int a = 0;
+void fun(var v){
+	a = v;
+}
+fun(3);

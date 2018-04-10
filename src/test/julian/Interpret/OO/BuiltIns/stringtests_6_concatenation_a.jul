@@ -1,0 +1,22 @@
+import System.Lang;
+
+bool res1, res2, res3;
+string fix = "abc", s1 = null;
+
+try {
+  string r1_null = fix + s1;
+} catch (IllegalOperandException e) {
+  res1 = true;
+}
+
+try {
+  string r2_null = s1 + fix;
+} catch (IllegalOperandException e) {
+  res2 = true;
+}
+
+try {
+  string r3_null = s1 + s1;
+} catch (IllegalOperandException e) {
+  res3 = true;
+}

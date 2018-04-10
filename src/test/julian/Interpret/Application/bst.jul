@@ -1,0 +1,136 @@
+class BST {
+
+	Node root;
+
+	BST() {
+		root = null;
+	}
+
+	// 1) Insert
+	void insert(int data) {
+		root = insert0(root, data);
+	}
+
+	Node insert0(Node p, int toInsert) {
+		if (p == null)
+			return new Node(toInsert);
+
+		if (toInsert == p.data)
+			return p;
+
+		if (toInsert < p.data)
+			p.left = insert0(p.left, toInsert);
+		else
+			p.right = insert0(p.right, toInsert);
+
+		return p;
+	}
+
+	// 2) Search
+	bool search(int toSearch) {
+		return search0(root, toSearch);
+	}
+
+	bool search0(Node p, int toSearch) {
+		if (p == null)
+			return false;
+		else if (toSearch == p.data)
+			return true;
+		else if (toSearch < p.data)
+			return search0(p.left, toSearch);
+		else
+			return search0(p.right, toSearch);
+	}
+
+	// 3) Delete
+	void delete(int toDelete) {
+		root = delete0(root, toDelete);
+	}
+
+	Node delete0(Node p, int toDelete) {
+		if (p == null)
+			return null;
+		else if (toDelete < p.data)
+			p.left = delete0(p.left, toDelete);
+		else if (toDelete > p.data)
+			p.right = delete0(p.right, toDelete);
+		else {
+			if (p.left == null)
+				return p.right;
+			else if (p.right == null)
+				return p.left;
+			else {
+				// get data from the rightmost node in the left subtree
+				p.data = p.left.data;
+				// delete the rightmost node in the left subtree
+				p.left = delete0(p.left, p.data);
+			}
+		}
+		return p;
+	}
+	
+	// 4) Traversal
+	int traverse(int[] results) {
+		return traverse0(root, results, -1);
+	}
+
+	int traverse0(Node p, int[] results, int index) {
+		if(p != null){
+			index = traverse0(p.left, results, index);
+			index++;
+			results[index] = p.data;
+			return traverse0(p.right, results, index);
+		} else {
+			return index;
+		}
+	}
+
+}
+
+class Node {
+	int data;
+	Node left;
+	Node right;
+
+	Node(int data, Node l, Node r) {
+		this.left = l;
+		this.right = r;
+		this.data = data;
+	}
+
+	Node(int data) : this(data, null, null) {
+
+	}
+}
+
+BST bst = new BST();
+bst.insert(10);
+bst.insert(3);
+bst.insert(11);
+bst.insert(20);
+bst.insert(6);
+bst.insert(14);
+bst.insert(8);
+
+int[] arr = new int[10];
+int index = bst.traverse(arr);
+
+int a1 = arr[0];
+//dprint(a1); //3
+int a2 = arr[index];
+//dprint(a2); //20
+
+bool b1 = bst.search(11);
+//dprint(b1); //true
+bool b2 = bst.search(12);
+//dprint(b2); //false
+
+bst.delete(3);
+bst.delete(6);
+bst.delete(20);
+
+index = bst.traverse(arr);
+int a3 = arr[0];
+//dprint(a3); //8
+int a4 = arr[index];
+//dprint(a4); //14

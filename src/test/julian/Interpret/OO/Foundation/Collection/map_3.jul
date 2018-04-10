@@ -1,0 +1,39 @@
+// put (overwrite), get, remove, size
+import System.Collection;
+
+class Key {
+	private string key;
+	Key(string k){
+		key = k;
+	}
+}
+
+Key ka = new Key("a");
+Key kb = new Key("b");
+Key kc = new Key("c");
+Key kd = new Key("d");
+Key ke = new Key("e");
+
+Map m = new Map();
+m.put(ka, 3);
+m.put(kb, "xyz");
+m.put(kc, true);
+
+int size1 = m.size();
+
+var a = m.get(ka);
+var b = m.get(kb);
+var c = m.get(kc);
+
+// Overwrite
+m.put(kd, "delta");
+m.put(kd, "gamma");
+
+var d = m.get(kd);
+
+m.put(ke, "epsilon");
+var e1 = m.remove(ke);
+var e2 = m.get(ke);
+var nex = e2 == null;
+
+int size2 = m.size();

@@ -1,0 +1,167 @@
+module ModuleSys.StockTrading2.Investor;
+
+import ModuleSys.StockTrading2.Commons;
+import ModuleSys.StockTrading2.Market;
+import System.Collection;
+
+class StockPossesion {
+	private Stock stock;
+	private int count;
+	
+	StockPossesion(Stock stock, int count){
+		this.stock = stock;
+		this.count = count;
+	}
+	
+	Stock getStock(){
+		return stock;
+	}
+	
+	int getCount(){
+		return count;
+	}
+	
+	float getValue(){
+		return count * stock.getPrice();
+	}
+	
+	// Buy certain amount of stock, return true if transaction completes successfully.
+	bool buy(int count, Investor inv){
+		float cash = inv.getCash();
+		float total = count * this.stock.getPrice();
+		
+		if(cash>=total){
+			this.count += count;
+			inv.setCash(cash - total);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	// Sell certain amount of stock
+	void sell(int count, Investor inv){
+		if(this.count < count){
+			count = this.count;
+		}
+		
+		this.count -= count;
+		
+		float cash = count * this.stock.getPrice();
+		inv.setCash(inv.getCash() + cash);
+	}
+}
+
+class Investor {
+	private float cash;
+	private string name;
+	private List portfolio; //<StockPossesion>
+	private List markets; //<StockMarket>
+	
+	Investor(string name, float cash){
+		this.name = name;
+		this.cash = cash;
+		this.portfolio = new List();
+	}
+	
+	void openAccount(StockMarket market){
+		if(markets == null){
+			markets = new List();
+		}
+		
+		for(var m in markets){
+			if(m == market){
+				return;
+			}
+		}
+		
+		markets.add(market);
+	}
+	
+	string getName(){
+		return name;
+	}	
+	
+	float getCash(){
+		return cash;
+	}	
+	
+	void setCash(float cash){
+		this.cash = cash;
+	}	
+	
+	bool buy(string stkName, int count){
+		StockPossesion sp = getStockPossesion(stkName);
+		if(sp == null){
+			Stock st = null;
+			for(var m in markets){
+				st = m.getStock(stkName);
+				if(st != null){
+					break;
+				}
+			}
+			
+			if(st == null){
+				//Console.println(name + " couldn't buy " + stkName + ". No stock listed with that name.");
+				return false;
+			} else {
+				sp = new StockPossesion(st, 0);
+				portfolio.add(sp);	
+			}
+		}
+		
+		if(sp.buy(count, this)){
+			//Console.println(name + " bought " + count + " of " + stkName + ".");
+			return true;
+		} else {
+			//Console.println(name + " couldn't buy " + count + " of " + stkName + ".");
+			return false;
+		}
+	}
+	
+	void sell(string stkName, int count){
+		StockPossesion sp = getStockPossesion(stkName);
+		if(sp != null){
+			sp.sell(count, this);
+			if(sp.getCount() == 0){
+				removeStockPossesion(stkName);
+			}
+			//Console.println(name + " sold " + count + " (or less) of " + stkName + ".");
+		} else {
+			//Console.println(name + " couldn't sell " + stkName + ". Not currently possessed.");
+		}		
+	}
+	
+	float getPortfolioValue(){
+		float total = 0;
+		for(var sp : portfolio){
+			total += sp.getValue();
+		}
+		
+		return total + this.cash;
+	}
+	
+	private StockPossesion getStockPossesion(string name){
+		for(var sp : portfolio){
+			if(sp.getStock().getName() == name){
+				return sp;
+			}
+		}
+		
+		return null;
+	}
+	
+	private void removeStockPossesion(string name){
+		int index = -1; 
+		for(int i = 0; i<portfolio.size(); i++){
+			if(portfolio[i].getStock().getName() == name){
+				index = i;
+				break;
+			}
+		}
+
+		if(index >= 0){
+			portfolio.remove(index);	
+		}
+	}
+}

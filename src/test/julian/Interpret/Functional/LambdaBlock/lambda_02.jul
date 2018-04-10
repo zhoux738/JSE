@@ -1,0 +1,6 @@
+//LambdaBlockTests
+
+Function f = (int x, string s) => { return x + s.length; };
+int a = f(3, "abcde");
+
+//dprint(a); // output: 8

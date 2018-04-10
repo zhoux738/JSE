@@ -1,0 +1,10 @@
+class Obj2 { 
+
+}
+
+[Mapped(className="info.jultest.test.hosted.classes.Obj1")]
+class Obj1 : Obj2 {
+
+}
+
+Obj1 n;

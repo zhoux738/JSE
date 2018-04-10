@@ -1,0 +1,9 @@
+class A {
+	public int a;
+}
+
+class B : A {
+	private int a;
+}
+
+B b;

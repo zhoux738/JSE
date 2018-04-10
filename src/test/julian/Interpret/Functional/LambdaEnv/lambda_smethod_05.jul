@@ -1,0 +1,21 @@
+//LambdaEnvTests
+
+class Settings {
+
+	static int volume;
+	
+	static Function modVol(int base){
+		return (int extra) => { 
+			Settings.volume = Settings.volume + base + extra; 
+		};
+	}
+	
+}
+
+Settings.volume = 100;
+
+Function f = Settings.modVol(10);
+
+f(1);
+
+int v = Settings.volume;

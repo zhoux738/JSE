@@ -1,0 +1,48 @@
+[Mapped(className="info.jultest.test.hosted.classes.Node")]
+class Node {
+
+}
+
+[Mapped(className="info.jultest.test.hosted.classes.Clustor")]
+class Clustor {
+
+}
+
+Node n1 = new Node(1, null);
+Node n2 = new Node(2, null);
+Node n3 = new Node(3, null);
+Node n4 = new Node(4, null);
+Clustor c1 = new Clustor(new Clustor[0], new Node[]{ n1, n2 });
+Clustor c2 = new Clustor(new Clustor[0], new Node[]{ n3 });
+Clustor c3 = new Clustor(new Clustor[]{ c1, c2 }, new Node[]{ n4 });
+
+int sumNode(Node n){
+	int total = 0;
+	if (n != null) {
+		total += n.getValue();
+		total += sumNode(n.getNext());
+	}
+	
+	return total;
+}
+	
+int sum(Clustor c){
+	int total = 0;
+	Clustor[] cs = c.getClustors();
+	if (cs != null) {
+		for(Clustor c : cs) {
+			total += sum(c);
+		}
+	}
+	
+	Node[] ns = c.getNodes();
+	if (ns != null) {
+		for(Node n : ns) {
+			total += sumNode(n);
+		}
+	}
+	
+	return total;
+}
+
+int t = sum(c3);

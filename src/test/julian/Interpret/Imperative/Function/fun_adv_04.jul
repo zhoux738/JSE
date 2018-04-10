@@ -1,0 +1,36 @@
+class Car {
+	string name;
+	Car(string name){
+		this.name = name;
+	}
+}
+
+class CarInfo {
+	string infostr;
+	CarInfo(Car car, int year, Car prototype){
+		infostr = car.name + "-" + year + "-(" + prototype.name + ")";
+	}
+}
+
+CarInfo fun3(string name, int year, Car prototype){
+	Car car = new Car(name);
+	CarInfo info = new CarInfo(car, year, prototype);
+	return info;
+}
+
+string fun1(Car car, int year){
+	return car.name + "-" + 2013;
+}
+
+string fun2(Car car1, Car car2, int year1, int year2){
+	return car1.name + "-"+ year1 + "; " + car2.name + "-" + year2;
+}
+
+Car car1 = new Car("Tesla");
+string s1 = fun1(car1, 2013);
+
+Car car2 = new Car("T");
+string s2 = fun2(car1, car2, 2013, 1913);
+
+CarInfo ci = fun3("Tesla", 2013, car2);
+string s3 = ci.infostr;

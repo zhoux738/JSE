@@ -1,0 +1,22 @@
+module ModuleSys.Banking.Network;
+
+import System.Collection;
+
+import ModuleSys.Banking.Bank;
+
+class Network {
+	
+	private static int routingSeq = 5000000;
+	
+	private static Map banks = new Map(); // Java
+	
+	static Bank find(int routeNum){
+		return (Bank) banks.get(routeNum);
+	}
+
+	static int register(Bank bank) {
+		int rt = routingSeq++;
+		banks.put(rt, bank);
+		return rt;
+	}
+}

@@ -1,0 +1,17 @@
+import System.Concurrency;
+
+bool nonnull;
+bool same;
+
+void f(){
+	Thread t1 = Thread.getCurrent();
+	Thread t2 = Thread.getCurrent();
+	nonnull = t1 != null;
+	same = t1 == t2;
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+t.start();
+
+t.join();

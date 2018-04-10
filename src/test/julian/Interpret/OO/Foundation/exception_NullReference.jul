@@ -1,0 +1,16 @@
+import System;
+
+class Person {
+	int age;
+}
+
+void funA(int i){
+	funB(i);
+}
+
+void funB(int i){
+	Person p; // = new Person();
+	p.age = i;
+}
+
+funA(30);

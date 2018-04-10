@@ -1,0 +1,15 @@
+// 		JValue iaa = toValue(ctxt, new int[][]{{3,5},{7,11}});
+//		JValue saa = toValue(ctxt, new String[][]{{"3","5"},{"7","11"}});
+int total = 0;
+for(int i = 0; i < iaa.length; i++) {
+	for(int j = 0; j < iaa[i].length; j++) {
+		total += iaa[i][j]; // 26
+	}
+}
+
+String cc = "";
+for(int i = 0; i < saa.length; i++) {
+	for(int j = 0; j < saa[i].length; j++) {
+		cc += saa[i][j]; // "35711"
+	}
+}

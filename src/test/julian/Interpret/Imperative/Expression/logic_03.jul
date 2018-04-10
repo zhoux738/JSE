@@ -1,0 +1,40 @@
+int a = 0;
+int b = 0;
+int c = 0;
+
+bool fun(){
+	a++;
+	return false;
+}
+bool fun2(){
+	b++;
+	return false;
+}
+bool fun3(){
+	c++;
+	return false;
+}
+
+// fun: run; fun2: not run; fun3: run
+//		1			0			1
+bool res4 = fun() && fun2() || fun3();
+int a1 = a;
+int b1 = b;
+int c1 = c;
+//dprint("a=" + a + " b=" + b + " c=" + c);
+
+// fun: run; fun2: not run; fun3: not run
+//		2			0			1
+bool res5 = fun() && (fun2() || fun3());
+int a2 = a;
+int b2 = b;
+int c2 = c;
+//dprint("a=" + a + " b=" + b + " c=" + c);
+
+// fun: not run; fun2: run; fun3: run
+//		2			1			2
+bool res6 = (true || fun()) && (fun2() || fun3());
+int a3 = a;
+int b3 = b;
+int c3 = c;
+//dprint("a=" + a + " b=" + b + " c=" + c);

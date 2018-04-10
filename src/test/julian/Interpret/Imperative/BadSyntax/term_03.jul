@@ -1,0 +1,13 @@
+void f(int i){
+
+}
+
+bool[] bs = new bool[5];
+
+try { f();		} catch (Exception e) { bs[0] = true; }
+try { f(;		} catch (Exception e) { bs[1] = true; }
+try { f(1+);	} catch (Exception e) { bs[2] = true; }
+try { f(1+2,);	} catch (Exception e) { bs[3] = true; }
+try { f(1));	} catch (Exception e) { bs[4] = true; }
+
+

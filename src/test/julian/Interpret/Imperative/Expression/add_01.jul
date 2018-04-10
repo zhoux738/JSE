@@ -1,0 +1,7 @@
+string s1 = "abc" + "def";
+string s2 = "abc" + 4 + false + 'p';
+string s3 = 'a' + 'b';
+string s4a = 'a' + 4;
+string s4b = 4 + 'a';
+string s5a = 'a' + false;
+string s5b = false + 'a';

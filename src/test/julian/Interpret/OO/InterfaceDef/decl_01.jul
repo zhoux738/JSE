@@ -1,0 +1,22 @@
+// Trivial cases
+
+// 1. Empty
+interface IPerson1 {
+
+}
+
+// 2.1. One method with complete modifiers.
+interface IPerson2 {
+	public abstract void speak();
+}
+
+// 2.2. Three methods with incomplete modifiers.
+interface IPerson3 {
+	abstract void speak1();
+	public void speak2();
+	void speak3();
+}
+
+IPerson1 person1;
+IPerson2 person2;
+IPerson3 person3;

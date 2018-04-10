@@ -1,0 +1,12 @@
+// return from try block
+
+int fun(int x){
+	try {
+		return x;
+	} catch (Exception ex) {
+		return x * 2;
+	}
+	return x * 3;
+}
+
+int x1 = fun(4);

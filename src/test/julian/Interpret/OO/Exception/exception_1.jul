@@ -1,0 +1,15 @@
+//import System;
+
+void funA(int i){
+	funB(i);
+}
+
+void funB(int i){
+	funC(i);
+}
+
+void funC(int i){
+	int x = i / 0;
+}
+
+funA(5);

@@ -1,0 +1,13 @@
+// A subclass must implement the abstract method of same signature.
+import System;
+
+abstract class Machine {
+	abstract int start(int speed);
+}
+
+class Car : Machine {
+	int start(){ return 50; }
+}
+
+Car c = new Car();
+int speed1 = c.start();

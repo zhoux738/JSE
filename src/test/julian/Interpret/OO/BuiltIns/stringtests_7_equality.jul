@@ -1,0 +1,7 @@
+// String equality
+
+string s1 = "abc";
+string s2 = "a" + "bc";
+bool b1 = s1.equals(s2);
+bool b2 = s2.equals(s1);
+bool b3 = "".equals("");

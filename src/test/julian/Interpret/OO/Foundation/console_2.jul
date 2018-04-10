@@ -1,0 +1,15 @@
+import System;
+
+class Car {
+	string name;
+	Car(string name){
+		this.name = name;
+	}
+	string toString(){
+		return "car[" + name + "]";
+	}
+}
+
+Car c = new Car("BYD");
+
+Console.print(c);

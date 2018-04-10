@@ -1,0 +1,4 @@
+[Anno(val=5, val2="abs")][Anno1][Anno2()][Anno4(val4c='c')]
+class C1 {
+
+}

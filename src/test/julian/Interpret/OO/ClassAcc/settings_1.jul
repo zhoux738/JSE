@@ -1,0 +1,13 @@
+class Settings {
+
+	static int GlobalFactor;
+	
+	static string GlobalPrefix;
+		
+}
+
+Settings.GlobalFactor = 5;
+Settings.GlobalPrefix = "abc";
+
+int factor = Settings.GlobalFactor;
+string prefix = Settings.GlobalPrefix;

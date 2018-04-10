@@ -1,0 +1,279 @@
+/*
+MIT License
+
+Copyright (c) 2017 Ming Zhou
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+package info.julang.interpretation.expression.operator;
+
+import static info.julang.langspec.Operators.DOT;
+
+import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.JSEError;
+import info.julang.external.interfaces.JValueKind;
+import info.julang.interpretation.JNullReferenceException;
+import info.julang.interpretation.RuntimeCheckException;
+import info.julang.interpretation.context.Context;
+import info.julang.interpretation.context.ContextType;
+import info.julang.interpretation.context.MethodContext;
+import info.julang.interpretation.errorhandling.JSExceptionFactory;
+import info.julang.interpretation.errorhandling.JulianScriptException;
+import info.julang.interpretation.errorhandling.KnownJSException;
+import info.julang.interpretation.expression.Operand;
+import info.julang.interpretation.expression.Operator;
+import info.julang.interpretation.expression.operand.InstMemberOperand;
+import info.julang.interpretation.expression.operand.NameOperand;
+import info.julang.interpretation.expression.operand.OperandKind;
+import info.julang.interpretation.expression.operand.StaticMemberOperand;
+import info.julang.interpretation.expression.operand.TypeOperand;
+import info.julang.interpretation.expression.operand.ValueOperand;
+import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.memory.value.FuncValue;
+import info.julang.memory.value.JValue;
+import info.julang.memory.value.MethodGroupValue;
+import info.julang.memory.value.MethodValue;
+import info.julang.memory.value.ObjectMember;
+import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
+import info.julang.memory.value.TempValueFactory;
+import info.julang.memory.value.TypeValue;
+import info.julang.memory.value.UntypedValue;
+import info.julang.typesystem.JType;
+import info.julang.typesystem.JTypeKind;
+import info.julang.typesystem.UnknownMemberException;
+import info.julang.typesystem.jclass.ICompoundType;
+import info.julang.typesystem.jclass.JClassMember;
+import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.MemberType;
+import info.julang.typesystem.jclass.builtin.JObjectType;
+import info.julang.util.OneOrMoreList;
+
+/**
+ * Operator (<code>.</code>) for addressing a member of type/variable.
+ * <pre><code>
+ * a.b, a.fun(), Math.Pi
+ * </code></pre>
+ *
+ * @author Ming Zhou
+ */
+public class DotOp extends Operator {
+
+	private ThreadRuntime rt;
+	
+	public DotOp(ThreadRuntime rt) {
+		super(".", 2, DOT.precedence, DOT.associativity);
+		this.rt = rt;
+	}
+
+	@Override
+	protected Operand doApply(Context context, Operand[] operands) {
+		JValue lval = null;
+		Operand lop = operands[0];
+		Operand rop = operands[1];
+		switch(lop.getKind()){
+		case NAME:
+			NameOperand nameOd = (NameOperand) operands[0];
+			
+			if(!nameOd.isComposite()){
+				// 1) Try variable
+				lval = context.getResolver().resolve(nameOd.getName());
+				if(lval != null){
+					break;
+				}
+			}
+			
+			// 2) Try type, using namespace pool
+			// This means we will try to resolve against the very first type contained in the string.
+			// For example, given "A.B.C.D", we will end up with A if a type of name "A", in combination 
+			// with prefix from namespace pool, exists. Otherwise, we will try A.B, A.B.C, ... in that 
+			// order. But note each attempt is performed at the corresponding dot op against the preceding
+			// string operand with a single (A) or composite (A.B.C) name.
+			// 
+			// The attempt at resolution is also confined to loaded modules. If the module is not explicitly
+			// imported (using "import" statement), a type of that module won't get resolved. In future
+			// we may change the design to allow on-demand module loading.
+			ParsedTypeName typeName = ParsedTypeName.makeFromFullName(nameOd.getName());
+			JType typ = context.getTypeResolver().resolveType(typeName, false); // Do not throw if not found.
+			if(typ != null){
+				String typName = typ.getName();
+				lval = context.getTypTable().getValue(typName);
+				break;
+			}
+			
+			// Add right operand to left operand as a new name ("A" . "B" -> "A.B")
+			if(rop.getKind() == OperandKind.NAME){
+				nameOd.addPart(((NameOperand)rop).getName());
+				return nameOd;
+			} else {
+				throw new JSEError("Cannot apply '.' operator between a name operand and an opeand of type \"" + 
+					rop.getKind().toString() + "\".");
+			}
+		case IMEMBER:
+		case SMEMBER:
+		case VALUE:
+		case INDEX:
+			lval = ((ValueOperand) lop).getValue();
+			break;
+		case TYPE:
+			lval = ((TypeOperand) lop).getValue();
+		default:
+			throw new JSEError("Cannot apply '.' operator on a left opeand of type \"" + lop.getKind().toString() + "\".");
+		}
+		
+		if(lval != null){
+			lval = UntypedValue.unwrap(lval);
+			ICompoundType leftDeclaredType = null;
+			if(rop.getKind() == OperandKind.NAME){
+				if(lval.getKind() == JValueKind.REFERENCE){
+					try {
+						RefValue lvalRef = (RefValue)lval;
+						leftDeclaredType = (ICompoundType)lvalRef.getType();
+						lval = lvalRef.dereference();
+					} catch (JNullReferenceException ex) {
+						JulianScriptException jse = JSExceptionFactory.createException(
+							KnownJSException.NullReference, rt, context);
+						throw jse;
+					}
+				}
+				if(lval.getKind() == JValueKind.OBJECT){
+					String memberName = ((NameOperand)rop).getName();
+					ObjectValue lov = (ObjectValue) lval;
+					JValue mvalue = null;
+					
+					if(NameOperand.SUPER == lop){
+						if(context.getContextType() == ContextType.IMETHOD){
+							MethodContext mc = (MethodContext)context;
+							ICompoundType thisType = mc.getContainingType();
+							if(thisType != null){
+								ICompoundType superType = thisType.getParent();
+								if(superType != null){
+									checkAccessibility(superType, memberName, context, false);
+									OneOrMoreList<ObjectMember> mvs = lov.getMemberValueByClass(memberName, superType);
+									if(mvs.size() == 0){
+										throw new UnknownMemberException(superType, memberName, false);
+									} else {
+										mvalue = mvs.getFirst().getValue();
+									}
+								} else if (thisType == JObjectType.getInstance()){
+									throw new RuntimeCheckException(
+										"The Object type doesn't have a parent type and thus cannot use super in its method.");
+								} else {
+									throw new JSEError("Type +\"" + thisType.getName() + "\" doesn't have a parent type.");
+								}
+							} else {
+								throw new JSEError("Evaluation cannot continue because the type for current method is missing.");
+							}		
+						} else {
+							throw new RuntimeCheckException(
+								"Can only use super keyword in an instance method.");		
+						}
+					} else {
+						if(leftDeclaredType == null){
+							leftDeclaredType = lov.getClassType();
+						}
+						checkAccessibility(leftDeclaredType, memberName, context, false);
+
+						// Special. If we are accessing a member of method group, 
+						//   (1) assume the member is a non-overloaded instance method
+						//   (2) create another group that contains the method for each member. 
+						if (JValueKind.FUNCTION == lov.getBuiltInValueKind()){
+							FuncValue fv = (FuncValue)lov;
+							if (JValueKind.METHOD_GROUP == fv.getFuncValueKind()){
+								MethodGroupValue mgv = (MethodGroupValue)lov;
+								MethodValue[] mvs = mgv.getMethodValues();
+								MethodValue[] ims = new MethodValue[mvs.length]; // instance members of same name
+								for (int i = 0; i < ims.length; i++){
+									OneOrMoreList<ObjectMember> overloads = mvs[i].getMemberValueByClass(memberName, null);
+									if (overloads.size() == 1){
+										JValue tempVal = overloads.getFirst().getValue().deref();
+										if (tempVal != null && tempVal instanceof MethodValue){
+											ims[i] = (MethodValue)tempVal;
+											continue;
+										}
+									}
+									
+									throw new UnknownMemberException(mvs[i].getType(), memberName, false);
+								}
+								
+								mvalue = new MethodGroupValue(context.getHeap(), ims);
+							}
+						} 
+						
+						if (mvalue == null){
+							OneOrMoreList<ObjectMember> overloads = lov.getMemberValueByClass(memberName, null);
+							if(overloads != null){
+								if (overloads.size() == 1){
+									mvalue = overloads.getFirst().getValue();
+								} else {
+									mvalue = TempValueFactory.createTempMethodGroupValue(overloads);
+								}
+							}
+						}
+					}
+					
+					if(mvalue == null){
+						throw new UnknownMemberException(lval.getType(), memberName, false);
+					}
+					return new InstMemberOperand(mvalue, lov, memberName);
+				} else if (lval.getKind() == JValueKind.TYPE){
+					ICompoundType typ = null;
+					
+					// Get type value for this type. If this is not a class type, we won't get a type value.
+					JType rawTyp = ((TypeValue) lval).getValueType();
+					String memberName = ((NameOperand)operands[1]).getName();
+					if (rawTyp.getKind() != JTypeKind.CLASS) {
+						throw new UnknownMemberException(rawTyp, memberName, true);
+					} else {
+						typ = (ICompoundType)rawTyp;
+					}
+					
+					JClassMember member = typ.getStaticMemberByName(memberName);
+					if(member == null){
+						throw new UnknownMemberException(typ, memberName, true);
+					}
+					
+					MemberType mt = member.getMemberType();
+					if(mt == MemberType.FIELD || mt == MemberType.METHOD){
+						TypeValue lov = (TypeValue) lval;
+						
+						if (mt == MemberType.METHOD){
+							// If this member turns out to be a method, try to get all the overloaded members
+							MethodValue[] mvs = lov.getMethodMemberValues(memberName);
+							if (mvs.length > 1){
+								// The method is overloaded
+								MethodGroupValue mgv = new MethodGroupValue(context.getFrame(), mvs);
+								checkAccessibility(typ, memberName, context, true);
+								return new StaticMemberOperand(mgv, (JClassType)typ, memberName);
+							}
+						}
+						
+						checkAccessibility(typ, memberName, context, true);
+						return new StaticMemberOperand(lov.getMemberValue(memberName), (JClassType)typ, memberName);
+					} else {
+						throw new UnknownMemberException(typ, memberName, true);
+					}
+				}
+			}
+		}
+		
+		throw new JSEError("Cannot evaluate '.' operator.");
+	}
+}

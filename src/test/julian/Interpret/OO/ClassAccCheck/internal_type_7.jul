@@ -1,0 +1,7 @@
+// Cannot access to internal type defined in a module
+
+import ModuleSys.IntC;
+
+IntCls fun(){
+
+}

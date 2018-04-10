@@ -1,0 +1,6 @@
+class Settings {
+	private static int Volume = 100;
+}
+
+int vol = Settings.Volume;
+Console.println(vol);

@@ -1,0 +1,12 @@
+// Use default accessibility will fail
+
+interface IPerson {
+	void speak();
+}
+class Person : IPerson {
+	void speak(){
+	
+	}
+}
+
+Person p;

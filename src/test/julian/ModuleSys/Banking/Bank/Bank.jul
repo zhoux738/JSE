@@ -1,0 +1,101 @@
+module ModuleSys.Banking.Bank;
+
+import System.Collection;
+
+import ModuleSys.Banking.Commons;
+import ModuleSys.Banking.Account;
+import ModuleSys.Banking.Network;
+
+class Bank {
+	
+	private int facilitySeq = 0;
+	
+	private int accountSeq = 10000;
+	
+	private int routingNumber;
+	
+	private float interestRate;
+	
+	private String name;
+
+	private Map facilities = new Map(); // JAVA
+	
+	private Map accounts = new Map(); // JAVA
+	
+	private WiringService ws;
+	
+	Bank(String name){
+		this.name = name;
+		this.routingNumber = Network.register(this);
+		ws = new WiringService(this);
+	}
+	
+	int allocateFacility(BankFacility bankFacility) {
+		int id = facilitySeq++;
+		facilities.put(id, bankFacility);
+		return id;
+	}
+
+	AccountInfo getAccountInfo(BankService bs, Account acc) {
+		if(bs.bank != this){
+			return null;
+		}
+		
+		return (AccountInfo) accounts.get(acc.getAccountNum());
+	}
+	
+	Account[] createAccount(Branch branch, Customer c) {
+		if(facilities.get(branch.getId()) != branch){
+			return null;
+		}
+
+		int id1 = accountSeq++;
+		int id2 = accountSeq++;
+		AccountInfo acc1 = new AccountInfo(
+			AccountType.CHECKING, id1, routingNumber, 0);
+		AccountInfo acc2 = new AccountInfo(
+			AccountType.SAVING, id2, routingNumber, interestRate);
+		accounts.put(id1, acc1);
+		accounts.put(id2, acc2);
+		
+		Account[] ids = new Account[]{acc1, acc2};
+		return ids;
+	}
+
+	Message transfer(Branch branch, Account from, Account to, float amount) {
+		if(facilities.get(branch.getId()) != branch){
+			return Message.fail("Branch not recognized");
+		}
+		
+		Bank fromBnk = Network.find(from.getRoutingNum());
+		if(fromBnk != this){
+			return Message.fail("Cannot transfer from other banks");
+		}
+		
+		AccountInfo aiFrom = (AccountInfo) accounts.get(from.getAccountNum());
+		if(aiFrom == null){
+			return Message.fail("Account to transfer from not found");
+		}
+		
+		Bank toBnk = Network.find(to.getRoutingNum());
+		if(toBnk == fromBnk){
+			AccountInfo aiTo = (AccountInfo) accounts.get(to.getAccountNum());
+			if(aiTo == null){
+				return Message.fail("Account to transfer to not found");
+			}
+			
+			// Transfer within same bank
+			branch.withdraw(aiFrom, amount);
+			branch.deposit(aiTo, amount);
+			return Message.succ("Transfer complete");
+		} else {
+			branch.withdraw(aiFrom, amount);
+			WiringService ws = toBnk.getWiringService();
+			return ws.wire(to, amount);
+		}
+	}
+
+	private WiringService getWiringService() {
+		return ws;
+	}
+}

@@ -1,0 +1,14 @@
+// Extends twice
+interface J {
+	int fun();
+}
+
+interface I : J, J {
+
+}
+
+class C : I {
+	public int fun(){ return 5; }
+}
+
+int i = (new C()).fun();

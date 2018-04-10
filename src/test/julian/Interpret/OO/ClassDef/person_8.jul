@@ -1,0 +1,25 @@
+class Person {
+	
+	String name;
+	
+	Person father;
+
+	Person(string name){
+		this.name = name;
+	}
+
+	void setFather(Person p){
+		father = p;
+	}
+	
+	Person getFather(){
+		return father;
+	}
+	
+}
+
+Person p1 = new Person("Nick");
+Person p2 = new Person("Jason");
+p2.setFather(p1);
+Person f = p2.getFather();
+string s = f.name;

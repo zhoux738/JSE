@@ -1,0 +1,29 @@
+/*
+ * [DOC] C1
+ * This is documentation for C1
+ */
+public class C1 {
+
+	/*
+	 * [DOC] C1
+	 * This is the ctor
+	 */
+	public C1(){
+	
+	}
+
+	/*
+	 * [DOC] C1
+	 * This is a method
+	 */
+	public void fun(){
+	
+	}
+	
+	/*
+	 * not a doc
+	 */
+	
+	/* [DOC] C1: a field */
+	int val;
+}

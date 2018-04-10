@@ -1,0 +1,3 @@
+string[] arr = new string[]{"a", null};
+string s = arr[0];
+string s2 = arr[1];

@@ -1,0 +1,14 @@
+// for-switch test
+int sum = 0;
+for(int i = 0; i<4; i+=1){
+	switch( i ){
+	case 1:
+	  sum += 100;
+	  break;
+	case 2:
+	  sum += 200;
+	  break;
+	default:
+	  sum += 1;
+	}
+}

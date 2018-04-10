@@ -1,0 +1,31 @@
+class Person{
+  Person(string name){
+    this.name = name;
+  }
+  string name;
+}
+
+Person[] src = new Person[]{
+  new Person("Alice"),
+  new Person("Bob"),
+  new Person("Charlie")
+};
+
+Person[] dst1 = new Person[3],
+         dst2 = new Person[3], 
+         dst3 = new Person[3], 
+         dst4 = new Person[3], 
+         dst5 = new Person[3],
+         tgt1 = new Person[3], 
+         tgt2 = new Person[3];
+
+// Copy full or partial
+Array.copy(src, 0, dst1, 0, 3);
+Array.copy(src, 0, dst2, 1, 2);
+Array.copy(src, 1, dst3, 1, 2);
+Array.copy(src, 1, dst4, 0, 2);
+Array.copy(src, 1, dst5, 1, 4);
+
+// No actual copy
+Array.copy(src, 3, tgt1, 0, 3);
+Array.copy(src, 0, tgt2, 3, 3);

@@ -1,0 +1,109 @@
+module System;
+
+/*
+ * The constituent parts of a data time object, in Gregorian calendar.
+ *
+ * Pay particular attention to the index for each part. Both MONTH and DAY are 1-based; HOURS and below are 0-based.
+ */
+enum DateTimePart {
+	/* Year */
+	YEAR,
+	/* Month (1-12) */
+	MONTH,
+	/* Day in a month (1-31) */
+	DAY,
+	/* Hour in a day (0-23) */
+	HOUR,
+	/* Minute in an hour (0-59) */
+	MINUTE,
+	/* Second in a minute (0-59) */
+	SECOND,
+	/* Millisecond in a second (0-999) */
+	MILLISECOND
+}
+
+/*
+ * Represent a data time in Gregorian calendar.
+ */
+[Bridged(apiset="System.DateTime")]
+class DateTime {
+
+	/*
+	 * Get the current local time.
+	 *
+	 * [return] The current local time.
+	 */
+	[Bridged(name="getNow")]
+	hosted static DateTime getNow();
+
+	/*
+	 * Convert the time to a default form (yyyy/MM/dd-hh:mm:ss.SSS).
+	 *
+	 * [return] A string in the format of yyyy/MM/dd-hh:mm:ss.SSS
+	 */
+	public string toString(){
+		return toString0();
+	}
+	
+    [Bridged(name="toString")]
+	private hosted string toString0();
+	
+	/*
+	 * Return the difference in milliseconds (this - another)
+	 *
+	 * [param: another] The other datetime to subtract from this one.
+	 * [return] < 0 if the other datetime is later than this one; = 0 if equal; > 0 if earlier.
+	 */
+	[Bridged(name="diff")]	
+	hosted int diff(DateTime another);
+	
+	/*
+	 * Create a datatime from each specified part.
+	 *
+	 * [param: year] year
+	 * [param: month] month, 1 - 12
+	 * [param: day] day, 1 - 31
+	 * [param: hour] hour, 0 - 23
+	 * [param: minute] minute, 0 - 59
+	 * [param: second] second, 0 - 59
+	 * [param: milli] millisecond, 0 - 999
+	 */
+    [Bridged(name="ctor")]
+	hosted DateTime(int year, int month, int day, int hour, int minute, int second, int milli);
+	
+	/*
+	 * Get the value of a specified part from this datetime. 
+	 *
+	 * [param: part] The part of this datetime to return.
+	 * [return] The value of the required part.
+	 */
+	int getPart(DateTimePart part){
+		switch(part){
+			case YEAR:   return getYear();
+			case MONTH:  return getMonth();
+			case DAY:    return getDay();
+			case HOUR:   return getHour();
+			case MINUTE: return getMinute();
+			case SECOND: return getSecond();
+			case MILLISECOND: 
+			             return getMilli();
+			default:
+				throw new ArgumentException("part");
+		}
+	}
+	
+	/* Get year. */
+	[Bridged] hosted int getYear();
+	/* Get month. Note this value is 1-based, within the range of `[1, 12`]. */
+	[Bridged] hosted int getMonth();
+	/* Get day. Note this value is 1-based, within the range of `[1, 31`]. */
+	[Bridged] hosted int getDay();
+	/* Get hour. */
+	[Bridged] hosted int getHour();
+	/* Get minute. */
+	[Bridged] hosted int getMinute();
+	/* Get second. */
+	[Bridged] hosted int getSecond();
+	/* Get millisecond. */
+	[Bridged] hosted int getMilli();
+}

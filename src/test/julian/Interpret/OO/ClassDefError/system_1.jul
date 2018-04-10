@@ -1,0 +1,3 @@
+import System.Addon;
+
+MyAddon ma = new MyAddon();

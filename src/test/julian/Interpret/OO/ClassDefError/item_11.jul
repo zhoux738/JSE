@@ -1,0 +1,5 @@
+class A {
+	static int a;
+	static int a;
+}
+A a;

@@ -1,0 +1,317 @@
+module System.IO;
+
+import System.Concurrency;
+
+/*
+ * An abstraction of data origin/sink. A stream can support up to three types of operations:
+ * reading, writing and repositioning. The user may query these capabilities before using a
+ * stream, but can also opt to proceed without pre-checking if willing to handle the error.
+ *
+ * An internal pointer is pointing to the position within the stream where the next operation
+ * will start from. If the stream doesn't support repositioning, this pointer will only move 
+ * forward.
+ */
+interface Stream {
+
+	/*
+	 * Read one byte from the stream. 
+	 *
+	 * This will move forward the stream pointer by one. If [canRead()](#canRead) return false,
+	 * this method will throw [IOException](System.IO.IOException).
+	 *
+	 * [return] The byte read from the stream. -1 if reaching the end.
+	 */
+	byte read();
+	
+	/*
+	 * Try to read [desired number](param: count) of bytes from the stream into the given buffer, starting
+	 * from the [offset](param: offset) and not exceeding the buffer's capacity. This will move forward
+	 * the stream pointer by the number of bytes actually read. If the stream hits the end, or the buffer
+	 * runs short of room, before reading the specified count, only those bytes will be read, making the
+	 * returned value less than the count argument.
+	 *
+	 * This method moves forward the stream pointer by the count equal to returned value. If 
+	 * [canRead()](#canRead) return false, this method will throw [IOException](System.IO.IOException).
+	 *
+	 * [param: buffer] The byte buffer to hold the data to be read from the stream.
+	 * [param: offset] The offset on buffer to start filling the data in.
+	 * [param: count] The desired number of bytes to read.
+	 * [return] The count of bytes read from the stream. -1 if reaching the end without any bytes read.
+	 */
+	int read(byte[] buffer, int offset, int count);
+	
+	/*
+	 * Write one byte to the stream. 
+	 *
+	 * This will move forward the stream pointer by one. If [canWrite()](#canWrite) return false, this 
+	 * method will throw [IOException](System.IO.IOException).
+	 *
+	 * [param: data] The single byte to write to this stream.
+	 */
+	void write(byte data);
+	
+	/*
+	 * Try to write [desired number](param: count) of bytes into the stream from the given buffer, starting
+	 * from the [offset](param: offset) and not exceeding the buffer's capacity. This will move forward
+	 * the stream pointer by the number of bytes actually read. If the buffer hits the end before reading
+	 * the specified count, only those bytes will be written, making the returned value less than the count
+	 * argument.
+	 *
+	 * This method moves forward the stream pointer by the count equal to returned value. If
+	 * [canWrite()](#canWrite) return false, this method will throw [IOException](System.IO.IOException).
+	 *
+	 * [param: buffer] The byte buffer which holds the data to write into the stream.
+	 * [param: offset] The offset on the buffer from which the data will be pulled.
+	 * [param: count] The desired number of bytes to write.
+	 * [return] The count of bytes written to the stream. 0 if no bytes have been written.
+	 */
+	void write(byte[] buffer, int offset, int count);
+	
+	/*
+	 * Close the stream. Once the stream is closed it cannot be re-opened.
+	 */
+	void close();
+	
+	/*
+	 * Flush the stream. This will materialize all the data copy which may so far have only occurred
+	 * inside in-memory data buffer, which is usually an implementation detail of the stream. It's best
+	 * practice for the user to call this method between writing calls, as well as at the conclusion
+	 * of data copy logic, to ensure all the data have effectively flown into the sink.
+	 */
+	void flush();
+	
+	/*
+	 * Mark the current position of stream. Calling [reset()](#reset) will move the stream pointer 
+	 * to the marked position.
+	 * 
+	 * If [canMark()](#canMark) return false, this method will throw [IOException](System.IO.IOException).
+	 */
+	void mark();
+	
+	/*
+	 * Move the stream pointer to the position marked by [mark()](#mark).
+	 * 
+	 * If [canMark()](#canMark) return false, this method will throw [IOException](System.IO.IOException).
+	 */
+	void reset();
+	
+	/*
+	 * Instead of reading, try to skip [desired number](param: count) of bytes from the stream. This will 
+	 * move forward the stream pointer by the number of bytes actually read. If the stream hits the end 
+	 * before reading the specified count, only those bytes will be skipped, making the returned value 
+	 * less than the count argument.
+	 *
+	 * This method moves forward the stream pointer by the count equal to returned value. If 
+	 * [canRead()](#canRead) return false, this method will throw [IOException](System.IO.IOException).
+	 *
+	 * [param: count] The desired number of bytes to skip.
+	 * [return] The count of bytes skipped.  -1 if reaching the end without any bytes skipped.
+	 */
+	int skip(int count);
+	
+	/*
+	 * Whether this stream supports reading. This method governs [read](#read), [skip](#skip).
+	 */
+	bool canRead();
+	
+	/*
+	 * Whether this stream supports writing. This method governs [write](#write(byte)) and other write methods.
+	 */
+	bool canWrite();
+	
+	/*
+	 * Whether this stream supports writing. This method governs [mark](#mark), [reset](#reset).
+	 */
+	bool canMark();
+}
+
+/*
+ * The asynchronous stream interface.
+ *
+ * The methods declared in [Stream] are synchronous. This interface provides an alternative. Instead of
+ * blocking the thread and waiting until I/O devices return, the asynchronous methods return a 
+ * [promise](System.Concurrency.Promise) immediately, so that the callsite can continue to execute other
+ * code. The promise wraps a continuation that will be called back upon completion of I/O operation.
+ *
+ * [see: System.Concurrency.Promise]
+ * [see: System.IO.Stream]
+ */
+interface AsyncStream {
+
+	/*
+	 * Read asynchronously from the stream to the buffer, and invokes callback upon completion.
+	 *
+	 * This method tries to read as many bytes as possible from the stream into the given buffer, starting 
+	 * from the [offset](param: offset) and not exceeding the buffer's capacity. This will move forward 
+	 * the stream pointer by the number of bytes actually read. If the stream hits the end, or the buffer 
+	 * runs short of room before reading the specified count, only those bytes will be read, making the
+	 * returned value less than the count argument.
+	 *
+	 * Upon successful completion, the callback function will be invoked. The callback function has 
+	 * signature [func: int, System.Concurrency.PromiseHandle], with first parameter indicating the number
+	 * of bytes successfully read. If the reading failed, this callback won't be called, and the users must
+	 * process that with a continuation on the promise itself.
+	 *
+	 * This method moves forward the stream pointer by the count equal to returned value.
+	 * If [canRead()](#canReadAsync) return false, this method will throw [IOException](System.IO.IOException).
+	 * 
+	 * [param: buffer] The byte buffer to hold the data which is read off of the stream.
+	 * [param: offset] The offset on buffer to start filling the data in.
+	 * [param: callback] The function to be called upon successful reading. The type of this function
+	 * is [func: int, System.Concurrency.PromiseHandle], first parameter indicating the number of bytes 
+	 * successfully read. -1 if reaching the end.
+	 * [return] A promise that can be continued on. An on-success callback will take as argument the result 
+	 * returned from the [param: callback]; an on-erro callback will take as argument the exception faulting
+	 * the IO operation.
+	 */
+	Promise readAsync(byte[] buffer, int offset, Function callback);
+	
+	/*
+	 * Read asynchronously from the stream to the buffer until the end of stream is hit, and invokes callback 
+	 * upon completion for evertime a chunk of data is read, which usually fills the buffer, except for the 
+	 * last time.
+	 *
+	 * This method tries to read as many bytes as possible from the stream into the given buffer. Once
+	 * it reads a chunk of data, it will invoke the callback function, which has 
+	 * signature [func: int, System.Concurrency.PromiseHandle], with first parameter indicating the number
+	 * of bytes successfully read. If the reading failed, this callback won't be called, and the users must
+	 * process that with a continuation on the promise itself.
+	 *
+	 * This method moves forward the stream pointer to the end of stream.
+	 * If [canRead()](#canReadAsync) return false, this method will throw [IOException](System.IO.IOException).
+	 *
+	 * [param: buffer] The byte buffer to hold the data which is read off of the stream.
+	 * [param: callback] The function to be called upon successful reading. The type of this function 
+	 * is [func: int, System.Concurrency.PromiseHandle], first parameter indicating the number of bytes 
+	 * successfully read. -1 if reaching the end. Throughout the promise's life cycle this callback will be
+	 * invoked multiple times.
+	 * [return] A promise that can be continued on. An on-success callback will take as argument the result 
+	 * returned from the [param: callback]; an on-erro callback will take as argument the exception faulting
+	 * the IO operation.
+	 */
+	Promise readAllAsync(byte[] buffer, Function callback);
+	
+	/*
+	 * Whether this stream supports reading. This method governs [readAsync](#readAsync), [readAllAsync](#readAllAsync).
+	 */
+	bool canReadAsync();
+}
+
+/*
+ * A stream class base that implements most interface details. The subclasses need only implement that actual the I/O operation.
+ *
+ * This stream doesn't support marking.
+ */
+public abstract class StreamBase : Stream {
+
+	/* [nodoc] */
+	protected abstract void _write(byte data);
+	/* [nodoc] */
+	protected abstract void _write(byte[] buffer, int offset, int count);
+	/* [nodoc] */
+	protected abstract int _read();
+	/* [nodoc] */
+	protected abstract int _read(byte[] buffer, int offset, int count);
+	/* [nodoc] */
+	protected abstract void _close();
+	/* [nodoc] */
+	protected abstract void _flush();
+	/* [nodoc] */
+	protected abstract int _skip(int count);
+	
+	// These interface methods are not implemented:
+	// public bool canRead()
+	// public bool canWrite()
+
+	/* [inherited] */
+	public int read(){
+		if(canRead()){
+			return _read();
+		} else {
+			throw new IOException("Cannot read from a write-only stream.");
+		}
+	}
+
+	/* [inherited] */	
+	public int read(byte[] buffer, int offset, int count){
+		if(canRead()){
+			if (offset < 0){
+				throw new ArgumentException("offset " + offset + " is not allowed.");
+			}
+			if (buffer == null){
+				throw new ArgumentException("buffer is null.");
+			}
+			
+			return _read(buffer, offset, count);
+		} else {
+			throw new IOException("Cannot read from a write-only stream.");
+		}
+	}
+	
+	/* [inherited] */	
+	public void write(byte data){
+		if(canWrite()){
+			_write(data);
+		} else {
+			throw new IOException("Cannot write to a read-only stream.");
+		}
+	}
+	
+	/* [inherited] */	
+	public void write(byte[] buffer, int offset, int count){
+		if(canWrite()){
+			if (offset < 0){
+				throw new ArgumentException("offset " + offset + " is not allowed.");
+			}
+			if (buffer == null){
+				throw new ArgumentException("buffer is null.");
+			}
+			
+			_write(buffer, offset, count);
+		} else {
+			throw new IOException("Cannot write to a read-only stream.");
+		}
+	}
+	
+	/* [inherited] */	
+	public void close(){
+		_close();
+	}
+	
+	/* [inherited] */
+	public void flush(){
+		if(canWrite()){
+			_flush();
+		} else {
+			throw new IOException("Cannot flush a read-only stream.");
+		}
+	}
+	
+	/* [inherited] */	
+	public int skip(int count){
+		if(canRead()){
+			if (offset < 0){
+				throw new ArgumentException("offset " + offset + " is not allowed.");
+			}
+			
+			_skip(count);
+		} else {
+			throw new IOException("Cannot skip a write-only stream.");
+		}
+	}
+	
+	/* [inherited] */	
+	public void mark(){
+		throw new IOException("The stream doesn't support marking.");
+	}
+	
+	/* [inherited] */	
+	public void reset(){
+		throw new IOException("The stream doesn't support resetting.");
+	}
+	
+	/* [inherited] */
+	public bool canMark(){
+		return false;
+	}
+}

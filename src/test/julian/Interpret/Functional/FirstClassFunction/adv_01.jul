@@ -1,0 +1,40 @@
+import System;
+
+class Delegate {
+	Function f;
+	Delegate(Function f){
+		this.f = f;
+	}
+	void exe(){
+		f();
+	}
+}
+
+class Counter {
+	static int getTotal(int times){
+		int acc = 0;
+		for(int i = 0; i <= times ; i++){
+			acc += i;
+		}
+		return acc;
+	}
+}
+
+int total = 0;
+
+void f1(){
+	total = Counter.getTotal(100);
+}
+
+// Instance method => Global function => Static method
+Delegate del = new Delegate(f1);
+del.exe();
+int r1 = total;
+total = 0;
+
+// Instance method => Instance method => Global function => Static method
+Delegate del2 = new Delegate(del.exe);
+del2.exe();
+int r2 = total;
+
+//Console.println(total);

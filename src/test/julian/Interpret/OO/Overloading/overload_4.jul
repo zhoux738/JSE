@@ -1,0 +1,21 @@
+import System;
+
+class Setting { }
+class Config { }
+
+class Machine {
+	int start(Setting setting, Config config){ return 10; }
+	int start(Config config, Setting setting){ return 20; }
+	int start(Config config){ return 30; }
+	int start(Setting setting){ return 40; }
+}
+
+Machine m = new Machine();
+Setting s = new Setting();
+Config c = new Config();
+
+int speed4 = m.start(s);
+int speed3 = m.start(c);
+int speed2 = m.start(c,s);
+int speed1 = m.start(s,c);
+

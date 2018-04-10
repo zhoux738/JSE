@@ -1,0 +1,31 @@
+// float - other type
+float f1 = 3;
+float f2 = 4;
+
+int qi = f1 / f2;
+float qf = f1 / f2;
+// Console.println(qi + " " + qf);
+
+int s11 = f1 + 2.5;
+int s12 = 2.5 + f1;
+float s21 = f1 + 2.5;
+float s22 = 2.5 + f1;
+// Console.println(s11 + " " + s12 + " " + s21 + " " + s22);
+
+int d11 = f1 - 2.5;
+int d12 = 2.5 - f1;
+float d21 = f1 - 2.5;
+float d22 = 2.5 - f1;
+// Console.println(d11 + " " + d12 + " " + d21 + " " + d22);
+
+int p11 = f1 * 2.5;
+int p12 = 2.5 * f1;
+float p21 = f1 * 2.5;
+float p22 = 2.5 * f1;
+// Console.println(p11 + " " + p12 + " " + p21 + " " + p22);
+
+int q11 = f1 / 2.5;
+int q12 = 2.5 / f1;
+float q21 = f1 / 2.5;
+float q22 = 2.5 / f1;
+// Console.println(q11 + " " + q12 + " " + q21 + " " + q22);

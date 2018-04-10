@@ -1,0 +1,41 @@
+import ModuleSys.Banking.Bank;
+import ModuleSys.Banking.Account;
+import ModuleSys.Banking.Commons;
+
+string res1;
+string res2;
+
+// Initialize banks
+Bank bank1 = new Bank("CITI");
+Branch branch1 = new Branch(bank1, "Portland");
+
+Bank bank2 = new Bank("HSBC");
+Branch branch2 = new Branch(bank2, "Liverpool");
+
+// Initialize customers
+Customer me = new Customer("Me", 1234567);
+Customer her = new Customer("Her", 7654321);
+
+// Customer's activities
+// 1) Open an account
+Account[] accs1 = branch1.open(me);
+Account myChecking = accs1[0];
+
+Account[] accs2 = branch2.open(her);
+Account herChecking = accs2[0];
+
+// 2) Deposit, transfer and query
+branch1.deposit(myChecking, 1000);
+branch1.transfer(myChecking, herChecking, 350);
+
+Message m1 = branch1.query(myChecking);
+if(m1.isSucc()){
+	Console.println(m1.message);	
+	res1 = m1.message;
+}
+
+Message m2 = branch2.query(herChecking);
+if(m2.isSucc()){
+	Console.println(m2.message);	
+	res2 = m2.message;
+}

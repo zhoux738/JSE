@@ -1,0 +1,35 @@
+class Bag {
+	char c;
+	int i;
+	string s;
+	byte b;
+	bool tf;
+	Bag bag;
+}
+
+Bag m(
+	char c,
+	int i,
+	string s,
+	byte b,
+	bool tf,
+	Bag bg){
+	
+	Bag bag = new Bag();
+	bag.c = c;
+	bag.i = i;
+	bag.s = s;
+	bag.b = b;
+	bag.tf = tf;
+	bag.bag = bg;
+	
+	return bag;
+}
+
+Bag bag = m.invoke();
+char c = bag.c;
+int i = bag.i;
+string s = bag.s;
+byte b = bag.b;
+bool tf = bag.tf;
+Bag bg = bag.bag;

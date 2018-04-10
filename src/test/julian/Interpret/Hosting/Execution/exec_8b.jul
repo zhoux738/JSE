@@ -1,0 +1,14 @@
+[Mapped(className="info.jultest.test.hosted.classes.NodeBox")]
+class NodeBox {
+
+}
+
+[Mapped(className="info.jultest.test.hosted.classes.Node")]
+class Node {
+
+}
+
+NodeBox nb = new NodeBox();
+
+Node o = nb.getNode(7);
+int v = o.getValue();

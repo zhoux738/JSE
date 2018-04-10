@@ -1,0 +1,15 @@
+// Extending from same interface via different chains
+
+interface IG {
+	void g();
+}
+
+interface IP : IG {
+	void p();
+}
+
+interface I : IP, IG {
+	void i();
+}
+
+I i;

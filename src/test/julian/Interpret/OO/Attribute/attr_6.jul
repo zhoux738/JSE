@@ -1,0 +1,17 @@
+// attribute without fields
+attribute Unchecked {
+	
+}
+
+[Unchecked()]
+class MyClass1 {
+
+}
+
+[Unchecked]
+class MyClass2 {
+
+}
+
+MyClass1 mc1;
+MyClass2 mc2;

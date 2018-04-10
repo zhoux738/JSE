@@ -1,0 +1,39 @@
+import System;
+import System.IO;
+import System.Concurrency;
+
+// Data flow: file1 => subproc1 => subproc2 => file2
+
+// Args preset from unit test
+//   path - redirect stdin of subproc1 from this file
+//   cp - the classpath
+//   ofile - output result of subproc2 to this file
+
+// subproc1: read from file, write to pipe
+Stream fstream = new File(path).getReadStream();
+ProcessConfig pc = new ProcessConfig();
+pc.setInputStream(fstream);
+Process p1 = new Process(
+	"java", 
+	new String[]{
+		"-classpath", cp, "info.jultest.apps.Echo"
+	}, 
+	pc);
+p1.start();
+
+// subproc2: read from subproc1's output, write to another target
+Stream s1 = p1.getReadStream();
+ProcessConfig pc2 = new ProcessConfig();
+pc2.setInputStream(s1);
+pc2.setInheritedIO(true);
+Process p2 = new Process(
+	"java", 
+	new String[]{
+		"-classpath", cp, "info.jultest.apps.Echo", "-outputfile", ofile
+	}, 
+	pc2);
+p2.start();
+
+int res1 = p1.wait();
+int res2 = p2.wait();
+// Console.println(res);

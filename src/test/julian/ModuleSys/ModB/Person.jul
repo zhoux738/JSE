@@ -1,0 +1,5 @@
+module ModuleSys.ModB;
+
+class Person {
+	static string Type = "HUMAN";
+}

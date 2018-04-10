@@ -1,0 +1,92 @@
+<project name="CI-Test" default="run-test" basedir=".">
+
+  <description>
+    A CI test automation to run integration tests inside OS containers. 
+  </description>
+  
+  <property name="src" location="../src"/>
+  <property name="target" location="../target"/>
+  <property name="testdir" location="${target}/ci-test"/>
+
+  <!-- Since the end goal is to call Docker, we must prepare everything needed by Docker  
+       image inside a single diretory, referred to as Docker context directory (testdir), 
+       immediately under which the Dockerfile would reside. -->
+  <target name="prepare-context-dir" depends=""
+          description="Prepare context directory for building Docker image">
+    <!--<echo message="Hello, world"/>-->
+    
+    <!-- 1. Create test context directory -->
+    <mkdir dir="${testdir}"/>
+    
+    <!-- 2. Load properties -->
+    <loadproperties srcFile="../build.properties"/>
+    
+    <!-- 3. Create Dockerfile from template -->
+    <!-- The assumption here is that the same build.properties file was used during maven-driven build -->
+    <copy file="Dockerfile.template" tofile="${testdir}/Dockerfile">
+      <filterset>
+        <filter token="VERSION" value="${jse.version}"/>
+      </filterset>
+    </copy>
+    
+    <!-- 4. Copy test files -->
+    <!-- (1) module files -->
+    <copy todir="${testdir}">
+      <fileset dir="${src}/test/julian/">
+        <include name="ModuleSys/**"/>
+      </fileset>
+    </copy>
+    
+    <!-- (2) test script files -->
+    <copy todir="${testdir}">
+      <fileset dir="${src}/test/julian/Interpret">
+        <include name="Application/**"/>
+      </fileset>
+    </copy>
+        
+    <!-- (3) test manifest and driver -->
+    <copy file="test-manifest.json" tofile="${testdir}/test-manifest.json" />
+    <copy file="run-ci.sh" tofile="${testdir}/run-ci.sh">
+      <filterset>
+        <filter token="VERSION" value="${jse.version}"/>
+      </filterset>
+    </copy>
+    
+    <!-- (4) binaries -->
+    <copy file="${target}/JSE-${jse.version}.jar" todir="${testdir}" />
+    <copy file="${target}/CI-${jse.version}.jar" todir="${testdir}" />
+    
+  </target>
+  
+  <target name="build-image" depends="prepare-context-dir"
+          description="Build Docker image">
+    
+    <!-- docker build . -t jse-ci -->
+    <exec executable="docker" dir="${testdir}" failonerror="true">
+      <arg value="build"/>
+      <arg value="."/>
+      <arg value="-t"/>
+      <arg value="jse-ci"/>
+	</exec>
+	
+  </target>
+  
+  <target name="run-test" depends="build-image"
+          description="Run CI test">
+
+    <!-- docker run jse-ci -->
+    <exec executable="docker" dir="${testdir}" failonerror="true">
+      <arg value="run"/>
+      <arg value="--rm"/> <!-- Remove the container afterwards -->
+      <arg value="jse-ci"/>
+	</exec>
+	
+  </target>
+
+  <target name="clean"
+          description="Clean up the test context directory">
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${testdir}"/>
+  </target>
+  
+</project>

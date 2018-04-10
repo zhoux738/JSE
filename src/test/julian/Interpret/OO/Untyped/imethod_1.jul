@@ -1,0 +1,13 @@
+class C {
+	var z;
+	var fun(var v){
+		return v;
+	}
+}
+
+C c = new C();
+int a = c.fun(3);
+string b = c.fun("xyz");
+
+c.z = 5;
+int z = c.z;

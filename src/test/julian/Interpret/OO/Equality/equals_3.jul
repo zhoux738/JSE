@@ -1,0 +1,47 @@
+class Person {
+	
+	protected string name;
+	
+	Person(string name){
+		this.name = name;
+	}
+	
+	public bool equals(var another){
+		if (another is Person){
+			Person p2 = (Person) another;
+			return this.name == p2.name;
+		}
+		
+		return false;
+	}
+}
+
+class Employee : Person {
+
+	private string company;
+	
+	Employee(string company, string name) : super(name) {
+		this.company = company;
+	}
+	
+	public bool equals(var another){
+		if (another is Employee){
+			Employee e2 = (Employee) another;
+			
+			return this.company == e2.company && super.equals(another);
+		}
+		
+		return false;
+	}
+	
+}
+
+Employee pa1 = new Employee("Advanta Inc.", "Joe");
+Employee pa2 = new Employee("Advanta Inc.", "Marvin");
+Employee pa2dup = new Employee("Advanta Inc.", "Marvin");
+Employee pb1 = new Employee("Bluefin & Co.", "Joe");
+
+bool res1 = pa1.equals(pa2); // false
+bool res2 = pa1.equals(pb1); // false
+bool res3 = pa2.equals(pa2dup); // true -- equal throughout the inheritance chain
+bool res4 = ((Person)pa1).equals(pb1); // false -- Casting doesn't change the virtual method to be called

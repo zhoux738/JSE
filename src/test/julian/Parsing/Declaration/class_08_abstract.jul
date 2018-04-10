@@ -1,0 +1,11 @@
+class C1 {
+
+	public abstract string[] m1();
+	
+	protected abstract int[][] m2(string s);
+	
+	public hosted C1 m3();
+	
+	protected hosted C1[] m4(string s);
+
+}

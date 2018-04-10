@@ -1,0 +1,24 @@
+class Person {
+	
+	string name;
+	
+	Person(string name){
+		this.name = name;
+	}
+	
+}
+
+class Car {
+	
+	string brand;
+	
+	Car(string brand){
+		this.brand = brand;
+	}
+	
+}
+
+Person p1 = new Person("Rudolf");
+Car c1 = new Car("Toyota");
+
+bool res1 = p1 == c1;

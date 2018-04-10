@@ -1,0 +1,28 @@
+#* Parameters:
+   tv_module (string: can be "")
+   tv_name (string)
+   tv_prev_name (string)
+   tv_next_name (string)
+*#
+            <div id="tut-nav-btn-grp">
+                <div style="height: 2em"/></div>
+                <div style="left: 10%; width: 70%; display: block; font-size: 15px;">
+#if( $tv_prev_name != $null )
+                      <a href="${tv_prev_name}.html">
+                        <svg viewBox="0 0 32 32" style="width: 5%; height: 1em;">
+                          <use xlink:href="/img/icons/icons.svg#ic-caret-left"></use>
+                        </svg>
+                        PREV
+                      </a>
+#end
+#if( $tv_next_name != $null )
+                      <a href="${tv_next_name}.html">
+                        <svg viewBox="0 0 32 32" style="width: 5%; height: 1em;">
+                          <use xlink:href="/img/icons/icons.svg#ic-caret-right"></use>
+                        </svg>
+                        NEXT
+                      </a>
+#end
+                </div>
+                <div style="height: 3em"/></div>
+            </div>

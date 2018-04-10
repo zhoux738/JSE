@@ -1,0 +1,6 @@
+//LambdaBlockTests
+
+Function f = () => {};
+f();
+
+int i = 10;

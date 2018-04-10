@@ -1,0 +1,10 @@
+// An interface cannot extend class
+class C {
+
+}
+
+interface I : C {
+
+}
+
+I i;

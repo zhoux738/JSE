@@ -1,0 +1,20 @@
+//LambdaEnvTests
+
+class Person {
+
+	string name;
+	
+	Function modName(){
+		return (string s) => { name = name + s; };
+	}
+	
+}
+
+Person p = new Person();
+p.name = "Luke";
+
+Function f = p.modName();
+
+f("2");
+
+string a = p.name;

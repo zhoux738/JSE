@@ -1,0 +1,11 @@
+import System.Concurrency;
+
+Promise promise = Promise.start(()=> {
+	return 5;
+}).then((res) => {
+	return res+1;
+}).then((res) => {
+	return res*2;
+});
+
+int result = promise.getResult(true);

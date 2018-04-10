@@ -1,0 +1,17 @@
+bool b0, b1, b2, b3;
+try {
+	var v = Integer.a;
+} catch (System.UnknownMemberException se){
+	b0 = true;
+	b1 = se.getMessage().contains("Integer");
+}
+try {
+	var v = Void.a;
+} catch (System.UnknownMemberException se){
+	b2 = true;
+}
+try {
+	var v = Any.a;
+} catch (System.UnknownMemberException se){
+	b3 = true;
+}

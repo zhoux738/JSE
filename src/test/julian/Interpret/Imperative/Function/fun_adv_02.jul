@@ -1,0 +1,11 @@
+int i = 9;
+string s = "unchanged";
+int i2 = 0;
+string s2 = "";
+
+void fun(int i, string s){
+	i2 = i = 7;
+	s2 = s = "changed";
+}
+
+fun(i, s);

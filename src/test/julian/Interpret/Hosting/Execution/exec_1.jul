@@ -1,0 +1,7 @@
+[Mapped(className="info.jultest.test.hosted.classes.MyClass1")]
+class MyClass1 {
+
+}
+
+MyClass1 mc = new MyClass1();
+bool succ = mc != null;

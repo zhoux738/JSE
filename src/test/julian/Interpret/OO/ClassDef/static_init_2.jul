@@ -1,0 +1,21 @@
+// A sub class must be loaded after its parent.
+class A1 : A2 {
+	static string Val = A2.Val + "A1";
+}
+
+class A2 : A3 {
+	static string Val = A3.Val + "A2";
+}
+
+class A3 : A4 {
+	static string Val = A4.Val + "A3";
+}
+
+class A4 {
+	static string Val = "A4";
+}
+
+string v1 = A1.Val;
+string v2 = A2.Val;
+string v3 = A3.Val;
+string v4 = A4.Val;

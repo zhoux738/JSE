@@ -1,0 +1,11 @@
+enum Planet {
+
+	Venus,
+	
+	Earth,
+	
+	Mars
+	
+}
+
+Planet.Venus = Planet.Mars;

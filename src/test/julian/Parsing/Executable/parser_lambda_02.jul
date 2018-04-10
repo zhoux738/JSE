@@ -1,0 +1,6 @@
+return a => x;
+
+return (a) => x + y;
+
+return (var a, int b, c) => { a + b * c;};
+

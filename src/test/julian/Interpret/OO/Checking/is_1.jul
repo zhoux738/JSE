@@ -1,0 +1,5 @@
+class Car {
+}
+
+Car c = new Car();
+bool cr = c is Car;

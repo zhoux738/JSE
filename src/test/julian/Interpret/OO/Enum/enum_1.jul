@@ -1,0 +1,13 @@
+enum Planet {
+
+	Venus,
+	
+	Earth,
+	
+	Mars
+	
+}
+
+Planet p;
+string literal = p.literal;
+int ordinal = p.ordinal;

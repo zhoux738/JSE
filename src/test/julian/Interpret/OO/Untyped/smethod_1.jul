@@ -1,0 +1,12 @@
+class C {
+	static var z;
+	static var fun(var v){
+		return v;
+	}
+}
+
+int a = C.fun(3);
+string b = C.fun("xyz");
+
+C.z = 5;
+int z = C.z;

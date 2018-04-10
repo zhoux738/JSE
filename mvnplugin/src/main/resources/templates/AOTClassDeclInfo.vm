@@ -1,0 +1,80 @@
+#* This template is only rendered within AOTRawScriptInfo.vm
+  
+   Parameters:
+    tv_parent_types
+    tv_jul_full_class_name
+    tv_jv_class_name
+    tv_jul_class_name
+    tv_class_subtype
+    tv_is_final
+    tv_is_const
+    tv_is_hosted
+    tv_is_abstract
+    tv_is_static
+    tv_accessibility *#
+    class $tv_jv_class_name extends LazyClassDeclInfo {
+
+        public $tv_jv_class_name(RawScriptInfo minfo) {
+            super(minfo);
+            
+#foreach( $parent_type in $tv_parent_types )
+            m_parentNames.add(ParsedTypeName.makeFromFullName("$parent_type.FQNameInString"));
+#end
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("$tv_jul_full_class_name");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "$tv_jul_class_name";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.$tv_class_subtype;
+        }
+        
+        public boolean isFinal() {
+            return $tv_is_final;
+        }
+        
+        public boolean isConst() {
+            return $tv_is_const;
+        }
+        
+        public boolean isHosted() {
+            return $tv_is_hosted;
+        }
+        
+        public boolean isAbstract() {
+            return $tv_is_abstract;
+        }
+
+        public boolean isStatic() {
+            return $tv_is_static;
+        }
+
+        public Accessibility getAccessibility() {
+    #if( $tv_accessibility != $null )
+        return Accessibility.$tv_accessibility.Name;
+    #else
+        return null;
+    #end
+    }
+        
+        public boolean isAccessibilitySet(){
+    #if( $tv_accessibility != $null )
+        return true;
+    #else
+        return false;
+    #end
+    }
+
+    }

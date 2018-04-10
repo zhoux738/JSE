@@ -1,0 +1,13 @@
+// Basic switch tests
+string s = "None";
+int case1 = 1, case2 = 2, a = case2;
+switch( a ){
+case case1:
+  s = "One";
+  break;
+case case2:
+  s = "Two";
+  break;
+default:
+  s = "Unknown";
+}

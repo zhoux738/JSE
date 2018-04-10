@@ -1,0 +1,11 @@
+//FirstClassFunctionTests
+
+void f(){
+	throw new Exception();
+}
+
+void g(Function fun){
+	fun();
+}
+
+g(f);

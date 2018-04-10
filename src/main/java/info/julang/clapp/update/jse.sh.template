@@ -1,0 +1,79 @@
+#!/bin/bash
+
+wrapperFile=${BASH_SOURCE[0]}
+currdir=`dirname $wrapperFile`
+libdir=$currdir/lib
+version=@Version@
+jarFile=$libdir/JSE-${version}.jar
+
+for i in "$@"
+do
+case $i in
+  -u|--update)
+  update=y
+  ;;
+  *) # ignore other options 
+  ;;
+esac
+done
+
+if [ x"${update}" = x"y" ]
+then
+  # read update server address
+  propfile="JSE.properties"
+  updServer=
+  if [ -f "$propfile" ]
+  then
+    while IFS='=' read -r key value
+    do
+    case $key in
+      UpdateServer)
+      updServer=$value
+      ;;
+      *) # ignore other options 
+      ;;
+    esac
+    done <<< `grep -v '^ *;' $propfile` 
+  else
+    echo "${propfile} is not found. Cannot update binaries."
+    exit 1
+  fi
+  
+  # update against the server
+  if [[ -z ${updServer// } ]]
+  then
+    echo "Update server is set to empty. Cannot update binaries."
+    exit 1
+  fi
+  
+  java -jar $jarFile -so-1 $updServer
+  
+  if [[ $? -ne 0 ]]
+  then
+    echo "No upgrade performed."
+    exit 0
+  else
+    # remove previous backup files
+	rm $libdir/*.BAK 2>nul
+	
+	# back up current files
+	mv $jarFile ${libdir}/JSE-${version}.BAK
+	cp $wrapperFile ${libdir}/jse.sh.BAK
+	
+	# rename the temp jar file to jar file
+	for f in $libdir/JSE-*.TEMP
+	do
+	 mv $f ${f/.TEMP/.jar}
+	done
+
+	# replace the script file
+	rm ${wrapperFile}
+	mv $libdir/jse.sh.TEMP ${wrapperFile}
+	
+    echo "Binaries updated."
+  fi
+else
+  java -jar $jarFile $@
+fi
+
+exit 0

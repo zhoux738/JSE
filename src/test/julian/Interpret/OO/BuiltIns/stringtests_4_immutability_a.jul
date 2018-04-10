@@ -1,0 +1,20 @@
+// String immutability A
+
+// 1) assignment
+string s1 = "abc";
+string s2 = s1;
+s1 = "xyz";
+
+// 2) argument and return value
+string s3 = "abc";
+string s4 = "";
+
+string fun1(string s){
+	s4 = s;
+	s = "xyz";
+	return s4;
+}
+
+string s5 = fun1(s3);
+string s6 = s4;
+s4 = "uvw";

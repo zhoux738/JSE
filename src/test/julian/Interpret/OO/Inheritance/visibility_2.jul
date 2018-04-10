@@ -1,0 +1,19 @@
+// override a method defined by parent class
+class Person {
+	private string getDesc(){
+		return "Person";
+	}
+	
+	public string getDesc2(){
+		return getDesc();
+	}
+}
+
+class Employee : Person {
+	private string getDesc(){
+		return "Employee";
+	}
+}
+
+Person e = new Employee();
+string s = e.getDesc2();

@@ -1,0 +1,9 @@
+class C {
+
+	void fun(int C){
+		return 5;
+	}
+
+}
+
+C c;

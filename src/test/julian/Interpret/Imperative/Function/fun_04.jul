@@ -1,0 +1,13 @@
+int a = 0;
+
+void fun(int i){
+	a = a + i;
+}
+
+fun(3);
+
+//dprint(a); // output: 3
+
+fun(5);
+
+//dprint(a); // output: 8

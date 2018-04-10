@@ -1,0 +1,6 @@
+//LambdaExprTests
+
+Function f = (int x) => return x + 5;
+int a = f(3);
+
+//dprint(a); // output: 8

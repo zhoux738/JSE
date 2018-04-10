@@ -1,0 +1,20 @@
+module ModuleSys.IntA;
+
+import ModuleSys.IntB;
+
+class CA {
+
+	int fun(int val){
+		CB cb = new CB();
+		return cb.forbid(val); // not same module - should fail
+	}
+
+}
+
+class CA2 : CB {
+
+	int fun(int val){
+		return forbid(val); // not same module - should fail
+	}
+
+}

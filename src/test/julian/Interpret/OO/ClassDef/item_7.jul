@@ -1,0 +1,20 @@
+// The loading sequence:
+// 1. Start Item
+// 2. Start ConcreteItem
+// 3. Finish ConcreteItem
+// 4. Finish Item
+
+public class Item {
+	ConcreteItem ci;
+	int i = 5;
+}
+
+public class ConcreteItem : Item {
+	ConcreteItem() : super(){}
+	string s = "a";
+}
+
+int i = (new Item()).i;
+var ci = new ConcreteItem();
+string s = ci.s;
+int j = ci.i;

@@ -1,0 +1,54 @@
+void sort(int[] numbers)
+{
+    sort0(numbers, 0, numbers.length - 1);
+}
+
+void sort0(int[] numbers, int left, int right)
+{
+    if (left < right)
+    {
+        int middle = numbers[(left + right) / 2];
+        int i = left - 1;
+        int j = right + 1;
+        while (true)
+        {
+            while (numbers[i++] < middle) ;
+
+            while (numbers[j--] > middle) ;
+
+			
+            if (i >= j)
+                break;
+			
+            swap(numbers, i, j);
+        }
+
+        sort0(numbers, left, i - 1);
+        sort0(numbers, j + 1, right);
+    }
+}
+
+void swap(int[] numbers, int i, int j)
+{
+    int number = numbers[i];
+    numbers[i] = numbers[j];
+    numbers[j] = number;
+}
+
+int[] a = new int[]{ 3, 5, 3, 6, 4, 7, 5, 7, 4 };
+sort(a);
+
+/**
+string arr2str(int[] a){
+	string s = "[";
+	for(int i=0; i<a.length; i++){
+		s += a[i];
+		if(i+1<a.length){
+			s += ", ";
+		}
+	}
+	s += "]";
+	return s;
+}
+dprint(arr2str(a));
+//*/

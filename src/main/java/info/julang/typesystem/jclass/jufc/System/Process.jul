@@ -1,0 +1,468 @@
+module System;
+
+import System.Collection;
+import System.IO;
+
+/*
+ * The configuration set to use when spawning a process.
+ *
+ * The configuration object must be fully set before it's used to start a process. Once the process is started
+ * any new changes to this object won't affect the behavior of the running process. 
+ */
+class ProcessConfig {
+
+	private string dir;
+	private bool shouldInherit;
+	private Map args;
+	private Stream stdin;
+	private Stream stdout;
+	private Stream stderr;
+	
+	/*
+	 * Set working directory of the process. If not set, the process will use default working directory, which
+	 * is determined by the underlying OS. The working directory is used as the base directory for file system
+	 * operations using a relative path.
+	 *
+	 * [param: dir] The working directory for the process.
+	 */ 
+	public void setWorkingDir(string dir){
+		this.dir = dir;
+	}
+	
+	/*
+	 * Get working directory of the process.
+	 *
+	 * [return] The working directory for the process. Will be null if never set.
+	 */ 
+	public string getWorkingDir(){
+		return this.dir;
+	}
+	
+	/*
+	 * Set if the process will inherit the I/O channels from the parent process.
+	 *
+	 * If inheriting, the process simply directs its standard I/O to the corresponding 
+	 * channels used by the parent process. However, this behavior can be overwritten by
+	 * explicitly setting a stream to a particular channel, such as [setInputStream](#setInputStream).
+	 *
+	 * If intending to redirect I/O from the current process, i.e. programmatically
+	 * write to the process's input and read from the output, must not set this to true.
+	 * 
+	 * [param: shouldInherit] if true, the subprocess will inherit the I/O channels from the parent process.  
+	 */ 
+	public void setInheritedIO(bool shouldInherit){
+		this.shouldInherit = shouldInherit;
+	}
+	
+	/*
+	 * Get if the process is inheriting the I/O channels from the parent process.
+	 *
+	 * [return] false if not inheriting.
+	 */ 
+	public bool isInheritedIO(){
+		return this.shouldInherit;
+	}
+	
+	/*
+	 * Add an environment variable to the process.
+	 *
+	 * [param: key] The variable's name.
+	 * [param: value] The variable's value.
+	 */
+	public void addEnvArg(string key, string value){
+		if (args == null) {
+			args = new Map();
+		}
+		
+		args[key] = value;
+	}
+	
+	/*
+	 * Get a [map](type: Map) which contains all environment variables, with their names as the key.
+	 */
+	public Map getEnvArgs(){
+		return this.args;
+	}
+	
+	/*
+	 * Set an input stream to be used as the standard input from within the process.
+	 *
+	 * Setting this value will overwrite the inherited standard input stream by setting [inherited IO](#setInheritedIO).
+	 *
+	 * [param: stream] A stream to send input to the process. The stream must be readable. 
+	 */
+	public void setInputStream(Stream stream){
+		stdin = stream;
+	}
+	
+	/*
+	 * Set an output stream to be used as the standard output from within the process.
+	 *
+	 * Setting this value will overwrite the inherited standard output stream by setting [inherited IO](#setInheritedIO).
+	 *
+	 * [param: stream] A stream to take output out of the process. The stream must be writable. 
+	 */
+	public void setOutputStream(Stream stream){
+		stdout = stream;
+	}
+	
+	/*
+	 * Set an output stream to be used as the standard error from within the process.
+	 *
+	 * Setting this value will overwrite the inherited standard error stream by setting [inherited IO](#setInheritedIO).
+	 *
+	 * [param: stream] A stream to take error output out of the process. The stream must be writable. 
+	 */
+	public void setErrorStream(Stream stream){
+		stderr = stream;
+	}
+	
+	/*
+	 * Get the input stream which was set by [setInputStream()](#setInputStream).
+	 *
+	 * [return] Null if not set.
+	 */
+	public Stream getInputStream(){
+		return stdin;
+	}
+	
+	/*
+	 * Get the output stream which was set by [setOutputStream()](#setOutputStream).
+	 *
+	 * [return] Null if not set.
+	 */
+	public Stream getOutputStream(){
+		return stdout;
+	}
+	
+	/*
+	 * Get the output stream which was set by [setErrorStream()](#setErrorStream).
+	 *
+	 * [return] Null if not set.
+	 */
+	public Stream getErrorStream(){
+		return stderr;
+	}
+}
+
+/*
+ * The state of a process.
+ *
+ * A process can only go through these states in a single direction. Once a process is terminated it cannot be started again.
+ */
+enum ProcessState {
+
+	/* The process is not started. */
+	NOT_STARTED,
+	/* The process is in progress. */
+	IN_PROGRESS,
+	/* The process is terminated. It might have run to completion or aborted. */
+	TERMINATED
+}
+
+/*
+ * The class to represent an OS process.
+ */
+[Bridged(apiset="System.Process")]
+class Process {
+
+	private static ProcessConfig DUMMY_CONFIG = new ProcessConfig();
+
+	private ProcessState state;
+	private string name;
+	private string[] args;
+	
+	private PipeStream wirteStream;
+	private PipeStream readStream;
+	private PipeStream errorStream;
+
+	/*
+	 * A facade to create a process with default settings.
+	 *
+	 * [param: name] The (path and) name of executable. A simple name will be resolved to an 
+	 * executable against the executable paths of OS (for example, the PATH environment 
+	 * variable on Windows and Linux). A path-like name will be resolved against the file system.
+	 * [param: args] The argument array to pass along to the process. Each element will be treated
+	 * as a single argument, even if it contains space characters.
+	 * [return] An instance representing the process, which has yet to start. One must call [start](#start)
+	 * to kick it off.
+	 */
+	public static Process create(string name, string[] args){
+		return new Process(name, args, null);
+	}
+
+	/*
+	 * Create a process with specific settings.
+	 *
+	 * [param: name] The (path and) name of executable. A simple name will be resolved to an 
+	 * executable against the executable paths of OS (for example, the PATH environment 
+	 * variable on Windows and Linux). A path-like name will be resolved against the file system.
+	 * [param: args] The argument array to pass along to the process. Each element will be treated
+	 * as a single argument, even if it contains space characters.
+	 * [param: config] The [configuration](type: ProcessConfig) object for this process.
+	 */
+	public Process(string name, string[] args, ProcessConfig config){
+		this.name = name;
+		this.args = args;
+		this.state = ProcessState.NOT_STARTED;
+		
+		if (config == null) {
+			config = Process.DUMMY_CONFIG;
+		}
+		
+		bool inheritedIO = config.isInheritedIO();
+		Stream i = config.getInputStream();
+		Stream o = config.getOutputStream();
+		Stream e = config.getErrorStream();
+				
+		_init(name, args, config.getEnvArgs(), config.getWorkingDir(), inheritedIO, i, o, e);
+		
+		if (!inheritedIO) {
+			if (i == null) {
+				wirteStream = new PipeStream(this, 0);
+			}
+			if (o == null) {
+				readStream = new PipeStream(this, 1);
+			}
+			if (e == null) {
+				errorStream = new PipeStream(this, 2);
+			}		
+		}
+	}
+	
+	/*
+	 * Get the Process object for the currently running process.
+	 * 
+	 * Since the returned object represents the current process (a JVM instance on which Julian engine is running), 
+	 * most methods that have modifying behavior are not allowed to call.
+	 *
+	 * [return] An instance representing the current process.
+	 */
+	[Bridged(name="getCurrent")]
+	hosted static Process getCurrent();
+
+	/*
+	 * Get the name of this process.
+	 *
+	 * [return] The exactly same name set by the constructor.
+	 */
+	string getName(){
+		return name;
+	}
+	
+	/*
+	 * Get the arguments of this process.
+	 *
+	 * [return] The exactly same argumenst set by the constructor.
+	 */
+	string[] getArgs(){
+		return args;
+	}
+	
+	/*
+	 * Get the environment variable. This method will only work against the current process object,
+	 * otherwise it throws.
+	 *
+	 * [param: name] The environment variable's name
+	 * [return] The environment variable with the specified name. Null if not existing.
+	 */
+	string getEnvArg(string name){
+		return _envarg(name);
+	}
+	
+	/*
+	 * Get a stream to write to this process. This stream is backed by an OS pipeline. Note, however,
+	 * if the process was started with inherited IO, or an explicitly set InputStream, then one cannot
+	 * write to it programmatically and thus this method returns null.
+	 *
+	 * [return] A stream to write to this process. Null if [getInheritedIO](ProcessConfig#getInheritedIO) 
+	 * is true or [getInputStream](ProcessConfig#getInputStream) is not null.
+	 */
+	Stream getWriteStream(){
+		return wirteStream;
+	}
+
+	/*
+	 * Get a stream to read from this process. This stream is backed by an OS pipeline. Note, however,
+	 * if the process was started with inherited IO, or an explicitly set OutputStream, then one cannot
+	 * read from it programmatically and thus this method returns null.
+	 *
+	 * [return] A stream to read from this process. Null if [getInheritedIO](ProcessConfig#getInheritedIO) 
+	 * is true or [getOutputStream](ProcessConfig#getOutputStream) is not null.
+	 */	
+	Stream getReadStream(){
+		return readStream;
+	}
+
+	/*
+	 * Get a stream to read from this process's standard error. This stream is backed by an OS pipeline. 
+	 * Note, however, if the process was started with inherited IO, or an explicitly set ErrorStream, then 
+	 * one cannot read from it programmatically and thus this method returns null.
+	 *
+	 * [return] A stream to read from this process's standard error. Null if [getInheritedIO](ProcessConfig#getInheritedIO) 
+	 * is true or [getErrorStream](ProcessConfig#getErrorStream) is not null.
+	 */		
+	Stream getErrorStream(){
+		return errorStream;
+	}
+	
+	/*
+	 * Start the process. A process can only be started once.
+	 *
+	 * [throws: IllegalStateException] if the process is not in [a state to start](ProcessState#NOT_STARTED).
+	 */
+	void start(){
+		// Inside the platform method we will apply more stringent concurrency-aware checks.
+		switch(state) {
+		case NOT_STARTED:
+			state = ProcessState.IN_PROGRESS;
+			_start();
+			break;
+		case IN_PROGRESS:
+			throw new IllegalStateException("Process is in progress.");
+		case TERMINATED:
+			throw new IllegalStateException("Process is terminated.");
+		}
+	}
+	
+	/*
+	 * Wait for the process to finish.
+	 *
+	 * [return] The exit code of the process upon its completion.
+	 */
+	int wait(){
+		switch(state) {
+		case NOT_STARTED:
+			throw new IllegalStateException("Process has not started.");
+		case IN_PROGRESS:
+			try {
+				return _wait();
+			} finally {
+				state = ProcessState.TERMINATED;
+			}
+		case TERMINATED:
+			return getExitCode();
+		}
+	}
+	
+	/*
+	 * Wait, for only specified milliseconds, for the process to finish.
+	 *
+	 * [param: millisec] The duration, in millisec, to wait for the process to finish.
+	 * [return] True if the process ran to the end within the specified waiting duration.
+	 */
+	bool wait(int millisec){
+		if(millisec <= 0){
+			return state == ProcessState.TERMINATED;
+		}
+		
+		bool res = _wait(millisec);
+		if (res) {
+			state = ProcessState.TERMINATED;
+		}
+		
+		return res;
+	}
+	
+	/*
+	 * Check if the process is alive. This method will return true only before [start()](#start), 
+	 * or after either [wait()](#wait) or [kill()](#kill) is called.
+	 * 
+	 * [return] True if the process is still running.
+	 */
+	bool isAlive(){
+		return state == ProcessState.IN_PROGRESS;
+	}
+	
+	/*
+	 * Kill the process.
+	 *
+	 * [throws: IllegalStateException] if the process [has not started yet](ProcessState#NOT_STARTED).
+	 * [return] The exit code of the process upon its completion.
+	 */
+	int kill() {
+		switch(state) {
+		case NOT_STARTED:
+			throw new IllegalStateException("Process has not started.");
+		case IN_PROGRESS:
+			try {
+				return _kill();
+			} finally {
+				state = ProcessState.TERMINATED;
+			}
+		case TERMINATED:
+			return getExitCode();
+		}	
+	}
+	
+	[Bridged(name="ctor")]
+	private hosted void _init(
+		string name, string[] args, Map envArgs, 
+		string workingDir, 
+		bool inheritedIO, 
+		Stream stdin, Stream stdout, Stream stderr); // ProcessConfig
+	
+	[Bridged(name="start")]
+	private hosted void _start();
+	
+	[Bridged(name="wait")]
+	private hosted int _wait();
+	
+	[Bridged(name="waitFor")]
+	private hosted bool _wait(int millisec);
+	
+	/*
+	 * Get the exit code. Result is undefined if the process is not terminated yet.
+	 *
+	 * [return] If the process has finished, the exit code as returned by that process. If the process has not finished, the status code is undefined.
+	 */
+	[Bridged(name="getExitCode")]
+	hosted int getExitCode();
+	
+	[Bridged(name="kill")]
+	private hosted int _kill();
+	
+	[Bridged(name="getEnvArg")]
+	private hosted string _envarg(string name);
+}
+
+[Bridged(apiset="System.PipeStream")]
+internal class PipeStream : StreamBase {
+
+	private int fd;
+
+	[Bridged(name="ctor")]
+	private hosted void _init(Process proc, int fd);
+	
+	// Implementing abstract methods defined by StreamBase
+	[Bridged(name="write")]
+	protected hosted void _write(byte data);
+	[Bridged(name="writeArray")]
+	protected hosted void _write(byte[] buffer, int offset, int count);
+	[Bridged(name="read")]
+	protected hosted int _read();
+	[Bridged(name="readArray")]
+	protected hosted int _read(byte[] buffer, int offset, int count);
+	[Bridged(name="close")]	
+	protected hosted void _close();
+	[Bridged(name="flush")]	
+	protected hosted void _flush();
+	[Bridged(name="skip")]		
+	protected hosted int _skip(int count);
+	
+	// fd = 0, to write to the pipe
+	//    = 1, to read from the pipe's output
+	//    = 2, to read from the pipe's error
+	public PipeStream(Process process, int fd){
+		this.fd = fd;
+		_init(process, fd);
+	}
+
+	public bool canRead(){
+		return fd != 0;
+	}
+	
+	public bool canWrite(){
+		return fd == 0;
+	}
+}

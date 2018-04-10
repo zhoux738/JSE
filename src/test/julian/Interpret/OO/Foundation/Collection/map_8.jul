@@ -1,0 +1,36 @@
+// overwrite hashCode and equals
+import System.Collection;
+
+class Key {
+	private int k1;
+	private string k2;
+	Key(int k1, string k2){
+		this.k1 = k1;
+		this.k2 = k2;
+	}
+	
+	int hashCode(){
+		return k1;
+	}
+	
+	bool equals(Object another){
+		return this.k1 == another.k1;
+	}
+}
+
+// In this test we use three keys, but since hashCode() and 
+// equals(var) are same, the same slot is used for all of
+// them. This mean the last put() would overwrite the value.
+
+Key ka = new Key(1, "a");
+Key kb = new Key(1, "b");
+
+Map m = new Map();
+m.put(ka, "obj1");
+m.put(kb, "obj2");
+int size1 = m.size(); // = 1. hashCode() same, equals() same.
+
+var val = m[kb]; // = "obj2"
+
+m.remove(new Key(1, "c"));
+int size0 = m.size(); // = 0. hashCode() same, equals() same.

@@ -1,0 +1,2 @@
+String pos_1_2 = oav[1][2];
+String pos_0_1 = oav[0][1] = "x";

@@ -1,0 +1,121 @@
+module System.IO;
+
+import System;
+
+/*
+ * This class represents a file as defined by the underlying file system. 
+ */
+[Bridged(apiset="System.IO.File")]
+class File : Item {
+
+	/*
+	 * Always return true.
+	 *
+	 * [return] true
+	 */
+	public bool isFile(){
+		return true;
+	}
+	
+	/*
+	 * Create a new file with the specified path.
+	 *
+	 * [param: path] The path to this file. If this is a relative path, it will be resolved against current working directory.
+	 */
+	[Bridged(name="ctor")]
+	hosted File(string path);
+
+	/*
+	 * Get the name of this file. This is only the simple name (with extension) on the path.
+	 *
+	 * [return] The file's name
+	 */
+	public string getName(){
+		return _getName();
+	}
+	
+	[Bridged(name="getName")]
+	private hosted string _getName();
+
+	/*
+	 * Get the absolute path of this file, including the name.
+	 *
+	 * [return] The file's path, including the name. Note this can be different from the path used 
+	 * by the [constructor](#File(string)), which could take a relative path.
+	 */	
+	public string getPath(){
+		return _getPath();
+	}
+	
+	[Bridged(name="getPath")]
+	private hosted string _getPath();
+	
+	/*
+	 * Read all the contents from this file as text. This is a rather convenient method for quick scripting, 
+	 * but won't scale well if the file is too large and the operation is too frequent. When dealing 
+	 * with reading large files at high frequency, always consider using an [asynchronous stream](#getReadStream) first.
+	 *
+	 * [return] The contains from this file, in the format of plain ASCII text. 
+	 */
+	[Bridged(name="readAllText")]
+	hosted string readAllText();
+	
+	/*
+	 * Whether this file exist on file system.
+	 *
+	 * [return] True if the file exists.
+	 */
+	public bool exists(){
+		return _exists();
+	}
+	
+	[Bridged(name="exists")]
+	private hosted bool _exists();
+	
+	/*
+	 * Create a file represented by this object.
+	 *
+	 * [throws: System.IO.IOException] An error occurred during file creation.
+	 * [return] True if the file was created; false if the file already exists.
+	 */
+	public bool create(){
+		return _create();
+	}
+	
+	[Bridged(name="create")]
+	private hosted bool _create();
+	
+	/*
+	 * Delete this file.
+	 *
+	 * [throws: System.IO.IOException] An error occurred during file deletion.
+	 * [return] True if the file was successfully deleted; false if the file didn't exist.
+	 */
+	public bool delete(){
+		return _delete();	
+	}
+	
+	[Bridged(name="delete")]
+	private hosted bool _delete();
+	
+	/*
+	 * Get a stream to read from this file. 
+	 *
+	 * [see: System.IO.FileStream]
+	 * [return] A stream that supports reading (both synchronously and asynchronously) but not writing or marking. 
+	 */
+	public Stream getReadStream(){
+		return new FileStream(_getPath(), FileMode.OPEN);
+	}
+	
+	/*
+	 * Get a stream to write into this file. 
+	 *
+	 * [see: System.IO.FileStream]
+	 * [return] A stream that supports writing but not reading or marking. 
+	 */
+	public Stream getWriteStream(bool append){
+		return new FileStream(_getPath(), append ? FileMode.APPEND : FileMode.CREATE);
+	}
+	
+}

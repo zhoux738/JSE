@@ -1,0 +1,11 @@
+import System;
+
+int x = 10, y = 20, z = 30;
+try {
+	throw new Exception("message");
+	x = 70;
+} catch (ArrayOutOfRangeException ex) {
+	y = 140;
+} catch (DivByZeroException ex) {
+	z = 210;
+}

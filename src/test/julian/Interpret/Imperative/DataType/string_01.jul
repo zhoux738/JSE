@@ -1,0 +1,10 @@
+string s1 = "10";
+int i = (int) s1;
+
+string s2 = "10.1";
+float f = (float) s2;
+
+string s3 = "true";
+char c = (char) s3;
+string s = (string) s3;
+bool b = (bool) s3;

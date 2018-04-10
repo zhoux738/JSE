@@ -1,0 +1,18 @@
+bool b0, b1, b2, b3;
+try {
+	var v = new Integer(1);
+} catch (System.Lang.IllegalOperandException e){
+	b0 = true;
+	b1 = e.getMessage().contains("Cannot call constructor on a non-class type");
+}
+
+try {
+	var v = new Void();
+} catch (System.Lang.IllegalOperandException se){
+	b2 = true;
+}
+try {
+	var v = new Any("");
+} catch (System.Lang.IllegalOperandException se){
+	b3 = true;
+}

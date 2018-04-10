@@ -1,0 +1,15 @@
+// Extends two interfaces
+
+interface IWalkable {
+	void walk();
+}
+
+interface ISwimmable {
+	void swim();
+}
+
+interface IAmphibious : IWalkable, ISwimmable {
+	void dive();
+}
+
+IAmphibious amp;

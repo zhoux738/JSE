@@ -1,0 +1,439 @@
+module System;
+
+/*
+ * The exception class that can be thrown by scripts, or raised directly from the engine.
+ *
+ * All Julian exceptions are derived from this class. An exception can be captured using the
+ * classic try-catch blocks, where exception are matched against each catch section in the
+ * script order.
+ */
+class Exception {
+
+	private bool _rawformat;
+	
+	private int _stackdepth;
+	
+	private string[] _stacktrace;
+
+	private string _message;
+	
+	private Exception _cause;
+	
+    private int _lineno = -1;
+		
+    private string _filename;
+	
+	/*
+	 * Create an exception without any specific information.
+	 */
+	Exception(){
+	
+	}
+	
+	/*
+	 * Create an exception with message.
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	Exception(string message){
+		this._message = message;
+	}
+	
+	/*
+	 * Create an exception with message and cause.
+	 *
+	 * [param: message] The message for this exception.
+	 * [param: cause] The inner cause for this exception, which is also an exception.
+	 */
+	Exception(string message, Exception cause){
+		this._message = message;
+		this._cause = cause;
+	}
+	
+	/*
+	 * Get the message.
+	 *
+	 * [return] Can be null if the message was not specified during construction.
+	 */
+	string getMessage(){
+		return _message;
+	}
+	
+	/*
+	 * Get the current stack trace, starting from the function where the exception was thrown (originating 
+	 * function) and ending with the current function.
+	 *
+	 * [return] Can be null if the message was not specified during construction.
+	 */
+	string[] getStackTrace(){
+		return _stacktrace;
+	}
+	
+	/*
+	 * Get the cause of this exception, if any.
+	 *
+	 * [return] Can be null if the cause was not specified during construction.
+	 */
+	Exception getCause(){
+		return _cause;
+	}
+
+}
+
+/*
+ * Exception to signal the algebraic divide-by-zero error. This is usually created by the engine
+ * when it encountered a zero value used as divisor in division or modulo operation.
+ */
+class DivByZeroException : Exception {
+	
+	/*
+	 * Create a standard DivByZeroException instance. While entirely legal, 
+	 * it's not recommended for a user to create such instances. 
+	 * 
+	 * The message for this exception is fixed.
+	 */
+	DivByZeroException() : super("Cannot divide by zero.") { }
+
+}
+
+/*
+ * Exception caused by attempting to use an index out of the allowed range. This can be created by the engine when 
+ * it is trying to use an index on an array beyond its range. For example, a negative number, or a positive
+ * one larger than or equal to the length of the array, will cause this exception. A user may also create this 
+ * exception pre-emptively as part of the argument check.
+ */
+class ArrayOutOfRangeException : Exception {
+	
+	/*
+	 * Create a standard ArrayOutOfRangeException instance. The message for this exception is fixed.
+	 *
+	 * [param: index] The index being accessed.
+	 * [param: max] The max index allowed. The min index is always 0.
+	 */
+	ArrayOutOfRangeException(int index, int max) : 
+		super("Access to array out of range. Index=" + index + ", Max=" + (max >= 0 ? max : "N/A") + ".") { }
+
+}
+
+/*
+ * Exception caused by attempting to dereference a variable that is null. This can be created by the engine when 
+ * it is trying to dereference a null variable or intermediate value, but a user may also create this 
+ * exception pre-emptively as part of the argument check.
+ */
+class NullReferenceException : Exception {
+	
+	/*
+	 * Create a standard NullReferenceException instance. The message for this exception is fixed.
+	 */
+	NullReferenceException() : super("Cannot dereference a null value.") { }
+
+}
+
+/*
+ * Exception caused by an illegal argument. This is mostly a business error which is identified
+ * at the early stage of function call.
+ */
+class ArgumentException : Exception {
+	
+	/*
+	 * Create a standard ArgumentException instance with specified parameter name. 
+	 * The message format for this exception is fixed.
+	 *
+	 * [param: name] The name of parameter.
+	 */
+	ArgumentException(string name) : super("Argument '" + name + "' is invalid.") { }
+
+}
+
+/*
+ * Exception thrown during loading a type. Despite the name, this can be thrown for loading any types,
+ * including class, interface, attribute and enum. 
+ *
+ * In Julian, a type is loaded when it's first used, so importing a module, and defining a type in the 
+ * current script, doesn't trigger type loading. Only by referencing a type for the first time during
+ * runtime will that type, along with all the dependencies, get loaded. If any type couldn't be loaded 
+ * in this process, the entire type set will not be loaded. In Julian this is referred to as "Loading 
+ * Completeness Principle", or simple LCP.
+ *
+ * A type may fail to load by various reasons. Most likely, since Julian is in interpreted language,
+ * the semantic check on the type will only happen by the time the loading is attempted. So failing to
+ * comply with the type definition semantics and restrictions can easily lead to such failure.
+ * 
+ * This exception is expected to be thrown by the engine, not user's script, although its constructors
+ * are public and free to call.
+ */
+class ClassLoadingException : Exception { 
+
+	/*
+	 * Create a class loading exception with specific message. While entirely legal, 
+	 * it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	ClassLoadingException(String msg) : super(msg) {} 
+	
+	/*
+	 * Create a class loading exception with specific message and cause. While entirely legal, 
+	 * it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 * [param: cause] The underlying error that caused this exception.
+	 */	
+	ClassLoadingException(String msg, Exception cause) : super(msg, cause) {} 
+}
+
+/*
+ * Exception thrown when loading a platform type. 
+ *
+ * In Julian, a platform type is loaded when a script type mapping to it is first used, so importing 
+ * a module, and defining a mapped type in the current script, doesn't trigger type loading. Only by 
+ * referencing a type for the first time during runtime will that type, along with all the platform
+ * dependencies, get loaded. This process strictly adheres to "Loading Completeness Principle", so 
+ * that if any type cannot be loaded, none in the dependency closure will be.
+ *
+ * A platform type may fail to load by various reasons. The type may be not locatable within the 
+ * platform runtime (on JVM, this means the class is not visible from the classpath). There are also
+ * some significant restrictions on the types being mapped, and failing any of them will cause the
+ * type to be un-mappable. For more details, see [tutorial: interop].
+ *
+ * This exception is expected to be thrown by the engine, not user's script, although its constructor
+ * is public and free to call.
+ */
+class PlatformClassLoadingException : ClassLoadingException { 
+
+	/*
+	 * Create a platform class loading exception with specific message. While entirely legal, 
+	 * it's not recommended for a user to create such instances. 
+	 *
+	 * [param: className] The name of platform class which couldn't be loaded.
+	 */
+	PlatformClassLoadingException(string className) : super("Failed to load platform type \"" + className + "\".") {} 
+}
+
+/*
+ * Exception thrown when the platform runtime encountered an error. 
+ *
+ * When a user mapped type encountered a runtime exception, it will pop up through the platform stack and emerged
+ * at the platform-engine boundary, at which an exception of this type will be created, wrapping the underlying
+ * error and preserving its stack. Thus this exception's stack trace will contain both the script trace and the
+ * platform trace.
+ */
+class PlatformOriginalException : Exception { 
+
+	/*
+	 * Create a platform class running exception with the class name and specific message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: className] The faulting platform class's name.
+	 * [param: message] A message to describe the failure.
+	 */
+	PlatformOriginalException(string className, string msg) : super("(" + className + ") " + msg) {} 
+}
+
+/*
+ * The thread stack hits the limit and thus new frame cannot be allocated.
+ *
+ * This is a fundamental system error and can be thrown anytime during the runtime, not necessarily where a function is called.
+ * At the point of this failure there is no guarantee that the engine can continue to function normally so there is no point
+ * of capturing it. In fact this exception won't be caught by catch block.
+ */
+class StackOverflowException : Exception {
+
+	/*
+	 * Create a platform class running exception with fixed message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 */
+	StackOverflowException() : super("The stack in Julian script engine overflowed.") {} 
+}
+
+// The definition of following exception are subject to further changes
+
+/* 
+ * The use of attribute is illegal. In Julian the attribute legality check is performed during class loading
+ * and this exception could be thrown as the cause for ClassLoadingException.
+ *
+ * [see: ClassLoadingException] 
+ */
+class IllegalAttributeUsageException : Exception { 
+	/* 
+	 * Create an instance of IllegalAttributeUsageException with specified message. Mainly reserved for system use.
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	IllegalAttributeUsageException(String msg) : super(msg) {} 
+}
+
+/* 
+ * The assignment is illegal, such as the assignee being a constant.
+ */
+class IllegalAssignmentException : Exception { 
+	/* 
+	 * Create an instance of IllegalAssignmentException with specified message. Mainly reserved for system use.
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	IllegalAssignmentException(String msg) : super(msg) {} 
+}
+
+/* 
+ * The casting is illegal. This can happen when the target type is not on the hierarchy of current type's inheritance.
+ * 
+ * In Julian, object casting is always safe when a type is cast to an super type or the same type. It's not possible
+ * to cast to a child type, if the runtime type of variable is indeed that type, or a subtype thereof. If not, or if
+ * casting to a side type (the type with which the current type only shares the common ancestor, which in the most 
+ * common case is [Object]), will throw this exception.
+ *
+ * Casting the primitive type may also cause this exception if the types are not castable (such as from int to bool),
+ * or if the target is an Object.
+ */
+class IllegalCastingException : Exception { 
+	/* 
+	 * Create an instance of IllegalCastingException with specified message. Mainly reserved for system use.
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	IllegalCastingException(String msg) : super(msg) {} 
+}
+
+/*
+ * The exception thrown as a result of trying to access a class member in an illegal way. The visibility check
+ * is the most common reason for this exception.
+ *
+ * [see: System.UnknownMemberException]
+ */
+class IllegalMemberAccessException : Exception {
+	/* 
+	 * Create an instance of IllegalMemberAccessException with specified message. Mainly reserved for system use. 
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	IllegalMemberAccessException(String msg) : super(msg) {} 
+}
+
+/*
+ * The exception thrown as a result of trying to access a type in an illegal way. The visibility check
+ * is the most common reason for this exception.
+ */
+class IllegalTypeAccessException : Exception { 
+	/* 
+	 * Create an instance of IllegalTypeAccessException with specified message. Mainly reserved for system use. 
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	IllegalTypeAccessException(String msg) : super(msg) {} 
+}
+
+/*
+ * An exception thrown indicating a platform error. Unlike [PlatformOriginalException](System.PlatformOriginalException), 
+ * this exception doesn't preserve the platform stack. This exception is mainly used by foundation classes as a way to
+ * report a platform failure, without exposing the engine internals.
+ *
+ * [see: System.PlatformOriginalException]
+ */
+class HostingPlatformException : Exception { 
+	/* 
+	 * Create an instance of HostingPlatformException with specified message. Mainly reserved for system use. 
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	HostingPlatformException(String msg) : super(msg) {} 
+}
+
+/*
+ * A module being imported, directly or indirectly, is missing. This is likely thrown as the cause for ClassLoadingException.
+ *
+ * [see: ClassLoadingException] 
+ */
+class MissingRequirementException : Exception { 
+	/* 
+	 * Create an instance of MissingRequirementException with specified message. Mainly reserved for system use.  
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	MissingRequirementException(String msg) : super(msg) {} 
+}
+
+/*
+ * The heap memory is all used and thus new object cannot be allocated.
+ *
+ * This is a fundamental system error and can be thrown any time during the runtime, not necessarily where a new
+ * be created. Do not try to catch this exception.
+ */
+class OutOfMemoryException : Exception { 
+	/*
+     * Create an instance of MissingRequirementException with specified message. Mainly reserved for system use.  
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	OutOfMemoryException(String msg) : super(msg) {} 
+}
+
+/*
+ * This exception is used to represent a failure upon a function call, for failing to either convert an argument
+ * to the parameter type, or the result to the declared return type.
+ */
+class TypeIncompatibleException : Exception { 
+	/* 
+	 * Create an instance of TypeIncompatibleException with specified message. Mainly reserved for system use.  
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	TypeIncompatibleException(String msg) : super(msg) {} 
+}
+
+/*
+ * The variable being referred to is undefined or invisible in the current scope.
+ */
+class UndefinedVariableNameException : Exception { 
+	/* 
+	 * Create an instance of UndefinedVariableNameException with specified message. Mainly reserved for system use.  
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	UndefinedVariableNameException(String msg) : super(msg) {} 
+}
+
+/*
+ * The exception thrown as a result of trying to access to a class member which doesn't exist.
+ *
+ * [see: System.IllegalMemberAccessException]
+ */
+class UnknownMemberException : Exception { 
+	/* 
+	 * Create an instance of UnknownMemberException with specified message. Mainly reserved for system use.  
+	 *
+	 * [param: message] The message for this exception.
+	 */
+	UnknownMemberException(String msg) : super(msg) {} 
+}
+
+/*
+ * The type being referred to is not known to the script engine.
+ *
+ * In Julian, when a type is first used it will be loaded. The type searching is performed against the current
+ * namespace pool, targeting the entire module path set, in addition to the system classes. The namespace pool
+ * consists of all the imported module's name, as well as System module. If the type is not located under any
+ * of these modules this exception will be thrown. 
+ */
+class UnknownTypeException : Exception { 
+	/* Create an instance of UnknownTypeException with specified message. Mainly reserved for system use. */
+	UnknownTypeException(String msg) : super(msg) {} 
+}
+
+/*
+ * The semantic error encountered when parsing and loading a module. For example, a module cannot contain two 
+ * types of same name.
+ */
+class IllegalModuleException : Exception { 
+	/* Create an instance of IllegalModuleException with specified message. Mainly reserved for system use. */
+	IllegalModuleException(String msg) : super(msg) {} 
+}
+
+/*
+ * A generic error indicating that the sub-system is in an illegal state to perform certain operations. This is
+ * commonly used in the business error.
+ */
+class IllegalStateException : Exception { 
+	/* Create an instance of IllegalStateException with specified message. */
+	IllegalStateException(string msg) : super(msg) {} 
+}

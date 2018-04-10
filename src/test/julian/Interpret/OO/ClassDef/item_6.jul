@@ -1,0 +1,19 @@
+abstract class Item1 {
+	
+	abstract string doWork1();
+	
+}
+
+// Define a new abs method.
+abstract class Item2 : Item1 {
+	
+	abstract string doWork2();
+	
+}
+
+// Missing doWork1 and doWork2
+class Car : Item2 {
+
+}
+
+Car c;

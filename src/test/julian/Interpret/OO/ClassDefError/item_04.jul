@@ -1,0 +1,8 @@
+// duplicate return types
+class Item {
+	
+	void void doWork(){}
+	
+}
+
+Item item;

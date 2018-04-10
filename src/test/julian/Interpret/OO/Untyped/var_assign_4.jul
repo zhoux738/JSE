@@ -1,0 +1,22 @@
+class C{
+	int m = 3;
+}
+
+class D{
+	int n = 4;
+}
+
+C c = new C();
+
+var v0 = c;
+var v1 = v0;
+int a1 = v1.m;
+
+D d = new D();
+
+v0 = d;
+int a2 = v0.n;
+
+v0.n = 5;
+int a3 = v0.n;
+int a4 = d.n; // d is reference, so it should be affected by modifying v0

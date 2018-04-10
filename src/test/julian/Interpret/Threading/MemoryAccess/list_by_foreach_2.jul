@@ -1,0 +1,44 @@
+// Two threads trying to modify the same List in order. Both should succeed.
+import System.Concurrency;
+import System.Collection;
+import System;
+
+// Initialize
+int total = 100;
+List values = new List();
+int i = 0;
+while(i < total){
+	values.add(i);
+	i++;
+}
+
+void f0(int v){
+	//for(int j : values){
+	for(int j = 0; j < total; j++){
+		//Console.println(i);
+		values[j] = v > 0 ? v : j;
+		//Console.println(values[j]);
+	}
+}
+
+void f1(){
+	f0(0);
+}
+
+void f2(){
+	f0(20);
+}
+
+Thread t1 = new Thread(f1, "t1", ThreadPriority.NORMAL);
+t1.start();
+t1.join();
+
+// thread 1 has released the lock at this point.
+f2();
+
+// only 20
+/**
+for(int i = 0; i < total; i++){
+  Console.println(values[i]);
+}
+//*/

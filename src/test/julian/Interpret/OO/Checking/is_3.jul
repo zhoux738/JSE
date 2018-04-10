@@ -1,0 +1,12 @@
+bool v1 = null is Object;
+bool v2 = null is int;
+
+var a = null;
+bool v3 = a is Object;
+bool v4 = a is int;
+
+string s = null;
+bool v5 = s is Object;
+bool v6 = s is int;
+
+bool mark = true;

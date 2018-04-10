@@ -1,0 +1,7 @@
+int fun(){
+	return 5;
+}
+
+Function f = fun.invoke;
+int res1 = f();
+int res2 = f.invoke();

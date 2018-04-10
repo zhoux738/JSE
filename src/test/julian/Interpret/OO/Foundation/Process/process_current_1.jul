@@ -1,0 +1,56 @@
+import System;
+import System.IO;
+
+int checks = 0;
+
+Process p = Process.getCurrent();
+
+string n = p.getName();
+
+// 1) Can get args
+string[] args = p.getArgs();
+bool argChecked = false;
+for(string arg : args){
+	//Console.println(arg);
+	
+	if (arg == "") {
+		throw new Exception("found an empty string.");
+	}
+	
+	// We should have at least one argument fed by the test framework.
+	if (!argChecked) {
+		argChecked = true;
+		checks++;
+	}
+}
+
+// 2) Cannot commit suicide
+try {
+	p.kill();
+} catch (System.IllegalStateException e) {
+	checks++;
+}
+
+// 3) Can get write stream
+Stream s = p.getWriteStream();
+if (s == null){
+	throw new Exception("can't find write stream from current process.");
+} else {
+	// Don't have a way of outputting string directly yet. Just print 'a'.
+	s.write((byte)97);
+	s.flush();
+	checks++;
+}
+
+// 4) Can get env args - JUnit runs with a completely different env set from 
+//    the parent process. But let's hope at least we get one of these.
+String[] evs = new String[4];
+evs[0] = p.getEnvArg("HOME");
+evs[1] = p.getEnvArg("USER");
+evs[2] = p.getEnvArg("HOSTNAME");
+evs[3] = p.getEnvArg("COMPUTERNAME");
+if (evs[0] != null || evs[1] != null || evs[2] != null || evs[3] != null) {
+	checks++;
+}
+
+bool validated = checks == 4;

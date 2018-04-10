@@ -1,0 +1,26 @@
+// override a method defined by parent class
+class Person {
+	private string getDesc(){
+		return "Person";
+	}
+}
+
+class Employee : Person {
+	private string getDesc(){
+		return "Employee";
+	}
+	
+	public string getDesc2(){
+		return getDesc();
+	}
+}
+
+bool b = false;
+Person e = new Employee();
+try {
+    string s = e.getDesc();
+} catch (IllegalMemberAccessException e) {
+    b = true;
+}
+
+string s = ((Employee)e).getDesc2();

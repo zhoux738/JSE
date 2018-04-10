@@ -1,0 +1,15 @@
+// Extension chain
+
+interface IG {
+	void g();
+}
+
+interface IP : IG {
+	void p();
+}
+
+interface I : IP {
+	void i();
+}
+
+I i;

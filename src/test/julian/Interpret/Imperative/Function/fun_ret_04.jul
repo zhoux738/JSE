@@ -1,0 +1,16 @@
+// return from block
+	
+int a = 10;
+int fun(int i){
+	{
+		{
+			return i - 5;
+		}
+	}
+	a = 12;
+	return 0;
+}
+
+int x1 = fun(9);
+int x2 = fun(6);
+

@@ -1,0 +1,5 @@
+var c = "";
+
+bool v1 = c is Object; 
+
+bool mark = true;

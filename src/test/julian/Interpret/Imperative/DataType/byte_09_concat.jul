@@ -1,0 +1,8 @@
+byte b = 100;
+int i = 5;
+string b_a = b + "a";
+string a_b = "a" + b;
+string a_b_a = "a" + b + "a";
+string b_a_b = b + "a" + b;
+string i_b_a = i + b + "a";
+string b_a_i = b + "a" + i;

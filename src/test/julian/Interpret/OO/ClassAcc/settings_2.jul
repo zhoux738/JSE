@@ -1,0 +1,14 @@
+class Settings {
+
+	static int configure(){
+		return 5;
+	}
+
+	static int configureWithArg(int x){
+		return x;
+	}
+	
+}
+
+int confVal = Settings.configure();
+int confVal2 = Settings.configureWithArg(7);

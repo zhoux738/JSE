@@ -1,0 +1,39 @@
+class C {
+}
+
+class D : C {
+	D() : super() { }
+}
+
+D[] darr = new D[0];
+
+bool v1, v2, v3;
+
+// cast to parent typed array
+try {
+	C[] carr = (C[])darr;
+} catch (System.IllegalCastingException ex) {
+	v1 = true;
+}
+
+void fun(C[] cs){
+	
+}
+
+// pass to parent typed array
+try {
+	fun(darr);
+} catch (System.TypeIncompatibleException ex) {
+	v2 = true;
+}
+
+C[] fun2(){
+	return darr;
+}
+
+// return to parent typed array
+try {
+	fun2();
+} catch (System.TypeIncompatibleException ex) {
+	v3 = true;
+}

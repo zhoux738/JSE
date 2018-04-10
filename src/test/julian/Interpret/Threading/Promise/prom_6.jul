@@ -1,0 +1,21 @@
+import System.Concurrency;
+
+// Test handle
+
+Promise p0 = Promise.start((res, handle)=> {
+	handle.reject();
+}).error(ex=> {
+	return ex.getMessage();
+});
+
+string msg1 = p0.getResult(true);
+
+p0 = Promise.start((res, handle)=> {
+	return 10;
+}).then((res, handle)=> {
+	handle.reject("failed!");
+}).error(ex=> {
+	return ex.getMessage();
+});
+
+string msg2 = p0.getResult(true);

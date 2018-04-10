@@ -1,0 +1,15 @@
+class Vehicle {
+
+	int speed = 5;
+
+	Function accelerator(int base){
+		return (int factor) => this.speed += factor * base;
+	}
+}
+
+Vehicle v = new Vehicle();
+Function f = v.accelerator(3);
+int v8a = f.invoke(1);
+int v8b = v.speed;
+int v14a = f.invoke(2);
+int v14b = v.speed;

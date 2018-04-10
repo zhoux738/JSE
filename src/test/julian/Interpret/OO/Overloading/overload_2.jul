@@ -1,0 +1,11 @@
+import System;
+
+class Car {
+	int start(){ return 50; }
+	int start(int speed){ return speed; }
+}
+
+Car c = new Car();
+Function f = c.start;
+int speed1 = f();
+int speed2 = f(100);

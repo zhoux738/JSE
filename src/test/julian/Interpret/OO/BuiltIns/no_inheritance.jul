@@ -1,0 +1,38 @@
+class MyFunc : Function {
+
+}
+
+class MyEnum : Enum {
+
+}
+
+class MyAttribute : Attribute {
+
+}
+
+class MyArray : Array {
+
+}
+
+bool b0,b1,b2,b3;
+
+try {
+  MyFunc m;
+} catch (ClassLoadingException e) {
+  b0 = true;
+}
+try {
+  MyEnum m;
+} catch (ClassLoadingException e) {
+  b1 = true;
+}
+try {
+  MyAttribute m;
+} catch (ClassLoadingException e) {
+  b2 = true;
+}
+try {
+  MyArray m;
+} catch (ClassLoadingException e) {
+  b3 = true;
+}

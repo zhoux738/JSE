@@ -1,0 +1,90 @@
+// Use interface in instance constructor and members.
+
+interface IAnimal {
+	bool isHungry();
+	void eat(int amount);
+	void play(int amount);
+}
+
+class Monkey : IAnimal {
+	private int foodInStomach;
+	
+	public bool isHungry(){
+		return foodInStomach <= 30;
+	}
+	
+	public void eat(int amount){
+		int total = foodInStomach + amount;
+		if(total > 100){
+			total = 100;
+		}
+		
+		foodInStomach = total;
+	}
+	
+	public void play(int amount){
+		int total = foodInStomach - amount;
+		if(total < 0){
+			total = 0;
+		}
+		
+		foodInStomach = total;
+	}
+}
+
+interface ICage {
+	void feed(int amount);
+	IAnimal release();
+	bool isEmpty();
+	void encage(IAnimal animal);
+}
+
+class Cage : ICage {
+	IAnimal animal;
+	
+	Cage(IAnimal animal){
+		this.animal = animal;
+	}
+	
+	public void feed(int amount){
+		if (animal != null) {
+			//Console.println("To feed: " + amount);
+			animal.eat(amount);
+			//Console.println("After feeding: " + ((Monkey)animal).foodInStomach);
+		}
+	}
+	
+	public IAnimal release(){
+		IAnimal animal = this.animal;
+		this.animal = null;
+		return animal;
+	}
+	
+	public void encage(IAnimal animal){
+		if (this.animal == null) {
+			this.animal = animal;
+		}
+	}
+	
+	public bool isEmpty(){
+		return this.animal == null;
+	}
+}
+
+IAnimal monkey = new Monkey();
+ICage cage = new Cage(monkey);
+bool hungry1 = monkey.isHungry();
+cage.feed(70);
+bool hungry2 = monkey.isHungry();
+
+IAnimal animal = cage.release();
+bool equal = animal == monkey;
+bool empty = cage.isEmpty();
+
+animal.play(50);
+bool hungry3 = animal.isHungry();
+cage.encage(animal);
+cage.feed(40);
+bool hungry4 = animal.isHungry();
+
+//Console.println(monkey.foodInStomach);

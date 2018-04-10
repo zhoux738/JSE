@@ -1,0 +1,6 @@
+[Mapped(className="info.jultest.test.hosted.classes.Error2")]
+class Error2 {
+
+}
+
+Error2 e;

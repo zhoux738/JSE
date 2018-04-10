@@ -1,0 +1,39 @@
+module System;
+
+/*
+ * An interface used to mark a [mapped](System.Mapped) platform type so that certain 
+ * platform members can be implemented here. Useful when explicitly defining [Object] 
+ * methods, such as toString(), which may have the same name as a member on platform 
+ * Object. The explicitly defined methods can then call these methods.
+ * 
+ * These methods must not be implemented explicitly. The engine will automatically 
+ * implement them when loading a type marked by this interface. For more information
+ * about its usage, see [tutorial](tutorial: mapping).
+ */
+interface PlatformObject {
+
+    /*
+     * The delegating method to call toString() defined on the platform class.
+     *
+     * [return] The string representation of the platform object.
+     */
+	string pfToString();
+	
+	/*
+	 * The delegating method to call hashcode() defined on the platform class.
+	 *
+     * [return] An integer calculated from the platform object. 
+	 */
+	int pfHashCode();
+	
+	/*
+	 * The delegating method to call equals(Object) defined on the platform class.
+	 *
+	 * [param: val] The object to compare with. If the argument is not a mapped object
+	 * this method will return false; otherwise it delegates that to the equals(Object) 
+	 * method defined on the platform class.
+     * [return] True if the argument is considered equal to this one. 
+	 */
+	bool pfEquals(Object val);
+
+}

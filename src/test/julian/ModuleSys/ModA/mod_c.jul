@@ -1,0 +1,5 @@
+module ModuleSys.ModA;
+
+import first.dep;
+import second.dep as sd;
+import third.dep;

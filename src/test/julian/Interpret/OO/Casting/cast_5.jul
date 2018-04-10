@@ -1,0 +1,3 @@
+var i = 5;
+int j = (int)i;
+string s = (string)i;

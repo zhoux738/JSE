@@ -1,0 +1,57 @@
+import System.Concurrency;
+import ModuleSys.Banking.Bank;
+import ModuleSys.Banking.Account;
+import ModuleSys.Banking.Commons;
+
+string res1;
+string res2;
+
+// Initialize banks
+Bank bank1 = new Bank("CITI");
+Branch branch1 = new Branch(bank1, "Portland");
+
+Bank bank2 = new Bank("HSBC");
+Branch branch2 = new Branch(bank2, "Liverpool");
+
+// Initialize customers
+Customer a = new Customer("A", 1234567);
+Customer x = new Customer("X", 7654321);
+
+// Open accounts
+Account[] accs1 = branch1.open(a);
+Account a_checking = accs1[0];
+Account a_saving = accs1[1];
+
+Account[] accs2 = branch2.open(x);
+Account x_checking = accs2[0];
+Account x_saving = accs2[1];
+
+// Deposit, transfer and query
+string dtq(Branch branch, Account fromAcc, Account toAcc, int dep, int trans){
+	branch.deposit(fromAcc, dep);
+	branch.transfer(fromAcc, toAcc, trans);
+	
+	Message m1 = branch.query(fromAcc);
+	if(m1.isSucc()){
+		Console.println(m1.message);	
+		return m1.message;
+	} else {
+		return "FAILED";
+	}
+}
+
+void f1(){
+	res1 = dtq(branch1, a_checking, x_checking, 1000, 350);
+}
+
+void f2(){
+	res2 = dtq(branch2, x_saving, a_saving, 500, 120);
+}
+
+Thread t1 = new Thread(f1, "t1", ThreadPriority.NORMAL);
+Thread t2 = new Thread(f2, "t2", ThreadPriority.NORMAL);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();

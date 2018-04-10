@@ -1,0 +1,81 @@
+// A producer-consumer queue
+import System.Collection;
+import System.Concurrency;
+import System;
+
+class BlockedQueue {
+
+	private List list;
+	private Lock lock;
+	private int capacity;
+	private int cap;
+	List logs;
+	
+	public BlockedQueue(int capacity){
+		this.capacity = capacity;
+		this.lock = new Lock();
+		list = new List();
+		cap = capacity;
+		logs = new List();
+	}
+	
+	public void produce(var value){
+		sync(lock){
+			while(list.size()==cap){
+				// No more room
+				lock.wait();
+			}
+			
+			logs.add('+');
+			list.add(value);
+			
+			// Made some item
+			lock.notify();
+		}
+	}
+	
+	public var consume(){
+		sync(lock){
+			while(list.size()==0){
+				// No more items
+				lock.wait();
+			}
+			
+			logs.add('-');
+			var res = list.remove(0);
+			
+			// Get some room
+			lock.notify();
+			return res;
+		}
+	}
+}
+
+BlockedQueue queue = new BlockedQueue(1);
+
+int total = 10;
+int[] results = new int[total];
+void producer(){
+	for(int i = 0; i < total; i++){
+		queue.produce(i);
+	}
+}
+void consumer(){
+	for(int i = 0; i < total; i++){
+		results[i] = queue.consume();
+	}
+}
+
+Thread tp = Thread.create(producer);
+Thread tc = Thread.create(consumer);
+tp.start();
+tc.start();
+tp.join();
+tc.join();
+
+char[] logs = new char[queue.logs.size()];
+int index = 0;
+for(var val : queue.logs){
+	logs[index] = val;
+	index++;
+}

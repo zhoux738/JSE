@@ -1,0 +1,35 @@
+import ModuleSys.Banking.Bank;
+import ModuleSys.Banking.Account;
+import ModuleSys.Banking.Commons;
+
+string res1;
+string res2;
+
+// Initialize a bank
+Bank bank = new Bank("CITI");
+Branch branch1 = new Branch(bank, "Portland");
+ATM atm1 = new ATM(bank);
+
+// Initialize a customer
+Customer me = new Customer("Me", 1234567);
+
+// Customer's activities
+// 1) Open an account
+Account[] accs = branch1.open(me);
+Account checking = accs[0];
+
+// 2) Deposit and query
+branch1.deposit(checking, 1000);
+Message m1 = branch1.query(checking);
+if(m1.isSucc()){
+	Console.println(m1);
+	res1 = m1.message;
+}
+
+// 3) Withdraw and query
+atm1.withdraw(checking, 300);
+Message m2 = branch1.query(checking);
+if(m2.isSucc()){
+	Console.println(m2);
+	res2 = m2.message;
+}

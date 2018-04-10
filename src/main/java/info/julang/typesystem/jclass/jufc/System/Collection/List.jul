@@ -1,0 +1,76 @@
+module System.Collection;
+
+import System;
+
+/*
+ * A list is a serial, self-scalable data structure that can grow its capacity on demand. 
+ * This class is backed by a dynamically re-allocated platform array, which is not exposed 
+ * through the API. The underlying implementation implies that the position-based operation 
+ * can be costly, especially when the size grows significantly.
+ *
+ * The list is iterable with the following syntax:
+ * [code]
+ *    for (var a : list) {
+ *      ... ... // can access element (a), but not update list
+ *    }
+ * [code: end]
+ *
+ * The methods of this class are thread safe.
+ */
+[Bridged(apiset="System.Collection.List")]
+class List : Container {
+
+	/*
+	 * Create a new and empty List object, with default capacity.
+	 */
+	[Bridged(name="ctor")]
+	hosted List();
+	
+	/*
+	 * Add an item at the end of the list. This operation increase the size by 1.
+	 *
+	 * [param: element] The element to add. This element can be null and of any type.
+	 */
+	[Bridged(name="add")]
+	hosted void add(var element);
+	
+	/*
+	 * Get the item at the specified index. 
+	 *
+	 * [throws: System.ArrayOutOfRangeException] When the index is out of range.
+	 * [param: index] The index at which the item will be returned.
+	 * [return] The value stored under this index.
+	 */
+	[Bridged(name="get")]
+	hosted var get(int index);
+	
+	/*
+	 * Set the item at the specified index. The index must be within the range of current size.
+	 *
+	 * [throws: System.ArrayOutOfRangeException] When the index is out of range.
+	 * [param: index] The index at which the item will be returned.
+	 */
+	[Bridged(name="put")]
+	hosted void put(int index, var value);
+	
+	/*
+	 * Remove the item at the specified index. The index must be within the range of current size.
+	 * Thie method will succeed even if the key doesn't exist.
+	 *
+	 * [throws: System.ArrayOutOfRangeException] When the index is out of range.
+	 * [param: index] The index at which the item will be removed.
+	 * [return] The removed item.
+	 */
+	[Bridged(name="remove")]
+	hosted var remove(int index);
+	
+	/*
+	 * [return] The size of list.
+	 */
+	int size(){
+		return _size();
+	}
+		
+	[Bridged(name="size")]
+	private hosted int _size();
+}

@@ -1,0 +1,68 @@
+module System;
+
+/*
+ * A class marked by this attribute is bridged to platform class/methods through registration.
+ *
+ * This approach allows an optimized performance at the price of complexity. As of current version,
+ * this attribute is reserved for system use only.
+ */
+[AttributeType(
+	target=AttributeTarget.CLASS|AttributeTarget.METHOD|AttributeTarget.CONSTRUCTOR, 
+	allowMultiple=false
+)]
+attribute Bridged {
+
+    /*
+     * The name of API set, which is registered through engine's platform method registration API.
+     * This property is only applicable for class type itself.
+     */
+	string apiset;
+	
+	/*
+	 * The name of member of the API set this member would bridge to. This property is only applicable 
+	 * for class members.
+	 */
+	string name;
+
+}
+
+/*
+ * A class or interface marked by this attribute is mapped directly to a platform class or interface.
+ *
+ * A class maps to a platform class and an interface maps to a platform interface. Only public constructors
+ * and methods are mapped, plus any constant static fields (which are marked as 'final' in Java). The 
+ * platform's typing hierarchy will also be mirrored. Throughout the runtime the instance of a mapped class 
+ * is essentially a wrapper of the underlying instance.
+ * 
+ * This approach allows a convenient and easy-to-use platform inter-operation at the price of performance.
+ * As of current version, this is the only way for ordinary users to talk to JVM classes.
+ */
+[AttributeType(
+	target=AttributeTarget.CLASS|AttributeTarget.METHOD|AttributeTarget.CONSTRUCTOR, 
+	allowMultiple=false
+)]
+attribute Mapped {
+
+    /*
+     * The class/interface name to map to. This name must be a fully qualified name and the type is expected
+     * to be loaded into JVM on demand.
+     */
+	string className;
+	
+	/*
+	 * The method name to map to. This is currently not supported.
+	 */
+	string methodName;
+
+}
+
+/*
+ * The method or constructor marked by this attribute bypasses type checking for the arguments passed along.
+ */
+[AttributeType(
+	target=AttributeTarget.METHOD|AttributeTarget.CONSTRUCTOR, 
+	allowMultiple=false
+)]
+attribute Untyped {
+
+}

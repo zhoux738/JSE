@@ -1,0 +1,16 @@
+enum Planet {
+
+	Venus,
+	
+	Earth,
+	
+	Mars
+	
+}
+
+Planet p = Planet.Mars;
+string l1 = p.literal;
+p = Planet.Earth;
+string l2 = p.literal;
+
+string l3 = Planet.Mars.literal;

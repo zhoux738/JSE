@@ -1,0 +1,11 @@
+import System.Collection;
+
+List l = new List();
+l.add(100);
+l.add(200);
+l.add(300);
+
+int sum = 0;
+for(var i : l){
+	sum += i;
+}

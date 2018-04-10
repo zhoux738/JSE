@@ -1,0 +1,6 @@
+[Mapped(className="java.io.File")]
+class MyFile {
+
+}
+
+MyFile f;

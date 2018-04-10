@@ -1,0 +1,34 @@
+import System.Concurrency;
+
+Lock lck = new Lock();
+int waited = -2;
+bool started = false;
+
+void f1(){
+	sync(lck){
+		started = true;
+		waited = lck.wait(1000 * 10); // wait for ten seconds
+	}
+}
+
+void f2(){
+	// Make sure we start sleeping only after t1 has started waiting
+	while(!started){
+		Thread.sleep(1);
+	}
+	
+	sync(lck){
+		Thread.sleep(3);
+		lck.notify();
+	}
+}
+
+Thread t1 = Thread.create(f1);
+Thread t2 = Thread.create(f2);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();
+
+// Console.println(waited);// waited >= 3

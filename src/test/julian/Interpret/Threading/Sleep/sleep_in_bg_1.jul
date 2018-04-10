@@ -1,0 +1,15 @@
+import System.Concurrency;
+import System;
+
+void f(){
+	Thread.sleep(100);
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+DateTime dt1 = DateTime.getNow();
+t.start();
+t.join();
+DateTime dt2 = DateTime.getNow();
+
+int diffInMillis = dt2.diff(dt1);

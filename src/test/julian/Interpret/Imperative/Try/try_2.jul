@@ -1,0 +1,10 @@
+// try-catch fails to catch the exception
+import System;
+
+int x = 10, y = 20;
+try {
+	throw new Exception("message");
+	y = 140;
+} catch (DivByZeroException ex) {
+	x = 70;
+}

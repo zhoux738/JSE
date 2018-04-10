@@ -1,0 +1,21 @@
+// pnull key test
+import System.Collection;
+
+bool test(Function func){
+	try {
+		func();
+	} catch (System.ArgumentException ae) {
+		return true;
+	}
+	
+	return false;
+}
+
+Map m = new Map();
+m.put("", "a");
+bool b1 = test(() => m.put(null, 3));
+bool b2 = test(() => m.remove(null));
+bool b3 = test(() => m.get(null));
+int count = m.size();
+
+

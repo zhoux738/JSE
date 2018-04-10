@@ -1,0 +1,9 @@
+module ModuleSys.ModA;
+
+enum MyEnum {
+
+}
+
+class MyClass {
+
+}

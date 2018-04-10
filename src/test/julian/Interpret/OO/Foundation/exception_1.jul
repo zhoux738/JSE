@@ -1,0 +1,5 @@
+import System;
+
+Exception ex = new Exception("Div by zero!");
+
+string msg = ex.getMessage();

@@ -1,0 +1,9 @@
+// (Julian) Field and method cannot share same name
+import System;
+
+class Car {
+	public int start;
+	public string start(){ return "started"; }
+}
+
+Car c = new Car();

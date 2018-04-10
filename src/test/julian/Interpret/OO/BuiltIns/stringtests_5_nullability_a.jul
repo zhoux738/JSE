@@ -1,0 +1,9 @@
+// String nullability
+
+string s1 = null;
+string s2 = s1;
+s1 = "abc"; 
+
+var s3 = null;
+var s4 = s3;
+s3 = "def";

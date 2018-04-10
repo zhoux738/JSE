@@ -1,0 +1,10 @@
+int i = 5;
+int m(){
+	i++;
+	return i;
+}
+
+int s6 = m.invoke();
+
+Function f = m;
+int s7 = f.invoke();

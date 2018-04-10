@@ -1,0 +1,23 @@
+[Mapped(className="info.jultest.test.hosted.classes.Node")]
+class Node {
+
+}
+
+Node n1 = new Node(1, null);
+Node n2 = new Node(2, n1);
+Node n3 = new Node(3, n2);
+
+int total = 0;
+Node n = n3;
+while (n != null) {
+	total += n.getValue();
+	n = n.getNext();
+}
+
+int total2 = 0;
+n3.setNext(n1);
+n = n3;
+while (n != null) {
+	total2 += n.getValue();
+	n = n.getNext();
+}

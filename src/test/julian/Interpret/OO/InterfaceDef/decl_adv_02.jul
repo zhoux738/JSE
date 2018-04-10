@@ -1,0 +1,15 @@
+// Implementing two interfaces sharing the same method.
+
+interface IExecutor {
+	void execute();
+}
+
+interface IExecutive {
+	void execute();
+}
+
+class Warden : IExecutor, IExecutive {
+	public void execute(){}
+}
+
+Warden w;

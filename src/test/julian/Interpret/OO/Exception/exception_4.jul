@@ -1,0 +1,7 @@
+import System;
+
+while(true){
+	for(int i = 0; i<3 ; i++){
+		throw new Exception("message");
+	}
+}

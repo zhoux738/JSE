@@ -1,0 +1,8 @@
+[Mapped(className="info.jultest.test.hosted.classes.Faulty1")]
+class Faulty1 {
+
+}
+
+Faulty1 f = new Faulty1();
+
+int val = f.getValue(-1);

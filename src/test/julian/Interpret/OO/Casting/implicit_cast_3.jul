@@ -1,0 +1,25 @@
+abstract class Machine {
+	string name;
+	Machine(string name){
+		this.name = name;
+	}
+	
+	abstract string getType();
+}
+
+class Car : Machine {
+	string carName;
+	Car(string name) : super(name){
+		carName = "car:" + name;
+	}
+	
+	string getType(){
+		return "car";
+	}
+}
+
+Car c0 = new Car("BYD");
+Machine m0 = c0;
+Car c1 = (Car) m0;
+string n = c1.carName;
+//Console.println(n);

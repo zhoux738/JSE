@@ -1,0 +1,7 @@
+[Mapped(className="info.jultest.test.hosted.classes.GBlob")]
+class GBlob {
+
+}
+
+GBlob o1 = new GBlob(10);
+return o1;

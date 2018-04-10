@@ -1,0 +1,30 @@
+import System;
+import System.IO;
+import System.Concurrency;
+
+ProcessConfig pc = new ProcessConfig();
+Process p = new Process("java", new String[]{"-version"}, pc); // by default, use pipe IO
+p.start();
+
+// Start a thread to read error stream from the subprocess
+
+Stream input = p.getErrorStream();
+int[] box = new int[1];
+Thread t = Thread.create(() => {
+	byte[] buffer = new byte[128];
+	int total = 0, read = 0;
+	if (input == null){
+		Console.println("Input stream is null.");
+		total = -100;
+	} else {
+	 	while ((read = input.read(buffer, 0, 128)) != -1){
+	 		box[0] += read;
+	 	}
+ 	}
+});
+t.start();
+
+int res = p.wait();
+t.join();
+
+int total = box[0];

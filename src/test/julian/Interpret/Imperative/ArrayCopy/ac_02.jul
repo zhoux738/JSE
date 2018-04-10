@@ -1,0 +1,19 @@
+byte[] src = new byte[]{10,20,30};
+byte[] dst1 = new byte[3], 
+      dst2 = new byte[3], 
+      dst3 = new byte[3], 
+      dst4 = new byte[3], 
+      dst5 = new byte[3],
+      tgt1 = new byte[3], 
+      tgt2 = new byte[3];
+
+// Copy full or partial
+Array.copy(src, 0, dst1, 0, 3);
+Array.copy(src, 0, dst2, 1, 2);
+Array.copy(src, 1, dst3, 1, 2);
+Array.copy(src, 1, dst4, 0, 2);
+Array.copy(src, 1, dst5, 1, 4);
+
+// No actual copy
+Array.copy(src, 3, tgt1, 0, 3);
+Array.copy(src, 0, tgt2, 3, 3);

@@ -1,0 +1,11 @@
+class C1 {
+
+}
+
+class C2 : C1 {
+
+}
+
+class D : C1, C2 {
+
+}

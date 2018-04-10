@@ -1,0 +1,5 @@
+module ModuleSys.SynC;
+
+class YourClass {
+	int i = ; // non-fatal syntax error
+}

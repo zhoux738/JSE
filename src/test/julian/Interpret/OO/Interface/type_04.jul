@@ -1,0 +1,24 @@
+import System;
+
+interface I3 {
+	int doSomething3();
+}
+
+interface I2 : I3 {
+	int doSomething2();
+}
+
+interface I1 {
+	int doSomething1();
+}
+
+class Mono : I1, I2 {
+	public int doSomething1(){return 0;}
+	public int doSomething2(){return 0;}
+	public int doSomething3(){return 0;}
+}
+
+Mono mno = new Mono();
+bool i1 = mno is I1;
+bool i2 = mno is I2;
+bool i3 = mno is I3;

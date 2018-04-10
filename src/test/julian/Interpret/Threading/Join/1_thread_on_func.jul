@@ -1,0 +1,18 @@
+import System.Concurrency;
+import System;
+
+int value = 0;
+
+void f(){
+	for(int i = 0; i < 100 ; i++){
+		value++;
+	}
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+t.start();
+
+t.join();
+
+//Console.println(value);

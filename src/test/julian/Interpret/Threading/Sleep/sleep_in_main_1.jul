@@ -1,0 +1,9 @@
+import System.Concurrency;
+import System;
+
+DateTime dt1 = DateTime.getNow();
+bool interrupted = Thread.sleep(100);
+DateTime dt2 = DateTime.getNow();
+
+int diffInMillis = dt2.diff(dt1);
+//Console.println(diffInMillis);

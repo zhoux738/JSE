@@ -1,0 +1,15 @@
+class Car {
+	string name;
+	Car(string name){
+		this.name = name;
+	}
+}
+
+string s = "";
+
+void fun(Car car){
+	s = car.name;
+}
+
+Car car = new Car("Tesla");
+fun(car);

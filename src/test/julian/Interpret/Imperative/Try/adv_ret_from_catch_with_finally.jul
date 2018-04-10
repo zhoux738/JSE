@@ -1,0 +1,15 @@
+class C {
+	static int state = 0;
+	static int fun(int x){
+		try {
+			throw new Exception();
+		} catch (Exception e) {
+			return x;
+		} finally {
+			state = 1;
+		}
+	}
+}
+
+int x = C.fun(5);
+int y = C.state;

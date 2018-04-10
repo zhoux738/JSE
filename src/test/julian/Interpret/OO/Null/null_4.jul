@@ -1,0 +1,15 @@
+class Person {
+	
+	string name;
+	
+}
+
+class Car {
+	
+	string brand;
+	
+}
+
+Person p1 = null;
+Car c1 = null;
+bool res = p1 == c1;

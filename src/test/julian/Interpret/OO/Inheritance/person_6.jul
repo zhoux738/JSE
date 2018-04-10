@@ -1,0 +1,20 @@
+// runtime type
+class Person {
+	string getDesc(){
+		return "Person";
+	}
+}
+
+class Employee : Person {
+	string getEmployeeDesc(){
+		return "Employee";
+	}
+}
+
+bool caught = false;
+Person p = new Employee();
+try {
+	string s = p.getEmployeeDesc();
+} catch (System.UnknownMemberException e){
+	caught = true;
+}

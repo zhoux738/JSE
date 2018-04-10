@@ -1,0 +1,14 @@
+// Multiple interfaces
+
+interface IPerson {
+	void speak();
+}
+interface IWorker {
+	void work();
+}
+class Employee : IPerson, IWorker {
+	public void speak(){}
+	public void work(){}
+}
+
+Employee e;

@@ -1,0 +1,10 @@
+class Machine {
+
+}
+
+class Car {
+
+}
+
+Car c = new Car();
+Machine m = (Machine) c;

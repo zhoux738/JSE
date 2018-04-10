@@ -1,0 +1,27 @@
+import System.Lang;
+
+bool b0,b1,b2,b3;
+
+try {
+  Function f = new Function();
+} catch (System.Lang.RuntimeCheckException e) {
+  b0 = true;
+}
+
+try {
+  Attribute f = new Attribute();
+} catch (System.Lang.RuntimeCheckException e) {
+  b1 = true;
+}
+
+try {
+  Array f = new Array();
+} catch (System.Lang.RuntimeCheckException e) {
+  b2 = true;
+}
+
+try {
+  Enum f = new Enum();
+} catch (System.Lang.RuntimeCheckException e) {
+  b3 = true;
+}

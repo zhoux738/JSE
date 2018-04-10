@@ -1,0 +1,14 @@
+class MyException : Exception {
+	MyException(string msg, Exception ex) : super(msg, ex){}
+}
+
+var f = (int x) => { throw new Exception("fake cause"); };
+var g = (int x) => { 
+	try {
+		f(x);
+	} catch (Exception ex) {
+		throw new MyException("fake fault", ex);
+	}
+};
+
+int a = g(3);

@@ -1,0 +1,11 @@
+enum Planet {
+
+	Venus,
+	
+	Earth,
+	
+	Mars
+	
+}
+
+string s = Planet.Mars.toString();

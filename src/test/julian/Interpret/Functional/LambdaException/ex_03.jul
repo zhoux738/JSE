@@ -1,0 +1,8 @@
+var f = (int x) => throw new Exception("fake error");
+
+string res = null;
+try {
+	f(3);
+} catch (Exception ex) {
+	res = ex.getMessage();
+}

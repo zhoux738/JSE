@@ -1,0 +1,12 @@
+// assign untyped value to typed value
+int a = 3;
+var v0 = a;
+var v1 = a;
+string b = "xyz";
+v1 = b;
+
+var v2 = a;
+v2 = 4; // v2 is basic type, so its change should not affect a
+
+v2 = v1;
+v2 = 4; // v2 is basic type, so its change should not affect v1

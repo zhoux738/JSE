@@ -1,0 +1,24 @@
+enum Planet {
+
+	Venus,
+	
+	Earth,
+	
+	Mars
+	
+}
+
+string s = "None";
+Planet p = Planet.Earth;
+
+switch(p){
+case Venus:
+	s = "JX";
+	break;
+case Earth:
+	s = "DQ";
+	break;
+case Mars:
+	s = "HX";
+	break;
+}

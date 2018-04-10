@@ -1,0 +1,9 @@
+abstract class A {
+	void fun();
+}
+
+class B : A {
+	void fun(){}
+}
+
+A a = new B();

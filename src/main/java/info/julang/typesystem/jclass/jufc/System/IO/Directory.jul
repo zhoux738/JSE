@@ -1,0 +1,111 @@
+module System.IO;
+
+import System;
+
+/*
+ * A directory (a.k.a. folder), as defined by the underlying file system. 
+ */
+[Bridged(apiset="System.IO.Directory")]
+class Directory : Item {
+
+	/*
+	 * Return false.
+	 */
+	public bool isFile(){
+		return false;
+	}
+	
+	/*
+	 * Create a new directory with the specified path.
+	 *
+	 * [param: path] The path to this directory.
+	 */
+	[Bridged(name="ctor")]
+	hosted Directory(string path);
+
+	/*
+	 * Get the name of this directory. This is only the simple name (with extension part) under the path. 
+	 */	
+	public string getName(){
+		return _getName();
+	}
+	
+	[Bridged(name="getName")]
+	private hosted string _getName();
+
+	/*
+	 * Get the absolute path of this directory. This doesn't include the name.
+	 */		
+	public string getPath(){
+		return _getPath();
+	}
+	
+	[Bridged(name="getPath")]
+	private hosted string _getPath();
+	
+	/*
+	 * Whether this directory exist on file system.
+	 *
+	 * [return] True if the directory exists.
+	 */
+	public bool exists(){
+		return _exists();
+	}
+	
+	[Bridged(name="exists")]
+	private hosted bool _exists();
+
+	/*
+	 * Create a directory represented by this object.
+	 *
+	 * [throws: System.IO.IOException] An error occurred during directory creation.
+	 * [return] True if the directory was created; false if the directory already exists.
+	 */	
+	public bool create(){
+		return _create();
+	}
+	
+	[Bridged(name="create")]
+	private hosted bool _create();
+
+	/*
+	 * Delete this directory recursively.
+	 *
+	 * This operation is not transactional. If an exception is thrown during the call some items
+	 * may have been deleted. 
+	 *
+	 * [throws: System.IO.IOException] An error occurred during directory deletion.
+	 * [return] True if the directory, along with all of its sub-directories and files contained with, 
+	 * were successfully deleted; false if the directory didn't exist.
+	 */	
+	public bool delete(){
+		return _delete();	
+	}
+	
+	[Bridged(name="delete")]
+	private hosted bool _delete();
+	
+	/*
+	 * List all items directly under this directory.
+	 *
+	 * [return] An array of items directly under this directory, including files and sub-directories. With this method, 
+	 * a recursion-based approach is usually applicable to processing all the items under a given directory.
+	 */
+	Item[] listAll(){
+		string[][] all = _listAll();
+		int len = all.length;
+		Item[] items = new Item[len];
+		for(int i=0;i<len;i++){
+			if(all[i][1] == "F"){ // "F" for File
+				items[i] = new File(all[i][0]);
+			} else { // "D" for Directory
+				items[i] = new Directory(all[i][0]);
+			}
+		}
+		return items;
+	}
+	
+	[Bridged(name="listAll")]
+	private hosted string[][] _listAll();
+	
+}

@@ -1,0 +1,10 @@
+class C {
+	var fun(var v){
+		return v;
+	}
+}
+
+C c = new C();
+var a = c.fun(null);
+
+bool v = a == null;

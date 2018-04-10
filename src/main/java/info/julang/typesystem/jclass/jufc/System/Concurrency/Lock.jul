@@ -1,0 +1,66 @@
+module System.Concurrency;
+
+/*
+ * A process-wide lock that controls access to a certain region in code block.
+ *
+ * Julian provides language-level support for using a lock:
+ * [code]
+ *    var mylck = new Lock();
+ *    lock (mylck) {
+ *      ... ... // critical region guarded by the lock.
+ *    }
+ * [code: end]
+ */
+[Bridged(apiset="System.Concurrency.Lock")]
+class Lock {
+
+	/*
+	 * Create a new lock.
+	 */
+	[Bridged(name="ctor")]
+	hosted Lock();
+
+	/*
+	 * Apply the lock from the place where this is called.
+	 * 
+	 * If the lock is held by other threads, this method will block until the lock is secured.
+	 */
+	[Bridged(name="lock")]
+	hosted void lock();
+	
+	/*
+	 * Release the lock. Throw [IllegalStateException](System.IllegalStateException) 
+	 * if the lock is not owned by the current thread.
+	 */
+	[Bridged(name="unlock")]
+	hosted void unlock();
+	
+	/*
+	 * Wait until acquiring the lock or getting interrupted.
+	 *
+	 * [return] true if the waiting was interrupted and this thread failed to obtain the lock; 
+	 * false if the lock was successfully acquired.
+	 */
+	[Bridged(name="wait")]
+	hosted bool wait();
+	
+	/*
+	 * Wait until acquiring the lock, timing out, or getting interrupted.
+	 *
+	 * [param: milliSec] The time to wait on this lock, in milliseconds.
+	 * [return] return time spent on waiting in millisec, which must be less than [the argument](param: milliSec);
+	 * or 0 if timed out, or -1 if getting interrupted.
+	 */
+	[Bridged(name="waitFor")]
+	hosted int wait(int milliSec);
+	
+	/*
+	 * Notify all the other threads waiting on the lock. The platform will make an arbitrary decision on who will be holding
+	 * the lock next.
+	 *
+	 * Throw [IllegalStateException](System.IllegalStateException) if the lock is not owned by the current thread.
+	 */
+	[Bridged(name="notify")]
+	hosted void notify();
+		
+}

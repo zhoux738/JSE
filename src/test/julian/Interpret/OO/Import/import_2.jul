@@ -1,0 +1,4 @@
+import ModuleSys.NamespaceConflict.ModX;
+import ModuleSys.NamespaceConflict.ModY;
+
+MyClass mc = new MyClass();

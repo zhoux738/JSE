@@ -1,0 +1,15 @@
+byte b97 = 97;
+
+int i97 = (int)b97;
+char c97 = (char)b97;
+string s97 = (string)b97;
+bool z97 = (bool)b97;
+byte r97 = (byte)b97;
+
+var v = b97;
+
+int i97_2 = (int)v;
+char c97_2 = (char)v;
+string s97_2 = (string)v;
+bool z97_2 = (bool)v;
+byte r97_2 = (byte)r97;

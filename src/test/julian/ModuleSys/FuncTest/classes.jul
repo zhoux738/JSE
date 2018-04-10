@@ -1,0 +1,21 @@
+module ModuleSys.FuncTest;
+
+class Delegate {
+	Function f;
+	Delegate(Function f){
+		this.f = f;
+	}
+	void exe(){
+		f();
+	}
+}
+
+class Counter {
+	static int getTotal(int times){
+		int acc = 0;
+		for(int i = 0; i <= times ; i++){
+			acc += i;
+		}
+		return acc;
+	}
+}

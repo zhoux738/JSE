@@ -1,0 +1,21 @@
+class Person {
+
+	int age;
+	
+	string name;
+	
+	string getName(){
+		return name;
+	}
+
+	int getAge(){
+		return age;
+	}
+	
+	void printInfo(){
+		// ...
+	}
+	
+}
+
+Person p;

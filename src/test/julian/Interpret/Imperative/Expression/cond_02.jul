@@ -1,0 +1,5 @@
+int a = 10, b = 20, c = 30;
+int x1 = true ? true ? a : b : c;
+int x2 = true ? false ? a : b : c;
+int x3 = false ? a : true ? b : c;
+int x4 = false ? a : false ? b : c;

@@ -1,0 +1,5 @@
+module ModuleSys.BasicDep.ModY;
+
+class Ya {
+
+}

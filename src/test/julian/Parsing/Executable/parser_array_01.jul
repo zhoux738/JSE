@@ -1,0 +1,2 @@
+int[] arr1 = new int[3];
+int[] arr2 = new int[x - 5];

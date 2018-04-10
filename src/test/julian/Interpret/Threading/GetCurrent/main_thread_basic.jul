@@ -1,0 +1,9 @@
+import System.Concurrency;
+import System;
+
+string name;
+
+Thread t = Thread.getCurrent();
+name = t.getName();
+
+//Console.println(name);

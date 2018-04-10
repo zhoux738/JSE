@@ -1,0 +1,15 @@
+import System.Collection;
+
+Queue q = new Queue();
+q.enqueue(3);
+q.enqueue("abc");
+
+int size1 = q.size();
+
+int v0 = q.dequeue();
+string v1 = q.dequeue();
+
+int size2 = q.size();
+string v2 = q.dequeue();
+
+int size3 = q.size();

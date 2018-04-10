@@ -1,0 +1,10 @@
+class SimpleMath {
+
+	int double(int arg){
+		return arg + arg;
+	}
+	
+}
+
+SimpleMath s = new SimpleMath();
+int x = s.double(5);

@@ -1,0 +1,14 @@
+import System.IO;
+import System.Concurrency;
+
+File file = new File(path);
+AsyncStream astream = (AsyncStream)file.getReadStream();
+byte[] buffer = new byte[3];
+int tc,  // total called
+    tr;  // total read
+
+Promise p = astream.readAllAsync(buffer, read => tc++).then(read => {
+	tr = read;
+});
+
+p.getResult(true);

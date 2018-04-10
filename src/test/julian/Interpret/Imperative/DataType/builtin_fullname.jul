@@ -1,0 +1,6 @@
+String s = null;
+Void fun(Integer i, Any a){
+	s = (String)a + i;
+}
+
+fun(5, "a");

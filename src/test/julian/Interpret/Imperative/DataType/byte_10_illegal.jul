@@ -1,0 +1,25 @@
+import System;
+import System.Lang;
+
+byte b = 5;
+
+bool z0 = false;
+try {
+	b = "";
+} catch (IllegalAssignmentException e){
+	z0 = true;
+}
+
+bool z1 = false;
+try {
+	bool z = b;
+} catch (IllegalAssignmentException e){
+	z1 = true;
+}
+
+bool z2 = false;
+try {
+	bool t1 = b + z1;
+} catch (IllegalOperandException e){
+	z2 = true;
+}

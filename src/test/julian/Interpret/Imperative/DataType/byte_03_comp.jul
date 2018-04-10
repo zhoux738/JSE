@@ -1,0 +1,21 @@
+byte b0 = 0;
+byte b1 = 1;
+byte b_1 = -1;
+byte b10 = 10;
+byte b127 = 127;
+byte b_128 = -128;
+
+bool z0a = b0 < b1;
+bool z0b = 0 < b1;
+bool z0c = b0 < 1;
+bool z1a = b0 > b_1;
+bool z1b = 0 > b_1;
+bool z1c = b0 > -1;
+bool z2 = b10 < b127;
+bool z3 = b127 > b_128;
+bool z4a = b_128 == b127 + 1;
+bool z4b = 128 == b127 + 1;
+bool z5a = b127 < 128;
+bool z5b = 128 > b127;
+bool z6a = b127 < 127.1;
+bool z6b = 127.1 > b127;

@@ -1,0 +1,28 @@
+import ModuleSys.StockTrading2.Commons;
+import ModuleSys.StockTrading2.Market;
+import ModuleSys.StockTrading2.Investor;
+
+StockMarket nasdaq = new StockMarket("NASDAQ");
+nasdaq.list(new Stock("GOOG", 500.5));
+nasdaq.list(new Stock("APPL", 100.5));
+
+Investor me = new Investor("Ming", 150000);
+me.openAccount(nasdaq);
+
+//Console.println("TOTAL 1 = " + me.getPortfolioValue());
+
+me.buy("GOOG", 3);
+
+nasdaq.fluctuate("GOOG", 17.2);				// + 17.2 * 3
+//Console.println("TOTAL 2 = " + me.getPortfolioValue());
+
+me.buy("APPL", 1);
+nasdaq.fluctuate("APPL", -10.3);			// - 10.3 * 1
+//Console.println("TOTAL 3 = " + me.getPortfolioValue();
+
+me.sell("GOOG", 3);
+me.sell("APPL", 100); // 100 is more than I have, so it will sell all out.
+
+float cash = me.getCash();
+//Console.println("Cash = " + cash);		// = 41.3 (net gains)
+

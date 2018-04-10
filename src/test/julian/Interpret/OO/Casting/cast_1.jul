@@ -1,0 +1,10 @@
+class Car {
+	string name;
+	Car(string name){
+		this.name = name;
+	}
+}
+
+Car c = new Car("BYD");
+Car c2 = (Car) c;
+string n = c2.name;

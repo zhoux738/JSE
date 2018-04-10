@@ -1,0 +1,7 @@
+// A switch with default clause only
+int a = 1;
+string s = "None";
+switch( a ){
+default:
+  s = "Unknown";
+}

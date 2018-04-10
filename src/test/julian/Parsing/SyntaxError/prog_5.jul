@@ -1,0 +1,3 @@
+import ModuleSys.SynD;
+
+MyClass mc = new MyClass();

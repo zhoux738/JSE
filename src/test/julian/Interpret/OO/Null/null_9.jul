@@ -1,0 +1,5 @@
+class C {}
+bool b1 = null is Any;
+bool b2 = null is C;
+bool b3 = null is char;
+bool mark = true;

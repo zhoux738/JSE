@@ -1,0 +1,8 @@
+// no return type
+class Item {
+	
+	doWork(){}
+	
+}
+
+Item item;

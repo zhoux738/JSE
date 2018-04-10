@@ -1,0 +1,21 @@
+class P {
+}
+class C : P {
+	int v;
+	C(int v){
+		this.v = v;
+	}
+}
+
+var arr = new C[]{new C(10)};
+bool b1 = arr is Array;
+Array a1 = (Array)arr;
+int v1 = a1[0].v;
+a1[0].v = 20;
+
+bool b2 = arr is C[];
+C[] a2 = (C[])arr;
+int v2 = a2[0].v;
+
+// No covariance for array
+bool b3 = arr is P[];

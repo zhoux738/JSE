@@ -1,0 +1,9 @@
+//LambdaEnvTests
+
+var c = 10;
+
+Function f = (int x) => { c = c + x; };
+
+f(5);
+
+//dprint(c); // output: 15

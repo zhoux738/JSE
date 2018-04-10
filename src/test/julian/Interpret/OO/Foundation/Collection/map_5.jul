@@ -1,0 +1,28 @@
+// use of [ ] on map instance
+import System.Collection;
+
+Map m = new Map();
+
+
+m[100] = 3;
+m['b'] = "xyz";
+m[true] = true;
+
+int size1 = m.size();
+
+var a = m[50+50];
+var b = m['b'];
+var c = m[!false];
+
+// Overwrite
+m["de"] = "delta";
+m["d" + "e"] = "gamma";
+
+var d = m["de"];
+
+m[101] = "epsilon";
+var e1 = m.remove(101);
+var e2 = m[101];
+var nex = e2 == null;
+
+int size2 = m.size();

@@ -1,0 +1,8 @@
+bool b0, b1;
+
+try {
+	int Integer;
+} catch (System.Lang.NamespaceConflictException e) {
+	b0 = true;
+	b1 = e.getMessage().contains("Integer");
+}

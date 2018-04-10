@@ -1,0 +1,13 @@
+class C {
+	static int state = 0;
+	static int fun(int x){
+		try {
+			return x;
+		} finally {
+			state = 1;
+		}
+	}
+}
+
+int x = C.fun(5);
+int y = C.state;

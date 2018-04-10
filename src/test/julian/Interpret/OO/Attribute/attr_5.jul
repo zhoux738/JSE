@@ -1,0 +1,32 @@
+// attributes on class def and it members
+import System;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.METHOD|AttributeTarget.CLASS)] 
+attribute Author {
+
+	string name;
+	
+	int year;
+	
+}
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.METHOD|AttributeTarget.CLASS)] 
+attribute Owner {
+
+	string name;
+	
+}
+
+[Author(name="Liam", year=1980)]
+[Owner(name="Scot")]
+class MyClass {
+
+	[Author(name="Liam", year=1980)]
+	[Owner(name="Scot")]
+	void doSomething() {
+	
+	}
+	
+}
+
+MyClass mc;

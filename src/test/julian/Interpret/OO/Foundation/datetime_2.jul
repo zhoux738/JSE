@@ -1,0 +1,12 @@
+import System;
+
+DateTime dt = new DateTime(1999, 12, 31, 23, 59, 59, 999);
+// Console.println(dt);
+
+int year = dt.getYear();
+int month = dt.getMonth();
+int day = dt.getDay();
+int hour = dt.getHour();
+int minute = dt.getMinute();
+int second = dt.getSecond();
+int milli = dt.getMilli();

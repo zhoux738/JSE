@@ -1,0 +1,13 @@
+class Settings {
+
+	static Settings() {
+		Val2 = Val1 * 2;
+	}
+	
+	static int Val1 = 100;
+	static int Val2;
+	
+}
+
+int v1 = Settings.Val1;
+int v2 = Settings.Val2;

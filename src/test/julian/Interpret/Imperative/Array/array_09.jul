@@ -1,0 +1,4 @@
+float[] arr = new float[2];
+arr[1]=10.3;
+float f1 = arr[0];
+float f2 = arr[1];

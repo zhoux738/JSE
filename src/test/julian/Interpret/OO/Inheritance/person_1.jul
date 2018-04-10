@@ -1,0 +1,16 @@
+// subclass inherits fields
+class Person {
+
+	int age;
+	
+}
+
+class Employee : Person {
+
+	string job;
+	
+}
+
+Employee e = new Employee();
+e.age = 32;
+int i = e.age;

@@ -1,0 +1,16 @@
+import System.Concurrency;
+
+// Test skipping callbacks.
+Promise p0 = Promise.start(()=> {
+	throw new Exception("failed");
+}).then(d => {
+	throw new Exception("bug!"); // skip
+}).then(d => {
+	throw new Exception("bug!"); // skip
+}).error(ex => {
+	return ex.getMessage() + "!";
+}).error(ex => {
+	throw new Exception("bug!"); // skip
+});
+
+string msg = p0.getResult(true);

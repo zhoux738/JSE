@@ -1,0 +1,7 @@
+module ModuleSys.CircularDep.ModX;
+
+import ModuleSys.CircularDep.ModY;
+
+class Xa {
+
+}

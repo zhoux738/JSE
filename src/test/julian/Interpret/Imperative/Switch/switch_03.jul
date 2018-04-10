@@ -1,0 +1,7 @@
+// An empty switch
+int a = 0;
+string s = "None";
+switch( a ){
+
+}
+s = "Nothing";

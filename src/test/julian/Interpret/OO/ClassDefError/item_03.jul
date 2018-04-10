@@ -1,0 +1,8 @@
+// duplicate identifiers
+class Item {
+	
+	static static void doWork(){}
+	
+}
+
+Item item;

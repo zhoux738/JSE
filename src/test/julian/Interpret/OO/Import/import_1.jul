@@ -1,0 +1,5 @@
+import ModuleSys.ModB;
+
+int x = 5;
+
+//dprint(x);

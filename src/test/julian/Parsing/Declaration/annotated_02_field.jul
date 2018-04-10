@@ -1,0 +1,9 @@
+public class C1 {
+	[Anno(val=5.3, val2=true)]
+	private int c = 5;
+	
+	[Anno()]
+	[Anno2]
+	string s = null;
+
+}

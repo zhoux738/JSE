@@ -1,0 +1,13 @@
+class C {
+	static var fun(var v){
+		if(v == 3){
+			v = "xyz";
+		} else if(v == "xyz"){
+			v = 3;
+		}
+		return v;
+	}
+}
+
+var b = C.fun(3);
+var a = C.fun("xyz");

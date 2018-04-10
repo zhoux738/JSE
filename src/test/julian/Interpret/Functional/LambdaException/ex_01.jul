@@ -1,0 +1,2 @@
+Function f = (int x) => { throw new Exception("fake error"); };
+int a = f(3);

@@ -1,0 +1,43 @@
+import System.Concurrency;
+import System;
+
+class SynchedValue {
+
+	int value = 100; // let's start with a non-zero value
+	
+	Lock lock = new Lock();
+
+	void add(int i){
+		sync(lock){
+			if(i % 2 == 0){
+				throw new Exception();
+			} else {
+				value += 1;
+			}
+		} 
+	}
+
+}
+
+void f(SynchedValue sv){
+	for(int i = 0; i < 100; i++){
+		try {
+			sv.add(i);
+		} catch (Exception ex) {
+			// ignore.
+		}
+	}
+}
+
+SynchedValue sv = new SynchedValue();
+
+Thread t1 = Thread.create(()=>f(sv));
+Thread t2 = Thread.create(()=>f(sv));
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();
+
+int value = sv.value;
+//Console.println(value);

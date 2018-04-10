@@ -1,0 +1,8 @@
+int x;
+
+class C {
+
+}
+
+x = 5;
+Console.println(x);

@@ -1,0 +1,34 @@
+import System.Concurrency;
+import System;
+
+int value;
+bool occupied;
+Lock lck = new Lock();
+
+void f0(){
+	lck.lock();
+	while(occupied){
+		lck.wait();
+	}
+	occupied = true;
+	lck.unlock();
+	
+	value++;
+	Thread.sleep(25);
+	value++;
+	
+	lck.lock();
+	occupied = false;
+	lck.notify();
+	lck.unlock();
+}
+
+Thread t1 = Thread.create(f0);
+Thread t2 = Thread.create(f0);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();
+
+//Console.println(value);

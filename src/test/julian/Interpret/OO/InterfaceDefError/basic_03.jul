@@ -1,0 +1,7 @@
+
+interface I {
+	int fun();
+	string fun();
+}
+
+I i;

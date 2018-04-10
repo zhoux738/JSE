@@ -1,0 +1,10 @@
+import System.Concurrency;
+
+// Test result coercion on void return.
+Promise p0 = Promise.start((res)=> {
+	// return void , coerced to null
+}).then((res)=> {
+	return res == null;
+});
+
+var result = p0.getResult(true);

@@ -1,0 +1,153 @@
+module System.Concurrency;
+
+// Always change this along with info.julang.execution.threading.JThreadPriority.java
+/*
+ * The priority of this thread. This setting is heavily dependent on the underlying implementation and thus
+ * is mostly used as a hint rather than directive.
+ */
+enum ThreadPriority {
+	/* The thread has lower priority. */
+	LOW,
+	/* The thread has normal priority. This is the default setting for a thread. */
+	NORMAL,
+	/* The thread has high priority. */
+	HIGH
+}
+
+/*
+ * The state of thread.
+ *
+ * A thread runs through several stage in its life cycle. There is only one lifetime for a thread, so 
+ * it cannot be started twice, even if it's already [done](#DONE).
+ */
+enum ThreadState {
+    /* The thread is ready to run. */
+	READY, 
+    /* The thread is running. */
+	RUNNING, 
+    /* The thread is pending. */
+	PENDING, 
+    /* The thread has finished running, either by normal completion or abortion. */
+	DONE
+}
+
+/*
+ * A program thread. 
+ *
+ * A thread is a light-weight execution unit within a process. A thread has its own stack and runs 
+ * independently from other threads, only subject to thread scheduling controlled by the underlying
+ * managed platform or operating system.
+ *
+ * Julian doesn't have a thread manager on its own. The threads are created and are scheduled by
+ * the platform (JVM) thread manager. However, except for the main thread, which is the default 
+ * thread on which the script engine starts execution, all other threads are background threads and
+ * will terminate upon completion of the main thread.
+ * 
+ * Once started, threads cannot be stopped or suspended. However, they can be interrupted by calling 
+ * [interrupt()](#interrupt), yet such events will go unnoticed if the thread's business logic 
+ * doesn't actively check and react to it. The only real effect an interruption can cause is to force
+ * the thread to exit sleeping.
+ *
+ * Threads can synchronized with each other through a particular class: [Lock](System.Concurrency.Lock).
+ * If threads are competing on certain resources, use a lock to guard the critical region. 
+ */
+[Bridged(apiset="System.Concurrency.Thread")]
+class Thread {
+
+	private Function _fun;
+
+	/*
+	 * A factory method to create a thread with a function. The thread will have a default name and normal priority.
+	 *
+	 * [param: fun] The function to run on this thread.
+	 * [return] A thread ready to start.
+	 */
+	public static Thread create(Function fun){
+		return new Thread(fun, null, ThreadPriority.NORMAL);
+	}
+
+	/*
+ 	 * Create a thread with specified function, name and priority.
+ 	 *
+	 * [param: fun] The function to run on this thread.
+	 * [param: name] The name of this thread. If null, a default name will be assigned to it.
+	 * [param: pri] The priority of this thread.
+ 	 */
+	Thread(Function fun, string name, ThreadPriority pri){
+		_fun = fun;
+		init(name, pri);
+	}
+
+	[Bridged(name="init")]
+	private hosted void init(string name, ThreadPriority pri);
+
+	private void exeThread(){
+		_fun();
+	}
+
+	/*
+	 * Get the name of this thread.
+	 *
+	 * [return] Thread's name.
+	 */
+	[Bridged(name="getName")]
+	hosted string getName();
+	
+	/*
+	 * Start the thread.
+	 * 
+	 * Calling this on the current thread will throw [IllegalStateException](System.IllegalStateException).
+	 */
+	[Bridged(name="start")]
+	hosted void start();
+	
+	/*
+	 * Wait until the specified thread is finished.
+	 * 
+	 * This method will block until the thread finishes. Calling this on the current thread will throw
+	 * [IllegalStateException](System.IllegalStateException).
+	 */
+	[Bridged(name="join")]
+	hosted void join();
+	
+	/*
+	 * Send interruption signal to this thread.
+	 *
+	 * Note the receiving thread must have logic to check this and react accordingly. The sender must not 
+	 * assume such logic exists and therefore shall not solely rely on this to coordinate inter-thread works.
+	 */
+	[Bridged(name="interrupt")]
+	hosted void interrupt();
+	
+	/*
+	 * Get the Thread object for the currently running thread.
+	 *
+	 * [return] The thread object representing the current thread (the one on which this method is called)
+	 */
+	[Bridged(name="getCurrent")]
+	hosted static Thread getCurrent();
+	
+	/*
+	 * Let the current thread sleep for specified duration. 
+	 * 
+	 * [param: periodInMillisec] sleep duration in milliseconds
+	 * [return] true if interrupted, with the interruption flag reset; false if time is up.
+	 */
+	[Bridged(name="sleep")]
+	hosted static bool sleep(int periodInMillisec);
+	
+	/*
+	 * Check if the thread has been interrupted. Also reset the interruption flag.
+	 *
+	 * [return] true if interrupted, with the interruption flag reset; false if not.
+	 */
+	[Bridged(name="checkInterruption")]
+	hosted static bool checkInterruption();
+	
+	/*
+	 * Get state of the thread.
+	 */
+	[Bridged(name="getState")]
+	hosted ThreadState getState();
+		
+}

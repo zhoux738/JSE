@@ -1,0 +1,37 @@
+import System.Concurrency;
+import System;
+
+int total = 100;
+string[] values = new string[total];
+
+void f0(string v){
+	for(int i = 0; i < total; i++){
+		values[i] = v;
+		values[i] = values[i];
+	}
+}
+
+void f1(){
+	f0("a");
+}
+
+void f2(){
+	f0("b");
+}
+
+f1();
+
+Thread t1 = new Thread(f1, "t1", ThreadPriority.NORMAL);
+Thread t2 = new Thread(f2, "t2", ThreadPriority.NORMAL);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();
+
+// either 10 or 20
+/**
+for(int i = 0; i < total; i++){
+  Console.println(values[i]);
+}
+//*/

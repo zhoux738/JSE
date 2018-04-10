@@ -1,0 +1,15 @@
+// A basic circular reference test
+class Family {
+
+	Person father;
+	
+	Person mother;
+}
+
+class Person {
+
+	Family family;
+	
+}
+
+Family f;

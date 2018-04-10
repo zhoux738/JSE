@@ -1,0 +1,9 @@
+// Cannot access to internal type defined in a different module
+
+import ModuleSys.IntC;
+
+class MyClass : IntCls {
+
+}
+
+MyClass mc = new MyClass();

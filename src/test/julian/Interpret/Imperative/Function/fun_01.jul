@@ -1,0 +1,11 @@
+//BasicFunctionInvocationTests
+
+int a = 0;
+
+void fun(int i){
+	a = i + 3;
+}
+
+fun(5);
+
+//dprint(a); // output: 8

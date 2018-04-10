@@ -1,0 +1,11 @@
+class Machine {
+
+}
+
+class Car : Machine {
+
+}
+
+Car c = new Car();
+Machine m = (Machine) c;
+bool res = m == c;

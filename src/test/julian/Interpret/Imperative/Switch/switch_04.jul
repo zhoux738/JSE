@@ -1,0 +1,12 @@
+// Fall though in switch
+int a = 1;
+string s = "None";
+switch( a ){
+case 1:
+  s = "One";
+case 2:
+  s = "Two";
+  break;
+default:
+  s = "Unknown";
+}

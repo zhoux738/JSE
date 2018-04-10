@@ -1,0 +1,9 @@
+// (Julian) Overloaded members must conform to same visibility level.
+import System;
+
+class Car {
+	public int start(){ return 50; }
+	private int start(int speed){ return speed; }
+}
+
+Car c = new Car();

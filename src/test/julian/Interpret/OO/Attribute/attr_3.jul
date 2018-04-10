@@ -1,0 +1,20 @@
+// attribute on field
+import System;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.METHOD|AttributeTarget.FIELD)] 
+attribute Author {
+
+	string name;
+	
+	int year;
+	
+}
+
+class MyClass {
+
+	[Author(name="Liam", year=1980)]
+	string field1;
+	
+}
+
+MyClass mc;

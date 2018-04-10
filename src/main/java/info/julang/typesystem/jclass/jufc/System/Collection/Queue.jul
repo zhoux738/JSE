@@ -1,0 +1,170 @@
+module System.Collection;
+
+import System.Concurrency;
+
+[Bridged(apiset="System.Collection.Queue")]
+internal class PQueue {
+
+	[Bridged(name="ctor")]
+	hosted PQueue();
+	
+	[Bridged(name="enqueue")]
+	hosted void _enqueue(var element);
+	
+	[Bridged(name="dequeue")]
+	hosted var _dequeue();
+	
+	[Bridged(name="size")]
+	hosted int _size();
+}
+
+/*
+ * A queue only allows data access based on first-in-first-out (FIFO) order. Similar to [List](List), it's self-scalable.
+ */
+public class Queue : Container {
+
+	private PQueue pq;
+
+	/*
+	 * Create a new queue.
+	 */
+	public Queue(){
+		pq = new PQueue();
+	}
+	
+	/*
+	 * Add a new element to the tail of queue.
+	 *
+	 * [param: ele] The new element to add. Can be null.
+	 */
+	public void enqueue(var ele){
+		pq._enqueue(ele);
+	}
+
+	/*
+	 * Remove an element from the head of queue.
+	 *
+	 * [return] The element to remove; null if the queue is empty. It cannot differentiate between empty queue and null element.
+	 */	
+	public var dequeue(){
+		return pq._dequeue();
+	}
+	
+	/*
+	 * Get the current size of the queue.
+	 *
+	 * [return] The size of queue.
+	 */
+	public int size(){
+		return pq._size();
+	}
+}
+
+/*
+ * A queue with extended capability of blocking on pulling operation until data is available.
+ *
+ * With the [ordinary queue](Queue) the dequeue operation returns immediately with the element at the head, 
+ * or null if the queue is empty. A blocking queue, however, supports dequeuing with extended waiting time,
+ * during which it will put the current thread into a waiting thread. When a new element is added, it will
+ * notify the waiting threads, so that the dequeue operation can proceed.   
+ */
+public class BlockingQueue : Queue {
+
+    private Lock lck;
+
+	/*
+	 * Create a new blocking queue.
+	 */
+    public BlockingQueue() : super() {
+        lck = new Lock();
+    }
+    
+    /*
+	 * Remove an element from the head of queue. If the queue is empty, wait for [specified duration](param: timeoutInMillisec).
+	 * If new data becomes available within the duration this method will return successfully. Otherwise it either returns null,
+	 * or throws, upon expiration.
+	 *
+	 * This method will send the current thread into waiting state. Use caution to avoid deadlock.
+	 *
+	 * [param: timeoutInMillisec] The time to wait, in milliseconds.
+	 * [param: throwIfTimeout] true if to throw out IllegalStateException upon waiting expiration.
+	 * [throws: System.IllegalStateException] Only if [throwIfTimeout](param: throwIfTimeout) is true.
+	 * [return] The element to remove; null if the queue is empty. It cannot differentiate between empty queue and null element.
+	 */	
+    public var pull(int timeoutInMillisec, bool throwIfTimeout) {
+    	DateTime baseTime = DateTime.getNow();
+        while (true) {
+            if (size() > 0) {
+                var res = super.dequeue();
+                if (res != null){
+                	// Return only if it's not null
+                	return res;
+                }
+            }
+
+			DateTime currTime = DateTime.getNow();
+            if (currTime.diff(baseTime) >= timeoutInMillisec) {
+                if (throwIfTimeout) {
+                    throw new IllegalStateException("Timed out when pulling from BlockingQueue.");
+                } else {
+                    return null;
+                }
+            }
+
+            // If we reach here it means we didn't retrieve anything from the queue. 
+            // Since push() is effectively guarded by the lock, we enter this critical region either before or after enqueue()
+            sync (lck) {
+                // Case 1/2: If we enter CR after enqueue(), we have missed notify().
+                if (super.size() > 0) {
+                    continue;
+                }
+
+                // Case 2/2: If we enter CR before enqueue(), we will receive notify().
+                int remaining = timeoutInMillisec - DateTime.getNow().diff(baseTime);
+                int res = 0;
+                if (remaining > 0){
+                	res = lck.wait(remaining); 
+                }
+                if (res == 0){
+                	if (throwIfTimeout) {
+                		throw new IllegalStateException("Timed out when pulling from BlockingQueue.");
+                    } else {
+	                    return null;
+	                }
+                } else if (res == -1){ // Interrupted
+                	continue;
+                }
+            }
+        }    
+    }
+    
+    /*
+	 * Add a new element to the tail of queue. This will notify all the threads waiting at the call to [pull](#pull).
+	 *
+	 * [param: ele] The new eleemnt to add. Can be null.
+     */
+    public void enqueue(var ele){
+    	if (ele == null) {
+    		throw new ArgumentException("ele");
+    	}
+    	
+        sync (lck)
+        {
+            super.enqueue(ele);
+            lck.notify();
+        }
+	}
+
+	/*
+	 * Remove an element from the head of queue.
+	 *
+	 * This method preserves the behavior of the [parent class](System.Collection.Queue). It won't wait on an empty queue, 
+	 * and it will return null if the queue is empty.
+	 *
+	 * [see: Queue]
+	 * [return] The element to remove; null if the queue is empty. It cannot differentiate between empty queue and null element.
+	 */	
+	public var dequeue(){
+		return pull(0, false);
+	}
+}

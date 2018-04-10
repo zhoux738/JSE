@@ -1,0 +1,24 @@
+class Calc {
+
+	static int add(int v1, int v2, int v3, int v4){
+		return v1 + v2 + v3 + v4;
+	}
+	
+	static int add(int v1, int v2){
+		return v1 + v2;
+	}
+	
+	static int add(int v1){
+		return add(v1, 100);
+	}
+	
+	static int add(){
+		return add(100);
+	}
+}
+
+int s200 = Calc.add.invoke();
+int s105 = Calc.add.invoke(5);
+int s10 = Calc.add.invoke(3, 7);
+int s14 = Calc.add.invoke(3, 11, 17);
+int s50 = Calc.add.invoke(3, 11, 17, 19, 23);

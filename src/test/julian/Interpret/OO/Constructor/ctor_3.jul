@@ -1,0 +1,20 @@
+// Constructor forward call: this
+class Person {
+	
+	int id;
+	
+	string name;
+
+	Person(string name) : this(name, 100) {
+	}
+	
+	Person(string name, int id){
+		this.name = name;
+		this.id = id;
+	}
+		
+}
+
+Person e = new Person("Tyler");
+string name = e.name;
+int id = e.id;

@@ -1,0 +1,126 @@
+module System.Lang;
+
+import System;
+
+// The definition of following exceptions are subject to further changes
+
+/* 
+ * There is a syntax error in the source code, which would have been identified during compile-time 
+ * but due to the interpretive nature of Julian it can be only affirmed and raised during runtime.
+ * In general this exception is fatal and would cause module or class loading to fail.
+ */
+class BadSyntaxException : Exception { 
+
+	/*
+	 * Create a bad syntax exception with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	BadSyntaxException(String msg) : super(msg) {} 
+}
+
+/*
+ * There is an exception with broad use. It basically indicates a semantic issue with the script, which would
+ * have been identified during compile-time but due to the interpretive nature of Julian it can be only affirmed
+ * and raised during runtime.
+ */
+class RuntimeCheckException : Exception { 
+
+	/*
+	 * Create a new runtime check exception with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	RuntimeCheckException(String msg) : super(msg) {} 
+}
+
+/*
+ * There are two or more symbols in the current context with the same name. This exception is a special case
+ * of [BadSyntaxException](type: BadSyntaxException).
+ */
+class DuplicateSymbolException : BadSyntaxException { 
+
+	/*
+	 * Create a duplicate symbol exception with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	DuplicateSymbolException(String msg) : super(msg) {} 
+}
+
+/*
+ * Indicates the illegal use of a certain runtime value as operand in the expression.
+ */
+class IllegalOperandException : RuntimeCheckException { 
+
+	/*
+	 * Create a new illegal operand exception with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	IllegalOperandException(String msg) : super(msg) {} 
+}
+
+/*
+ * The literal value (such as a string or number) encountered during interpretation is ill-formatted or contains illegal characters.
+ */
+class IllegalLiteralException : BadSyntaxException { 
+
+	/*
+	 * Create a new illegal literal exception with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	IllegalLiteralException(String msg) : super(msg) {} 
+}
+
+/*
+ * A symbol is used without definition. This exception is a special case
+ * of [BadSyntaxException](type: BadSyntaxException).
+ */
+class UndefinedSymbolException : BadSyntaxException { 
+
+	/*
+	 * Create a new undefined symbol exception with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	UndefinedSymbolException(String msg) : super(msg) {} 
+}
+
+/*
+ * A symbol cannot be resolved since in the current context, as there are at least two namespaces against which this symbol
+ * can be potentially resolved. This exception is a special case of [RuntimeCheckException](type: RuntimeCheckException).
+ */
+class NamespaceConflictException : RuntimeCheckException { 
+
+	/*
+	 * Create a new namespace conflict exception with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	NamespaceConflictException(String msg) : super(msg) {} 
+}
+
+/*
+ * Type definitions form a cyclic dependency with each other. This happens when the inheritance order of involved
+ * types contains cyclic references. Only by having types use others as member type (including parameter and return
+ * type) won't cause this exception. This exception will cause module loading to fail.
+ */
+class CyclicDependencyException : RuntimeCheckException { 
+
+	/*
+	 * Create a new cyclic dependency exception with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	CyclicDependencyException(String msg) : super(msg) {} 
+}

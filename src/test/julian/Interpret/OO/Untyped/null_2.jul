@@ -1,0 +1,9 @@
+class C {
+	var v = new Object();
+	C(var v){
+		this.v = v;
+	}
+}
+
+C c = new C(null);
+bool v = c.v == null;

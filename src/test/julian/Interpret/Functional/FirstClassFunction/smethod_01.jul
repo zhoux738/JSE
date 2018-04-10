@@ -1,0 +1,17 @@
+//FirstClassFunctionTests
+
+class Person {
+
+	static int salary;
+	
+	static void increase(int bump){
+		salary += bump;
+	}
+	
+}
+
+Function f = Person.increase;
+f(8);
+
+int a = Person.salary;
+// dprint(a); // output: 8

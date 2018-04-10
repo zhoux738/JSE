@@ -1,0 +1,23 @@
+// meta-attribute check failure
+import System;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.ENUM)] 
+attribute Unchecked {
+	
+}
+
+[Unchecked]
+attribute Author {
+
+	string name;
+	
+	int year;
+	
+}
+
+[Author(name="Liam", year=1980)]
+class MyClass {
+
+}
+
+MyClass mc;

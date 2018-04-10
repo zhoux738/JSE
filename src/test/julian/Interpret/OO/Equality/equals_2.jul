@@ -1,0 +1,23 @@
+class Person {
+	
+	private string name;
+	
+	Person(string name){
+		this.name = name;
+	}
+	
+	public bool equals(Object another){
+		if (another is Person){
+			Person p2 = (Person) another;
+			return this.name == p2.name;
+		}
+		
+		return false;
+	}
+}
+
+Person p1 = new Person("Alfred");
+Person p2 = new Person("Alfred");
+
+bool res1 = p1.equals(p1);
+bool res2 = p1.equals(p2);

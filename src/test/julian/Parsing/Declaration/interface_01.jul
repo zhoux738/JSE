@@ -1,0 +1,7 @@
+public interface I {
+
+}
+
+interface I2 {
+
+}

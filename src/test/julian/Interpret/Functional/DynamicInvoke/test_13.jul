@@ -1,0 +1,27 @@
+int i = 5;
+int f1(){
+	i++;
+}
+
+string f2(){
+	i++;
+}
+
+Object f3(){
+	i++;
+}
+
+var f4(){
+	i++;
+}
+
+void f5(){
+	i++;
+}
+
+
+int j = f1.invoke();
+string s = f2.invoke();
+Object o = f3.invoke();
+var v1 = f4.invoke();
+var v2 = f5.invoke();

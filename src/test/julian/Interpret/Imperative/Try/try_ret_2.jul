@@ -1,0 +1,13 @@
+// return from catch block
+import System;
+
+int fun(int x){
+	try {
+		throw new Exception("msg");
+	} catch (Exception ex) {
+		return x * 2;
+	}
+	return x * 3;
+}
+
+int x1 = fun(4);

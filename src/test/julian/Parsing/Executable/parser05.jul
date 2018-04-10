@@ -1,0 +1,7 @@
+int c = null;
+
+bool f(int c, var v, int x){
+	return c.run(v + x);
+}
+
+f(c, null, 10);

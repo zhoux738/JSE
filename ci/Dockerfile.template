@@ -1,0 +1,26 @@
+FROM java:8
+
+# Put all test artifacts under this directory. Note Docker forbids copying files from outside 
+# the build context, so all the source folders must be replicated locally first (see Ant task).
+RUN mkdir /ci-test
+
+ADD CI-@VERSION@.jar /ci-test
+
+ADD test-manifest.json /ci-test
+ADD run-ci.sh /ci-test
+RUN chmod +x /ci-test/run-ci.sh
+
+ADD ModuleSys /ci-test/ModuleSys
+ADD Application /ci-test/Application
+
+# Add JSE jar into JRE's extension directory so that it can be dicovered by Java Scripting Engine
+ADD JSE-@VERSION@.jar /usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext
+
+# Prepare utilities
+RUN apt-get update
+RUN apt-get -y install jq
+# (debug only)
+# RUN apt-get -y install vim
+
+# Run the following commands when the container starts
+CMD /ci-test/run-ci.sh

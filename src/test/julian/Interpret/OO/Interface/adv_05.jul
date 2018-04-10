@@ -1,0 +1,15 @@
+// with child->parent->interface, assign instance of child class to an interface variable
+interface I {
+	int fun();
+}
+
+abstract class A : I {
+
+}
+
+class C : A {
+	public int fun(){ return 5; }
+}
+
+I inst = new C();
+int i = inst.fun();

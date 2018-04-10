@@ -1,0 +1,14 @@
+import System.Concurrency;
+import System;
+
+Thread mt = Thread.getCurrent();
+int value = 0;
+
+void f(){
+	mt.join();
+	value = 5; // The current implementation doesn't guarantee the non-execution of this line.
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+t.start();

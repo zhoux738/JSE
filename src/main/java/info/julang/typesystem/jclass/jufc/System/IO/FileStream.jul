@@ -1,0 +1,108 @@
+module System.IO;
+
+import System;
+import System.Concurrency;
+
+/*
+ * The mode to open a stream from a file.
+ */
+enum FileMode {
+	/* If file doesn't exist, create one; if it does, append new contents to the end. File is in WRITE mode. */
+	APPEND,
+	
+	/* If file doesn't exist, create one; if it does, truncate the contents. File is in WRITE mode. */
+	CREATE,
+
+	/* Open an existing file. If it doesn't exist, throw IOException. File is in READ mode. */
+	OPEN
+}
+
+/*
+ * A stream backed by a file as defined on the underlying file system.
+ */
+[Bridged(apiset="System.IO.FileStream")]
+class FileStream : StreamBase, AsyncStream {
+
+	private FileMode mode;
+	private bool isWritable; // if true, only writable; if false, only readable; cannot be both.
+	
+	[Bridged(name="ctor")]
+	private hosted void _init(string path, FileMode mode);
+	
+	/* [nodoc] */
+	[Bridged(name="write")]
+	protected hosted void _write(byte data);
+	/* [nodoc] */
+	[Bridged(name="writeArray")]
+	protected hosted void _write(byte[] buffer, int offset, int count);
+	/* [nodoc] */
+	[Bridged(name="read")]
+	protected hosted int _read();
+	/* [nodoc] */
+	[Bridged(name="readArray")]
+	protected hosted int _read(byte[] buffer, int offset, int count);
+	/* [nodoc] */
+	[Bridged(name="close")]	
+	protected hosted void _close();
+	/* [nodoc] */
+	[Bridged(name="flush")]	
+	protected hosted void _flush();
+	/* [nodoc] */
+	[Bridged(name="skip")]		
+	protected hosted int _skip(int count);
+	
+	/*
+	 * Create a file stream with specified path and [mode](FileMode).
+	 *
+	 * [param: path] Can be a relative path to the working directory.
+	 */
+	public FileStream(string path, FileMode mode){
+		isWritable = mode != FileMode.OPEN;
+		_init(path, mode);
+	}
+	
+	/*
+	 * [inherited]
+	 * [return] True if the stream was open with [OPEN](FileMode#OPEN).
+	 */
+	public bool canRead(){
+		return !isWritable;
+	}
+	
+	/*
+	 * [inherited]
+	 * [return] True if the stream was open with [APPEND](FileMode#APPEND) or [CREATE](FileMode#CREATE).
+	 */
+	public bool canWrite(){
+		return isWritable;
+	}
+	
+	//--- AsyncStream ---//
+	
+	[Bridged(name="readAsync")]		
+	private hosted void _readAsync(byte[] buffer, int offset, Function callback, PromiseHandle handle);
+	[Bridged(name="readAllAsync")]	
+	private hosted void _readAllAsync(byte[] buffer, Function callback, PromiseHandle handle);
+	
+	/* [inherited] */
+	public Promise readAsync(byte[] buffer, int offset, Function callback){
+		DeferredPromise dp = Promise.defer();
+		_readAsync(buffer, offset, callback, dp.getHandle());
+		return dp;
+	}
+	
+	/* [inherited] */
+	public Promise readAllAsync(byte[] buffer, Function callback){
+		DeferredPromise dp = Promise.defer();
+		_readAllAsync(buffer, callback, dp.getHandle());
+		return dp;
+	}
+	
+	/*
+	 * [inherited]
+	 * [return] True if the stream was open with [OPEN](FileMode#OPEN).
+	 */
+	public bool canReadAsync(){
+		return canRead(); 
+	}
+}

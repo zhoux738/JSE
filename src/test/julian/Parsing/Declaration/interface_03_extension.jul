@@ -1,0 +1,11 @@
+interface I {
+
+}
+
+interface I2 : I {
+
+}
+
+interface I3 : I, I2 {
+
+}

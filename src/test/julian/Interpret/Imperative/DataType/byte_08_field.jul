@@ -1,0 +1,13 @@
+class Stor {
+	static byte bs;
+	byte bi;
+}
+
+Stor s = new Stor();
+s.bi = 127;
+s.bi++;
+
+Stor.bs = -128;
+Stor.bs--;
+byte bmin = s.bi;
+byte bmax = Stor.bs;

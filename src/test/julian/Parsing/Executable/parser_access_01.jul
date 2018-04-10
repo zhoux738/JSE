@@ -1,0 +1,4 @@
+int x1 = a.b.c;
+int x2 = a[1].c;
+int x3 = a.c[1];
+int x4 = a[1][2];

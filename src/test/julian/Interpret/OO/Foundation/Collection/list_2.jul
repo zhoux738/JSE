@@ -1,0 +1,13 @@
+import System.Collection;
+
+class Car {
+	string name;
+	Car(string name){
+		this.name = name;
+	}
+}
+
+List l = new List();
+l.add(new Car("BYD"));
+Car c = l.get(0);
+string s = c.name;

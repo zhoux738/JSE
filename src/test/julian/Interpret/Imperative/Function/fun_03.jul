@@ -1,0 +1,7 @@
+int fun(int i, int j){
+	return i + j;
+}
+
+int a = fun(3, 5);
+
+//dprint(a); // output: 8

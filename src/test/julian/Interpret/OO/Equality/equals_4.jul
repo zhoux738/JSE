@@ -1,0 +1,15 @@
+Object o = null;
+
+char c = 'a';
+bool c1 = c == null;
+bool c2 = null == c;
+bool c3 = c == o;
+bool c4 = o == c;
+
+int i = 5;
+bool i1 = i == null;
+bool i2 = null == i;
+bool i3 = i == o;
+bool i4 = o == i;
+
+bool done = true;

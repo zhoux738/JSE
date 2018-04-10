@@ -1,0 +1,17 @@
+class C {
+	int x(){
+		return 5;
+	}
+}
+
+C fun(){
+	return null;
+}
+
+C c = fun();
+if (c == null) {
+	c = new C();
+}
+
+int r = c.x();
+

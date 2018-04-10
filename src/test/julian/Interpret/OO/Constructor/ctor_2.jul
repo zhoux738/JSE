@@ -1,0 +1,24 @@
+// Constructor forward call: super
+class Person {
+	
+	int age;
+
+	Person(int age){
+		this.age = age;
+	}
+		
+}
+
+class Employee : Person {
+
+	string job;
+	
+	Employee(int age, string job) : super(age) {
+		this.job = job;
+	}
+		
+}
+
+Employee e = new Employee(32, "Programmer");
+int age = e.age;
+string job = e.job;

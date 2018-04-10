@@ -1,0 +1,186 @@
+<project name="JSE" default="main" basedir="." xmlns:if="ant:if" xmlns:unless="ant:unless">
+
+  <description>
+    The build file for Julian Script Engine project.
+    
+    This build file exposes several commonly used goals. In normal cases, simply running "ant main" is sufficient. This will just build JSE  
+    main project, equilavent to invoking "mvn clean verify" from the root of source repository. Also, main is the default target.
+
+    When cloning the repository to a clean environment, run "ant bootstrap" to set up. This will make sure JSE main project compiles. Then 
+    you must run "ant build" to compile and reinstall juleng along with its dependencies before calling "ant main".
+
+    To run all the tests, call "ant test". This will launch a containerized test suite to validate JSR-223 compatibility.
+  </description>
+
+  <property environment="env"/>
+  <property name="maven.home" value="${env.MAVEN_HOME}"/>
+    
+  <!-- A macro to call Maven from Ant. Originally from http://maven.apache.org/ant-tasks/examples/mvn.html -->
+  <macrodef name="maven">
+    <attribute name="options" default="" />
+    <attribute name="goal" />
+    <attribute name="basedir" />
+    <attribute name="resultproperty" default="maven.result" />
+    <element name="args" implicit="true" optional="true" />
+    <sequential>
+      <java classname="org.codehaus.classworlds.Launcher" fork="true"
+            dir="@{basedir}" resultproperty="@{resultproperty}">
+        <jvmarg value="-Xmx512m" />
+        <jvmarg value="-Dmaven.multiModuleProjectDirectory" />
+        <classpath>
+          <fileset dir="${maven.home}/boot">
+            <include name="*.jar" />
+          </fileset>
+          <fileset dir="${maven.home}/lib">
+            <include name="*.jar" />
+          </fileset>
+        </classpath>
+        <sysproperty key="classworlds.conf" value="${maven.home}/bin/m2.conf" />
+        <sysproperty key="maven.home" value="${maven.home}" />
+        <arg line="--batch-mode @{options} @{goal}" />
+      </java>
+    </sequential>
+  </macrodef>
+  
+  <!-- I: Developer-friendly goal aliases -->
+  <!-- In Ant, tasks with description are considered public tasks and can be seen from "ant -projecthelp" -->
+  
+  <target name="clean" description="(0) Clean all artifacts and build intermediaries">
+    <antcall target="build-phases">
+      <param name="phases" value="0"/>
+    </antcall>
+  </target>
+  
+  <target name="main" description="(2) Build, package and verify JSE">
+    <antcall target="build-phases">
+      <param name="phases" value="02"/>
+    </antcall>
+  </target>
+  
+  <target name="build" description="(1,2) Build and install juleng Maven plugin, then build and package JSE, then verify it">
+    <antcall target="build-phases">
+      <param name="phases" value="012"/>
+    </antcall>
+  </target>
+  
+  <target name="test" description="(2,3) Build, package and verify JSE, then run integration test">
+    <antcall target="build-phases">
+      <param name="phases" value="023"/>
+    </antcall>
+  </target>
+  
+  <target name="full" description="(1,2,3) Build and install juleng Maven plugin, then build JSE and run integration test">
+    <antcall target="build-phases">
+      <param name="phases" value="0123"/>
+    </antcall>
+  </target>
+	
+  <target name="bootstrap" description="(Special) Create a temporary pom file excluding juleng references, then build JSE to produce binaries that building juleng itself would entail">
+    <!-- Create temp pom file -->
+  	<script language="javascript" src="./build/bootstrap.js" />
+  	
+    <!-- mvn clean compile -->
+    <echo message="Run 'mvn clean compile' against ${btpom}"/>
+    <maven basedir="${basedir}"
+           options="-f ${btpom}"
+           goal="clean compile"
+           resultproperty="maven.build.result"/>
+  	
+  	<delete file="${btpom}"/>
+  </target>
+  
+  <target name="release" description="(Special) Create release package">
+    <ant antfile="build.xml" dir="release" target="clean" />
+    <ant antfile="build.xml" dir="release" target="create-release-package" />
+  </target>
+  
+  <!-- II: The multi-task dispatcher -->
+  
+  <!-- Load default phases -->
+  <target name="load-phases">
+    <property name="phases" value="2"/>
+  </target>
+          
+  <!-- Build each phase as specified by phases property -->
+  <target name="build-phases" depends="load-phases">
+    <script language="javascript">
+        <![CDATA[
+            hasClean = false; 
+            hasTask = false;
+            phases = JSE.getProperty("phases");
+            phases = phases.match(/\d/g);
+            for(i = 0; i < phases.length; i++){
+                switch(parseInt(phases[i])){
+                case 0: hasClean = true; break;
+                case 1: hasTask = true; JSE.setProperty("taskPlugin", true); break;
+                case 2: hasTask = true; JSE.setProperty("taskMain", true); break;
+                case 3: hasTask = true; JSE.setProperty("taskIntegration", true); break;
+                default: throw new Exception("Do not recognize phase " + phases[i]);
+                }
+            }
+            
+            if (hasClean) {
+                if (hasTask) {
+                    // If we run any tasks, as part of each task
+                    JSE.setProperty("cleanBeforeRun", true);
+                } else {
+                    // If we do clean only, run it separately
+                    JSE.setProperty("taskClean", true);
+                }
+            }
+        ]]>
+    </script>
+    
+    <antcall target="clean-all" if:set="taskClean"></antcall>
+	
+    <antcall target="install-plugin" if:set="taskPlugin"></antcall>
+    <antcall target="build-main" if:set="taskMain"></antcall>
+    <antcall target="run-integration-test" if:set="taskIntegration"></antcall>
+  </target>
+  
+  <!-- III: The core task definitions -->
+  
+  <!-- 0 -->
+  <target name="clean-all">
+    <maven basedir="${basedir}/mvnplugin"
+           options=""
+           goal="clean"
+           resultproperty="maven.build.result"/>
+    <maven basedir="${basedir}"
+           options=""
+           goal="clean"
+           resultproperty="maven.build.result"/>
+    <ant antfile="build.xml" dir="ci" target="clean" if:set="cleanBeforeRun"/>
+  </target>
+
+  <!-- 1 -->
+  <target name="install-plugin">
+    <!-- mvn -f mvnplugin/pom.xml install -->
+    <property name="clean-goal" value="" unless:set="cleanBeforeRun"/>
+    <property name="clean-goal" value="clean" if:set="cleanBeforeRun"/>
+    <echo message="Run 'mvn ${clean-goal} install' against mvnplugin/pom.xml"/>
+    <maven basedir="${basedir}/mvnplugin"
+           options=""
+           goal="${clean-goal} install"
+           resultproperty="maven.build.result"/>
+  </target>
+ 
+  <!-- 2 --> 
+  <target name="build-main">
+    <!-- mvn verify -->
+    <property name="clean-goal" value="" unless:set="cleanBeforeRun"/>
+    <property name="clean-goal" value="clean" if:set="cleanBeforeRun"/>
+    <echo message="Run 'mvn ${clean-goal} verify' against pom.xml"/>
+    <maven basedir="${basedir}"
+           options=""
+           goal="${clean-goal} verify"
+           resultproperty="maven.build.result"/>
+  </target>
+ 
+  <!-- 3 --> 
+  <target name="run-integration-test">
+    <ant antfile="build.xml" dir="ci" target="clean" if:set="cleanBeforeRun"/>
+    <ant antfile="build.xml" dir="ci" target="run-test" />
+  </target>
+  
+</project>

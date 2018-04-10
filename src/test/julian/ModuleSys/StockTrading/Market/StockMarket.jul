@@ -1,0 +1,30 @@
+module ModuleSys.StockTrading.Market;
+
+import ModuleSys.StockTrading.Commons;
+
+class StockMarket {
+	string name;
+	Stock[] stocks;
+	
+	StockMarket(string name, Stock[] stocks){
+		this.name = name;
+		this.stocks = stocks;
+	}
+	
+	string getName(){
+		return name;
+	}	
+	
+	Stock[] getAllStocks(){
+		return stocks;
+	}
+	
+	Stock getStock(string name){
+		for(int i=0;i<stocks.length;i++){
+			if(stocks[i].getName() == name){
+				return stocks[i];
+			}
+		}
+		return null;
+	}
+}

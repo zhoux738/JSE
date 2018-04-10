@@ -1,0 +1,15 @@
+// for-switch with continue test
+int sum = 0;
+for(int i = 0; i<4; i+=1){
+	switch( i ){
+	case 1:
+	  sum += 100;
+	  break;
+	case 2:
+	  continue;
+	case 3:
+	  sum += 300;
+	default:
+	  sum += 1;
+	}
+}

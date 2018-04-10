@@ -1,0 +1,7 @@
+class C {
+	int fun(void v){ 
+		return 5;
+	}
+}
+
+C c;

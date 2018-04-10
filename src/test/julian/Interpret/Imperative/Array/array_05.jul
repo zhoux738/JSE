@@ -1,0 +1,4 @@
+int[][] arr = new int[2][3];
+arr[1][2] = 5;
+int val_12 = arr[1][2];
+//dprint(arr[1][2]);

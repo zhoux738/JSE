@@ -1,0 +1,30 @@
+import System;
+
+interface IAnimal {
+	int getLifeExpectancy();
+}
+
+class Person : IAnimal {
+	public int getLifeExpectancy(){
+		return 80;
+	}
+	public string speak(string words){
+		return words;
+	}
+}
+
+IAnimal animal = new Person();
+
+bool caught = false;
+try {
+  animal.speak("hello!");
+} catch (UnknownMemberException ume) {
+  caught = true;
+}
+
+bool caught2 = false;
+try {
+  var fun = animal.speak;
+} catch (UnknownMemberException ume) {
+  caught2 = true;
+}

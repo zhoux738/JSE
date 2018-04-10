@@ -1,0 +1,18 @@
+class Item {
+	
+	static int getValue(){
+		return 7;
+	}
+	
+}
+
+class MyItem : Item {
+	
+	static int getValue(){
+		return 11;
+	}
+	
+}
+
+int i7 = Item.getValue();
+int i11 = MyItem.getValue();

@@ -1,0 +1,6 @@
+// Can access to internal member of a class defined in the same module
+
+import ModuleSys.IntB;
+
+CB2 ca = new CB2();
+int val = ca.fun(3);

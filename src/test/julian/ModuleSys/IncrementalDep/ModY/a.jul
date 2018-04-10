@@ -1,0 +1,5 @@
+module ModuleSys.IncrementalDep.ModY;
+
+class Ya {
+
+}

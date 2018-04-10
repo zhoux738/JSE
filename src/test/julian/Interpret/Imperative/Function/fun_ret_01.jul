@@ -1,0 +1,13 @@
+// return from if
+int a = 10;
+int fun(int i){
+	if(i>3){
+		return 5;
+	} else {
+		return 7;
+	}
+	a = 12;
+}
+
+int x1 = fun(4);
+int x2 = fun(1);

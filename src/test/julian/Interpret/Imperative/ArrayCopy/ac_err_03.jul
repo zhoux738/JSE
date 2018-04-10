@@ -1,0 +1,40 @@
+import System.Lang;
+
+class Person { }
+class Machine { }
+
+Person[] src = new Person[3];
+Machine[] dst1 = new Machine[3];
+Object[]  dst2 = new Object[3];
+Person[][] dst3 = new Person[3][3];
+
+bool[] res = new bool[4];
+	    
+try {
+	// Not same element type
+	Array.copy(src, 0, dst1, 0, 3);
+} catch (System.Lang.RuntimeCheckException e){
+	res[0] = true;
+}
+
+try {
+	// Not same element type
+	Array.copy(src, 0, dst2, 0, 3);
+} catch (System.Lang.RuntimeCheckException e){
+	res[1] = true;
+}
+
+try {
+	// Not same dimension 
+	Array.copy(src, 0, dst3, 0, 3);
+} catch (System.Lang.RuntimeCheckException e){
+	res[2] = true;
+}
+
+try {
+	Person[] src2 = src;
+	// Same value 
+	Array.copy(src, 0, src2, 0, 3);
+} catch (System.Lang.RuntimeCheckException e){
+	res[3] = true;
+}

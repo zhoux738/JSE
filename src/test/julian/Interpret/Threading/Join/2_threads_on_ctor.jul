@@ -1,0 +1,42 @@
+import System.Concurrency;
+import System;
+
+class Value {
+	private int v;
+	
+	Value(int v){
+		this.v = v;
+	}
+
+	int getValue(){
+		return v;
+	}
+}
+
+int[] values = new int[2];
+
+void accumulateValues(int index, int total){
+	for(int i = 0; i <= total ; i++){
+		Value v = new Value(i);
+		values[index] += v.getValue();
+	}
+}
+
+void f1(){
+	accumulateValues(0, 100); // 1 + 2 + 3 + ... + 100 = 5050
+}
+
+void f2(){
+	accumulateValues(1, 50); // 1 + 2 + 3 + ... + 50 = 1275
+}
+
+Thread t1 = new Thread(f1, "t1", ThreadPriority.NORMAL);
+Thread t2 = new Thread(f2, "t2", ThreadPriority.NORMAL);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();
+
+//Console.println(values[0]);
+//Console.println(values[1]);

@@ -1,0 +1,17 @@
+//LambdaEnvTests
+
+Function getFunc(int i){
+	int c = 50;
+	return (int x) => { 
+		c = c * 2;
+		return x + i + c; 
+	};
+}
+
+Function f = getFunc(10);
+
+int a1 = f(1);
+int a2 = f(1);
+
+//dprint(a1); // output: 111
+//dprint(a2); // output: 211

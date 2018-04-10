@@ -1,0 +1,9 @@
+attribute A {
+
+	int i;
+	
+	string s;
+	
+	C c;
+
+}

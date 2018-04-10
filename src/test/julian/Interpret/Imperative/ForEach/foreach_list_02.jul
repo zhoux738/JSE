@@ -1,0 +1,8 @@
+import System.Collection;
+
+List l = new List();
+
+int sum = 600;
+for(var i : l){
+	sum += i;
+}

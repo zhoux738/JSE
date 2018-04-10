@@ -1,0 +1,9 @@
+final class Item {
+	
+}
+
+class Car : Item {
+
+}
+
+Car c;

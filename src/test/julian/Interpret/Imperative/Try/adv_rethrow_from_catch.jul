@@ -1,0 +1,13 @@
+// return from try block
+
+class C {
+	static int fun(){
+		try {
+			throw new Exception("Ex 1");
+		} catch (Exception e) {
+			throw new Exception("Ex 2");
+		}
+	}
+}
+
+C.fun();

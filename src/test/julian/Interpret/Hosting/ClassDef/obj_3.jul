@@ -1,0 +1,21 @@
+[Mapped(className="info.jultest.test.hosted.classes.Obj1")]
+class Obj1 : PlatformObject {
+	String toString(){
+		return 'a' + this.pfToString();
+	}
+	
+	int hashCode(){
+		return 1 + this.pfHashCode();
+	}
+	
+	bool equals(Object obj){
+		return !this.pfEquals(obj);
+	}
+}
+
+Obj1 inst = new Obj1();
+
+string s = inst.toString();
+int hc = inst.hashCode();
+bool b1 = inst.equals(inst);
+bool b2 = inst.equals(null);

@@ -1,0 +1,13 @@
+class C {
+	int v;
+	C(int v){
+		this.v = v;
+	}
+}
+
+var fun1(var v){
+	C[] cv = (C[])v;
+	return cv[0].v;
+}
+
+int i = fun1(new C[]{new C(10)});

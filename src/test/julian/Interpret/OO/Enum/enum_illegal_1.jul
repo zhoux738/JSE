@@ -1,0 +1,12 @@
+enum Planet {
+
+	Venus,
+	
+	Earth,
+	
+	Mars
+	
+}
+
+Planet p = Planet.Venus;
+p.ordinal = 100;

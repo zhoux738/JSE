@@ -1,0 +1,7 @@
+try {
+	f();	
+} catch (Exception e1) {
+	g();
+} finally {
+	h();
+}

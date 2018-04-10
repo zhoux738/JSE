@@ -1,0 +1,47 @@
+import System;
+import System.IO;
+import System.Concurrency;
+
+// Args preset from unit test
+//   path - redirect stdin from this file
+//   cp - the classpath
+//   ofile - output result to this file
+
+Stream input = new File(path).getReadStream();
+
+ProcessConfig pc = new ProcessConfig();
+Process p = new Process(
+	"java", 
+	new String[]{
+		"-classpath", 
+		cp, 
+		"info.jultest.apps.Echo", 
+		"-outputfile", 
+		ofile
+	}, 
+	pc);
+p.start();
+
+// Get stdin from the subprocess, which from our perspective is an output stream
+Stream output = p.getWriteStream();
+int[] box = new int[1];
+Thread t = Thread.create(() => {
+	byte[] buffer = new byte[128];
+	int total = 0, read = 0;
+	if (output == null){
+		Console.println("Output stream is null.");
+		total = -100;
+	} else {
+		while((read = input.read(buffer, 0, 128)) != -1) {
+			output.write(buffer, 0, read);
+		}
+	
+		input.close();
+		output.close();
+ 	}
+});
+t.start();
+
+t.join();
+int res = p.wait();
+// Console.println(res);

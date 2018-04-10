@@ -1,0 +1,20 @@
+class Person{
+  Person(string name){
+    this.name = name;
+  }
+  string name;
+}
+
+Person[] src = new Person[]{
+  new Person("Alice"),
+  new Person("Bob"),
+  new Person("Charlie")
+};
+
+Person[] dst1 = new Person[3],
+         dst2 = new Person[3];
+int total1 = Array.copy(src, 0, dst1, 0, 3);
+int total2 = Array.copy(dst1, 0, dst2, 0, 3);
+src[0].name = "Albert";
+dst1[1].name = "Bill";
+dst2[2].name = "Chris";

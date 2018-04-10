@@ -1,0 +1,8 @@
+[Mapped(className="info.jultest.test.hosted.classes.NodeBox")]
+class NodeBox {
+
+}
+
+NodeBox nb = new NodeBox();
+
+nb.getNode(7); // doesn't matter if it's to be assigned

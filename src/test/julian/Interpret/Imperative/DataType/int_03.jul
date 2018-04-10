@@ -1,0 +1,8 @@
+int v = 10;
+bool z = (bool)v;
+bool z0 = (bool)0;
+byte b = (byte)v;
+float f = (float)v;
+char c = (char)v;
+
+// casting to string is covered in OO/Casting

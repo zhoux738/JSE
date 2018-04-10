@@ -1,0 +1,4 @@
+int x1 = new Car().speed;
+int x2 = this.a;
+int x3 = super.b;
+int x4 = "abc".length;

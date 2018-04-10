@@ -1,0 +1,15 @@
+import System.Collection;
+
+List l = new List();
+l.add(3);
+l.add("abc");
+
+int size1 = l.size();
+
+int x1 = l.get(0);
+string s1 = l.get(1);
+
+l.remove(0);
+
+int size2 = l.size();
+string s2 = l.get(0);

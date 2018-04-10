@@ -1,0 +1,13 @@
+module ModuleSys.ModA;
+
+import first.dep;
+import second.dep;
+import third.dep;
+
+class MyClass1 {
+
+}
+
+class MyClass2 {
+
+}

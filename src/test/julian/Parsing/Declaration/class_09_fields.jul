@@ -1,0 +1,8 @@
+class C1 {
+	private int i;
+	protected byte b;
+	public bool z;
+	private static int i2;
+	protected static byte b2;
+	public static bool z2;
+}

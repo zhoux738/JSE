@@ -1,0 +1,17 @@
+// class => abstract class => interface
+
+interface IPerson {
+	public abstract void speak();
+}
+abstract class Person : IPerson {
+
+}
+interface IWorker {
+	public abstract void work();
+}
+class Employee : Person, IWorker {
+	public void work(){}
+	public void speak(){}
+}
+
+Employee e;

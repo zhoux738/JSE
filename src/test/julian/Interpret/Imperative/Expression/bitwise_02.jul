@@ -1,0 +1,17 @@
+int x = 0b1010;
+int y = 0b0011;
+
+int x1 = x;
+x1 &= y;
+
+int x2 = x;
+x2 |= y;
+
+int x3 = x;
+x3 ^= y;
+
+int x4 = x;
+x4 <<= 2;
+
+int x5 = x;
+x5 >>= 2;

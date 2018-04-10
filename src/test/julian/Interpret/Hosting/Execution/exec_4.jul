@@ -1,0 +1,9 @@
+[Mapped(className="info.jultest.test.hosted.classes.MyClass4")]
+class MyClass4 {
+
+}
+
+int[] iarr = new int[]{1,2,3};
+MyClass4 mc = new MyClass4(iarr);
+mc.incrementIntArray(5);
+int[] iarr2 = mc.getIntArray();

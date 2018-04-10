@@ -1,0 +1,9 @@
+// (Julian) Overloaded members cannot be based on return types.
+import System;
+
+class Car {
+	public int start(){ return 50; }
+	public string start(){ return "started"; }
+}
+
+Car c = new Car();

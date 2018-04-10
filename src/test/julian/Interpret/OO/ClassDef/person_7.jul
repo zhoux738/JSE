@@ -1,0 +1,14 @@
+class Person {
+	
+	string[] hobbies;
+
+	string[] getHobbies(){
+		return hobbies;
+	}
+	
+}
+
+Person p = new Person();
+p.hobbies = new string[]{"abc", "mno", "xyz"};
+string h0 = p.hobbies[0];
+string h2 = p.getHobbies()[2];

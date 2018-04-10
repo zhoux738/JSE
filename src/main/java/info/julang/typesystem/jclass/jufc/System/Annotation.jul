@@ -1,0 +1,57 @@
+module System;
+
+/* 
+ * The target an attribute can apply to. These constants can be bitwise-OR'ed to create a value for multiple targets.
+ * [code]
+ * // This attribute can target both method and class declaration.
+ * [AttributeType(target = AttributeTarget.METHOD | AttributeTarget.CLASS]
+ * attribute DeclAttribute { }
+ * [code: end]
+ */
+class AttributeTarget {
+    /*
+     * The attribute may only be applied at a class type declaration. Of particular note, this excludes interface, attribute and enum types.
+     */
+	static const int CLASS       = 0b000001;
+	/*
+	 * The attribute may only be applied at an attribute type declaration. Such attribute is also known as meta-attribute.
+	 */
+	static const int ATTRIBUTE   = 0b000010;
+	/*
+	 * The attribute may only be applied at an enum type declaration.
+	 */
+	static const int ENUM        = 0b000100;
+	/*
+	 * The attribute may only be applied at an method declaration that occurs in either class or interface.
+	 */
+	static const int METHOD      = 0b001000;
+	/*
+	 * The attribute may only be applied at a field declaration that occurs in either class or attribute.
+	 */
+	static const int FIELD       = 0b010000;
+	/*
+	 * The attribute may only be applied at a constructor declaration that occurs in a class.
+	 */
+	static const int CONSTRUCTOR = 0b100000;
+}
+
+// While not made explicitly, this attribute is effectively annotated by itself with the following arguments:
+// [AttributeType(allowMultiple=false, target=AttributeTarget.ATTRIBUTE)] 
+/*
+ * The meta-attribute that applies to attribute type only.
+ */
+attribute AttributeType {
+
+	/*
+	 * If true, multiple instances of this attribute can be applied at same place.
+	 */
+	bool allowMultiple;
+	
+	/*
+	 * The allowed types of target. This is the bitwise sum (OR'ed) of all the allowed target constants.
+	 * 
+	 * [see: System.AttributeTarget]
+	 */
+	int target;
+	
+}

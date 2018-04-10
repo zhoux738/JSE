@@ -1,0 +1,23 @@
+import System;
+import System.IO;
+import System.Concurrency;
+
+// Args preset from unit test
+//   path - redirect stdin from this file
+//   cp - the classpath
+//   ofile - output result to this file. This test doesn't cover output redirection set by Julian.
+
+Stream fstream = new File(path).getReadStream();
+
+ProcessConfig pc = new ProcessConfig();
+pc.setInputStream(fstream);
+pc.setInheritedIO(true);
+Process p = new Process(
+	"java", 
+	new String[]{
+		"-classpath", cp, "info.jultest.apps.Echo", "-outputfile", ofile}, 
+	pc);
+p.start();
+
+int res = p.wait();
+// Console.println(res);

@@ -1,0 +1,14 @@
+class C {
+	var fun(var v){
+		if(v == 3){
+			v = "xyz";
+		} else if(v == "xyz"){
+			v = 3;
+		}
+		return v;
+	}
+}
+
+C c = new C();
+string b = c.fun(3);
+int a = c.fun("xyz");

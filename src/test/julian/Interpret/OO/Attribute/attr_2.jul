@@ -1,0 +1,22 @@
+// attribute on method
+import System;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.METHOD)] 
+attribute Author {
+
+	string name;
+	
+	int year;
+	
+}
+
+class MyClass {
+
+	[Author(name="Liam", year=1980)]
+	void doSomething(){
+	
+	}
+	
+}
+
+MyClass mc;

@@ -1,0 +1,11 @@
+import System.Collection;
+	
+void fun(){
+	List l = null;
+	int sum = 600;
+	for(var i : l){
+		sum += i;
+	}
+}
+
+fun();

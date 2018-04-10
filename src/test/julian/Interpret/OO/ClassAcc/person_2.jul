@@ -1,0 +1,21 @@
+class Person {
+
+	string name;
+	
+	void setName1(string n){
+		name = n;
+	}
+	
+	void setName2(string n){
+		setName1(n);
+	}
+	
+}
+
+Person p = new Person();
+
+p.setName1("abc");
+string pn1 = p.name;
+
+p.setName2("def");
+string pn2 = p.name;

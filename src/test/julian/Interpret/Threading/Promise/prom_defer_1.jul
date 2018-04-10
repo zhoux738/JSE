@@ -1,0 +1,13 @@
+import System.Concurrency;
+
+DeferredPromise dp = new DeferredPromise();
+PromiseHandle h = dp.getHandle();
+h.resolve(7);
+var r1 = dp.getResult(true);
+
+string errMsg = "errMsg";
+dp = new DeferredPromise();
+h = dp.getHandle();
+h.reject(errMsg);
+Exception ex = dp.getResult(false);
+var r2 = ex.getMessage().contains(errMsg);

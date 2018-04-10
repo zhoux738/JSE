@@ -1,0 +1,16 @@
+// return from while
+	
+int fun(int i){
+	int j = 0;
+	while(j < i){
+		j++;
+		if(j == 4){
+			return j; // 4
+		}
+	}
+	return i;
+}
+
+int x1 = fun(4);
+int x2 = fun(1);
+

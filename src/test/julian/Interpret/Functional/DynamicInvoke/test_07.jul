@@ -1,0 +1,25 @@
+class Vehicle {
+
+	int speed = 8;
+
+	int accelerate(int val){
+		this.speed += val;
+		return speed;
+	}
+	
+	static int global = 9;
+	
+	static int adjust(int i){
+		return global += i;
+	}
+}
+
+Vehicle v = new Vehicle();
+
+// less args
+int s8 = v.accelerate.invoke();
+int s9 = Vehicle.adjust.invoke();
+
+// more args
+int s11 = v.accelerate.invoke(3, 6);
+int s14 = Vehicle.adjust.invoke(5, "a");

@@ -1,0 +1,20 @@
+[Mapped(className="info.jultest.test.hosted.classes.Obj1")]
+class Obj1 : PlatformObject {
+
+}
+
+Obj1 inst = new Obj1();
+
+string s = inst.pfToString();
+int hc = inst.pfHashCode();
+bool b1 = inst.pfEquals(inst);
+bool b2 = inst.pfEquals(null);
+
+bool b3;
+try {
+	inst.pfEquals(1);
+} catch (System.TypeIncompatibleException e){
+	b3 = true;
+}
+
+bool b4 = inst.pfEquals(new Object());

@@ -1,0 +1,11 @@
+abstract class Item {
+	
+	abstract string doWork();
+	
+}
+
+class Car : Item {
+
+}
+
+Car c;

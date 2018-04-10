@@ -1,0 +1,20 @@
+import System.Concurrency;
+import System;
+
+ThreadState state1 = ThreadState.PENDING, 
+		    state2 = ThreadState.PENDING, 
+		    state3 = ThreadState.PENDING;
+
+state1 = Thread.getCurrent().getState();
+
+try {
+	throw new Exception("FAILED!");
+} catch (Exception e) {
+	state2 = Thread.getCurrent().getState();
+}
+
+state3 = Thread.getCurrent().getState();
+
+string s1 = (string)state1;
+string s2 = (string)state2;
+string s3 = (string)state3;

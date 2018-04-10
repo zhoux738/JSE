@@ -1,0 +1,20 @@
+// String immutability C
+
+// 1) assignment
+var s1 = "abc";
+var s2 = s1;
+s1 = "xyz";
+
+// 2) argument and return value
+var s3 = "abc";
+var s4 = "";
+
+var fun1(var s){
+	s4 = s;
+	s = "xyz";
+	return s4;
+}
+
+var s5 = fun1(s3);
+var s6 = s4;
+s4 = "uvw";

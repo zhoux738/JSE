@@ -1,0 +1,26 @@
+import ModuleSys.StockTrading.Commons;
+import ModuleSys.StockTrading.Market;
+import ModuleSys.StockTrading.Invester;
+
+Stock s1 = new Stock("GOOG", 500);
+Stock s2 = new Stock("APPL", 100);
+Stock[] stocks = new Stock[]{s1, s2};
+StockMarket market = new StockMarket("NASDAQ", stocks);
+
+StockPossesion sp1 = new StockPossesion(s1, 3); // 1500
+StockPossesion sp2 = new StockPossesion(s2, 7); // 700
+												// 2200 (total)
+												
+StockPossesion[] portfolio = new StockPossesion[]{sp1, sp2};
+Invester me = new Invester("Ming", portfolio);
+int total1 = me.getPortfolioValue();
+//dprint(total1); // 2200
+
+me.buy("APPL", 2);
+int total2 = me.getPortfolioValue();
+//dprint(total2); // 2400
+
+s1.updatePrice(40);
+int total3 = me.getPortfolioValue();
+//dprint(total3); // 2520
+

@@ -1,0 +1,20 @@
+module System.IO;
+
+import System;
+
+/*
+ * Any IO-related exception. Such errors typically involves access to disk, network adaptor, or other peripherals, 
+ * but can also be thrown by an abstract layer which may not necessarily deal with real IO devices.
+ */
+class IOException : Exception {
+	
+	/*
+	 * Create an IOException with specified message.
+	 *
+	 * [param: message] The message for this exception. 
+	 */ 
+	IOException(string message) : super(message) {
+		
+	}
+
+}

@@ -1,0 +1,68 @@
+// Two threads trying to modify the same List in the same time => one will fail.
+import System.Concurrency;
+import System.Collection;
+import System;
+
+// This test must be fine-controlled with a lock. Otherwise it may fail to meet the condition.
+Lock lck = new Lock();
+int towait = 1;
+
+// Initialize
+int total = 100;
+List values = new List();
+int i = 0;
+while(i < total){
+	values.add(i);
+	i++;
+}
+
+// If this test finished as expected, the logs should contain something like:
+//   t1 is to wait. towait = 1
+//   t2 aborted. Notify the other. towait = 0
+
+void f0(int v){
+	try {
+		int index = 0;
+		for(int i : values){
+			if(index==2){
+				sync(lck){
+					if(towait > 0){
+						Console.println(Thread.getCurrent().getName() + " is to wait. towait = " + towait);
+						towait--;
+						lck.wait();
+					} else {
+						Console.println(Thread.getCurrent().getName() + " is to notify. towait = " + towait);
+						lck.notify();
+					}
+				}
+			}
+			
+			values[i] = v;
+			index++;
+		}
+	} catch(Exception e) {
+		// Let the other, if still awaiting, continue
+		sync(lck){
+			Console.println(Thread.getCurrent().getName() + " aborted. Notify the other. towait = " + towait);
+			lck.notify();
+		}
+		
+		throw e;
+	}
+}
+
+void f1(){
+	f0(10);
+}
+
+void f2(){
+	f0(20);
+}
+
+Thread t1 = new Thread(f1, "t1", ThreadPriority.NORMAL);
+Thread t2 = new Thread(f2, "t2", ThreadPriority.NORMAL);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();

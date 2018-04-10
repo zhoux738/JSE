@@ -1,0 +1,16 @@
+import System;
+import System.IO;
+import System.Concurrency;
+
+File f = new File(path);
+ProcessConfig pc = new ProcessConfig();
+pc.setErrorStream(f.getWriteStream(false)); // For some obsolete reason, "java -version" outputs to error stream.
+
+Process p = new Process("java", new String[]{"-version"}, pc);
+p.start();
+int res = p.wait();
+
+bool alive = p.isAlive();
+
+// Let's sleep for 0.1 second to help the redirection thread to drain out the pipe. This is not a guarantee though.
+Thread.sleep(100);

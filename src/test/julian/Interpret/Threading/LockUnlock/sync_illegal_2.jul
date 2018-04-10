@@ -1,0 +1,4 @@
+Object s = null;
+sync(s){
+
+}

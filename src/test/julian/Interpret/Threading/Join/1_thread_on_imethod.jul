@@ -1,0 +1,28 @@
+import System.Concurrency;
+import System;
+
+class Box {
+	int val;
+}
+
+class Counter {
+
+	private Box box;
+	
+	Counter(Box box){
+		this.box = box;
+	}
+	
+	void setValToBox(){
+		this.box.val = 100;
+	}
+}
+
+Box b = new Box();
+Counter c = new Counter(b);
+Thread t = new Thread(c.setValToBox, "t1", ThreadPriority.NORMAL);
+
+t.start();
+t.join();
+
+int value = b.val;

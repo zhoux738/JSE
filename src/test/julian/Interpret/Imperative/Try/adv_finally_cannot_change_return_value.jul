@@ -1,0 +1,9 @@
+int fun(int x){
+	try {
+		return x;
+	} finally {
+		x++;
+	}
+}
+
+int x = fun(5);

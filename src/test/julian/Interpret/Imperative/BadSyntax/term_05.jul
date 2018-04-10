@@ -1,0 +1,17 @@
+// common logic control - for loop
+
+bool[] bs = new bool[10];
+
+try { for(				} catch (Exception e) { bs[0] = true; }
+try { for(int			} catch (Exception e) { bs[1] = true; }
+try { for(int i			} catch (Exception e) { bs[2] = true; }
+try { for(int i=		} catch (Exception e) { bs[3] = true; }
+try { for(int i=0		} catch (Exception e) { bs[4] = true; }
+
+try { for(int i=0		} catch (Exception e) { bs[5] = true; }
+try { for(int i=0;		} catch (Exception e) { bs[6] = true; }
+try { for(int i=0){}	} catch (Exception e) { bs[7] = true; }
+try { for(int i=0;{}	} catch (Exception e) { bs[8] = true; }
+try { for(int i=0;){}	} catch (Exception e) { bs[9] = true; }
+
+

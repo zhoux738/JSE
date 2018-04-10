@@ -1,0 +1,7 @@
+module ModuleSys.IncrementalDep.ModU;
+
+import ModuleSys.IncrementalDep.ModV;
+
+class Ua {
+
+}

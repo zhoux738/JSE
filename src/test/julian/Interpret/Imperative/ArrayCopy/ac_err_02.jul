@@ -1,0 +1,29 @@
+import System.Lang;
+
+int[] src = new int[]{10,20,30};
+bool[] dst1 = new bool[3], 
+	    res = new bool[3];
+
+bool[][] dst2 = new bool[3][3];
+ 
+try {
+	// Not same element type
+	Array.copy(src, 0, dst1, 0, 3);
+} catch (System.Lang.RuntimeCheckException e){
+	res[0] = true;
+}
+
+try {
+	// Not same dimension 
+	Array.copy(src, 0, dst2, 0, 3);
+} catch (System.Lang.RuntimeCheckException e){
+	res[1] = true;
+}
+
+try {
+	int[] src2 = src;
+	// Same value 
+	Array.copy(src, 0, src2, 0, 3);
+} catch (System.Lang.RuntimeCheckException e){
+	res[2] = true;
+}

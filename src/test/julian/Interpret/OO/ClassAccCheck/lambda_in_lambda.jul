@@ -1,0 +1,15 @@
+class Settings {
+	private static int Volume = 100;
+}
+
+class Settings2 {
+	public static Function getSettingProviderProvider(){
+		return () => {
+			return () => Settings.Volume;
+		};
+	}
+}
+
+var f2 = Settings2.getSettingProviderProvider();
+int vol = f2()();
+Console.println(vol);

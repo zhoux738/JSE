@@ -1,0 +1,5 @@
+//LambdaBlockTests
+
+int a = ((int x) => { return x + 5; })(3);
+
+//dprint(a); // output: 8

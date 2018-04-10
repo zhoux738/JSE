@@ -1,0 +1,9 @@
+//LambdaExprTests
+
+Function makeFunc(){
+	return (int x) => x + 5;
+}
+
+int a = makeFunc()(3);
+
+//dprint(a); // output: 8

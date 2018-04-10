@@ -1,0 +1,16 @@
+import System;
+
+class Setting { }
+class Setting2 : Setting { }
+
+class Machine {
+	public int start(Setting setting){ return 10; }
+	public int start(Setting2 setting){ return 20; }
+}
+
+Machine m = new Machine();
+Setting s = new Setting();
+Setting2 s2 = new Setting2();
+
+int speed2 = m.start(s2);
+int speed1 = m.start(s);

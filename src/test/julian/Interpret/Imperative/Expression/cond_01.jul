@@ -1,0 +1,10 @@
+int a = 10, b = 20, c = 30;
+int x1 = true ? b : c;
+int x2 = false ? b : c;
+int x3 = a == 10 ? b : c;
+int x4 = a != 10 ? b : c;
+
+int x5 = true ? b + c : b * c;
+int x6 = false ? b + c : b * c;
+int x7 = true ? b + c * 2 : b * c + 2;
+int x8 = false ? b + c * 2 : b * c + 2;

@@ -1,0 +1,5 @@
+module ModuleSys.ModA;
+
+class MyClass {
+
+}

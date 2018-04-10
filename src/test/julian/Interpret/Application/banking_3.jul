@@ -1,0 +1,63 @@
+import ModuleSys.Banking.Bank;
+import ModuleSys.Banking.Account;
+import ModuleSys.Banking.Commons;
+import System.Collection;
+
+// This class adds logging to account activity.
+class SafeBank : Bank {
+
+	Map accountLogs = new Map();
+	
+	SafeBank(String name) : super(name) {
+	
+	}
+
+	Account[] createAccount(Branch branch, Customer c) {
+		Account[] accounts = super.createAccount(branch, c);
+		for(Account acc : accounts){
+			int accNum = acc.getAccountNum();
+			List logs = new List();
+			accountLogs[accNum] = logs;
+			
+			AccountInfo ai = (AccountInfo) acc;
+			// AccountEvent(AccountEventType type, BankService place, float value)
+			ai.resgiterListener((AccountEvent event) => {
+				logs.add(accNum + " [" + event.getType().literal + "] VALUE=" + event.getValue());
+			});
+		}
+		return accounts;
+	}
+	
+	List getLogs(Account acc){
+		return accountLogs[acc.getAccountNum()];
+	}
+	
+}
+
+// Initialize a bank
+SafeBank bank = new SafeBank("WELLSFARGO");
+Branch branch1 = new Branch(bank, "Seattle");
+ATM atm1 = new ATM(bank);
+
+// Initialize a customer
+Customer me = new Customer("Me", 1234567);
+
+// Customer's activities
+// 1) Open an account
+Account[] accs = branch1.open(me);
+Account checking = accs[0];
+
+// 2) Deposit and query
+branch1.deposit(checking, 1000);
+
+// 3) Withdraw and query
+atm1.withdraw(checking, 300);
+
+List logs = bank.getLogs(checking);
+string result = "";
+for(var v : logs){
+	result += v;
+	result += ", ";
+}
+
+return result;

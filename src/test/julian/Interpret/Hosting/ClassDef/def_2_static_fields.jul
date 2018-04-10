@@ -1,0 +1,11 @@
+[Mapped(className="info.jultest.test.hosted.classes.Stat")]
+class Stat {
+	static string C;
+	static Stat(){
+		Stat.C = Stat.A + Stat.B;
+	}
+}
+
+int a = Stat.A;
+string b = Stat.B;
+string c = Stat.C;

@@ -1,0 +1,13 @@
+// Basic switch tests - case by string
+string a = "Beta";
+string s = "None";
+switch( a ){
+case "Alpha":
+  s = "One";
+  break;
+case "Beta":
+  s = "Two";
+  break;
+default:
+  s = "Unknown";
+}

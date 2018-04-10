@@ -1,0 +1,5 @@
+[Mapped(className="info.jultest.test.hosted.classes.Enclosing$StaticallyEnclosed")]
+class SE {
+}
+
+int v = SE.getValue();

@@ -1,0 +1,21 @@
+byte b_1 = -1;
+byte b0 = 0;
+byte b1 = 1;
+byte b10 = 10;
+byte b127 = 127;
+
+// arithmetics between bytes 
+byte r0a_1 = b0 + b_1;
+byte r0s_1 = b0 - b_1;
+byte r0m_1 = b0 * b_1;
+byte r0d_1 = b0 / b_1;
+
+// arithmetics between bytes 
+byte r10a_1 = b10 + b_1;
+byte r10s_1 = b10 - b_1;
+byte r10m_1 = b10 * b_1;
+byte r10d_1 = b10 / b_1;
+
+// overflow
+int i127a1 = b127 + b1;
+byte b127a1 = b127 + b1;

@@ -1,0 +1,5 @@
+module ModuleSys.SynA;
+
+class MyClass {
+	int i = ; // non-fatal syntax error
+}

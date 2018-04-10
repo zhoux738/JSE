@@ -1,0 +1,5 @@
+int[] arr = new int[0];
+int sum = 1000;
+for(var i : arr){
+	sum += i;
+}

@@ -1,0 +1,24 @@
+byte b0 = 0;
+byte b1 = 1;
+byte b_1 = -1;
+byte b127 = 127;
+
+int i_b0_or_1 = b0 | 1;
+int i_b0_and_1 = b0 & 1;
+int i_b0_ls_1 = b0 << 1;
+int i_b0_rs_1 = b0 >> 1;
+
+int i_b1_or_1 = b1 | 1;
+int i_b1_and_1 = b1 & 1;
+int i_b1_ls_1 = b1 << 1;
+int i_b1_rs_1 = b1 >> 1;
+
+int i_b127_or_1 = b127 | 1;
+int i_b127_and_1 = b127 & 1;
+int i_b127_ls_1 = b127 << 1;
+int i_b127_rs_1 = b127 >> 1;
+
+int i_b_1_or_1 = b_1 | 1;
+int i_b_1_and_1 = b_1 & 1;
+int i_b_1_ls_1 = b_1 << 1;
+int i_b_1_rs_1 = b_1 >> 1;

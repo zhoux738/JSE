@@ -1,0 +1,9 @@
+int a = 0;
+
+void fun(int i, int j){
+	a = i + j;
+}
+
+fun(3, 5);
+
+//dprint(a); // output: 8

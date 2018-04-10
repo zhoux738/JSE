@@ -1,0 +1,13 @@
+// Instance constructor
+class Person {
+	
+	int age;
+
+	Person(int age){
+		this.age = age;
+	}
+		
+}
+
+Person p = new Person(32);
+int age = p.age;

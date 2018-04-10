@@ -1,0 +1,4 @@
+string s = "abc";
+Function f = s.indexOf;
+int res1 = f.invoke("b", 0);
+int res2 = f.invoke("b"); // dynamic calling allows less arguments!

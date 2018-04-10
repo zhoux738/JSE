@@ -1,0 +1,9 @@
+int x = 0b1010;
+int y = 0b0011;
+
+int ra = x & y;
+int ro = x | y;
+int rx = x ^ y;
+
+int rl = x << 2;
+int rr = x >> 2;

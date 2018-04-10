@@ -1,0 +1,7 @@
+// System is imported by default.
+// import System;
+
+Console.println("");
+Console.print("abc");
+Console.print(true);
+Console.print(3);

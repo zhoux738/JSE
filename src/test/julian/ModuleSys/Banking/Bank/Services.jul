@@ -1,0 +1,135 @@
+module ModuleSys.Banking.Bank;
+
+import ModuleSys.Banking.Commons;
+import ModuleSys.Banking.Account;
+
+class BankService {
+	Bank bank;
+	
+	BankService(Bank bank){
+		this.bank = bank;
+	}
+	
+	// Get account info for the specified account
+	protected AccountInfo checkAccount(Account acc){
+		return bank.getAccountInfo(this, acc);
+	}
+}
+
+class WiringService : BankService { // JAVA
+	WiringService(Bank bank)
+		: super(bank){ // JAVA
+	}
+	
+	Message wire(Account account, float cash){
+		AccountInfo acc = checkAccount(account);
+		if(acc == null){
+			return Message.fail("destination account not found");
+		}
+		
+		acc.adjustBalance(cash);
+		AccountEvent e = new AccountEvent(AccountEventType.TRANSFER, this, cash);
+		acc.notify(e);
+		
+		return Message.succ(cash + " transferred");
+	}
+}
+
+// A BankFacility is a place where customers are served.
+abstract class BankFacility : BankService { // JAVA
+	
+	protected int id;
+	
+	BankFacility(Bank bank)
+		: super(bank){ // JAVA
+		this.id = bank.allocateFacility(this);
+	}
+	
+	int getId(){
+		return id;
+	}
+	
+	Message deposit(Account a, float cash){
+		AccountInfo acc = checkAccount(a);
+		if(acc == null){
+			return Message.fail("account not found");
+		}
+		if(cash <= 0){
+			return Message.fail("illegal amount to deposit");
+		}
+		
+		acc.adjustBalance(cash);
+		AccountEvent e = new AccountEvent(AccountEventType.DEPOSIT, this, cash);
+		acc.notify(e);
+		
+		return Message.succ(cash + " deposited");
+	}
+	
+	Message withdraw(Account a, float cash){
+		AccountInfo acc = checkAccount(a);
+		if(acc == null){
+			return Message.fail("account not found");
+		}
+		if(cash <= 0){
+			return Message.fail("illegal amount to withdraw");
+		}
+		if(acc.getBalance() < cash){
+			return Message.fail("insufficient balance");
+		}
+		
+		acc.adjustBalance(-1 * cash);
+		AccountEvent e = new AccountEvent(AccountEventType.WITHDRAW, this, cash);
+		acc.notify(e);
+		
+		return new ValueMessage(true, cash, "Money withdrawn");
+	}
+	
+	Message query(Account a){
+		Account acc = checkAccount(a);
+		if(acc == null){
+			return Message.fail("account not found");
+		}
+		
+		float b = acc.getBalance();
+		return new ValueMessage(true, b, "Current balance: " + b);
+	}
+}
+
+// At an ATM, one can only deposit/withdraw
+class ATM : BankFacility { // JAVA
+
+	ATM(Bank bank) 
+		: super(bank) { // JAVA
+	}
+	
+	public 
+	String toString(){
+		return "ATM " + id;
+	}
+	
+}
+
+// At a branch, one can open account
+class Branch : BankFacility { // JAVA
+
+	String name;
+	
+	Branch(Bank bank, String name)
+		: super(bank) { // JAVA
+		this.name = name;
+	}
+	
+	Account[] open(Customer c){
+		return bank.createAccount(this, c);
+	}
+	
+	Message transfer(Account from, Account to, float amount){
+		return bank.transfer(this, from, to, amount);
+	}
+	
+	public 
+	String toString(){
+		return "Branch " + name;
+	}
+	
+}

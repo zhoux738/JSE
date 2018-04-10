@@ -1,0 +1,24 @@
+import System.Concurrency;
+import System;
+
+int icnt = 0;
+int rcnt = 0;
+
+void f(){
+	for(int i = 0; i < 10; i++){
+		bool itr = Thread.sleep(1);
+		if(itr){
+			icnt++;
+		} else {
+			rcnt++;
+		}
+	}
+}
+
+Thread t = new Thread(f, "t1", ThreadPriority.NORMAL);
+
+t.start();
+t.interrupt();
+t.join();
+
+// Console.println(total);

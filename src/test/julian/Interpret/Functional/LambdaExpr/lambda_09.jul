@@ -1,0 +1,5 @@
+//LambdaExprTests
+
+int a = ((int x) => x + 5)(3);
+
+//dprint(a); // output: 8

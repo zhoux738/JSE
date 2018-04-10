@@ -1,0 +1,14 @@
+// return from for
+	
+int fun(int i){
+	for(int j = 0; j < i; j++){
+		if(j == 4){
+			return j; // 4
+		}
+	}
+	return i;
+}
+
+int x1 = fun(10);
+int x2 = fun(1);
+

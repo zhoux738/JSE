@@ -1,0 +1,64 @@
+// Yanghui triangle
+import System;
+
+class YanhuiTriangle {
+
+	/*
+	 * Given numRows, generate the first numRows of Pascal's triangle.
+	 * 
+	 * For example, given numRows = 5, Return
+	 * 
+	 * [ 
+	 *      [1], 
+	 *     [1,1], 
+	 *    [1,2,1], 
+	 *   [1,3,3,1], 
+	 *  [1,4,6,4,1] 
+	 * ]
+	 */
+	static string generate(int numRows) {
+		if (numRows <= 0) {
+			return;
+		}
+		
+		int[][] triangle = new int[numRows][numRows];
+		for (int i = 0; i < numRows; i++) {
+			triangle[i][0] = 1;
+			triangle[i][i] = 1;
+			if (i <= 1) {
+				continue;
+			}
+			for (int j = 1; j < i; j++) {
+				triangle[i][j] = triangle[i - 1][j - 1] + triangle[i - 1][j];
+			}
+		}
+
+		int maxLength = numRows + numRows + 1;
+		int middlePosition = maxLength / 2;
+		string result = "";
+		for (int i = 0; i < numRows; i++) {
+			String row = "";
+			int numberOfTabs = middlePosition - i - 1; // give a space to [
+			for (int tab = 0; tab < numberOfTabs; tab++) {
+				row = row + " ";
+			}
+			row = row + "[";
+			for (int j = 0; j <= i; j++) {
+				row = row + triangle[i][j];
+				if (j != i) {
+					row = row + ",";
+				}
+			}
+			row = row + "]";
+			//Console.println(row);
+			result += row;
+			if(i < numRows - 1){
+				result += '\n';
+			}
+		}
+		
+		return result;
+	}
+}
+
+string result = YanhuiTriangle.generate(5);

@@ -1,0 +1,4 @@
+string s = "abcdef";
+
+// Illegal assignment
+s.length = 3;

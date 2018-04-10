@@ -1,0 +1,34 @@
+string s = "abcdef";
+
+int len = s.length;
+
+bool b1 = s.endsWith("def");
+bool b2 = s.endsWith("xyz");
+
+bool b3 = s.startsWith("abc");
+bool b4 = s.startsWith("xyz");
+
+int i1 = s.indexOf('a', 0);
+int i2 = s.indexOf('b', 0);
+int i3 = s.indexOf('x', 0);
+
+int i4 = s.firstOf('a');
+int i5 = s.firstOf('b');
+int i6 = s.firstOf('x');
+
+string s1 = " abc ".trim();
+string s2 = "\tabc\n".trim();
+
+string us = s.toUpper();
+string ls = us.toLower();
+
+string[] strs0 = "ab".split(':');
+string[] strs1 = "ab:cd".split(':');
+string[] strs2 = "ab:cd:ef".split(':');
+string[] strs3 = ":ab:cd:ef:".split(':');
+
+string s3 = "abc" + "def";
+string s4 = "xyz123456"; // assume this will not collide with "abcdef" with default hashing algorithm
+
+bool b5 = s.hashCode() == s3.hashCode();
+bool b6 = s.hashCode() != s4.hashCode();

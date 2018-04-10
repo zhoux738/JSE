@@ -1,0 +1,23 @@
+import System.Concurrency;
+import System;
+
+bool flag;
+Lock lck = new Lock();
+
+void f0(){
+	lck.lock();
+	while(true){
+		bool interrupted = lck.wait();
+		if(interrupted){
+			flag = true;
+			break;
+		}
+	}
+	lck.unlock();
+}
+
+Thread t1 = Thread.create(f0);
+t1.start();
+t1.interrupt(); // since we didn't wait, it's quite possible we interrupted even before the wait() is called.
+t1.join();
+//Console.println(flag);

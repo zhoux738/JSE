@@ -1,0 +1,7 @@
+module ModuleSys.IncrementalDep.ModX;
+
+import ModuleSys.IncrementalDep.ModY;
+
+class Xa {
+
+}

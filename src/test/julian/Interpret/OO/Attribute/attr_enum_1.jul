@@ -1,0 +1,26 @@
+// attribute on class
+enum UCType {
+
+	Argument,
+	
+	Return
+	
+}
+
+attribute Unchecked {
+	UCType type;
+}
+
+[Unchecked(type=UCType.Return)]
+class MyClass {
+
+}
+
+/*
+int x = UCType.Argument.ordinal;
+int y = UCType.Return.ordinal;
+dprint(x);
+dprint(y);
+*/
+
+MyClass mc;

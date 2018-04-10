@@ -1,0 +1,8 @@
+// abstract method in concrete class
+class Item {
+	
+	abstract void doWork();
+	
+}
+
+Item item;

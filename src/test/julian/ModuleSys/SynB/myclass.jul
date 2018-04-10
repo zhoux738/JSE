@@ -1,0 +1,7 @@
+module ModuleSys.SynB;
+
+import ModuleSys.SynC;
+
+class MyClass {
+	YourClass yc = null; // trying to load another class - but that will fail.
+}

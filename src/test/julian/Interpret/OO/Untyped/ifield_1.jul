@@ -1,0 +1,26 @@
+// Test inherited untyped field; assign to reference value.
+class C1 {
+	var z;
+}
+
+class C2 : C1 {
+
+}
+
+class D {
+	int val;
+}
+
+C2 c = new C2();
+
+c.z = 5;
+int z = c.z;
+c.z = "abc";
+string s = c.z;
+
+D d = new D();
+d.val = 100;
+c.z = d;
+var s2 = c.z;
+s2.val = 120;
+int x = d.val;

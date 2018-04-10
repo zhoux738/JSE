@@ -1,0 +1,27 @@
+class C1 {
+
+	public int[] m1(){
+	
+	}
+	
+	protected byte m2(string s){
+	
+	}
+	
+	private bool m3(int i){
+	
+	}
+	
+	public static int s1(){
+	
+	}
+	
+	protected static string s2(string s){
+	
+	}
+	
+	private static void s3(int i){
+	
+	}
+
+}

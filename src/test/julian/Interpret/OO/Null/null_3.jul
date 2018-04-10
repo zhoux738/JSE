@@ -1,0 +1,14 @@
+class Person {
+	
+	string name;
+	
+	Person(string name){
+		this.name = name;
+	}
+	
+}
+
+Person p1 = null;
+
+bool res1 = p1 == null;
+bool res2 = null == p1;

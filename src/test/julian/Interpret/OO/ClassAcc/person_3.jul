@@ -1,0 +1,30 @@
+class Person {
+
+	private string name;
+	
+	Person(string name){
+		this.name = name;
+	}
+	
+	string getDesc(){
+		return name;
+	}
+	
+}
+
+class Lawyer : Person {
+	
+	Lawyer(String name) : super(name) {
+	
+	}
+	
+	string getDesc(){
+		return "Lawyer: " + super.getDesc();
+	}
+	
+}
+
+Person p = new Lawyer("Oris");
+string desc = p.getDesc();
+
+//Console.println(desc);

@@ -1,0 +1,41 @@
+module ModuleSys.StockTrading2.Market;
+
+import ModuleSys.StockTrading2.Commons;
+import System.Collection;
+
+class StockMarket {
+	private string name;
+	private List stocks; //<Stock>
+	private Map stocksMap; //<string, Stock>
+	
+	StockMarket(string name){
+		this.name = name;
+		this.stocks = new List();
+		this.stocksMap = new Map();
+	}
+	
+	void list(Stock st){
+		stocks.add(st);
+		stocksMap.put(st.getName(), st);
+	}
+	
+	void fluctuate(string name, float delta){
+		Stock st = null;
+		if((st = stocksMap[name]) != null){
+			st.updatePrice(delta);
+		}
+	}
+	
+	string getName(){
+		return name;
+	}	
+	
+	List getAllStocks(){
+		return stocks;
+	}
+	
+	Stock getStock(string name){
+		Stock st = stocksMap[name];
+		return st;
+	}
+}

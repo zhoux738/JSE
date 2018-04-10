@@ -1,0 +1,11 @@
+class Settings {
+
+	static int Val1 = 100;
+	
+	static int Val2 = Val1 * 2;
+}
+
+int x1 = Settings.Val1;
+int x2 = Settings.Val2;
+
+// dprint(x1 + " " + x2);

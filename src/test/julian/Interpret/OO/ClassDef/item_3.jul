@@ -1,0 +1,16 @@
+abstract class Item {
+	
+	abstract string doWork();
+	
+}
+
+class Car : Item {
+
+	string doWork(){
+		return "Car";
+	}
+
+}
+
+Item c = new Car();
+string res = c.doWork();

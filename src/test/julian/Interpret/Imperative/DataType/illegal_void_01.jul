@@ -1,0 +1,17 @@
+bool b0, b1, b2, b3;
+try {
+	void v;
+} catch (System.Lang.RuntimeCheckException e){
+	b0 = true;
+	b1 = e.getMessage().contains("void");
+}
+
+
+try {
+	Function f = (Void a) => {};
+} catch (System.Lang.RuntimeCheckException e){
+	b2 = true;
+	b3 = e.getMessage().contains("void");
+}
+
+int fun(void v){ return 5; }

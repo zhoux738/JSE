@@ -1,0 +1,4 @@
+import ModuleSys.ModB;
+
+string s;
+s = ModuleSys.ModB.Person.Type;

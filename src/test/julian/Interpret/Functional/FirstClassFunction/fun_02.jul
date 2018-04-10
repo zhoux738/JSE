@@ -1,0 +1,15 @@
+//FirstClassFunctionTests
+
+int a = 0;
+
+void fun(int i){
+	a = i + 3;
+}
+
+void fun2(Function f, int i){
+	f(i);
+}
+
+fun2(fun, 5);
+
+//dprint(a); // output: 8

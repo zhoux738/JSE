@@ -1,0 +1,21 @@
+[Mapped(className="info.jultest.test.hosted.classes.Vehicle")]
+class Vehicle {
+
+}
+
+[Mapped(className="info.jultest.test.hosted.classes.Car")]
+class Car : Vehicle {
+
+	int getOrgSpeed(){
+		return super.getSpeed();
+	}
+	
+	string getOrgName(string s){
+		return super.getName(s + s);
+	}
+}
+
+Vehicle v = new Car();
+int v1 = v.getSpeed();
+int v2 = ((Car)v).getOrgSpeed();
+string s = ((Car)v).getOrgName("A");

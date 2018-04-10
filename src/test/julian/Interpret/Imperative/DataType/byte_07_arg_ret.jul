@@ -1,0 +1,10 @@
+byte fun(byte b){
+	return b+1;
+}
+
+byte v0p1 = fun(0);
+byte v127p1 = fun(127);
+byte v_1p1 = fun(-1);
+int i127p1a = fun(127);
+int i127p1b = -128;
+int i127p1c = v127p1;

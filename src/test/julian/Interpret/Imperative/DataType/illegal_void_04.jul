@@ -1,0 +1,7 @@
+class C {
+	C(void v){ 
+
+	}
+}
+
+C c;

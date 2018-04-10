@@ -1,0 +1,23 @@
+// nested switch tests
+int a = 2, b = 2;
+string s = "None", t = "Zeta";
+switch( a ){
+case 1:
+  s = "One";
+  break;
+case 2:
+  s = "Two";
+  switch( b ){
+	case 1:
+	  s += " Alpha";
+	  break;
+	case 2:
+	  s += " Beta";
+	  break;
+	default:
+	  s += " Unknown";
+	}
+  break;
+default:
+  s = "Unknown";
+}

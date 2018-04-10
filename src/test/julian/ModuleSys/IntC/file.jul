@@ -1,0 +1,5 @@
+module ModuleSys.IntC;
+
+internal class IntCls {
+
+}

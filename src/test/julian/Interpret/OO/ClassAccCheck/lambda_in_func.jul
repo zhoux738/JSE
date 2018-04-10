@@ -1,0 +1,7 @@
+class Settings {
+	private static int Volume = 100;
+}
+
+Function f = () => Settings.Volume;
+
+int x = f();

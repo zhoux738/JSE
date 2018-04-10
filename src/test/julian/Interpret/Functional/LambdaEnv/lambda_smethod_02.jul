@@ -1,0 +1,27 @@
+//LambdaEnvTests
+
+class Person {
+
+	static string name = "Luke";
+	
+	// arg hides member
+	static Function getName1(){
+		return (string name) => { return name; };
+	}
+	
+	// local hides member
+	static Function getName2(){
+		return () => { 
+			string name = "b";
+			return name; 
+		};
+	}
+	
+}
+
+Function f1 = Person.getName1();
+Function f2 = Person.getName2();
+
+string a = f1("a");
+string b = f2();
+string mem = Person.name;

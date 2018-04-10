@@ -1,0 +1,8 @@
+import System;
+
+Process p = Process.create("java", new String[]{"-version"});
+bool alive0 = p.isAlive();
+p.start();
+bool alive1 = p.isAlive();
+int res = p.wait();
+bool alive2 = p.isAlive();

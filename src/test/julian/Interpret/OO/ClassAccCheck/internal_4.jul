@@ -1,0 +1,6 @@
+// Cannot access to internal member of a class defined in different module, even if it's a parent class
+
+import ModuleSys.IntB;
+
+CB cb = new CB();
+cb.forbid(3);

@@ -1,0 +1,16 @@
+class Person {
+	
+	string name;
+	
+	Person(string name){
+		this.name = name;
+	}
+	
+}
+
+Person p1 = new Person("Rudolf");
+Person p2 = new Person("Russell");
+
+bool res1 = p1 == p2;
+bool res2 = p1 == p1;
+bool res3 = p2 == p2;

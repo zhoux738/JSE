@@ -1,0 +1,11 @@
+int a = 10, b = 20, c = 30, d = 40;
+int x1 = true ? true ? a + 1 : b : c;
+int x2 = true ? false ? a : b + 1 : c;
+int x3 = false ? a : true ? b + 1 : c;
+int x4 = false ? a : false ? b : c + 1;
+
+int x5 = d == 40 ? d == 40 ? a + 1 : b : c;
+int x6 = d == 40 ? d != 40 ? a : b + 1 : c;
+int x7 = d != 40 ? a : d == 40 ? b + 1 : c;
+int x8 = d != 40 ? a : d != 40 ? b : c + 1;
+

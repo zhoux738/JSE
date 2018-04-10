@@ -1,0 +1,4 @@
+int[] arr = new int[]{100,200};
+arr[0]++;		//100 => 101
+int index = 0;
+arr[index++]++;	//200 => 201

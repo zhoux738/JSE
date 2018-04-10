@@ -1,0 +1,27 @@
+class Person {
+
+	string name;
+	
+	string getDesc(){
+		return name;
+	}
+	
+}
+
+class Employee : Person {
+	
+}
+
+class Lawyer : Employee {
+	
+	string getDesc(){
+		return "Lawyer: " + super.getDesc();
+	}
+	
+}
+
+Person e = new Lawyer();
+e.name = "Oris";
+string desc = e.getDesc();
+
+//Console.println(desc);

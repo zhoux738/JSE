@@ -1,0 +1,7 @@
+import System.IO;
+
+//path is set in unit test upfront.
+Directory dir = new Directory(path);
+string fname = dir.getName();
+string p = dir.getPath();
+bool e = dir.exists();

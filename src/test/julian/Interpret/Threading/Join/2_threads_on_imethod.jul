@@ -1,0 +1,46 @@
+import System.Concurrency;
+import System;
+
+class Counter {
+
+	private int i;
+	
+	void addAll(int total){
+		for(int i = 0; i < total ; i++){
+			this.addOne();
+		}
+	}
+	
+	void addOne(){
+		i++;
+	}
+
+	int getValue(){
+		return i;
+	}
+}
+
+Counter c1 = new Counter();
+Counter c2 = new Counter();
+
+void f1(){
+	c1.addAll(100);
+}
+
+void f2(){
+	c2.addAll(50);
+}
+
+Thread t1 = new Thread(f1, "t1", ThreadPriority.NORMAL);
+Thread t2 = new Thread(f2, "t2", ThreadPriority.NORMAL);
+
+t1.start();
+t2.start();
+t1.join();
+t2.join();
+
+int v1 = c1.getValue();
+int v2 = c2.getValue();
+
+//Console.println(v1);
+//Console.println(v2);

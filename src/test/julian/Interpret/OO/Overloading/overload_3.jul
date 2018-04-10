@@ -1,0 +1,14 @@
+import System;
+
+class Machine {
+	int start(int i, char c, string s){ return 10; }
+	int start(char c, string s, int i){ return 20; }
+	int start(string s, int i, char c){ return 30; }
+}
+
+Machine m = new Machine();
+
+int speed3 = m.start("s", 1, 'c');
+int speed2 = m.start('c', "s", 1);
+int speed1 = m.start(1, 'c', "s");
+

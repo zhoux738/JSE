@@ -1,0 +1,8 @@
+// duplicate return types (2)
+class Item {
+	
+	int int doWork(){}
+	
+}
+
+Item item;

@@ -1,0 +1,13 @@
+module ModuleSys.ModA;
+
+attribute MyAttr1 {
+
+}
+
+class MyClass1 {
+
+}
+
+attribute MyAttr2 {
+
+}

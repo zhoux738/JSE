@@ -1,0 +1,6 @@
+int i = 5;
+bool b = true;
+
+bool ic = i is int;
+bool bc = b is bool;
+bool ic2 = i is bool;

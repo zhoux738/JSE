@@ -1,0 +1,17 @@
+// Iterate over map
+import System.Collection;
+
+Map m = new Map();
+m[100] = 3;
+m['b'] = "xyz";
+m[true] = true;
+
+string[] strs = new string[3];
+
+int i = 0;
+for(var v in m){
+	strs[i] = v.key + ":" + v.value;
+	i++;
+}
+
+string s0 = strs[0], s1 = strs[1], s2 = strs[2];

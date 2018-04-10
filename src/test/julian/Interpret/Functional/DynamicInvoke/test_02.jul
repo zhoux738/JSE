@@ -1,0 +1,22 @@
+class Vehicle {
+
+	int speed = 5;
+
+	int accelerate(int val){
+		this.speed += val;
+		return this.speed;
+	}
+	
+	static int global;
+	
+	static int set(int i){
+		return global = i;
+	}
+}
+
+Vehicle v = new Vehicle();
+
+int s8 = v.accelerate.invoke(3);
+int s9 = Vehicle.set.invoke(9);
+
+//Console.println(s8);

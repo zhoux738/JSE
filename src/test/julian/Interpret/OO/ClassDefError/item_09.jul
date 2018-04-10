@@ -1,0 +1,8 @@
+// bas syntax
+class Item {
+	
+	{}
+	
+}
+
+Item item;

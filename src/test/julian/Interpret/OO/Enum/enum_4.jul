@@ -1,0 +1,16 @@
+enum Planet {
+
+	Venus,
+	
+	Earth,
+	
+	Mars
+	
+}
+
+Planet p1 = Planet.Mars;
+Planet p2 = Planet.Earth;
+Planet p3 = Planet.Mars;
+
+bool b1 = p1 == p2;
+bool b2 = p1 == p3;

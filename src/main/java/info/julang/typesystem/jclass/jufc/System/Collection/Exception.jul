@@ -1,0 +1,31 @@
+module System.Collection;
+
+import System;
+
+/*
+ * An exception to throw when attempt to modify a container occurs when such omdification is not allowed.
+ *
+ * In Julian, a container can be iterated with language level support:
+ * [code]
+ *    for (var a : list) {
+ *      ... ... // Within this block the list is locked.
+ *    }
+ * [code: end] 
+ *
+ * However, during the iteration the list will be locked down by the current thread. If another thread attempts
+ * to modify the container, such as by adding or removing data, this exception will be raised. Modifying from 
+ * the current thread, however, will not cause this error, but can lead to undefined iteration results.
+ */
+class ConcurrentModificationException : Exception {
+	
+	/*
+	 * Create a standard ConcurrentModificationException instance. While entirely legal, 
+	 * it's not recommended for a user to create such instances.
+	 *
+	 * [param: message] The error message.
+	 */
+	ConcurrentModificationException(string message) : super(message) {
+		
+	}
+
+}

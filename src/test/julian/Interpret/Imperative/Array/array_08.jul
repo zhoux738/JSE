@@ -1,0 +1,3 @@
+string[][] arr = new string[][]{{"ab","cd"},{"ef","gh"}};
+string sum = arr[0][0] + arr[1][1];
+//dprint(sum);

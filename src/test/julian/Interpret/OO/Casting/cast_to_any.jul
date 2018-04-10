@@ -1,0 +1,10 @@
+class Vehicle {}
+class Car : Vehicle {}
+
+var a = (Any)5;
+bool b1 = a is Integer;
+a = (Any)(new Car());
+bool b2 = a is Vehicle;
+var b = (Any)a;
+bool b3 = b is Car;
+bool b4 = b is Object;

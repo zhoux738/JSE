@@ -1,0 +1,9 @@
+import System.Concurrency;
+
+bool nonnull;
+bool same;
+
+Thread t1 = Thread.getCurrent();
+Thread t2 = Thread.getCurrent();
+nonnull = t1 != null;
+same = t1 == t2;

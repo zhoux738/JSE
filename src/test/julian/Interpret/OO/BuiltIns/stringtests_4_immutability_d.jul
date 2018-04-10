@@ -1,0 +1,15 @@
+// String immutability D
+
+//string value => string var => string array var => string var
+
+string[] arr = new string[1];
+string sa = "a";
+string sb = null;
+
+arr[0] = sa;
+sa = "sa_mutated";
+string r1 = arr[0]; // r1 == "a"
+
+sb = arr[0];
+arr[0] = "arr_0_mutated";
+string r2 = sb; // r2 == "a"

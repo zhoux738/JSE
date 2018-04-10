@@ -1,0 +1,6 @@
+// An interface cannot extend itself
+interface I : I {
+
+}
+
+I i;

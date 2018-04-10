@@ -1,0 +1,24 @@
+int global = -1;
+int global2 = -1;
+
+int fun(int option, int x){
+	switch(option){
+	case 0:
+		global=0;
+		break;
+	case 1:
+		try {
+			global=100;
+			return x;
+		} finally {
+			global2=500;
+		}
+	case 2:
+		global=200;
+		break;
+	}
+
+	return -1;
+}
+
+int x = fun(1, 5);

@@ -1,0 +1,2 @@
+bool res1 = null == null;
+bool res2 = null != null;

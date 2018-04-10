@@ -1,0 +1,33 @@
+module ModuleSys.Banking.Commons;
+
+class Message {
+	bool success; // Java
+	string message;
+	Message(bool success, string message) { // Java
+		this.success = success;
+		this.message = message;
+	}
+	bool isSucc(){ // Java
+		return success;
+	}
+	static Message fail(string message){
+		return new Message(false, message);
+	}
+	static Message succ(string message){
+		return new Message(true, message);
+	}
+	public string toString(){
+		return message;
+	}
+}
+
+class ValueMessage : Message { // Java
+	float value;
+	ValueMessage(bool succ, float value, string message)
+		: super(succ, message) { // Java
+		this.value = value;
+	}
+	float getValue(){
+		return value;
+	}
+}

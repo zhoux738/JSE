@@ -1,0 +1,12 @@
+import System.Concurrency;
+
+Promise p0 = Promise.start(()=> {
+	return Promise.start(()=>{return 3;});
+}).then((res)=> {
+	return res + 4;
+});
+
+var result = p0.getResult(true);
+
+
+

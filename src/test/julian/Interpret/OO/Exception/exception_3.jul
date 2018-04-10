@@ -1,0 +1,15 @@
+import System;
+
+void funA(int i){
+	funB(i);
+}
+
+void funB(int i){
+	funC(i);
+}
+
+void funC(int i){
+	throw new Exception("message");
+}
+
+funA(5);

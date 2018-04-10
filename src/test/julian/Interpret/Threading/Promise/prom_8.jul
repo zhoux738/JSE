@@ -1,0 +1,15 @@
+import System.Concurrency;
+
+// Test destructive user bahviour
+Promise p0 = Promise.start((res, handle)=> {
+	throw 1; // cannot throw an integer
+}).then(()=> {
+	return 2;
+});
+
+bool caught = false;
+try {
+	int result = p0.getResult(true);
+} catch (System.Lang.RuntimeCheckException rce) {
+	caught = true;
+}

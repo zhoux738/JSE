@@ -1,0 +1,9 @@
+attribute A {
+
+	int i = 5;
+	
+	string s = "a";
+	
+	C c = new C();
+
+}

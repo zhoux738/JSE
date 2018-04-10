@@ -1,0 +1,13 @@
+class Item {
+	
+	static int a = 3;
+	int a(){
+		return Item.a;
+	}
+	
+}
+
+Item item = new Item();
+
+int a = Item.a;
+int b = item.a();

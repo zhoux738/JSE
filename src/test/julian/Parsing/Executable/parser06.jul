@@ -1,0 +1,2 @@
+Car c = new Car();
+My.Car c = new My.Car("abc", 100);
