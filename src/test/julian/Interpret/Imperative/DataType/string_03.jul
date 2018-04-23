@@ -1,0 +1,7 @@
+string s = "abc";
+char c0 = s[0];
+s[0] = 'x'; // Not an error, but won't change the value either since it's a primitive that got replicated on stack
+char c1 = s[1];
+s[1] = 'y';
+char c2 = s[2];
+s[2] = 'z';

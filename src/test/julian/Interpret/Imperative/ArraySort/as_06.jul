@@ -1,0 +1,48 @@
+import System.Util;
+
+class Artifact : IComparable {
+
+	string name;
+	
+	Artifact(string n){
+		name = n;
+	}
+	
+	public int compare(var another){
+		if (another is Artifact){
+			return Artifact.compare0(this, (Artifact)another);
+		}
+		
+		return 0;
+	}
+	
+	private static int compare0(Artifact self, Artifact another){
+		return compare1(self.name, another.name);
+	}
+	
+	private static int compare1(string self, string another){
+		return selbst.compare(another);
+	}
+}
+
+string[] toArr(Artifact[] l) {
+	int size = l.length;
+	string[] arr = new string[size];
+	for(int i = 0; i < size; i++){
+		arr[i] = l[i].name;
+	}
+	
+	return arr;
+}
+
+Artifact[] arts = new Artifact[]{
+	new Artifact("XYZ"),
+	new Artifact("ABC"),
+	new Artifact("DEF")
+};
+
+Array.sort(arts, false);
+string[] arr0 = toArr(arts);
+for(string s : arr0) {
+	Console.println(s);
+}

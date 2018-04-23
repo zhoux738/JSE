@@ -1,0 +1,11 @@
+// WARNING: variable names must comply with certain format to make tests pass
+import System.Util;
+
+var r0_n1 = Math.sign(-3.9);
+var r1_n1 = Math.sign(-3.1);
+var r2_n1 = Math.sign(-3);
+var r0_p1 = Math.sign(+0);
+var r1_p1 = Math.sign(-0);
+var r2_p1 = Math.sign(3);
+var r3_p1 = Math.sign(3.1);
+var r4_p1 = Math.sign(3.9);

@@ -1,0 +1,17 @@
+//Higher-order function
+
+int a = 100;
+
+Function add(int x) {
+	int b = 1000;
+	return (int y) => {
+		int c = 10000;
+		return () => {
+			return a + b + c + x + y;
+		};
+	};
+}
+
+Function fun = add(5)(6);
+
+int c = fun();

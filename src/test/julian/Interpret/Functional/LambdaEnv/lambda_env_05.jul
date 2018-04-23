@@ -1,0 +1,13 @@
+//Currying
+
+int add(int a, int b) {
+	return a + b;
+}
+
+Function addX(int x) {
+	return a => add(a, x);
+}
+
+Function add7 = addX(7);
+
+int c = add7(11);

@@ -1,0 +1,8 @@
+// WARNING: variable names must comply with certain format to make tests pass
+import System.Util;
+
+var r0_p10_0 = Math.log2(1024);
+var r0_p3_0 = Math.log10(1000);
+var r0_p4_0 = Math.log(81) / Math.log(3);
+var r0_zero = Math.log(1);
+var r0_ninf = (string)Math.log(0);

@@ -1,0 +1,13 @@
+import System.Util;
+
+string[] arr0 = new string[] {
+	"abc",
+	"aaa",
+	"bc",
+	"b",
+	"zab",
+	"bc",
+	""
+};
+
+Array.sort(arr0, false);

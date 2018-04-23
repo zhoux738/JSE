@@ -1,0 +1,2 @@
+bool[] a0 = new bool[]{false, true, false, false, true, true, false};
+Array.sort(a0, false);

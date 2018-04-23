@@ -1,0 +1,2 @@
+int[] src = new int[3];
+Array.fill(src, 10);

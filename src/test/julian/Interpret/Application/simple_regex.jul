@@ -1,0 +1,199 @@
+// This pattern matching utility only implements two symbols: ? and *
+// ?: any one character
+// *: zero or more characters
+
+interface StateBuilder {
+	
+	void addNext(State next);
+	void setFinal();
+}
+
+interface State : StateBuilder {
+	
+	State[] next(char c);
+	bool checkFinal();
+}
+
+abstract class StateBase : State {
+
+	bool isFinal;
+	
+	protected State[] following;
+
+	protected StateBase(){
+		following = new State[2];
+	}
+	
+	public void setFinal() {
+		isFinal = true;
+	}
+
+	public bool checkFinal() {
+		return isFinal;
+	}
+
+	public void addNext(State next) {
+		for(int i = 0; i < following.length; i++){
+			if (following[i] == null){
+				following[i] = next;
+				break;
+			} else if (following[i] == next) { // Filter redundant
+				break;
+			}
+		}
+	}	
+}
+
+class LiteralState : StateBase {
+	
+	private char c;
+	
+	LiteralState(char c){
+		this.c = c;
+	}
+
+	// Implementing State
+	
+	public State[] next(char c) {
+		if (this.c == c) {
+			return following;
+		} else {
+			// Failing match
+			return null;
+		}
+	}
+}
+
+class AnyState : StateBase {
+	
+	AnyState(){
+	}
+
+	public State[] next(char c) {
+		return following;
+	}
+}
+
+class WildState : StateBase {
+
+	WildState(){
+		following[0] = this;
+	}
+
+	public State[] next(char c) {
+		return following;
+	}
+}
+
+class Regex {
+	
+	State start;
+	
+	Regex(State start){
+		this.start = start;
+	}
+	
+	bool match(string s) {
+		State[] sts = new State[] { start };
+		char[] chars = s.toChars();
+		return match0(null, sts, chars, 0);
+	}
+	
+	private bool match0(State start, State[] sts, char[] chars, int index) {
+		// 1) if reaching the end, check if any state is in final
+		if (index == chars.length) {
+			return start != null && start.checkFinal();
+		}
+		
+		// 2) drive through the current state
+		char c = chars[index];
+		int next = index + 1;
+		bool result = false;
+		for(State st : sts){
+			if (st != null) {
+				State[] following = st.next(c);
+				if (following != null) {
+					result = result || match0(st, following, chars, next);
+					if (result) {
+						return result;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	static Regex create(string pattern){
+		State prev = null, curr = null, prevprev = null, start = null;
+		for(char c : pattern.toChars()){
+			switch(c){
+			case '?': 
+				curr = new AnyState();
+				break;
+			case '*':
+				curr = new WildState();
+				break;
+			default: 
+				curr = new LiteralState(c);
+				break;
+			}
+			
+			if (prev != null){
+				bool wildWild = false;
+				if (curr is WildState){
+					// Special
+					wildWild = prev is WildState;
+					if (!wildWild) {
+						prevprev = prev;
+					}
+				} else if (prev is WildState) {
+					prevprev.addNext(curr);
+					prevprev = null;
+				}
+				
+				if (!wildWild) {
+					// Skip redundant wild state
+					prev.addNext(curr);
+				}
+			} else {
+				start = curr;
+			}
+
+			prev = curr; 
+			curr = null;
+		}
+		
+		prev.setFinal();
+		
+		return new Regex(start);
+	}
+}
+
+void print(Regex r, string s, bool expected){
+	bool res = r.match(s);
+	s = s + " - " + res;
+	//Console.println(s);
+	if (res != expected) {
+		throw new Exception("Unexpected result: " + s);
+	}
+}
+
+void test(){
+	Regex r = null;
+	r = Regex.create("a*c");
+	print(r, "abbc", true);
+	print(r, "ad", false);
+	print(r, "abcbc", true);
+	print(r, "abcbcd", false);
+	
+	r = Regex.create("a*b?c");
+	print(r, "abxc", true);
+	print(r, "axxbxc", true);
+	print(r, "abbc", true);
+	print(r, "abcc", true);
+	print(r, "abc", false);
+}
+
+test();
+bool passed = true;

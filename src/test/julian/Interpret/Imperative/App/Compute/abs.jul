@@ -1,0 +1,10 @@
+// WARNING: variable names must comply with certain format to make tests pass
+import System.Util;
+
+var r0_p3_9 = Math.abs(-3.9);
+var r0_p3_1 = Math.abs(-3.1);
+var r0_p3   = Math.abs(-3);
+var r0_zero  = Math.abs(0);
+var r1_p3   = Math.abs(3);
+var r1_p3_1 = Math.abs(3.1);
+var r1_p3_9 = Math.abs(3.9);

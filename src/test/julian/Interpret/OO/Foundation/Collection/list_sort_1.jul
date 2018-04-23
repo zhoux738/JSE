@@ -1,0 +1,25 @@
+import System.Collection;
+
+int[] toArr(List l) {
+	int size = l.size();
+	int[] arr = new int[size];
+	for(int i = 0; i < size; i++){
+		arr[i] = l[i];
+	}
+	
+	return arr;
+}
+
+List l = new List();
+l.add(3);
+l.add(7);
+l.add(2);
+l.add(-1);
+l.add(19);
+l.add(11);
+
+l.sort(false);
+int[] arr0 = toArr(l);
+
+l.sort(true);
+int[] arr1 = toArr(l);

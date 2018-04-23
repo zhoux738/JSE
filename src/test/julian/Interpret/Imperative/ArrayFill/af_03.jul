@@ -1,0 +1,16 @@
+class Car {
+	String name;
+}
+
+Car c = new Car();
+c.name = "Hyundai";
+
+Car[] src = new Car[3];
+Array.fill(src, c);
+
+c.name = "Daihatsu";
+
+bool b = 
+	src[0].name == "Daihatsu" && 
+	src[1].name == "Daihatsu" &&
+	src[2].name == "Daihatsu";

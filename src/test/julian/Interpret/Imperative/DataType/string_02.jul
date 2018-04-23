@@ -1,0 +1,15 @@
+string s = "abc";
+char c0, c1, c2;
+int index = 0;
+for(var v : s){
+	switch(index){
+	case 0: c0 = v; break;
+	case 1: c1 = v; break;
+	case 2: c2 = v; break;
+	}
+	
+	v = 'x';
+	index++;
+}
+
+string s2 = s;

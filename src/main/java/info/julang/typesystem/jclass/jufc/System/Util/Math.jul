@@ -1,0 +1,300 @@
+module System.Util;
+
+import System;
+
+/*
+ * A utility class providing various mathematical functions.
+ *
+ * While most methods exposed by this class take [untyped](type: Any) parameters by definition, they in fact 
+ * can only handle certain number types, i.e. [int], [byte] and [float]. If an argument of non-numeral type
+ * is passed in, it will in most cases result in [System.ArgumentException].
+ */
+ [Bridged(apiset="System.Util.Math")]
+final class Math {
+
+	/*
+	 * The ratio of a circle's circumference to its diameter.
+	 */
+	public static const float PI = 3.141592654;
+	
+	/*
+	 * The base of the natural logarithms.
+	 */
+	public static const float E  = 2.718281828;
+
+	private static void check(string mname, var v){
+    	if (!(v is int || v is byte || v is float)) {
+    		throw new ArgumentException("argument passed to " + mname + " is not a number.");
+    	}	
+	}
+	
+	/*
+	 * Get the absolute value of the numeral argument.
+	 *
+	 * [param: v] A numeral argument.
+	 * [return] The absolute value of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+    public static var abs(var v) {
+		check("abs", v);
+		if (v < 0) {
+			return -v;
+		}
+		
+		return v;
+    }
+
+	/*
+	 * Get the largest integer that is less than or equal to the numeral argument.
+	 *
+	 * [param: v] A numeral argument.
+	 * [return] The largest integer that is less than or equal to the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+    public static int floor(var v) {
+		check("floor", v);
+		var vr = v;
+		v = (int)v;
+		if (vr < 0 && vr < v) {
+			v--;
+		}
+		
+		return v;
+    }
+ 
+ 	/*
+	 * Get the smallest integer that is greater than or equal to the numeral argument.
+	 *
+	 * [param: v] A numeral argument.
+	 * [return] The smallest integer that is greater than or equal to the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+    public static int ceil(var v) {
+		check("ceil", v);
+		var vr = v;
+		v = (int)v;
+		if (vr > v && vr > 0) {
+			v++;
+		}
+		
+		return v;
+    }
+    
+ 	/*
+	 * Get the closest integer to the numeral argument.
+	 *
+	 * The given value will be rounded half towards positive infinity. This means for a positive number, if the decimal part
+	 * is equal to or greater than 0.5, it will be rounded up; otherwise rounded down. For a negative number, if the decimal 
+	 * part is equal to or less than -0.5, it will be rounded up; otherwise rounded down. Some examples: 
+	 * round(1.4) = 1, round(1.5) = 2, round(1.6) = 2; round(-1.4) = -1, round(-1.5) = -1, round(-1.6) = -2.
+	 *
+	 * [param: v] A numeral argument.
+	 * [return] The smallest integer that is greater than or equal to the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+    public static int round(var v) {
+		check("round", v);
+		var vr = v;
+		v = (int)v;
+		if (vr < 0 && vr < v - 0.5) {
+			return v - 1;
+		}
+		if (vr > 0 && vr >= v + 0.5) {
+			return v + 1;
+		}
+		
+		return v;
+    }
+ 
+  	/*
+	 * Get the larger one from the two arguments. If the two are equal the same value will be returned.
+	 *
+	 * [param: v1] The first value.
+	 * [param: v2] The second value.
+	 * [return] The larger value out of the two.
+	 * [throws: System.ArgumentException] If any argument is not a numeral.
+	 */
+    public static var max(var v1, var v2) {
+		check("max", v1);
+		check("max", v2);
+		return v1 > v2 ? v1 : v2;
+    }
+
+  	/*
+	 * Get the smaller one from the two arguments. If the two are equal the same value will be returned.
+	 *
+	 * [param: v1] The first value.
+	 * [param: v2] The second value.
+	 * [return] The smaller value out of the two.
+	 * [throws: System.ArgumentException] If any argument is not a numeral.
+	 */
+    public static var min(var v1, var v2) {
+		check("min", v1);
+		check("min", v2);
+		return v1 < v2 ? v1 : v2;
+    }
+
+    /*
+	 * Get the sign part of the given numeral argument.
+	 *
+	 * [param: v] A numeral argument.
+	 * [return] 1 if positive or 0; -1 otherwise.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+    public static byte sign(var v) {
+		check("sign", v);
+		return v >= 0 ? 1 : -1;
+    }
+
+    /*
+	 * Get the natural logarithm (with base = [e](#E)) of the given numeral argument.
+	 * 
+	 * This class also provides two convenient log methods for base-2 and base-10. To perform 
+	 * logarithm calculation of arbitrary base B, simply do ```log(x)/log(B)```.
+	 *
+	 * [param: v] A numeral argument.
+	 * [return] The natural logarithm of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+    public static float log(var v) {
+		check("log", v);
+		return _log(v);
+    }
+
+    /*
+	 * Get the logarithm with base = 2 of the given numeral argument.
+	 *
+	 * [param: v] A numeral argument.
+	 * [return] The base-2 logarithm of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+    public static float log2(var v) {
+		check("log2", v);
+		return _log(v) / _log(2);
+    }
+        
+    /*
+	 * Get the logarithm with base = 10 of the given numeral argument.
+	 *
+	 * [param: v] A numeral argument.
+	 * [return] The base-10 logarithm of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+    public static float log10(var v) {
+		check("log10", v);
+		return _log(v) / _log(10);
+    }
+
+    /*
+     * Get the trigonometric sine of the given numeral argument.
+     *
+     * [param: v] A numeral argument. Note this is radian value (0 - 2 * [PI](#PI)), not degree value (0 - 360).
+	 * [return] The trigonometric sine of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+     */
+	public static float sin(var v){
+		check("sin", v);
+		return _sin(v);
+	}
+
+    /*
+     * Get the trigonometric cosine of the given numeral argument.
+     *
+     * [param: v] A numeral argument. Note this is radian value (0 - 2 * [PI](#PI)), not degree value (0 - 360).
+	 * [return] The trigonometric cosine of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+     */	
+	public static float cos(var v){
+		check("cos", v);
+		return _cos(v);
+	}
+
+    /*
+     * Get the trigonometric tangent of the given numeral argument.
+     *
+     * [param: v] A numeral argument. Note this is radian value (0 - 2 * [PI](#PI)), not degree value (0 - 360).
+	 * [return] The trigonometric tangent of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+     */		
+	public static float tan(var v){
+		check("tan", v);
+		return _sin(v)/_cos(v);
+	}
+
+    /*
+     * Get the inverse sine of the given numeral argument.
+     *
+     * [param: v] A numeral argument.
+	 * [return] The inverse sine of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+     */
+	public static float arcsin(var v){
+		check("arcsin", v);
+		return _arcsin(v);
+	}
+
+    /*
+     * Get the inverse cosine of the given numeral argument.
+     *
+     * [param: v] A numeral argument.
+	 * [return] The inverse cosine of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+     */	
+	public static float arccos(var v){
+		check("arccos", v);
+		return _arccos(v);
+	}
+
+    /*
+     * Get the inverse tangent of the given numeral argument.
+     *
+     * [param: v] A numeral argument.
+	 * [return] The inverse tangent of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+     */	
+	public static float arctan(var v){
+		check("arctan", v);
+		v = v / _power(v*v + 1, 0.5);
+		return _arcsin(v);
+	}
+
+	/*
+	 * Get the square root of the given numeral argument.
+     *
+     * [param: v] A numeral argument.
+	 * [return] The square root of the argument.
+	 * [throws: System.ArgumentException] If the argument is not a numeral.
+	 */
+	public static float sqrt(var v){
+		check("sqrt", v);
+		return _power(v, 0.5);
+	}
+
+	/*
+	 * Raise one value to the power of another.
+     *
+     * [param: a] The base.
+     * [param: b] The exponent.
+	 * [return] The base valued raised to the power of the exponent value.
+	 * [throws: System.ArgumentException] If any argument is not a numeral.
+	 */	
+	public static var power(var a, var b){
+		check("power", a);
+		check("power", b);
+		return _power(a, b);
+	}
+	
+	// Platform implementation
+	[Bridged(name="log")]
+    private hosted static float _log(var v);
+	[Bridged(name="sin")]
+    private hosted static float _sin(var v);
+	[Bridged(name="cos")]
+    private hosted static float _cos(var v);
+	[Bridged(name="arcsin")]
+    private hosted static float _arcsin(var v);
+	[Bridged(name="arccos")]
+    private hosted static float _arccos(var v);
+	[Bridged(name="power")]
+    private hosted static float _power(var a, var b);
+}

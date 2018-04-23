@@ -1,0 +1,15 @@
+// WARNING: variable names must comply with certain format to make tests pass
+import System.Util;
+
+// Ref: https://en.wikipedia.org/wiki/Trigonometric_functions#Special_values_in_trigonometric_functions
+
+var r0_p1 = Math.sin(Math.PI / 2);
+var r0_zero = Math.sin(Math.PI * 2);
+var r0_n1 = Math.cos(Math.PI);
+var r1_zero = Math.cos(Math.PI / 2);
+var r2_p1 = Math.tan(Math.PI / 4);
+var r2_zero = Math.tan(0);
+
+var r3_zero = Math.arcsin(1) - Math.PI/2;
+var r4_zero = Math.arccos(0.5) - Math.PI/3;
+var r5_zero = Math.arctan(1) - Math.PI/4;

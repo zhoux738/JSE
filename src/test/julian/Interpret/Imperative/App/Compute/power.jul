@@ -1,0 +1,21 @@
+// WARNING: variable names must comply with certain format to make tests pass
+import System.Util;
+
+var r0_p8 = Math.power(2, 3);
+var r0_p9 = Math.power(3, 2);
+
+// Refresher for math:
+// x^y = 1 / x^-y
+// x^(1/n) = nth root of x
+var r1_zero = Math.power(5, -2) - 1 / Math.power(5, 2);
+var r2_zero = Math.power(9, 0.5) - 3;
+var r3_zero = Math.power(9, -0.5) - 1 / (float)3;
+
+// x^0 = 1
+var r0_p1 = Math.power(10, 0);
+// 0^x = 0
+var r4_zero = Math.power(0, 10);
+// Exception - 0^0 = 1
+var r1_p1 = Math.power(0, 0);
+
+var r0_p16 = Math.sqrt(256);

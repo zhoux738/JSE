@@ -1,0 +1,27 @@
+import System.Collection;
+
+string[] toArr(List l) {
+	int size = l.size();
+	string[] arr = new string[size];
+	for(int i = 0; i < size; i++){
+		arr[i] = (string)l[i];
+	}
+	
+	return arr;
+}
+
+List l = new List();
+l.add(3);
+l.add(7.1);
+byte b = 2;
+l.add(b);
+l.add(-1.3);
+l.add(19);
+b = 11;
+l.add(b);
+
+l.sort(false);
+string[] arr0 = toArr(l);
+
+l.sort(true);
+string[] arr1 = toArr(l);

@@ -1,0 +1,12 @@
+// WARNING: variable names must comply with certain format to make tests pass
+import System.Util;
+
+var r0_n4 = Math.floor(-3.9);
+var r1_n4 = Math.floor(-3.5);
+var r2_n4 = Math.floor(-3.1);
+var r3_n3 = Math.floor(-3);
+var zero  = Math.floor(0);
+var r1_p3 = Math.floor(3);
+var r2_p3 = Math.floor(3.1);
+var r3_p3 = Math.floor(3.5);
+var r4_p3 = Math.floor(3.9);

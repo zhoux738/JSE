@@ -1,0 +1,2 @@
+string s = "abc";
+char c3 = s[3];

@@ -1,0 +1,50 @@
+import System.Util;
+
+class Person : IComparable {
+	string name;
+	
+	Person(string n){
+		name = n;
+	}
+	
+	public int compare(var another){
+		if (another is Person){
+			return this.name.compare(another.name);
+		}
+		
+		if (another is string){
+			return this.name.compare(another);
+		}
+		
+		return 0;
+	}
+}
+
+string[] toArr(Object[] l) {
+	int size = l.length;
+	string[] arr = new string[size];
+	for(int i = 0; i < size; i++){
+		arr[i] = l[i] is Person ? ((Person)l[i]).name : l[i].toString();
+	}
+	
+	return arr;
+}
+
+Object[] pps = new Object[]{
+	new Person("Alex"),
+	"Demore",
+	new Person("Filipe"),
+	"Maximilian",
+	"Nemoah",
+	new Person("Yollex"),
+	new Person("Unton"),
+	"Lansing",
+	new Person("Kubart"),
+	new Person("Filipe"),
+	new Person("Wilson"),
+	"Unton",
+	"Nemoah"
+};
+
+Array.sort(pps, false);
+string[] arr0 = toArr(pps);

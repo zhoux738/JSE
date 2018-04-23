@@ -1,0 +1,12 @@
+// WARNING: variable names must comply with certain format to make tests pass
+import System.Util;
+
+var r0_n4 = Math.round(-3.9);
+var r1_n3 = Math.round(-3.5);
+var r2_n3 = Math.round(-3.1);
+var r3_n3 = Math.round(-3);
+var zero  = Math.round(0);
+var r1_p3 = Math.round(3);
+var r2_p3 = Math.round(3.1);
+var r3_p4 = Math.round(3.5);
+var r4_p4 = Math.round(3.9);

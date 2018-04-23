@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+#* Parameters:
+   tv_tut_root (ApiIndexModel.PModule)
+   tv_api_root (ApiIndexModel.PModule)
+   tv_hostname (string)
+   tv_lastmod (string - representing a date time)
+*#
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+#* Fixed pages *#
+<url>
+  <loc>http://$tv_hostname/</loc>
+  <lastmod>$tv_lastmod</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>http://$tv_hostname/api.html</loc>
+  <lastmod>$tv_lastmod</lastmod>
+  <priority>0.85</priority>
+</url>
+#* Tutorial pages *#
+#foreach( $item in $tv_tut_root.Items )
+<url>
+  <loc>http://$tv_hostname/tutorial/${item.Name}.html</loc>
+  <lastmod>$tv_lastmod</lastmod>
+  <priority>#if( $item.Name == "ch_01" )0.85#{else}0.75#end</priority>
+</url>
+#end
+#* API pages *#
+#foreach( $item in $tv_api_root.Items )
+#if( $item.Module )
+#foreach( $subitem in $item.Items )
+<url>
+  <loc>http://$tv_hostname/api/${item.Name}/${subitem.Name}.html</loc>
+  <lastmod>$tv_lastmod</lastmod>
+  <priority>0.65</priority>
+</url>
+#end
+#else
+<url>
+  <loc>http://$tv_hostname/api/${item.Name}.html</loc>
+  <lastmod>$tv_lastmod</lastmod>
+  <priority>0.70</priority>
+</url>
+#end
+#end
+#* Fixed pages *#
+<url>
+  <loc>http://$tv_hostname/tutorial.html</loc>
+  <lastmod>$tv_lastmod</lastmod>
+  <priority>0.50</priority>
+</url>
+</urlset>

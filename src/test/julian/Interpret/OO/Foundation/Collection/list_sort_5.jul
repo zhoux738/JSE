@@ -1,0 +1,49 @@
+import System.Collection;
+import System.Util;
+
+class Number : IComparable {
+	int num;
+	
+	Number(int n){
+		num = n;
+	}
+	
+	public int compare(var another){
+		if (another is int || another is float || another is byte){
+			return num < another ? -1 : num > another ? 1 : 0;
+		}
+		
+		if (another is Number){
+			return num - ((Number)another).num;
+		}
+
+		return 0;
+	}
+	
+	public string toString(){
+		return (string)num;
+	}
+}
+
+string[] toArr(List l) {
+	int size = l.size();
+	string[] arr = new string[size];
+	for(int i = 0; i < size; i++){
+		arr[i] = (string)l[i];
+	}
+	
+	return arr;
+}
+
+List l = new List();
+l.add(new Number(-5));
+l.add(12);
+l.add(new Number(18));
+l.add(9.4);
+l.add(new Number(-50));
+l.add(77);
+l.add(new Number(111));
+l.add((byte)1);
+
+l.sort(false);
+string[] arr0 = toArr(l);

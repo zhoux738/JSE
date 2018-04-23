@@ -1,0 +1,38 @@
+module System.Util;
+
+/*
+ * The interface to add the capability of comparing to another value.
+ *
+ * While this interface can be called by a user directly, its main intention is to
+ * allow certain system types, in particular, a container structure that can maintain
+ * an order among its elements, to sort the stored elements according to the result
+ * returned by this interface.
+ *
+ * The implementation doesn't have to cover all the possible types. Instead, it may only
+ * handle those types that would appear in the data structure in question. For example,
+ * if a user only puts objects of certain classes into a list which she is intent to sort
+ * later, she can knowingly implement this interface such that it only checks, casts,
+ * and compares to these classes.
+ *
+ * To tolerate incompatible values, one may simply return 0 if the other's type is not
+ * in the scope. The calling class then treats the two as if they were equal. This approach,
+ * however, is not going to guarantee even a partially correct order, since the underlying
+ * sorting algorithm may very likely be based on the assumption that all the values are 
+ * comparable. If tolerance is less important than correctness, throwing an exception is
+ * another option.
+ */
+interface IComparable {
+
+    /*
+     * Compare this object to another.
+     *
+     * [param: another] the other value to be compared to.
+     * [return] a positive integer if this object is logically larger than the other; a negative
+     * integer if smaller; or 0 if equal (although one may also use this to stand for incomparability). 
+     * Being logically larger than another value means it would appear after that value in a sorted 
+     * sequence in ascending order. The value of this number, if non-zero, is irrelevant to sorting.
+     */
+	int compare(var another);
+}
+
+// IIndexable

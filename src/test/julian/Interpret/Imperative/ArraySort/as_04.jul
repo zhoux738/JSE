@@ -1,0 +1,49 @@
+import System.Util;
+
+class Artifact : IComparable {
+	int year;
+	string name;
+	
+	Artifact(int y, string n){
+		year = y;
+		name = n;
+	}
+	
+	public String toString(){
+		return year + '_' + name;
+	}
+	
+	public int compare(var another){
+		int r = this.year - another.year;
+		if (r == 0){
+			r = this.name.compare(another.name);
+		}
+		
+		return r;
+	}
+}
+
+string[] toArr(Artifact[] l) {
+	int size = l.length;
+	string[] arr = new string[size];
+	for(int i = 0; i < size; i++){
+		arr[i] = l[i].toString();
+	}
+	
+	return arr;
+}
+
+Artifact[] arts = new Artifact[]{
+	new Artifact(1817, "aekain"),
+	new Artifact(2000, "liebodin"),
+	new Artifact(1899, "sevaris"),
+	new Artifact(1911, "kostuvald"),
+	new Artifact(1776, "anvallon"),
+	new Artifact(1911, "phoretics"),
+	new Artifact(1737, "devurwen"),
+	new Artifact(901, "cathimult"),
+	new Artifact(1911, "tierollory")
+};
+
+Array.sort(arts, false);
+string[] arr0 = toArr(arts);

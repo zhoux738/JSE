@@ -1,0 +1,30 @@
+//LambdaInClassTests
+
+class Person {
+
+	int id = 1;
+	
+	void doubleId(){
+		id = id * 2;
+	}
+	
+	Function getIdDoublingFunc(){
+		return (int times) => { 
+			return () => { 
+				while(times > 0) {
+					if (times % 2 == 1) {
+						doubleId();
+					} else {
+						this.doubleId();
+					}
+					times--;
+				}
+			};
+		};
+	}
+	
+}
+
+Person p = new Person();
+p.getIdDoublingFunc()(4)();
+int x = p.id; // 16
