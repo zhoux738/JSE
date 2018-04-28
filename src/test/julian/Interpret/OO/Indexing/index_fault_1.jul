@@ -1,0 +1,34 @@
+import System.Util;
+
+class InvalidIndexException : Exception {
+	InvalidIndexException(string msg) : super(msg) { }
+}
+  
+class MyContainer : IIndexable {
+	Object[] objs;
+	
+	MyContainer(int capacity){
+		objs = new Object[capacity];
+	}
+	
+	//--- impl of IIndexable ---//
+
+	int size() {
+		return objs.length;
+	}
+	
+	var at(var index){
+		if (index < 0) {
+			throw new InvalidIndexException("The index must be non-negative.");
+		}
+		
+		return objs[index];
+	}
+	
+	void at(var index, var value){
+		objs[index] = value;
+	}
+}
+
+MyContainer mc = new MyContainer(3);
+var v = mc[-1];

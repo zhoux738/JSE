@@ -48,6 +48,7 @@ import info.julang.typesystem.jclass.jufc.System.Concurrency.ScriptThread;
 import info.julang.typesystem.jclass.jufc.System.IO.JDirectory;
 import info.julang.typesystem.jclass.jufc.System.IO.JFile;
 import info.julang.typesystem.jclass.jufc.System.IO.JFileStream;
+import info.julang.typesystem.jclass.jufc.System.Util.JMath;
 import info.julang.util.Pair;
 
 /**
@@ -72,6 +73,7 @@ public class HostedMethodManager {
 	private Map<String, HostedMethodProviderFactory> factories;
 	
 	// All the built-in hosted method providers.
+	// TODO - make this part auto-generated from juleng
 	private static HostedMethodProviderFactory[] BuiltInProviderFactories = 
 		new HostedMethodProviderFactory[]{
 			JFile.Factory,
@@ -85,7 +87,8 @@ public class HostedMethodManager {
 			DateTime.Factory,
 			JFileStream.Factory,
 			ProcessPipeStream.Factory,
-			JProcess.Factory
+			JProcess.Factory,
+			JMath.Factory
 		};
 	
 	public void register(String apiset, HostedMethodProviderFactory factory){

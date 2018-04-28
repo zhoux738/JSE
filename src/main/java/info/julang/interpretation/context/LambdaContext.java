@@ -48,8 +48,8 @@ import info.julang.typesystem.loading.InternalTypeResolver;
 public class LambdaContext extends Context {
 
 	private ICompoundType containingType;
-	
 	private ContextType definingContextType;
+	private Display display;
 	
 	public LambdaContext(
 		MemoryArea frame, 
@@ -79,6 +79,7 @@ public class LambdaContext extends Context {
 		
 		this.containingType = containingType;
 		this.definingContextType = definingContextType;
+		this.display = display;
 	}
 	
 	/**
@@ -92,6 +93,10 @@ public class LambdaContext extends Context {
 
 	public ContextType getDefiningContextType() {
 		return definingContextType;
+	}
+	
+	public Display getDisplay(){
+		return display;
 	}
 
 }

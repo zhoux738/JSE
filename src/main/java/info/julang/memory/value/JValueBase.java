@@ -26,6 +26,8 @@ package info.julang.memory.value;
 
 import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.indexable.IIndexable;
+import info.julang.memory.value.iterable.IIterator;
 import info.julang.typesystem.JType;
 
 public abstract class JValueBase implements JValue {
@@ -108,5 +110,17 @@ public abstract class JValueBase implements JValue {
 	@Override
 	public JValue deref(){
 		return this;
+	}
+
+	// By default, it is not indexable
+	@Override
+	public IIndexable asIndexer(){
+		return null;
+	}
+
+	// By default, it is not iterable
+	@Override
+	public IIterator asIterator(){
+		return null;
 	}
 }

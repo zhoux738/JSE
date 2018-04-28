@@ -133,7 +133,7 @@ public class FuncCallExecutor {
 	 * 
 	 * @param methodType
 	 * @param methodName
-	 * @param values
+	 * @param values doesn't contain 'this' object
 	 * @param instance null if it is a static method.
 	 * @return
 	 */

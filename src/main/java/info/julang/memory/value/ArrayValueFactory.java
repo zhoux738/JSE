@@ -43,7 +43,7 @@ public final class ArrayValueFactory {
 	 * Create a one-dimensional array value with the given type and length.
 	 * 
 	 * @param memory
-	 * @param type
+	 * @param type element type
 	 * @param length length of this array
 	 * @return
 	 */
@@ -55,12 +55,13 @@ public final class ArrayValueFactory {
 	 * Create an array value with the given type and lengths at each dimension.
 	 * 
 	 * @param memory
-	 * @param type
+	 * @param tt type table
+	 * @param type element type
 	 * @param lengths the lengths at each dimension.
 	 * @return
 	 */
 	public static ArrayValue createArrayValue(MemoryArea memory, ITypeTable tt, JType type, int[] lengths){
-		if (type.getKind() == JTypeKind.CLASS || lengths.length > 1){
+		if (type.getKind() == JTypeKind.CLASS || type.getKind() == JTypeKind.ANY || lengths.length > 1){
 			return new ObjectArrayValue(memory, tt, type, lengths);
 		}
 		

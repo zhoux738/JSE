@@ -29,9 +29,11 @@ public class AOTRawScriptInfo$List extends RawScriptInfo {
         
         m_classes = new ArrayList<RawClassInfo>();
         m_classes.add(new RawClassInfo("List", new AOTClassDeclInfo_List (this)));
+        m_classes.add(new RawClassInfo("ListIterator", new AOTClassDeclInfo_ListIterator (this)));
 
         m_requirements = new ArrayList<RequirementInfo>();
         m_requirements.add(new RequirementInfo("System", null));
+        m_requirements.add(new RequirementInfo("System.Util", null));
     }
 
     public String getModuleName() {
@@ -59,6 +61,8 @@ public class AOTRawScriptInfo$List extends RawScriptInfo {
             super(minfo);
             
             m_parentNames.add(ParsedTypeName.makeFromFullName("Container"));
+            m_parentNames.add(ParsedTypeName.makeFromFullName("IIndexable"));
+            m_parentNames.add(ParsedTypeName.makeFromFullName("IIterable"));
         }
 
         private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
@@ -102,6 +106,64 @@ public class AOTRawScriptInfo$List extends RawScriptInfo {
 
         public Accessibility getAccessibility() {
             return Accessibility.PUBLIC;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_ListIterator extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_ListIterator(RawScriptInfo minfo) {
+            super(minfo);
+            
+            m_parentNames.add(ParsedTypeName.makeFromFullName("IIterator"));
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.Collection.ListIterator");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "ListIterator";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.MODULE;
         }
         
         public boolean isAccessibilitySet(){

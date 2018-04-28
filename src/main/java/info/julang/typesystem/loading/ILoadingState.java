@@ -35,8 +35,6 @@ import info.julang.typesystem.jclass.builtin.JAttributeType;
 import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.julang.typesystem.loading.depresolving.IOrderResolvable;
 
-import java.util.List;
-
 /**
  * An interface defining some properties of a loading state.
  * 

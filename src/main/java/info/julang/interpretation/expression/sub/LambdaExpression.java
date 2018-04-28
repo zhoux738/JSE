@@ -31,6 +31,8 @@ import info.julang.execution.symboltable.Display;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.context.Context;
+import info.julang.interpretation.context.ContextType;
+import info.julang.interpretation.context.LambdaContext;
 import info.julang.interpretation.expression.ExpressionBase;
 import info.julang.interpretation.expression.Operand;
 import info.julang.interpretation.expression.operand.ValueOperand;
@@ -95,7 +97,13 @@ public class LambdaExpression extends ExpressionBase {
 		JParameter[] paramsArray = new JParameter[params.size()];
 		params.toArray(paramsArray);
 		
-		Display display = new Display(context.getVarTable());
+		Display pd = null;
+		if (context.getContextType() == ContextType.LAMBDA){
+			LambdaContext ldc = (LambdaContext)context;
+			pd = ldc.getDisplay();
+		}
+		
+		Display display = new Display(pd, context.getVarTable());
 		LambdaExecutable lexe = new LambdaExecutable(context, display, declInfo);
 		JLambdaType lambTyp = new JLambdaType(paramsArray, lexe);
 		

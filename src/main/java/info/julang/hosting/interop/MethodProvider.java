@@ -117,4 +117,8 @@ class MethodProvider {
 		return name;
 	}
 	
+	public boolean isStatic(){
+		return isStatic;
+	}
+	
 }

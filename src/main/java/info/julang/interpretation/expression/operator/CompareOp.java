@@ -100,7 +100,7 @@ public abstract class CompareOp extends Operator {
 				return TempValueFactory.createTempBoolValue(result);
 			case FLOAT:
 				result = compareDoubleToDouble(
-					((FloatValue) rval).getFloatValue(), 
+					((FloatValue) lval).getFloatValue(), 
 					((FloatValue) rval).getFloatValue());
 				return TempValueFactory.createTempBoolValue(result);	
 			default:

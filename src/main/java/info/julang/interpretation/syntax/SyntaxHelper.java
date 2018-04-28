@@ -72,7 +72,9 @@ import info.julang.langspec.ast.JulianParser.TypeContext;
 import info.julang.langspec.ast.JulianParser.Type_declarationContext;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.parser.AstInfo;
+import info.julang.typesystem.AnyType;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.VoidType;
 import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.basic.ByteType;
@@ -631,7 +633,6 @@ public final class SyntaxHelper {
 	 */
 	public static ParsedTypeName parseTypeName(TypeContext tc){
 		ParsedTypeName typeName;
-		boolean untyped = false;
 		List<Rank_specifierContext> ranksc = tc.rank_specifier();
 		int rank = 0;
 		if (ranksc != null){
@@ -669,10 +670,7 @@ public final class SyntaxHelper {
 				}
 				break;
 			case JulianLexer.VAR:
-				untyped = true;
-				if (rank > 0){
-					throw new BadSyntaxException("Cannot declare array type with untyped element.");
-				}
+				type = AnyType.getInstance();
 				break;
 			default:
 				break;
@@ -680,9 +678,11 @@ public final class SyntaxHelper {
 		}
 
 		if (type != null) {
-			typeName = new ParsedTypeName(type);
-		} else if (untyped) {
-			typeName = ParsedTypeName.ANY;
+			if (type.getKind() == JTypeKind.ANY && rank == 0) {
+				typeName = ParsedTypeName.ANY;
+			} else {
+				typeName = new ParsedTypeName(type);
+			}
 		} else {
 			Class_typeContext classTyp = btc.class_type();
 			typeName = ParsedTypeName.makeFromFullName(classTyp.composite_id().getText());

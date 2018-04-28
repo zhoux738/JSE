@@ -126,7 +126,7 @@ public class BasicForEachLoopTests {
 	}
 	
 	@Test
-	public void basicForEachLoopOnNullListTest() throws EngineInvocationError {
+	public void forEachOnNullTest() throws EngineInvocationError {
 		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.IMPERATIVE, FEATURE);
 		runner.executeAndValidate(
 			"foreach_list_03.jul", 
@@ -134,9 +134,20 @@ public class BasicForEachLoopTests {
 			"Cannot dereference a null value.", 
 			new String[]{
 				"fun()  (/.../foreach_list_03.jul, 6)"
-			}, 
+			},
 			false, 
 			11);
 	}
 	
+	@Test
+	public void forEachOnNonIterableTest() throws EngineInvocationError {
+		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.IMPERATIVE, FEATURE);
+		runner.executeAndValidate(
+			"foreach_fault.jul", 
+			"System.Lang.RuntimeCheckException", 
+			"Cannot perform iteration over a non-iterable object.", 
+			null, 
+			false, 
+			2);
+	}	
 }

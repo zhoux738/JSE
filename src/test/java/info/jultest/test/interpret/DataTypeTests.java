@@ -80,6 +80,31 @@ public class DataTypeTests {
 	}
 	
 	@Test
+	public void floatCompareExprTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "float_04.jul"));
+		
+		validateBoolValue(gvt, "b11", true);
+		validateBoolValue(gvt, "b12", true);
+		validateBoolValue(gvt, "b13", true);
+		validateBoolValue(gvt, "b14", true);
+		validateBoolValue(gvt, "b21", true);
+		validateBoolValue(gvt, "b22", true);
+		validateBoolValue(gvt, "b23", true);
+		validateBoolValue(gvt, "b24", true);
+		validateBoolValue(gvt, "b31", true);
+		validateBoolValue(gvt, "b32", false);
+		validateBoolValue(gvt, "b33", true);
+		validateBoolValue(gvt, "b34", false);
+		validateBoolValue(gvt, "b41", false);
+		validateBoolValue(gvt, "b42", true);
+		validateBoolValue(gvt, "b43", true);
+		validateBoolValue(gvt, "b44", false);
+	}
+	
+	@Test
 	public void stringCastingTest() throws EngineInvocationError {
 		VariableTable gvt = new VariableTable(null);		
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);

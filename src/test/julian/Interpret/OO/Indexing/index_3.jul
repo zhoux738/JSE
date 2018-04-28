@@ -1,0 +1,43 @@
+import System.Util;
+
+class Item {
+	static int SEQ = 1;
+	int value = Item.SEQ *= 10;
+	
+	String toString(){
+		return (string)value;
+	}
+}
+
+class MyContainer : IIndexable {
+	Item[] items;
+	
+	MyContainer(int capacity){
+		items = new Item[capacity];
+	}
+	
+	//--- impl of IIndexable ---//
+
+	int size() {
+		return -1;
+	}
+	
+	var at(var index){
+		return items[index];
+	}
+	
+	void at(var index, var value){
+		items[index] = value;
+	}
+}
+
+MyContainer mc = new MyContainer(3);
+mc[0] = new Item();
+mc[1] = new Item();
+mc[2] = new Item();
+
+Item i0  = mc[0];
+int i20  = i0.value = i0.value * 2;
+int i300 = mc[1].value = mc[1].value * 3;
+int i4k  = mc[2].value *= 4;
+int i10k = (mc[0] = new Item()).value;

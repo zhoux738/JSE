@@ -35,4 +35,156 @@ interface IComparable {
 	int compare(var another);
 }
 
-// IIndexable
+/*
+ * The interface to add the capability of accessing to stored values by an index.
+ *
+ * A user-defined object may fully or partially function as a container with vector semantics. Julian
+ * supports access to such objects using the built-in indexer syntax. A user may write code like below
+ * to access a customized indexable object:
+ * [code]
+ *    class Vector : IIndexable {
+ *       private Object[] _objs;
+ *       Vector(int size){
+ *         _objs = new Object[size];
+ *       }
+ *       var at(var index) {
+ *         return _objs[index];
+ *       }
+ *       void at(var index, var value) {
+ *         _objs[index] = value;
+ *       }
+ *       int size() {
+ *         return _objs.length;
+ *       }
+ *    }
+ *
+ *    Vector vector = new vector(3);
+ *
+ *    for (int i = 0; i < obj.size(); i++) {
+ *      vector[i] = new Object(); // engine calls vector.at(var index, var value) 
+ *      var ele = vector[i];      // engine calls vector.at(var index) 
+ *    }
+ * [code: end]
+ *
+ * The index doesn't have to be an integer. The user may very well leverage this interface to implement 
+ * an associative array or dictionary.
+ */
+interface IIndexable {
+
+    /*
+     * Get the value at specified index. 
+     *
+     * This method is the backup logic for get-by-indexer syntax on arbitrary objects, as shown in the example of  
+     * interface summary.
+     *
+     * [param: index] An index at which the internal value is to be retrieved.
+     * [return] The value retrieved.
+	 * [throws: System.ArrayOutOfRangeException] When the index is out of range.
+     */
+	var at(var index);
+	
+	/*
+	 * Set the value at specified index.
+	 *
+	 * This method is the backup logic for set-by-indexer syntax on arbitrary objects, as shown in the example of  
+     * interface summary.
+     *
+     * [param: index] An index at which the given value is to be set.
+     * [param: value] The value to set.
+	 * [throws: System.ArrayOutOfRangeException] When the index is out of range.
+	 */
+	void at(var index, var value);
+	
+	/*
+	 * Get the size of the indexed scope. Assuming thread-safety measure is in place and an ordinary numeral indexing 
+	 * is applied, a user should expect to successfully call the [indexer](#at(var)) with an integer between 0 and 
+	 * size - 1, inclusive.
+	 * 
+	 * Implementing this method is optional, as the engine would not pro-actively call it. It's a good practice
+	 * to have it implemented so that the object can be iterated in the classic for-by-index loop.
+	 *
+	 * [return] The size of the indexed scope. Typically a non-negative value, but this is not required.   
+	 */
+	int size();
+}
+
+/*
+ * The interface to add the capability of iterating through built-in syntax.
+ *
+ * For objects which support vector semantics, it's useful to expose an interface to allow 
+ * iteration over all the held values. In particular, if the class implements this interface, 
+ * the iteration can be performed directly with a ```foreach``` statement.
+ * [code]
+ *    class Vector : IIterable {
+ *       IIterator getIterator() {
+ *         return ...;
+ *       }
+ *    }
+ *
+ *    Vector vector = new vector();
+ *
+ *    for (var ele : vector) { // engine calls getIterator(), which returns a new IIterable.
+ *      ele.fun(); // access to each element 
+ *    }
+ * [code: end]
+ *
+ * It might look confusing at the first, but it's also critical to know the difference between 
+ * IIterable and [IIterator]. IIterable allows the object to return a view on the contained data, 
+ * and thus its [core method](#getIterator) can be called unrestrictedly. IIterable, on the other 
+ * hand, represents the API provided by this view, exposing the minimally necessary methods for 
+ * traversing through the data set. Most importantly, IIterator is also a stateful object. The 
+ * foreach statement is essentially interacting with an IIterator, not an IIterable. IIterable is
+ * useful in that it decouples the ability of iteration from the state-tracking during such iteration.
+ */
+interface IIterable {
+
+	/*
+	 * Get an iterator from this object. The iterator provides methods to traverse through the 
+	 * entire data set contained within this object.
+	 *
+	 * [return] An iterator that has been properly initialized, ready to [move on](type: IIterator#next). 
+	 */
+	IIterator getIterator();
+}
+
+/*
+ * A stateful object that projects an iteration-facing view over another object.
+ *
+ * Normally a user would call an iterator this way:
+ * [code]
+ *    while(iterator.hasNext()){
+ *      iterator.next(); // Get next
+ *    }
+ * [code: end]
+ *
+ * But Julian also provides language-level support for this pattern with its foreach statement:
+ * [code]
+ *    // In each iteration, engine first calls hasNext(), then 
+ *    // if true, calls next() and assigns the value to ele.
+ *    for (var ele : iterator) {
+ *      ele.fun();
+ *    }
+ * [code: end]
+ *
+ * Also, if variable ```iterator``` in the foreach's data source is an IIterable, the engine will first
+ * call [IIterable.getIterator()](type: IIterable#getIterator) to obtain a new instance of iterator.
+ */
+interface IIterator {
+
+	/*
+	 * Check if the iteration is reaching the end. If this returns true, the caller may process 
+	 * to make at least one more call of [next()](#next). 
+	 *
+	 * [return] true if there are more items to return. 
+	 */
+	bool hasNext();
+	
+	/*
+	 * Get the next item. This method is usually called after [hasNext](#hasNext) return ```true```, 
+	 * but in a multi-threaded context there is no guarantee on what this would actually return, 
+	 * regardless of the result by hasNext().
+	 *
+	 * [return] The next item. 
+	 */
+	var next();
+}

@@ -24,11 +24,6 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
@@ -47,6 +42,11 @@ import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 import info.julang.typesystem.jclass.builtin.JStringType;
 import info.julang.typesystem.jclass.builtin.JTypeType;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A bootstrapper used to load a set of most fundamental built-in object types.
@@ -130,17 +130,19 @@ public final class BuiltinTypeBootstrapper {
 			builders[i] = suite.builder;
 			i++;
 		}
+		
+		// Prepare a farm to "cultivate" types
 		TypeFarm suites = new TypeFarm(suiteMap);
 		
 		// Add array types
-		JClassType parentType = suiteMap.get(BuiltinTypes.ARRAY).stub;
+		arrayType = suiteMap.get(BuiltinTypes.ARRAY).stub;
+		// Some primitive array types - add more if needed in future
+		addArrayType(suites, CharType.getInstance());
 		for(BuiltinTypeBuilder entry : bootstrapperList){
 			TypeBootstrapper bs = entry.builder;
 			if (bs.initiateArrayType()) {
 				JType elementType = suiteMap.get(entry.type).stub;
-				JArrayType jat = new JArrayType(elementType, parentType);
-				suites.addArrayType(entry.type, jat);
-				allTypes.put(jat.getName(), jat);
+				addArrayType(suites, elementType);
 			}
 		}
 		
@@ -156,7 +158,14 @@ public final class BuiltinTypeBootstrapper {
 		}
 	}
 	
+	private static void addArrayType(TypeFarm suites, JType eleType){
+		JArrayType jat = new JArrayType(CharType.getInstance(), arrayType);
+		suites.addArrayType(BuiltinTypes.CHAR, jat);
+		allTypes.put(jat.getName(), jat);
+	}
+	
 	private static Map<String, JClassType> allTypes;
+	private static JClassType arrayType; 
 	
 	private static int createBootstrappers(List<BuiltinTypeBuilder> map){
 		map.add(new BuiltinTypeBuilder(BuiltinTypes.OBJECT, new JObjectType.BoostrapingBuilder()));

@@ -48,10 +48,10 @@ public class BridgedHostedAttribute extends HostedAttribute {
 	public BridgedHostedAttribute(AttrValue av, JClassMember member) {
 		super(HostedAttributeType.BRIDGED);
 		
-		StringValue v1 = StringValue.dereference(av.getMemberValue(ex_field_apiset));
+		StringValue v1 = StringValue.dereference(av.getMemberValue(ex_field_apiset), true);
 		apiset = v1 != null ? v1.getStringValue() : null;
 		
-		StringValue v2 = StringValue.dereference(av.getMemberValue(ex_field_name));
+		StringValue v2 = StringValue.dereference(av.getMemberValue(ex_field_name), true);
 		name = v2 != null ? 
 				v2.getStringValue() : 
 				member != null ? 

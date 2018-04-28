@@ -24,8 +24,8 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import info.julang.external.interfaces.JValueKind;
 import info.julang.external.interfaces.IExtValue.ICharVal;
+import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.operable.JAddable;
 import info.julang.typesystem.JType;
@@ -36,7 +36,7 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 /**
  * A value that stores an integer.
  */
-public class CharValue extends BasicValue implements JAddable, ICharVal {
+public class CharValue extends BasicValue implements JAddable, ICharVal, Comparable<JValue> {
 
 	public CharValue(MemoryArea memory) {
 		super(memory, CharType.getInstance());
@@ -144,7 +144,7 @@ public class CharValue extends BasicValue implements JAddable, ICharVal {
 			result = this.getValueInternal() + "" + ((BoolValue)another).getBoolValue();
 			break;
 		case FLOAT:
-			result = this.getValueInternal() + "" + ((FloatValue)another).getFloatValue();
+			result = this.getValueInternal() + "" + ((FloatValue)another).toString();
 			break;
 		case INTEGER:
 			result = this.getValueInternal() + "" + ((IntValue)another).getIntValue();
@@ -210,5 +210,24 @@ public class CharValue extends BasicValue implements JAddable, ICharVal {
 		}
 		
 		return false;
+	}
+
+	@Override
+	public int compareTo(JValue v2) {
+		switch(v2.getKind()){
+		case CHAR:
+			char c2 = ((CharValue)v2).getCharValue();
+			return new String(new char[]{getValueInternal()}).compareTo(new String(new char[]{c2}));
+		case OBJECT:
+		case REFERENCE:
+		case UNTYPED:
+			StringValue sv = StringValue.dereference(v2, false);
+			if (sv != null)
+			return new String(new char[]{getValueInternal()}).compareTo(sv.getStringValue());
+		default:
+		}
+		
+		// Not equal, but just incomparable
+		return 0;
 	}
 }

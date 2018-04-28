@@ -91,6 +91,19 @@ public class LambdaInClassTests {
 	}
 	
 	/*
+	 * Reference an instance method from a higher-order lambda
+	 */
+	@Test
+	public void returnLambdaFromLambdaTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.FUNCTIONAL, FEATURE, "lambda_imethod_07.jul"));
+		
+		validateIntValue(gvt, "x", 16);
+	}
+	
+	/*
 	 * Reference a static member.
 	 */
 	@Test

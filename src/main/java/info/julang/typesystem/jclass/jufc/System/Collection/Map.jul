@@ -1,30 +1,32 @@
 module System.Collection;
 
 import System;
+import System.Util;
 
-// The key is wrapped in an internal class HashKey, which is wrapped on the platform
+// The key is wrapped in an internal class HashKey, which is backed on the platform
 // end by an interop class that is then used as the key for Java's HashMap class. 
-// Convoluted, this is how both hashCode() and equals() defined in Julian can get 
-// invoked by Java's HashMap.  
+// As much as it may look convoluted, this is how both hashCode() and equals() 
+// defined in Julian can get invoked by Java's HashMap.  
 
 /*
  * A hash map to store data based on the calculated hash value, allowing fast element-targeting
  * operation at O(1) cost.
  *
- * An object stored in map will provide its hash through [Object.hashCode()](Object#hashCode()) method. A primitive
- * value will convert is numeric value into an integer to be used as hash. For example, byte value
- * simply promotes the value to integer, and a float value get floored to an integer. 
+ * An object stored in map will provide its hash through [Object.hashCode()](Object#hashCode()) 
+ * method. A primitive value will convert is numeric value into an integer to be used as hash. 
+ * For example, byte value simply promotes the value to integer, and a float value get floored 
+ * to an integer. 
  *
  * The hashcode is only a means to locate the slot in the map, but doesn't have to be unique. The
- * uniqueness is determined by [Object.equals()](Object#equals(Object)) method. When putting a value into a map, if the
- * slot suggested by the hashcode is already occupied, Object.equals() is called between the 
- * new object and existing one. If the method returns true, the new object is not added; otherwise,
- * the object will be added anyway. If there is more than one object using that slot, each of
- * them will be compared against before the new object can be cleared of its uniqueness and added.
- * The multiple objects stored on the same map slot are internally organized by a linked list. In
- * best practice, try to make the hashcode as unique as possible to improve the performance, and 
- * always pay attention to equals() to ensure its proper functioning in determining the logical 
- * equality between two objects.
+ * uniqueness is determined by [Object.equals()](Object#equals(var)) method. When putting a 
+ * value into a map, if the slot suggested by the hashcode is already occupied, ```Object.equals()``` 
+ * is called between the new object and existing one. If the method returns true, the new object 
+ * is not added; otherwise, the object will be added anyway. If there is more than one object 
+ * using that slot, each of them will be compared against before the new object can be cleared 
+ * of its uniqueness and added. The multiple objects stored on the same map slot are internally 
+ * organized by a linked list. In best practice, try to make the hashcode as unique as possible 
+ * to improve the performance, and always pay attention to equals() to ensure its proper 
+ * functioning in determining the logical equality between two objects.
  *
  * Julian supports map operation at language level. Use indexer syntax to achieve easy access:
  * [code]
@@ -39,10 +41,10 @@ import System;
  *    }
  * [code: end]
  * 
- * The methods of this class are NOT thread safe.
+ * The methods of this class are **not** thread safe.
  */
 [Bridged(apiset="System.Collection.Map")]
-class Map : Container {
+class Map : Container, IIndexable, IIterable {
 
 	/*
 	 * Create a new map instance.
@@ -60,6 +62,10 @@ class Map : Container {
 	private hosted var _get(var key);
 	[Bridged(name="size")]
 	private hosted int _size();
+	[Bridged(name="getEntries")]
+	hosted var[] _getEntries();
+	[Bridged(name="getKeys")]
+	hosted var[] _getKeys();
 	
 	/*
 	 * Put a key/value pair into the map. The key's hashCode() is to calculate the storage
@@ -112,9 +118,30 @@ class Map : Container {
 	
 	/*
 	 * The size of map.
+	 *
+	 * [return] Always non-negative. 0 if empty. 
 	 */
 	int size(){
 		return _size();
+	}
+	
+	/*
+	 * Get all the [entries](Entry) stored in this map.
+	 *
+	 * [return] All the entries stored in this map.
+	 */
+	var[] getEntries() {
+		Entry e; // Load Entry type here.
+		return _getEntries();
+	}
+	
+	/*
+	 * Get all the keys stored in this map.
+	 *
+	 * [return] All the keys stored in this map.
+	 */
+	var[] getKeys() {
+		return _getKeys();
 	}
 	
 	private HashKey convert(var key){
@@ -123,6 +150,59 @@ class Map : Container {
 		}
 		
 		return new HashKey(key);
+	}
+	
+	// IIndexable
+	
+	var at(var index){
+		return get(index);
+	}
+	
+	void at(var index, var value){
+		put(index, value);
+	}
+	
+	// IIterable
+	
+	IIterator getIterator(){
+		return new MapIterator(this);
+	}
+}
+
+internal class MapIterator : IIterator {
+
+	private Map map;
+	private int index;
+	private int length;
+	private var[] keys;
+	
+	MapIterator(Map map){
+		this.map = map;
+	}
+	
+	bool hasNext() {
+		if (keys == null) {
+			init();
+		}
+		
+		return index < length;
+	}
+	
+	var next() {
+		if (keys == null) {
+			init();
+		}
+		
+		var k = keys[index];
+		var v = map[k];
+		index++;
+		return new Entry(k, v);
+	}
+	
+	private void init() {
+		keys = map.getKeys();
+		length = keys.length;
+		index = 0;
 	}
 }
 

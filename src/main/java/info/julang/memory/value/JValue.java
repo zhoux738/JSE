@@ -26,13 +26,17 @@ package info.julang.memory.value;
 
 import info.julang.external.interfaces.IExtValue;
 import info.julang.memory.IStored;
+import info.julang.memory.value.indexable.IIndexable;
+import info.julang.memory.value.iterable.IIterator;
 import info.julang.typesystem.JType;
 
 /**
  * JValue is the abstract layer on top of any logically meaningful storage in memory.
- * <p/>
- * From the perspective of upper layer, Value adds logical meaning to the contents in memory. 
- * The callers don't need to know how the data is actually stored in memory.
+ * <p>
+ * From the perspective of upper layer, JValue adds logical sense to the contents in memory. The most prominent
+ * metadata about a value is its {@link JType type}, which governs how either the entirety, or a particular piece 
+ * of this data, shall be accessed. The upper layer thus deals with data only per this typing protocol, without 
+ * any need to know how the data is actually stored in memory.
  *
  * @author Ming Zhou
  */
@@ -40,7 +44,7 @@ public interface JValue extends IStored, IExtValue {
 	
 	/**
 	 * Get the type of this value. Note this may not necessarily mirror the result of {@link #getKind()}.
-	 * @return 
+	 * @return The {@link JType type} of this value.
 	 */
 	JType getType();
 	
@@ -73,7 +77,39 @@ public interface JValue extends IStored, IExtValue {
 	 * other values. Under no circumstances will this method throw. If it is the null value being 
 	 * referenced, it will return {@link RefValue#NULL NULL}.
 	 * 
-	 * @return
+	 * @return A value that is unwrapped and dereferenced. There is no more redirection, as the memory 
+	 * area of this value (returned by {@link #getMemoryArea()}) is exactly where the value's entire 
+	 * data set physically resides.
+	 * 
 	 */
 	JValue deref();
+	
+	/**
+	 * Get an indexer for this value. An indexer allows access to an indexed member on this value. 
+	 * Wrapper values ({@link RefValue} and {@link UntypedValue}) do not support indexer by themselves.
+	 * But after {@link #deref() dereferencing} they may. So make sure to deref the value before calling 
+	 * this method, which, by design, will not auto-deref itself.
+	 * <p>
+	 * This method is implemented by certain built-in values which expose vector semantics (such as array
+	 * or string), as well as any user-defined classes which implements 
+	 * <font color="green"><code>System.Util.IIndexable</code></font>.
+	 * 
+	 * @return null if this value is not indexable.
+	 */
+	IIndexable asIndexer();
+	
+	/**
+	 * Get an iterator for this value. An iterator allows an iteration over this value. 
+	 * Wrapper values ({@link RefValue} and {@link UntypedValue}) do not support iterator by themselves.
+	 * But after {@link #deref() dereferencing} they may. So make sure to deref the value before calling 
+	 * this method, which, by design, will not auto-deref itself.
+	 * <p>
+	 * This method is implemented by certain built-in values which expose vector semantics (such as array
+	 * or string), as well as any user-defined classes which implements either 
+	 * <font color="green"><code>System.Util.IIterator</code></font> or
+	 * <font color="green"><code>System.Util.IIterable</code></font>.
+	 * 
+	 * @return null if this value is not iterable.
+	 */
+	IIterator asIterator();
 }

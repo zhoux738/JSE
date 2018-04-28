@@ -47,10 +47,10 @@ public class MappedHostedAttribute extends HostedAttribute {
 	public MappedHostedAttribute(AttrValue av) {
 		super(HostedAttributeType.MAPPED);
 		
-		StringValue v1 = StringValue.dereference(av.getMemberValue(ex_field_className));
+		StringValue v1 = StringValue.dereference(av.getMemberValue(ex_field_className), true);
 		className = v1 != null ? v1.getStringValue() : null;
 		
-		StringValue v2 = StringValue.dereference(av.getMemberValue(ex_field_methodName));
+		StringValue v2 = StringValue.dereference(av.getMemberValue(ex_field_methodName), true);
 		methodName = v2 != null ? v2.getStringValue() : null;
 	}
 

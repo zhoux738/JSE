@@ -1,0 +1,31 @@
+import System.Util;
+
+class MyStream : IIterator {
+	private int index = 0;
+	private Object[] objs;
+	
+	MyStream(Object[] args){
+		objs = args;
+	}
+	
+	//--- impl of IIterator ---//
+
+	bool hasNext(){
+		return true;
+	}
+	
+	var next(){
+		var res = objs[index];
+		index++;
+		return res;
+	}
+}
+
+Object[] args = new Object[]{"aaa", "bbb", "ccc"};
+String[] strs = new String[args.length];
+MyStream ms = new MyStream(args);
+int i = 0;
+for(var v : ms){
+	strs[i] = v;
+	i++;
+}

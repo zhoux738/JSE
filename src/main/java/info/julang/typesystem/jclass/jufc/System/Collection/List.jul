@@ -1,6 +1,7 @@
 module System.Collection;
 
 import System;
+import System.Util;
 
 /*
  * A list is a serial, self-scalable data structure that can grow its capacity on demand. 
@@ -18,7 +19,7 @@ import System;
  * The methods of this class are thread safe.
  */
 [Bridged(apiset="System.Collection.List")]
-class List : Container {
+class List : Container, IIndexable, IIterable {
 
 	/*
 	 * Create a new and empty List object, with default capacity.
@@ -64,6 +65,24 @@ class List : Container {
 	[Bridged(name="remove")]
 	hosted var remove(int index);
 	
+	/* 
+	 * Sort this list in place.
+	 *
+	 * This method relies on all the elements being comparable to everyone else. Even if there is a single
+	 * pair of elements that cannot be compared to each other, the whole sorting process may silently fail,
+	 * immaturely abort, or end with nondeterministic results. 
+	 *
+	 * For primitive and built-in types, [string] and [char] are comparable to each other; [int], [byte] and 
+	 * [float] are comparable among themselves. For an [Object] type, it must implement [IComparable](type: System.Util.IComparable)
+	 * interface. The user must ensure that the implementation of this interface covers all the possible 
+	 * types of elements that may be found in the list.
+	 *
+	 * [param: descending] if false, use the natural ascending order, i.e. the smaller values are placed 
+	 * ahead of larger values; if true, reverse the order.
+	 */
+	[Bridged(name="sort")]
+	hosted void sort(bool descending);
+	
 	/*
 	 * [return] The size of list.
 	 */
@@ -73,4 +92,59 @@ class List : Container {
 		
 	[Bridged(name="size")]
 	private hosted int _size();
+	
+	// This method is only called by the platform code
+	private static int _compareObjs(var a, var b) {
+		if (a is IComparable) {
+			return a.compare(b);
+		} else if (b is IComparable) {
+			return -b.compare(a);
+		}
+		
+		return 0;
+	}
+	
+	// IIndexable
+	
+	var at(var index){
+		if (index is int) {
+			return get((int)index);
+		} else {
+			throw new ArgumentException("An index to list must be a non-negative integer.");
+		}
+	}
+	
+	void at(var index, var value){
+		if (index is int) {
+			put((int)index, value);
+		} else {
+			throw new ArgumentException("An index to list must be a non-negative integer.");
+		}
+	}
+	
+	// IIterable
+	
+	IIterator getIterator(){
+		return new ListIterator(this);
+	}
+}
+
+internal class ListIterator : IIterator {
+
+	private List list;
+	private int index;
+	
+	ListIterator(List list){
+		this.list = list;
+	}
+	
+	bool hasNext() {		
+		return index < list.size();
+	}
+	
+	var next() {
+		var v = list[index];
+		index++;
+		return v;
+	}
 }

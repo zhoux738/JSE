@@ -32,12 +32,16 @@ import info.julang.external.interfaces.JValueKind;
 import info.julang.hosting.HostedExecutable;
 import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.memory.value.ArrayValue;
+import info.julang.memory.value.ArrayValueFactory;
+import info.julang.memory.value.BasicArrayValue;
+import info.julang.memory.value.BasicArrayValueExposer;
 import info.julang.memory.value.CharValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.modulesystem.naming.FQName;
+import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
 import info.julang.typesystem.JArgumentException;
 import info.julang.typesystem.JType;
@@ -79,8 +83,17 @@ summary =
 + "\n * points to, then let the copy be pointed by ```SB```, discarding whatever ```SB``` was previously referring."
 + "\n * "
 + "\n * String is immutable. The methods exposed by this class are for reading its contents in various ways, and if any "
-+ "\n * manipulating is implied (such as [replace](#repleace)), it always mean to create a new string as the result of "
++ "\n * manipulating is implied (such as [trim](#trim)), it always mean to create a new string as the result of "
 + "\n * manipulation. The original string instance always remain unchanged."
++ "\n * "
++ "\n * String is iteratible. This means one can use foreach grammar on a string, or get a character out of string directly:"
++ "\n * [code]"
++ "\n * for(char c : str) {"
++ "\n *   ..."
++ "\n * }"
++ "\n * char c0 = str[0];"
++ "\n * str[0] = 'a'; // This will not cause a runtime error, but won't have any effect either."
++ "\n * [code: end]"
 + "\n * "
 + "\n * String supports concatenaton operation by '+', which can also be used along with values of other types, as long as at"
 + "\n * least one operand is string."
@@ -203,6 +216,36 @@ public class JStringType extends JClassType {
 			
 			//-------------------- String --------------------//
 			
+			//fromChars (static)
+			builder.addStaticMember(
+				new JClassMethodMember(
+					builder.getStub(), 
+					"fromChars", Accessibility.PUBLIC, true, false,
+					new JMethodType(
+						"fromChars",
+						new JParameter[]{
+							new JParameter("chars", farm.getArrayType(BuiltinTypes.CHAR))
+						}, 
+						stringType,
+					    METHOD_fromChars,
+					    stringType),
+				    null));
+			
+			//toChars
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(), 
+					"toChars", Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						"toChars",
+						new JParameter[]{
+							new JParameter("this", stringType)
+						}, 
+						farm.getArrayType(BuiltinTypes.CHAR),
+					    METHOD_toChars,
+					    stringType),
+				    null));
+			
 			//contains
 			builder.addInstanceMember(
 				new JClassMethodMember(
@@ -251,6 +294,23 @@ public class JStringType extends JClassType {
 					    stringType),
 				    null));
 
+			//compare 
+			// (ideally, we should implement System.Util.IComparable)
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(), 
+					"compare", Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						"compare",
+						new JParameter[]{
+							new JParameter("this", stringType),
+							new JParameter("another", AnyType.getInstance()), 
+						}, 
+						IntType.getInstance(), 
+					    METHOD_compare,
+					    stringType),
+				    null));
+			
 			//indexOf
 			builder.addInstanceMember(
 				new JClassMethodMember(
@@ -381,6 +441,56 @@ public class JStringType extends JClassType {
 		}
 	}
 	
+	// fromChars
+	@JulianDoc(
+		summary =   "/*"
+				+ "\n * Create an array from an array of [chars](type: char)."
+				+ "\n */",
+		params = {"An array of chars."},
+		isStatic = true,
+		returns = "A string comprised of the given chars.",
+		exceptions = {"System.NullReferenceException: if the parameter is null."}
+	)
+	private static HostedExecutable METHOD_fromChars  = new HostedExecutable(FQNAME, "fromChars") {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			Argument arg = args[0];
+			ArrayValue av = (ArrayValue)arg.getValue().deref();
+			BasicArrayValueExposer exp = new BasicArrayValueExposer((BasicArrayValue)av);
+			char[] chars = exp.getCharArray();
+			String str = new String(chars);
+			return new Result(TempValueFactory.createTempStringValue(str));
+		}
+	};
+	
+	// toChars
+	@JulianDoc(
+		summary =   "/*"
+				+ "\n * Convert this string to a char array."
+				+ "\n */",
+		params = { },
+		returns = "A char array consisting of all the characters in this string.",
+		exceptions = { }
+	)
+	private static HostedExecutable METHOD_toChars  = new HostedExecutable(FQNAME, "toChars") {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			StringValue thisVal = ArgumentUtil.<StringValue>getThisValue(args);
+			char[] src = thisVal.getStringValue().toCharArray();
+			int len = src.length;
+			
+			BasicArrayValue bav = (BasicArrayValue)ArrayValueFactory.createArrayValue(
+				runtime.getStackMemory(), runtime.getTypeTable(), CharType.getInstance(), len);
+			
+			char[] dest = (char[])bav.getPlatformArrayObject();
+			System.arraycopy(src, 0, dest, 0, len);
+			
+			// Convert the result to Julian type
+			return new Result(bav);
+		}
+	};
+	
 	// contains
 	@JulianDoc(
 		summary =   "/*"
@@ -453,6 +563,31 @@ public class JStringType extends JClassType {
 			
 			// Convert the result to Julian type
 			return new Result(TempValueFactory.createTempBoolValue(res));
+		}
+	};
+	
+	// compare
+	@JulianDoc(
+		summary =   "/*"
+				+ "\n * Compare this string against another value, which can be either a string or a char. If the"
+				+ "\n * other value is neither string nor char, returns 0."
+				+ "\n */",
+		params = {"The other value to compare to."},
+		returns = "If a negative value, this string is alphabetically less than the other; if positive, larger; if 0, equal or incomparable.",
+		exceptions = { }
+	)
+	private static HostedExecutable METHOD_compare  = new HostedExecutable(FQNAME, "compare") {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// String value implements Comparable<JValue>, allowing itself to compare to string or char
+			Comparable<JValue> thisVal = (Comparable<JValue>)ArgumentUtil.<StringValue>getThisValue(args);
+			JValue val = args[1].getValue().deref();
+			
+			// If the other value is neither string nor char, this method would return 0
+			int res = thisVal.compareTo(val);
+			
+			// Convert the result to Julian type
+			return new Result(TempValueFactory.createTempIntValue(res));
 		}
 	};
 	

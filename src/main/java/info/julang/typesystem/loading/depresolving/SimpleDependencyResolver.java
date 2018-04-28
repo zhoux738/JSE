@@ -29,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import info.julang.typesystem.jclass.annotation.MetaAnnotation;
-import info.julang.typesystem.loading.ILoadingState;
 
 /**
  * A very simple implementation that will load attributes first 

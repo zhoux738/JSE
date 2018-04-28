@@ -150,7 +150,7 @@ public class JSEObjectWrapper {
 		String name = provider.getMethodName();
 		JMethodType mtyp = provider.provide();
 
-		JValue val = exec.invokeMethodInternal(mtyp, name, values, ov);
+		JValue val = exec.invokeMethodInternal(mtyp, name, values, provider.isStatic() ? null : ov);
 		
 		return val;
 	}

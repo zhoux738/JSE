@@ -1,0 +1,37 @@
+class MyObj {
+	int val;
+	MyObj(int v){
+		this.val = v;
+	}
+	string toString(){
+		return "obj=" + val;
+	}
+}
+
+// init
+var[] arr = new var[3];
+arr[0] = "a";
+arr[1] = 12;
+arr[2] = new MyObj(5);
+
+string str0 = arr[0] + '_' + arr[1] + '_' + arr[2].toString();
+
+// assign out
+var s = arr[0];
+s = "x";
+var i = arr[1];
+i = 7;
+var o = arr[2];
+o = new MyObj(6);
+
+string str1 = arr[0] + '_' + arr[1] + '_' + arr[2].toString();
+
+// reassign
+arr[0] = "y";
+arr[1] = 13;
+arr[2] = new MyObj(7);
+
+string str2 = arr[0] + '_' + arr[1] + '_' + arr[2].toString();
+
+// the values changed after first assignment and before the second assignment
+string str3 = s + '_' + i + '_' + o.toString();

@@ -75,7 +75,7 @@ public class MemoryAccessTests extends ExceptionTestsBase {
 		validateArrayValues(gvt, "values", new String[]{"a", "b"}, 100, new IValueGetter(){
 			@Override
 			public Object get(JValue val) {
-				return (StringValue.dereference(val)).getStringValue();
+				return (StringValue.dereference(val, true)).getStringValue();
 			}		
 		});
 	}

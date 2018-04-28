@@ -71,6 +71,32 @@ public class LambdaEnvTests {
 	}
 	
 	/*
+	 * Currying
+	 */
+	@Test
+	public void curryGlobalFunctionTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.FUNCTIONAL, FEATURE, "lambda_env_05.jul"));
+
+		validateIntValue(gvt, "c", 18);
+	}
+	
+	/*
+	 * Higher-order lambda (returns another lambda)
+	 */
+	@Test
+	public void higherOrderFunctionTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.FUNCTIONAL, FEATURE, "lambda_env_06.jul"));
+
+		validateIntValue(gvt, "c", 11111);
+	}
+	
+	/*
 	 * Reference the loop variable of for loop:
 	 * 
 	 * for(int i = 0; i<2; i++){

@@ -25,10 +25,15 @@ SOFTWARE.
 package info.julang.memory.value;
 
 import info.julang.external.exceptions.JSEError;
-import info.julang.external.interfaces.JValueKind;
 import info.julang.external.interfaces.IExtValue.IStringVal;
+import info.julang.external.interfaces.JValueKind;
 import info.julang.interpretation.JIllegalCastingException;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.indexable.BuiltInIndexable;
+import info.julang.memory.value.indexable.IIndexable;
+import info.julang.memory.value.indexable.JIndexableValue;
+import info.julang.memory.value.iterable.IIterator;
+import info.julang.memory.value.iterable.IndexDrivenIterator;
 import info.julang.memory.value.operable.JAddable;
 import info.julang.memory.value.operable.JCastable;
 import info.julang.typesystem.AnyType;
@@ -44,7 +49,8 @@ import info.julang.typesystem.jclass.builtin.JStringType;
  * 
  * @author Ming Zhou
  */
-public class StringValue extends ObjectValue implements JAddable, JCastable, IStringVal {
+public class StringValue extends ObjectValue 
+	implements JAddable, JCastable, IStringVal, JIndexableValue, Comparable<JValue> {
 	
 	private String value;
 	
@@ -179,7 +185,7 @@ public class StringValue extends ObjectValue implements JAddable, JCastable, ISt
 			result = this.value + ((BoolValue)another).getBoolValue();
 			break;
 		case FLOAT:
-			result = this.value + ((FloatValue)another).getFloatValue();
+			result = this.value + ((FloatValue)another).toString();
 			break;
 		case INTEGER:
 			result = this.value + ((IntValue)another).getIntValue();
@@ -194,7 +200,7 @@ public class StringValue extends ObjectValue implements JAddable, JCastable, ISt
 		if(result == null){
 			JValueKind kind = ValueUtilities.getBuiltinKind(another);
 			if(kind == JValueKind.STRING){
-				StringValue sv = StringValue.dereference(another);
+				StringValue sv = StringValue.dereference(another, true);
 				result = this.value + sv.getStringValue();
 			}
 		}
@@ -216,37 +222,41 @@ public class StringValue extends ObjectValue implements JAddable, JCastable, ISt
 			return this;
 		}
 		
-		JValue result = null;		
-		switch(type.getKind()){
-		case BOOLEAN:
-			String sv = value.trim().toLowerCase();
-			if("false".equals(sv)){
-				result = new BoolValue(memory, false);	
-			} else if("true".equals(sv)){
-				result = new BoolValue(memory, true);	
+		JValue result = null;
+		String error = null;
+		try {
+			switch(type.getKind()){
+			case BOOLEAN:
+				String sv = value.trim().toLowerCase();
+				if("false".equals(sv)){
+					result = new BoolValue(memory, false);	
+				} else if("true".equals(sv)){
+					result = new BoolValue(memory, true);	
+				}
+				break;
+			case CHAR:
+				char c = value.charAt(0);
+				result = new CharValue(memory, c);
+				break;
+			case FLOAT:
+				result = FloatValue.fromString(memory, value);
+				break;
+			case INTEGER:
+				int i = Integer.valueOf(value);
+				result = new IntValue(memory, i);
+				break;	
+			case BYTE:
+				byte b = Byte.valueOf(value);
+				result = new ByteValue(memory, b);
+				break;		
+			default:
 			}
-			break;
-		case CHAR:
-			char c = value.charAt(0);
-			result = new CharValue(memory, c);
-			break;
-		case FLOAT:
-			float f = Float.valueOf(value);
-			result = new FloatValue(memory, f);
-			break;
-		case INTEGER:
-			int i = Integer.valueOf(value);
-			result = new IntValue(memory, i);
-			break;	
-		case BYTE:
-			byte b = Byte.valueOf(value);
-			result = new ByteValue(memory, b);
-			break;		
-		default:
+		} catch (NumberFormatException nfe) {
+			error = "String \"" + this.value + "\" cannot be parsed to the target type.";
 		}
 		
 		if(result == null){
-			throw new JIllegalCastingException(this.getType(), type);
+			throw new JIllegalCastingException(this.getType(), type, error);
 		}
 		
 		return result;
@@ -256,19 +266,67 @@ public class StringValue extends ObjectValue implements JAddable, JCastable, ISt
 	 * Dereference the given value if it's a string value (possibly within an untyped and/or ref value).
 	 * 
 	 * @param val a {@link JValue}
+	 * @param throwOnNonString true to throw {@link JSEError} if the value is not a {@link StringValue}.
 	 * @return null if it's a null string
 	 */
-	public static StringValue dereference(JValue val){
+	public static StringValue dereference(JValue val, boolean throwOnNonString){
 		val = UntypedValue.unwrap(val);
 		ObjectValue ov = RefValue.tryDereference(val);
 		if(ov instanceof StringValue){
 			return (StringValue) ov;
 		}
 		
-		if(ov == RefValue.NULL){
+		if(ov == RefValue.NULL || !throwOnNonString){
 			return null;
 		}
 		
 		throw new JSEError("Expected a string value, but saw a " + ov.getType().getName());
+	}
+	
+	@Override
+	public IIndexable asIndexer(){
+		return new BuiltInIndexable(this);
+	}
+	
+	@Override
+	public IIterator asIterator(){
+		return new IndexDrivenIterator(this);
+	}
+	
+	//--------------------- JIndexableValue ---------------------//
+
+	@Override
+	public int getLength() {
+		return value.length(); // this value is same to what we set into member "length" on script object 
+	}
+
+	@Override
+	public JValue getValueAt(int index) {
+		try {
+			char c = value.charAt(index);
+			return TempValueFactory.createTempCharValue(c);
+		} catch (IndexOutOfBoundsException e) {
+			throw new ArrayIndexOutOfRangeException(index, getLength() - 1);
+		}
+	}
+	
+	@Override
+	public int compareTo(JValue v2) {
+		switch(v2.getKind()){
+		case CHAR:
+			char c2 = ((CharValue)v2).getCharValue();
+			return getStringValue().compareTo(new String(new char[]{c2}));
+		case OBJECT:
+		case REFERENCE:
+		case UNTYPED:
+			StringValue sv = StringValue.dereference(v2, false);
+			if (sv != null) {
+				return getStringValue().compareTo(sv.getStringValue());
+			}
+		default:
+		}
+		
+		// Not equal, but just incomparable
+		return 0;
 	}
 }

@@ -31,18 +31,20 @@ import info.julang.hosting.HostedExecutable;
 import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.BasicArrayValue;
+import info.julang.memory.value.BoolValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectArrayValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.memory.value.UntypedValue;
 import info.julang.modulesystem.naming.FQName;
+import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
+import info.julang.typesystem.VoidType;
+import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
-import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
-import info.julang.typesystem.jclass.builtin.doc.JulianFieldMemberDoc;
-import info.julang.typesystem.jclass.builtin.doc.JulianFieldMembersDoc;
 import info.julang.typesystem.jclass.JClassFieldMember;
 import info.julang.typesystem.jclass.JClassMember;
 import info.julang.typesystem.jclass.JClassMethodMember;
@@ -50,6 +52,9 @@ import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.TypeBootstrapper;
+import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
+import info.julang.typesystem.jclass.builtin.doc.JulianFieldMemberDoc;
+import info.julang.typesystem.jclass.builtin.doc.JulianFieldMembersDoc;
 
 /**
  * ArrayBase type is the parent type of all other array types. The internal name of this type is just "ARRAY".
@@ -93,11 +98,16 @@ summary =
 + "\n * [code: end]"
 + "\n * "
 + "\n * Alternatively, an array initializer can be used to specify values at each index."
-+ "\n * Since Julian doesn't support jagged arrays, the user should use extra caution when using an initializer. If the"
-+ "\n * lengths at the same dimension are not consistent, it would incur a runtime exception."
++ "\n * While Julian does support jagged arrays, length inconsistency is disallowed when using an initializer. If the"
++ "\n * lengths at the same dimension are not aligned, it would incur a runtime exception."
 + "\n * [code]"
 + "\n * int[] ia = new int[]{10, 20};"
 + "\n * string[][] saa = new string[][]{new string[]{\"a\", \"b\"}, new string[]{\"c\", \"d\"}};"
++ "\n * string[][] saa = new string[][]{new string[]{\"a\", \"b\"}, new string[]{\"c\"}};"
++ "\n * // If you want to create jagged array, do something like this"
++ "\n * string[][] saa = new string[2][0];"
++ "\n * saa[0] = new string[3];"
++ "\n * saa[1] = new string[4];"
 + "\n * [code: end]"
 + "\n * "
 + "\n * Note, however, that these two syntaxes cannot be mixed in any fashion."
@@ -108,7 +118,7 @@ summary =
 + "\n * ia[f()+3] = g();"
 + "\n * [code: end]"
 + "\n * "
-+ "\n * Array is iteratible. This mean one can use foreach grammar on an array."
++ "\n * Array is iteratible. This means one can use foreach grammar on an array."
 + "\n * [code]"
 + "\n * for(int i : ia) {"
 + "\n *   ..."
@@ -131,6 +141,8 @@ public class JArrayBaseType extends JClassType {
 	public static final FQName FQNAME = new FQName("Array");
 	
 	private static final String METHOD_NAME_COPY = "copy";
+	private static final String METHOD_NAME_FILL = "fill";
+	private static final String	METHOD_NAME_SORT = "sort";
 	
 	private static JArrayBaseType INSTANCE;
 
@@ -198,6 +210,38 @@ public class JArrayBaseType extends JClassType {
 						}, 
 						IntType.getInstance(), 
 						METHOD_copy,
+						arrayType),
+				    null));
+			
+			//static fill
+			builder.addStaticMember(
+				new JClassMethodMember(
+					builder.getStub(),
+					METHOD_NAME_FILL, Accessibility.PUBLIC, true, false,
+					new JMethodType(
+							METHOD_NAME_FILL,
+						new JParameter[]{
+							new JParameter("src", arrayType),
+							new JParameter("val", AnyType.getInstance()),
+						}, 
+						VoidType.getInstance(), 
+						METHOD_fill,
+						arrayType),
+				    null));
+			
+			//static sort
+			builder.addStaticMember(
+				new JClassMethodMember(
+					builder.getStub(),
+					METHOD_NAME_SORT, Accessibility.PUBLIC, true, false,
+					new JMethodType(
+							METHOD_NAME_SORT,
+						new JParameter[]{
+							new JParameter("src", arrayType),
+							new JParameter("desc", BoolType.getInstance()),
+						}, 
+						VoidType.getInstance(), 
+						METHOD_sort,
 						arrayType),
 				    null));
 			
@@ -325,6 +369,85 @@ public class JArrayBaseType extends JClassType {
 			
 			// Convert the result to Julian type
 			return new Result(TempValueFactory.createTempIntValue(cnt));
+		}
+	};
+	
+	// fill
+	@JulianDoc(
+		name = "fill",
+		isStatic = true,
+		summary =   "/*"
+				+ "\n * Populate the entire array with a single value."
+				+ "\n */",
+		params = {"The array to populate.",
+				  "The value used to fill out each element."
+				 },
+		exceptions = {
+				"System.IllegalAssignmentException: if the filling value is not incompatible with array's element type."
+				}
+	)
+	private static HostedExecutable METHOD_fill  = new HostedExecutable(FQNAME, METHOD_NAME_FILL) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
+			JValue val = args[1].getValue();
+			val = UntypedValue.unwrap(val);
+			
+			JClassType srcType = src.getClassType();
+			JArrayType at = (JArrayType) srcType;
+			if (at.getElementType().isBasic()){
+				// This is a single dimensional basic type array. We are able to perform native filling.
+				BasicArrayValue srcBav = (BasicArrayValue)src;
+				srcBav.fill(val);
+			} else {
+				// Have to fill out object values one by one.
+				ObjectArrayValue srcOav = (ObjectArrayValue)src;
+				int len = src.getLength();
+				for(int i=0; i<len; i++){
+					JValue vs = srcOav.getValueAt(i);
+					val.assignTo(vs);
+				}
+			}
+			
+			return Result.Void;
+		}
+	};
+	
+	// sort
+	@JulianDoc(
+		name = "sort",
+		isStatic = true,
+		summary =   "/*"
+				+ "\n * Sort the given array."
+				+ "\n * "
+				+ "\n * To sort an array, it requires that the elements be able to compare to each other. Certain primitive"
+				+ "\n * types and built-in types are comparable to some others. For example, int, float and bytes types are"
+				+ "\n * mutually comparable. However, the user-defined types are not naturally comparable. To add comparability"
+				+ "\n * to these types, one must implement [System.Util.IComparable]."
+				+ "\n * "
+				+ "\n * The sorting process is tolerant of incomparability, but the result will not be even partially"
+				+ "\n * correct if any pair of elements is found to be incomparable to each other."
+				+ "\n * "
+				+ "\n * This method is to sort the given array in place. In particular, it's not thread safe and therefore must"
+				+ "\n * be protected by [locks](type: System.Concurrency.Lock)."
+				+ "\n */",
+		params = {"The array to sort in place.",
+				  "If false, sort in ascendingly order; if true, in descending order."
+				 },
+		exceptions = { }
+	)
+	private static HostedExecutable METHOD_sort  = new HostedExecutable(FQNAME, METHOD_NAME_SORT) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
+			JValue val = args[1].getValue();
+			boolean desc = ((BoolValue)val.deref()).getBoolValue();
+
+			src.sort(runtime, desc);
+			
+			return Result.Void;
 		}
 	};
 }

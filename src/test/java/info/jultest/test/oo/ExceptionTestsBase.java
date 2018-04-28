@@ -2,6 +2,7 @@ package info.jultest.test.oo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,11 +34,19 @@ public class ExceptionTestsBase {
 	}
 	
 	/**
+	 * Validate that the exception that faulted the main thread meet certain criteria. The caller may opt out of any of those 
+	 * checks by providing argument with special values.
+	 * <p>
+	 * This method doesn't inspect or verify the cause of the exception.
+	 * 
 	 * @param teh the exception handler returned by {@link #installExceptionHandler(IScriptEngine)}.
 	 * @param typName expected full type name. null if not to be verified.
 	 * @param msg expected exception message. null if not to be verified.
-	 * @param stacktrace expected exception stacktrace. null if not to be verified.
-	 * @param fileName expected source file name where the exception is last thrown from. null if not to be verified. file name not checked.
+	 * @param stacktrace expected exception stacktrace. null if not to be verified. File path is not checked for now.
+	 * Each entry should start from the function signature, then a file path, and end with a line number. Example:
+	 * <code>fun(MyModule.MyStream)  (/.../my_script.jul, 93)</code>
+	 * @param fileName expected source file name where the exception is last thrown from. 
+	 * null if not to be verified. This check passes as long as the argument is a suffix of the full path.
 	 * @param lineNo expected source file line number where the exception is last thrown from. -1 if not to be verified.
 	 */
 	protected void validateException(
@@ -73,7 +82,7 @@ public class ExceptionTestsBase {
 		}
 		
 		if(fileName!=null){
-			assertEquals(fileName, teh.getLastFileName());
+			assertTrue(teh.getLastFileName().endsWith(fileName));
 		}
 		
 		if(lineNo>=0){

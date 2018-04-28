@@ -33,7 +33,7 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.TypeValue;
-import info.julang.memory.value.indexable.JIndexable;
+import info.julang.memory.value.indexable.IIndexable;
 
 /**
  * The operand pushed into the expression stack.
@@ -94,8 +94,8 @@ public abstract class Operand {
 		return new NameOperand(name);
 	}
 	
-	public static Operand createIndexOperand(JIndexable base, JValue index, JValue val){
-		return new IndexOperand(base, index, val);
+	public static Operand createIndexOperand(IIndexable base, JValue index, IIndexable iind){
+		return new IndexOperand(base, index, iind);
 	}
 	
 	public final static ValueOperand NullOperand = 

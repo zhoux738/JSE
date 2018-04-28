@@ -25,7 +25,9 @@ SOFTWARE.
 package info.julang.memory.value;
 
 import info.julang.execution.symboltable.ITypeTable;
+import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
+import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.basic.BasicType;
@@ -35,6 +37,9 @@ import info.julang.typesystem.basic.CharType;
 import info.julang.typesystem.basic.FloatType;
 import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
+
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * An array value whose element type is a basic type in Julian language.
@@ -86,6 +91,8 @@ public abstract class BasicArrayValue extends ArrayValue {
 	public abstract Object getPlatformArrayObject();
 	
 	protected abstract void initializeArray(MemoryArea memory, int length);
+	
+	public abstract void fill(JValue jv);
 
 }
 
@@ -121,7 +128,7 @@ class IntArrayValue extends BasicArrayValue {
 	}
 
 	@Override
-	protected JValue getValue(int index) {
+	protected JValue getInternal(int index) {
 		return new ElementValue(memory, index);
 	}
 
@@ -181,6 +188,33 @@ class IntArrayValue extends BasicArrayValue {
 			return value;
 		}
 	}
+
+	@Override
+	public void fill(JValue jv) {
+		if (jv.getKind() == JValueKind.INTEGER) {
+			IntValue iv = (IntValue)jv;
+			Arrays.fill(this.array, iv.getIntValue());
+		} else if (jv.getKind() == JValueKind.BYTE) {
+			ByteValue bv = (ByteValue)jv;
+			Arrays.fill(this.array, bv.getByteValue());
+		} else {
+			throw new IllegalAssignmentException(jv.getType(), IntType.getInstance());
+		}
+	}
+	
+	@Override
+	public void sort(ThreadRuntime rt, boolean desc) {
+		Arrays.sort(array);
+		if (desc) {
+			int len = array.length;
+			int median = len / 2;
+			for (int i=0; i<median; i++) {
+			    int temp = array[i];
+			    array[i] = array[len - i - 1];
+			    array[len - i - 1] = temp;
+			}
+		}
+	}
 }
 
 class ByteArrayValue extends BasicArrayValue {
@@ -213,7 +247,7 @@ class ByteArrayValue extends BasicArrayValue {
 	}
 
 	@Override
-	protected JValue getValue(int index) {
+	protected JValue getInternal(int index) {
 		return new ElementValue(memory, index);
 	}
 
@@ -273,6 +307,30 @@ class ByteArrayValue extends BasicArrayValue {
 			return value;
 		}
 	}
+
+	@Override
+	public void fill(JValue jv) {
+		if (jv.getKind() == JValueKind.BYTE) {
+			ByteValue bv = (ByteValue)jv;
+			Arrays.fill(this.array, bv.getByteValue());
+		} else {
+			throw new IllegalAssignmentException(jv.getType(), ByteType.getInstance());
+		}
+	}
+	
+	@Override
+	public void sort(ThreadRuntime rt, boolean desc) {
+		Arrays.sort(array);
+		if (desc) {
+			int len = array.length;
+			int median = len / 2;
+			for (int i=0; i<median; i++) {
+			    byte temp = array[i];
+			    array[i] = array[len - i - 1];
+			    array[len - i - 1] = temp;
+			}
+		}
+	}
 }
 
 class CharArrayValue extends BasicArrayValue {
@@ -305,7 +363,7 @@ class CharArrayValue extends BasicArrayValue {
 	}
 
 	@Override
-	protected JValue getValue(int index) {
+	protected JValue getInternal(int index) {
 		return new ElementValue(memory, index);
 	}
 
@@ -365,6 +423,30 @@ class CharArrayValue extends BasicArrayValue {
 			return value;
 		}
 	}
+
+	@Override
+	public void fill(JValue jv) {
+		if (jv.getKind() == JValueKind.CHAR) {
+			CharValue bv = (CharValue)jv;
+			Arrays.fill(this.array, bv.getCharValue());
+		} else {
+			throw new IllegalAssignmentException(jv.getType(), CharType.getInstance());
+		}
+	}
+
+	@Override
+	public void sort(ThreadRuntime rt, boolean desc) {
+		Arrays.sort(array);
+		if (desc) {
+			int len = array.length;
+			int median = len / 2;
+			for (int i=0; i<median; i++) {
+			    char temp = array[i];
+			    array[i] = array[len - i - 1];
+			    array[len - i - 1] = temp;
+			}
+		}
+	}
 }
 
 class FloatArrayValue extends BasicArrayValue {
@@ -397,7 +479,7 @@ class FloatArrayValue extends BasicArrayValue {
 	}
 
 	@Override
-	protected JValue getValue(int index) {
+	protected JValue getInternal(int index) {
 		return new ElementValue(memory, index);
 	}
 
@@ -457,6 +539,30 @@ class FloatArrayValue extends BasicArrayValue {
 			return value;
 		}
 	}
+
+	@Override
+	public void fill(JValue jv) {
+		if (jv.getKind() == JValueKind.FLOAT) {
+			FloatValue bv = (FloatValue)jv;
+			Arrays.fill(this.array, bv.getFloatValue());
+		} else {
+			throw new IllegalAssignmentException(jv.getType(), FloatType.getInstance());
+		}
+	}
+	
+	@Override
+	public void sort(ThreadRuntime rt, boolean desc) {
+		Arrays.sort(array);
+		if (desc) {
+			int len = array.length;
+			int median = len / 2;
+			for (int i=0; i<median; i++) {
+			    float temp = array[i];
+			    array[i] = array[len - i - 1];
+			    array[len - i - 1] = temp;
+			}
+		}
+	}
 }
 
 class BoolArrayValue extends BasicArrayValue {
@@ -489,7 +595,7 @@ class BoolArrayValue extends BasicArrayValue {
 	}
 
 	@Override
-	protected JValue getValue(int index) {
+	protected JValue getInternal(int index) {
 		return new ElementValue(memory, index);
 	}
 
@@ -547,6 +653,47 @@ class BoolArrayValue extends BasicArrayValue {
 			}
 			
 			return value;
+		}
+	}
+
+	@Override
+	public void fill(JValue jv) {
+		if (jv.getKind() == JValueKind.BOOLEAN) {
+			BoolValue bv = (BoolValue)jv;
+			Arrays.fill(this.array, bv.getBoolValue());
+		} else {
+			throw new IllegalAssignmentException(jv.getType(), BoolType.getInstance());
+		}
+	}
+	
+	@Override
+	public void sort(ThreadRuntime rt, final boolean desc) {
+		// Must do this manually as Java doesn't have native support for sorting boolean array.
+		int len = array.length;
+		Boolean[] boxed = new Boolean[len];
+		for(int i = 0; i < len; i++){
+			boxed[i] = array[i];
+		}
+		
+		Arrays.sort(boxed, new Comparator<Boolean>(){
+			@Override
+			public int compare(Boolean o1, Boolean o2) {
+				boolean b1 = o1.booleanValue();
+				boolean b2 = o2.booleanValue();
+				if (b1 == b2) {
+					return 0;
+				}
+				
+				if (b1 && !b2) {
+					return desc ? -1 : 1;
+				}
+				
+				return desc ? 1 : -1;
+			}
+		});
+		
+		for(int i = 0; i < len; i++){
+			array[i] = boxed[i];
 		}
 	}
 }

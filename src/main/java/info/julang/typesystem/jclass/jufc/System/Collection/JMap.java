@@ -30,17 +30,27 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import info.julang.execution.Argument;
+import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.HostedMethodProviderFactory;
 import info.julang.hosting.SimpleHostedMethodProvider;
 import info.julang.hosting.execution.CtorNativeExecutor;
 import info.julang.hosting.execution.InstanceNativeExecutor;
+import info.julang.interpretation.internal.NewObjExecutor;
+import info.julang.memory.MemoryArea;
+import info.julang.memory.value.ArrayValueFactory;
+import info.julang.memory.value.BasicValue;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.ObjectArrayValue;
 import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.VoidValue;
+import info.julang.typesystem.AnyType;
+import info.julang.typesystem.jclass.JClassConstructorMember;
+import info.julang.typesystem.jclass.JClassType;
 import info.julang.util.Pair;
 
 /**
@@ -63,6 +73,7 @@ import info.julang.util.Pair;
 public class JMap {
 	
 	public final static String FullTypeName = "System.Collection.Map";
+	private final static String EntryTypeName = "System.Collection.Entry";
 	
 	//----------------- IRegisteredMethodProvider -----------------//
 	
@@ -76,7 +87,9 @@ public class JMap {
 				.add("get", new GetExecutor())
 				.add("put", new PutExecutor())
 				.add("remove", new RemoveExecutor())
-				.add("size", new SizeExecutor());
+				.add("size", new SizeExecutor())
+				.add("getEntries", new getEntriesExecutor())
+				.add("getKeys", new getKeysExecutor());
 		}
 		
 	};
@@ -147,6 +160,26 @@ public class JMap {
 		
 	}
 	
+	private static class getEntriesExecutor extends InstanceNativeExecutor<JMap> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JMap jmap, Argument[] args) throws Exception {
+			ObjectValue ov = jmap.getEntries(rt);
+			return ov;
+		}
+		
+	}
+	
+	private static class getKeysExecutor extends InstanceNativeExecutor<JMap> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JMap jmap, Argument[] args) throws Exception {
+			ObjectValue ov = jmap.getKeys(rt);
+			return ov;
+		}
+		
+	}
+	
 	private static HashKeyWrapper getHashKey(ThreadRuntime rt, Argument[] args){
 		ObjectValue val0 = (ObjectValue)args[0].getValue().deref();
 		HashKeyWrapper wrapper = new HashKeyWrapper(rt, val0);
@@ -191,6 +224,57 @@ public class JMap {
 		return map.size();
 	}
 	
+	public ObjectValue getEntries(ThreadRuntime rt){
+		return getAll(rt, true);
+	}
+	
+	public ObjectValue getKeys(ThreadRuntime rt){
+		return getAll(rt, false);
+	}
+	
+	private ObjectValue getAll(ThreadRuntime rt, boolean entriesOrKeys){
+		Set<HashKeyWrapper> set = map.keySet();
+		ITypeTable tt = rt.getTypeTable();
+		MemoryArea mem = rt.getHeap();
+		int len = set.size();
+		
+		// Create an untyped 1D array
+		ObjectArrayValue array = (ObjectArrayValue)ArrayValueFactory.createArrayValue(mem, tt, AnyType.getInstance(), len);
+		
+		// Populate the array with keys or key-value pairs
+		if (entriesOrKeys) {
+			// Get Entry's ctor
+			int i = 0;
+			JClassType entryClassType = (JClassType) tt.getType(EntryTypeName);
+			JClassConstructorMember entryClassCtor = entryClassType.getClassConstructors()[0];
+			for (HashKeyWrapper wrp : set) {
+				JValue k = wrp.getKey();
+				JValue v = map.get(wrp);
+				
+				NewObjExecutor noe = new NewObjExecutor(rt);
+				ObjectValue val = noe.newObjectInternal(entryClassType, entryClassCtor,
+					new Argument[]{new Argument("key", k), new Argument("value", v)});
+				
+				RefValue rv = new RefValue(mem, val);
+				
+				rv.assignTo(array.getValueAt(i));
+				i++;
+			}
+		} else {
+			int i = 0;
+			for (HashKeyWrapper wrp : set) {
+				// Since we are bypassing the engine path, must ensure the copy semantics remain same
+				JValue k = wrp.getKey().deref();
+				k = k.isBasic() ? ((BasicValue) k).replicateAs(k.getType(), mem) : new RefValue(mem, (ObjectValue)k);
+				
+				k.assignTo(array.getValueAt(i));
+				i++;
+			}
+		}
+		
+		return array;
+	}
+	
 	/* the following methods are used internally. */
 	
 	public Pair<JValue, JValue>[] getAll(){
@@ -207,5 +291,4 @@ public class JMap {
 		
 		return results;
 	}
-	
 }

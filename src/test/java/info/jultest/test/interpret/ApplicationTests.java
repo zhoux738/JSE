@@ -236,4 +236,14 @@ public class ApplicationTests {
 		validateStringValue(gvt, "res1", "Current balance: 650.0");
 		validateStringValue(gvt, "res2", "Current balance: 350.0");
 	}
+	
+	@Test
+	public void simpleRegexTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.APPLICATION, null, "simple_regex.jul"));
+		
+		validateBoolValue(gvt, "passed", true);
+	}
 }

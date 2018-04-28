@@ -253,8 +253,8 @@ public class JProcess {
 
 				Pair<JValue, JValue>[] all = jmap.getAll();
 				for(Pair<JValue, JValue> entry : all){
-					StringValue k = StringValue.dereference(entry.getFirst());
-					StringValue v = StringValue.dereference(entry.getSecond());
+					StringValue k = StringValue.dereference(entry.getFirst(), true);
+					StringValue v = StringValue.dereference(entry.getSecond(), true);
 					if(k != null && v != null){
 						map.put(k.getStringValue(), v.getStringValue());
 					}

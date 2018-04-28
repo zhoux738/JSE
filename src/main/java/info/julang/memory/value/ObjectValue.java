@@ -24,18 +24,24 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.IExtValue.IObjectVal;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.indexable.IIndexable;
+import info.julang.memory.value.indexable.ObjectIndexable;
+import info.julang.memory.value.iterable.IIterator;
+import info.julang.memory.value.iterable.ObjectIterable;
+import info.julang.memory.value.iterable.ObjectIterator;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.JInterfaceType;
 import info.julang.util.OneOrMoreList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A value holding per-instance data, i.e. non-static members, of class type.
@@ -232,7 +238,7 @@ public class ObjectValue extends JValueBase implements IObjectVal {
 	}
 	
 	protected boolean compareToDeref(JValue anotherValue){
-		return this == anotherValue;	
+		return this == anotherValue;
 	}
 	
 	/**
@@ -244,6 +250,57 @@ public class ObjectValue extends JValueBase implements IObjectVal {
 	 */
 	public JValueKind getBuiltInValueKind(){
 		return JValueKind.OBJECT;
+	}
+	
+	@Override
+	public IIndexable asIndexer(){
+		String fname = type.getName();
+//		// TODO - Remove special handling for List and Map
+//		if(JList.FullTypeName.equals(fname)){
+//			return new ListIndexable((ObjectValue)this);
+//		} 
+//		else if(JMap.FullTypeName.equals(fname)){
+//			return new MapIndexable((ObjectValue)this);
+//		} 
+//		else 
+		if (hasInterface("System.Util.IIndexable")){
+			// If a user-defined class implements System.Util.Indexer, convert it to ObjectIndexable			
+			ObjectIndexable oi = new ObjectIndexable(this, fname);
+			return oi;
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public IIterator asIterator(){
+		if (hasInterface("System.Util.IIterable")){
+			String fname = type.getName();
+			ObjectIterable oie = new ObjectIterable(this, fname);
+			return oie.getIterator();
+		}
+		
+		if (hasInterface("System.Util.IIterator")){
+			String fname = type.getName();
+			ObjectIterator oi = new ObjectIterator(this, fname);
+			return oi;
+		}
+		
+		return null;
+	}
+	
+	private boolean hasInterface(String interfaceName){
+		if (type.isObject()) {
+			JClassType jct = (JClassType)type;
+			JInterfaceType[] intfs = jct.getInterfaces();
+			for(JInterfaceType intf : intfs) {
+				if (interfaceName.equals(intf.getName())){
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 
 }

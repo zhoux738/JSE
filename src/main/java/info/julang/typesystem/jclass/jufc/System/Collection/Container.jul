@@ -8,7 +8,7 @@ module System.Collection;
 interface Container {
 	
 	/*
-	 * Get the size of this container. Size is refers to the current count of items stored in the container,
+	 * Get the size of this container. Size refers to the current count of items stored in the container,
 	 * and is different from - more precisely less than or equal to - the container's capacity.
 	 *
 	 * [return] The current count of stored items.

@@ -110,7 +110,7 @@ public class JFile {
 		
 	}
 	
-	private static class CreateExecutor extends InstanceNativeExecutor<JFile> {
+	private static class CreateExecutor extends IOInstanceNativeExecutor<JFile> {
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
@@ -130,7 +130,7 @@ public class JFile {
 		
 	}
 	
-	private static class ReadAllTextExecutor extends InstanceNativeExecutor<JFile> {
+	private static class ReadAllTextExecutor extends IOInstanceNativeExecutor<JFile> {
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {

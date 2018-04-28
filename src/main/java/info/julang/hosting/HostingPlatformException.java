@@ -37,6 +37,7 @@ public class HostingPlatformException extends JSERuntimeException {
 	private static final long serialVersionUID = 4584474815379232672L;
 
 	private PlatformExceptionInfo exInfo;
+	private JulianScriptException cause;
 	
 	/**
 	 * Create a new HostingPlatformException with full details about the root cause. Used by mapped API.
@@ -57,6 +58,9 @@ public class HostingPlatformException extends JSERuntimeException {
 	 */
 	public HostingPlatformException(Exception inner, FQName className, String methodName) {
 		super(makeMsg(inner, className, methodName));
+		if (inner instanceof JulianScriptException){
+			this.cause = (JulianScriptException)inner;
+		}
 	}
 	
 	/**
@@ -75,8 +79,10 @@ public class HostingPlatformException extends JSERuntimeException {
 	}
 
 	private static String makeMsg(Exception inner, FQName className, String methodName) {
-		return "An exception is thrown from a method implemented by hosting language. Method: " + 
-				className.toString() + "." + methodName + ", Exception: " + inner.getMessage();
+		return "An exception is thrown from a method implemented by hosting language." + 
+				(inner instanceof JulianScriptException ? // If we have a script exception as the cause, no need to repeat what is to be seen in the stack trace.
+					"" : 
+					" Method: " + className.toString() + "." + methodName + ", Exception: " + inner.getMessage());
 	}
 	
 	private static String makeCustomizedMsg(String msg, FQName className, String methodName) {
@@ -94,7 +100,10 @@ public class HostingPlatformException extends JSERuntimeException {
 		JulianScriptException jse = super.toJSE(rt, context);
 		
 		// If we have an inner exception from the platform, set it as the cause
-		if (exInfo != null) {
+		if (cause != null) {
+			jse.setJSECause(cause);
+			jse.setInvokedByPlatform();
+		} else if (exInfo != null) {
 			PlatformOriginalException poe = new PlatformOriginalException(exInfo.getCause(), exInfo.getContainingClass(), exInfo.getDeductibleStackDepth());
 			JulianScriptException inner = poe.toJSE(rt, context);
 			

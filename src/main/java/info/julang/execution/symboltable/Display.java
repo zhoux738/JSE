@@ -32,8 +32,8 @@ import info.julang.memory.value.JValue;
 
 /**
  * An referential environment which contains defined local variables (including arguments) at the 
- * time the lambda is defined. 
- * <p/>
+ * time the lambda is defined.
+ * <p>
  * In contrast to {@link VariableTable}, variables in Display are laid out flatly, with variables
  * coming in the original inner scopes overwriting those from outer scopes, when the names conflict.
  * 
@@ -43,8 +43,17 @@ public class Display implements IVariableTableTraverser {
 
 	private Map<String, JValue> map;
 	
-	public Display(IVariableTable vt) {
+	/**
+	 * Create a display that inherits from another, and also captures the current lexical context.
+	 * 
+	 * @param d A parent display.
+	 * @param vt
+	 */
+	public Display(Display d, IVariableTable vt) {
 		map = new HashMap<String, JValue>();
+		if (d != null && d.map != null) {
+			map.putAll(d.map);
+		}
 		vt.traverse(this, false);
 	}
 	

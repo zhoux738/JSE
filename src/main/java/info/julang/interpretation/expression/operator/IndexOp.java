@@ -37,8 +37,8 @@ import info.julang.interpretation.expression.Operand;
 import info.julang.interpretation.expression.Operator;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.RefValue;
-import info.julang.memory.value.indexable.IndexableConverter;
-import info.julang.memory.value.indexable.JIndexable;
+import info.julang.memory.value.indexable.IIndexable;
+import info.julang.memory.value.operable.InitArgs;
 
 /**
  * Operator (<code>[ ]</code>) for indexing an array.
@@ -83,9 +83,9 @@ public class IndexOp extends Operator {
 				"The operator '" + this.toString() + "' can only apply on an indexable object.");
 		}
 		
-		JIndexable lind = IndexableConverter.toIndexable(rt, context, lval, false);
-		JValue ele = lind.getByIndex(rval); // This may throw ArrayIndexOutOfRange exception.
+		IIndexable lind = RefValue.dereference(lval).asIndexer();
+		lind.initialize(rt, new InitArgs(context, false));
 		
-		return Operand.createIndexOperand(lind, rval, ele);
+		return Operand.createIndexOperand(lind, rval, lind);
 	}
 }

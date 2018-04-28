@@ -25,48 +25,23 @@ SOFTWARE.
 package info.julang.memory.value.indexable;
 
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.operable.JulianObjectAdaptor;
 
 /**
- * An internal interface facilitating processing of iterable and indexable Julian objects, 
- * such as array or <font color="green">System.Collection.List</font>.
- * <p/>
- *  
+ * An interface mirroring <font color="green"><code>System.Util.IIndexable</code></font>.
+ * 
  * @author Ming Zhou
  */
-public interface JIndexable {
-
-	/**
-	 * Get the indexable {@link JValue} that backs this object.
-	 * @return
-	 */
-	JValue getIndexableValue();
-	
-	/**
-	 * Set the index. 0-based. 
-	 * @return
-	 */
-	void setIndex(int index);
-	
-	/**
-	 * Get the index of element to retrieve next. 0-based.
-	 * @return
-	 */
-	int getIndex();
+public interface IIndexable extends JulianObjectAdaptor {
 	
 	/**
 	 * Get the total number of elements.
-	 * @return
 	 */
 	int getLength();
 	
 	/**
-	 * Get the value at the current index. 
-	 * @return null if the index is out of range.
-	 */
-	JValue getCurrent();
-	
-	/**
 	 * Get the value at the specified index. 
+	 * 
 	 * @param index
 	 * @throws UnsupportedIndexTypeException if the type of specified index is not supported.
 	 * @return null if the index is out of range.
@@ -75,16 +50,11 @@ public interface JIndexable {
 	
 	/**
 	 * Set the value at the specified index. Will overwrite.
-	 * <p/>
+	 * <p>
 	 * This is used when assigning by index, in the form of <p/><pre>
 	 * <code>m[k] = v;</code></pre>
+	 * 
 	 * @return the new value at the specified index. Null if the index is out of range.
 	 */
 	JValue setByIndex(JValue index, JValue value) throws UnsupportedIndexTypeException;
-	
-	/**
-	 * An optional method which disposes of the underlying resource upon being released.
-	 */
-	void dispose();
-	
 }

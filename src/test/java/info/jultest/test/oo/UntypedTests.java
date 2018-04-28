@@ -244,19 +244,6 @@ public class UntypedTests {
 	}
 	
 	@Test
-	public void untypedArrayTest() throws EngineInvocationError {
-		Assume.assumeTrue(GlobalSetting.EnableJSE);
- 		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.OO, FEATURE);
-		runner.executeAndValidate(
-			"var_array.jul", 
-			"System.Lang.BadSyntaxException", 
-			null, 
-			null,
-			false, 
-			-1);
-	}
-	
-	@Test
 	public void passNullToMethodTest() throws EngineInvocationError {
 		VariableTable gvt = new VariableTable(null);
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);

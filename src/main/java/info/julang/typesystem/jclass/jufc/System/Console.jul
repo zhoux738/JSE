@@ -1,43 +1,47 @@
 module System;
 
 /*
- * Console provide means to input from and output to character-oriented terminal of the operating system.
+ * Console provides means to input from and output to character-oriented terminals of the operating system.
  */
 [Bridged(apiset="System.Console")]
-class Console {
+final class Console {
  	
  	/*
  	 * Print the given value to the console. If the value is an [Object], calls [Object.toString()](Object#toString())
  	 * to get the string to output. If the value is of primitive type, prints its literal representation.
  	 * If the value is null, prints "(null)".
+ 	 *
+ 	 * [param: value] a value to print out.
  	 */
- 	static void print(var obj){
- 		if (obj == null) {
+ 	static void print(var value){
+ 		if (value == null) {
 			_print("(null)");
 			return;
 		}
 		
-		if(obj is Object){
-			_print(obj.toString());
+		if(value is Object){
+			_print(value.toString());
 		} else {
-			_print(obj);
+			_print(value);
 		}
 	}
 	
 	/*
 	 * Print the given value to the console, then a line break sequences as defined by the underlying
 	 * operating system. See [toString()](Object#toString()) for more details.
+ 	 *
+ 	 * [param: value] a value to print out.
 	 */ 
- 	static void println(var obj){
-		if (obj == null) {
+ 	static void println(var value){
+		if (value == null) {
 			_println("(null)");
 			return;
 		}
 		
-		if(obj is Object){
-			_println(obj.toString());
+		if(value is Object){
+			_println(value.toString());
 		} else {
-			_println(obj);
+			_println(value);
 		}
 	}
 	
@@ -48,8 +52,8 @@ class Console {
 	private hosted static void _println(var msg);
 	
     /*
-	 * Read the characters from standard input, until a line break sequences as defined by the underlying
-	 * operating system is met. This method will be blocking the thread until the line break is accepted.
+	 * Read the characters from standard input, until a line break sequence as defined by the underlying
+	 * operating system is met. This method will be blocking the thread until the line break is consumed.
 	 *
 	 * [return] the string comprised of the input characters, excluding the line break at the end.
 	 */ 

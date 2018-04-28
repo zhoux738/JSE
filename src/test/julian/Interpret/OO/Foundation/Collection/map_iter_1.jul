@@ -1,0 +1,14 @@
+import System.Collection;
+
+Map m = new Map();
+m.put("A", "obj_A");
+m.put(1, "obj_1");
+m.put('c', "obj_c");
+
+var l = m.getEntries();
+string[] all = new string[l.length];
+int i = 0;
+for(var v : l) {
+	all[i] = (string)v.key;
+	i++;
+}

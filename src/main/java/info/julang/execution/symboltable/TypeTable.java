@@ -24,21 +24,22 @@ SOFTWARE.
 
 package info.julang.execution.symboltable;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.IExtMemoryArea;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.TypeValue;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.basic.CharType;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.util.OneOrMoreList;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Type table contains all the definition of types during runtime.

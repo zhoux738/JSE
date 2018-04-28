@@ -1,0 +1,13 @@
+var[] arr = new var[]{1, "a", null, 'c'};
+var a = (var)arr;
+bool b0 = a is Array;
+
+var[] arr2 = (var[])a;
+int i1 = arr2[0];
+string sa = arr2[1];
+Object obj_null = arr2[2];
+
+int i2 = arr2[0] = 2;
+string sb = arr2[1] = "b";
+Object obj_notnull = arr2[2] = new Object();
+bool b1 = obj_notnull != null;

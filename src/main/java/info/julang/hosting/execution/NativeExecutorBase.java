@@ -39,6 +39,7 @@ import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TypeValue;
+import info.julang.typesystem.JArgumentException;
 import info.julang.typesystem.jclass.jufc.SystemTypeUtility;
 import info.julang.util.Pair;
 
@@ -114,12 +115,17 @@ public abstract class NativeExecutorBase implements INativeExecutor {
 	//---------------- Argument extractors ----------------//
 	
 	protected String getString(Argument[] args, int index){
-		StringValue sv = StringValue.dereference(args[index].getValue());
+		StringValue sv = StringValue.dereference(args[index].getValue(), true);
 		return sv != null ? sv.getStringValue() : null;
 	}
 	
 	protected int getInt(Argument[] args, int index){
-		return ((IntValue) args[index].getValue()).getIntValue();
+		Argument a = args[index];
+		try {
+			return ((IntValue)a.getValue()).getIntValue();
+		} catch (ClassCastException e) {
+			throw new JArgumentException(a.getName());
+		}
 	}
 	
 	protected byte getByte(Argument[] args, int index){

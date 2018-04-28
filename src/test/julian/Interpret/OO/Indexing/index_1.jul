@@ -1,0 +1,31 @@
+import System.Util;
+
+class MyContainer : IIndexable {
+	Object[] objs;
+	
+	MyContainer(int capacity){
+		objs = new Object[capacity];
+	}
+	
+	//--- impl of IIndexable ---//
+
+	int size() {
+		return -1;
+	}
+	
+	var at(var index){
+		return objs[index];
+	}
+	
+	void at(var index, var value){
+		objs[index] = value;
+	}
+}
+
+MyContainer mc = new MyContainer(3);
+mc[0] = "abc";
+string s1 = mc[0];
+mc[0] += "def";
+string s2 = mc[0];
+mc[1] = (mc[1] = "uvw") + "xyz";
+string s3 = mc[1];

@@ -33,11 +33,20 @@ public class JIllegalCastingException extends JSERuntimeException {
 	private static final long serialVersionUID = 2338046892224623849L;
 
 	public JIllegalCastingException(JType fromType, JType toType) {
-		super(makeMsg(fromType, toType));
+		this(fromType, toType, null);
+	}
+	
+	public JIllegalCastingException(JType fromType, JType toType, String reason) {
+		super(makeMsg(fromType, toType, reason));
 	}
 
-	private static String makeMsg(JType fromType, JType toType) {
-		return "Cannot convert from type " + fromType.getName() + " to type " + toType.getName() + ".";
+	private static String makeMsg(JType fromType, JType toType, String reason) {
+		String s = "Cannot convert from type " + fromType.getName() + " to type " + toType.getName() + ".";
+		if (reason != null) {
+			s += " " + reason;
+		}
+		
+		return s;
 	}
 	
 	@Override

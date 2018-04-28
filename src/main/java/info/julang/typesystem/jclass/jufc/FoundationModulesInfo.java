@@ -72,8 +72,12 @@ public final class FoundationModulesInfo {
 			// Exceptions
 			"Exception"
 		});
+		allModuleClasses.put("System.Util", new String[]{
+			"Interfaces",
+			"Math"
+		});
 		allModuleClasses.put("System.Collection", new String[]{
-			// Container
+			// Containers
 			"Container",
 			"List",
 			"Map",

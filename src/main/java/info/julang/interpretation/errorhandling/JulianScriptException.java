@@ -105,6 +105,8 @@ public class JulianScriptException extends RuntimeException {
 	
 	private MemoryArea memory;
 	
+	private boolean invokedByPlatform;
+	
 	/**
 	 * Create a new JulianScriptException wrapping a Julian exception type.
 	 * 
@@ -307,6 +309,10 @@ public class JulianScriptException extends RuntimeException {
 		return sb.toString();
 	}
 	
+	public void setInvokedByPlatform(){
+		invokedByPlatform = true;
+	}
+	
 	//--------------------------- Non-public members ---------------------------//
 	
 	/**
@@ -378,6 +384,12 @@ public class JulianScriptException extends RuntimeException {
 				sb.append("More causes ...");
 				sb.append(System.lineSeparator());
 			}
+		}
+		
+		if (invokedByPlatform && recursiveCount == 0){
+			sb.append(System.lineSeparator());
+			sb.append("... invoked through an engine callback. Further stack trace unavailable.");
+			sb.append(System.lineSeparator());
 		}
 		
 		if(endByLineBreak){
@@ -468,7 +480,7 @@ public class JulianScriptException extends RuntimeException {
 	}
 	
 	private String getExceptionMessageInternal(ObjectValue exception){
-		StringValue msg = StringValue.dereference(exception.getMemberValue(ex_field_message));
+		StringValue msg = StringValue.dereference(exception.getMemberValue(ex_field_message), true);
 		return msg != null ? msg.getStringValue() : "";
 	}
 	
@@ -479,7 +491,7 @@ public class JulianScriptException extends RuntimeException {
 		String[] result = new String[depth];
 		
 		for(int i=0;i<depth;i++){
-			StringValue sv = StringValue.dereference(aval.getValueAt(i));
+			StringValue sv = StringValue.dereference(aval.getValueAt(i), true);
 			result[i] = sv.getStringValue();
 		}
 		
@@ -501,7 +513,7 @@ public class JulianScriptException extends RuntimeException {
 	}
 	
 	private String getFileNameInternal(ObjectValue exception){
-		StringValue msg = StringValue.dereference(exception.getMemberValue(ex_field_filename));
+		StringValue msg = StringValue.dereference(exception.getMemberValue(ex_field_filename), true);
 		return msg != null ? msg.getStringValue() : null;
 	}
 	

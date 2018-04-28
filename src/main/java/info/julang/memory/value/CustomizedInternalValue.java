@@ -26,6 +26,8 @@ package info.julang.memory.value;
 
 import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.indexable.IIndexable;
+import info.julang.memory.value.iterable.IIterator;
 import info.julang.typesystem.JType;
 
 /**
@@ -94,6 +96,16 @@ public class CustomizedInternalValue implements JValue {
 	@Override
 	public JValue deref() {
 		return this;
+	}
+	
+	@Override
+	public IIndexable asIndexer(){
+		return null;
+	}
+	
+	@Override
+	public IIterator asIterator(){
+		return null;
 	}
 
 }

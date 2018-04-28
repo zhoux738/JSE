@@ -63,7 +63,7 @@ public class ValueAssignmentTests {
 		fooRef.assignTo(notbarRef);
 		
 		// The assignment changes reference value
-		StringValue sv = StringValue.dereference(notbarRef);
+		StringValue sv = StringValue.dereference(notbarRef, true);
 		assertEquals("foo", sv.getStringValue());
 		IntValue len = (IntValue) sv.getMemberValue("length");
 		assertEquals(3, len.getIntValue());

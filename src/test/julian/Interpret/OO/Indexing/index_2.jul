@@ -1,0 +1,31 @@
+import System.Util;
+
+class MyContainer : IIndexable {
+	int[] _array;
+	
+	MyContainer(int capacity){
+		_array = new int[capacity];
+	}
+	
+	//--- impl of IIndexable ---//
+
+	int size() {
+		return -1;
+	}
+	
+	var at(var index){
+		return _array[index];
+	}
+	
+	void at(var index, var value){
+		_array[index] = value;
+	}
+}
+
+MyContainer mc = new MyContainer(3);
+mc[0] = 3;
+int i1 = mc[0];
+mc[0] += 5;
+int i2 = mc[0];
+mc[1] = (mc[1] = 7) + 11;
+int i3 = mc[1];

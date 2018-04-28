@@ -35,8 +35,12 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 /**
  * A value that stores a float number.
  */
-public class FloatValue extends BasicValue implements JAddable, IFloatVal {
+public class FloatValue extends BasicValue implements JAddable, IFloatVal, Comparable<JValue> {
 
+	public static final String NEG_INF_STR = "(-INF)";
+	public static final String POS_INF_STR = "(INF)";
+	public static final String NAN_STR = "(NAN)";
+	
 	/**
 	 * Create a new float value with default value (0f)
 	 * @param memory
@@ -94,7 +98,7 @@ public class FloatValue extends BasicValue implements JAddable, IFloatVal {
 		if(type == this.getType()){//Use comparison by reference since all the basic types are singleton
 			return new FloatValue(memory, getValueInternal());
 		} else if(JStringType.isStringType(type)){
-			return new StringValue(memory, String.valueOf(getValueInternal()));
+			return new StringValue(memory, this.toString());
 		}
 		
         //    BOOLEAN     	 CHAR           FLOAT          INTEGER       BYTE
@@ -166,7 +170,7 @@ public class FloatValue extends BasicValue implements JAddable, IFloatVal {
 		String result = null;
 		switch(another.getKind()){
 		case CHAR:
-			result = this.getValueInternal() + "" + ((CharValue)another).getCharValue();
+			result = this.toString() + "" + ((CharValue)another).getCharValue();
 			break;
 		case FLOAT:
 			float fresult = this.getValueInternal() + ((FloatValue)another).getFloatValue();
@@ -187,7 +191,7 @@ public class FloatValue extends BasicValue implements JAddable, IFloatVal {
 			JValueKind kind = ValueUtilities.getBuiltinKind(another);
 			if(kind == JValueKind.STRING){
 				StringValue sv = (StringValue)another;
-				result = this.getValueInternal() + sv.getStringValue();
+				result = this.toString() + sv.getStringValue();
 			}
 		}
 
@@ -216,7 +220,16 @@ public class FloatValue extends BasicValue implements JAddable, IFloatVal {
 	
 	@Override
 	public String toString(){
-		return String.valueOf(getFloatValue());
+		float f = getFloatValue();
+		if (f == Float.NEGATIVE_INFINITY) {
+			return NEG_INF_STR;
+		} else if (f == Float.POSITIVE_INFINITY) {
+			return POS_INF_STR;
+		} else if (f == Float.NaN) {
+			return NAN_STR;
+		}
+		
+		return String.valueOf(f);
 	}
 	
 	@Override
@@ -235,5 +248,54 @@ public class FloatValue extends BasicValue implements JAddable, IFloatVal {
 		}
 		
 		return false;
+	}
+
+	@Override
+	public int compareTo(JValue v2) {
+		switch(v2.getKind()){
+		case BYTE:
+			byte b2 = ((ByteValue)v2).getByteValue();
+			double d = this.getValueInternal() - b2;
+			return d > 0 ? 1 : d < 0 ? -1 : 0;
+		case FLOAT:
+			float f2 = ((FloatValue)v2).getFloatValue();
+			d = this.getValueInternal() - f2;
+			return d > 0 ? 1 : d < 0 ? -1 : 0;
+		case INTEGER:
+			int i2 = ((IntValue)v2).getIntValue();
+			d = this.getValueInternal() - i2;
+			return d > 0 ? 1 : d < 0 ? -1 : 0;
+		default:
+		}
+		
+		// Not equal, but just incomparable
+		return 0;
+	}
+
+	/**
+	 * Convert a string to a float value.
+	 * 
+	 * @param memory
+	 * @param value In addition to normal float numbers, also takes (-INF), (INF) and (NaN) as special arguments 
+	 * and translates them to negative infinity, positive infinity and Not-A-Number, respectively.
+	 * @return null if not parsable from the given string.
+	 */
+	public static FloatValue fromString(MemoryArea memory, String value) {
+		float f = 0f;
+		switch(value) {
+		case NEG_INF_STR: f = Float.NEGATIVE_INFINITY; break;
+		case POS_INF_STR:  f = Float.POSITIVE_INFINITY; break;
+		case NAN_STR:  f = Float.NaN; break;
+		case "-Infinity":
+		case "Infinity":
+		case "NaN":
+			// These three strings represent special float values in Java. Julian does not accept them.
+			return null;
+		default:
+			f = Float.valueOf(value);
+			break;
+		}
+		
+		return new FloatValue(memory, f);
 	}
 }

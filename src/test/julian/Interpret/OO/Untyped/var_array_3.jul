@@ -1,0 +1,36 @@
+bool b0, b1;
+
+// init
+var[][] arr = new var[2][3];
+try {
+	arr[0] = "a";
+} catch (System.IllegalAssignmentException e) {
+	b0 = true;
+}
+
+try {
+	arr[0] = new int[2];
+} catch (System.IllegalAssignmentException e) {
+	b1 = true;
+}
+
+string sa = arr[0][2] = "a";
+
+arr[0] = new var[2];
+try {
+	arr[0][2] = "b";
+} catch (System.ArrayOutOfRangeException e) {
+	arr[0][1] = "b";
+}
+
+string sb = arr[0][1];
+
+arr[0][0] = new int[4];
+for(int i = 0; i < 4; i++){
+	arr[0][0][i] = i;
+}
+
+int ires = 0;
+for(int i : arr[0][0]){
+	ires += i;
+}

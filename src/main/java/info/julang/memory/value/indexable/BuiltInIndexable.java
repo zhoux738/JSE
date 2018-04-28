@@ -25,51 +25,28 @@ SOFTWARE.
 package info.julang.memory.value.indexable;
 
 import info.julang.execution.threading.ThreadRuntime;
-import info.julang.interpretation.context.Context;
 import info.julang.memory.value.ArrayIndexOutOfRangeException;
 import info.julang.memory.value.ByteValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
-import info.julang.memory.value.StringValue;
+import info.julang.memory.value.operable.InitArgs;
 
 /**
- * A {@link JIndexable} backed by an {@link StringValue}.
+ * An {@link IIndexable} backed by a value of built-in type.
  * 
  * @author Ming Zhou
  */
-public class BuiltInIndexable implements JIndexable {
+public class BuiltInIndexable implements IIndexable {
 
-	private int index;
-	
 	private JIndexableValue av;
 	
 	public BuiltInIndexable(JIndexableValue av){
 		this.av = av;
 	}
-	
-	@Override
-	public JValue getIndexableValue() {
-		return av;
-	}
-
-	@Override
-	public void setIndex(int index) {
-		this.index = index;
-	}
-
-	@Override
-	public int getIndex() {
-		return index;
-	}
 
 	@Override
 	public int getLength() {
 		return av.getLength();
-	}
-
-	@Override
-	public JValue getCurrent() throws ArrayIndexOutOfRangeException {
-		return get(index);
 	}
 
 	@Override
@@ -88,7 +65,7 @@ public class BuiltInIndexable implements JIndexable {
 			throw new UnsupportedIndexTypeException("The index for an array must be an integer.");		
 		}
 		
-		return get(ii);
+		return av.getValueAt(ii);
 	}
 	
 	@Override
@@ -97,18 +74,9 @@ public class BuiltInIndexable implements JIndexable {
 		value.assignTo(oldValue);
 		return oldValue;
 	}
-	
-	@Override
-	public void dispose(){
-		// Nothing to be done here.
-	}
-	
-	private JValue get(int index){
-		return av.getValueAt(index);
-	}
 
 	@Override
-	public void initialize(ThreadRuntime rt, Context cntx, boolean applyLock) {
+	public void initialize(ThreadRuntime rt, InitArgs args) {
 		// NO-OP
 	}
 

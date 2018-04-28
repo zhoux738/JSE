@@ -74,7 +74,8 @@ public class JArrayType extends JArrayBaseType {
 	}
 	
 	/**
-	 * Create a new multi-dimensional array type with specified element type.
+	 * Create a new multi-dimensional array type with specified element type. If the type has been created previously,
+	 * return the existing one.
 	 * 
 	 * @param elementType
 	 * @param dimension must be greater than 0. If dimension == 1, this is same to call 

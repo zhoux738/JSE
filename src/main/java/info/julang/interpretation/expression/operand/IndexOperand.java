@@ -25,7 +25,7 @@ SOFTWARE.
 package info.julang.interpretation.expression.operand;
 
 import info.julang.memory.value.JValue;
-import info.julang.memory.value.indexable.JIndexable;
+import info.julang.memory.value.indexable.IIndexable;
 
 /**
  * A member operand that represents the value of an indexed member of some array instance.
@@ -37,13 +37,15 @@ import info.julang.memory.value.indexable.JIndexable;
  */
 public class IndexOperand extends ValueOperand {
 	
-	private JIndexable base;
+	private IIndexable base;
 	private JValue index;
-
-	public IndexOperand(JIndexable base, JValue index, JValue value){
-		super(value);
+	private IIndexable indexer;
+	
+	public IndexOperand(IIndexable base, JValue index, IIndexable indexer){
+		super(null);
 		this.base = base;
 		this.index = index;
+		this.indexer = indexer;
 	}
 
 	@Override
@@ -51,7 +53,16 @@ public class IndexOperand extends ValueOperand {
 		return OperandKind.INDEX;
 	}
 	
-	public JIndexable getBase(){
+	@Override
+	public JValue getValue() {
+		if (value == null) {
+			value = indexer.getByIndex(index); // This may throw ArrayOutOfRange exception
+		}
+		
+		return value;
+	}
+	
+	public IIndexable getBase(){
 		return base;
 	}
 	

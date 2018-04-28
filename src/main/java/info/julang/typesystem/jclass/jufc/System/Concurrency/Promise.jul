@@ -270,7 +270,8 @@ public class DeferredPromise : Promise {
  *
  * Many I/O APIs provides asynchronous methods which return Promises. These API serve as the starting point
  * for most users in their asynchronous programming. However, the programmers may also create their own 
- * Promises and even control their completion through a handle. See [DeferredPromise] for more details.
+ * Promises and even [control their completion](type: DeferredPromise) through a handle. See [tutorial: async] 
+ * for more details.
  */
 public class Promise {
 

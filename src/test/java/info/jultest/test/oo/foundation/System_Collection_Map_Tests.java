@@ -4,6 +4,7 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateBoolValue;
 import static info.jultest.test.Commons.validateIntValue;
+import static info.jultest.test.Commons.validateStringArrayValue;
 import static info.jultest.test.Commons.validateStringValue;
 import static info.jultest.test.Commons.validateUntypedValue;
 import static org.junit.Assert.assertEquals;
@@ -123,6 +124,34 @@ public class System_Collection_Map_Tests {
 		validateBoolValue(gvt, "b1", true);
 		validateBoolValue(gvt, "b2", true);
 		validateBoolValue(gvt, "b3", true);
+	}
+	
+	@Test
+	public void getEntriesTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "map_iter_1.jul"));
+		
+		validateStringArrayValue(gvt, "all", new String[] {
+			"A",
+			"1",
+			"c"
+		});
+	}
+	
+	@Test
+	public void getKeysTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "map_iter_2.jul"));
+		
+		validateStringArrayValue(gvt, "all", new String[] {
+			"A",
+			"1",
+			"c"
+		});
 	}
 	
 	private void mapBasicOpWithKeyTest(String fileName) throws EngineInvocationError {

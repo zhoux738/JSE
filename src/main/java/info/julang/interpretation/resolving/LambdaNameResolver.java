@@ -77,8 +77,8 @@ public class LambdaNameResolver implements INameResolver {
 			}
 		}
 		
-		// 2) try as variable; but do not query global variable table.
-		JValue v = vt.getVariable(id, false);
+		// 2) try as variable; query global variable table only if the lambda is defined in global context.
+		JValue v = vt.getVariable(id, definingContextType == ContextType.FUNCTION);
 		if(v != null){
 			return v;
 		}

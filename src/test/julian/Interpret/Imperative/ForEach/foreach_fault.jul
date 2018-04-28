@@ -1,0 +1,4 @@
+var arr = new Object();
+for(int i in arr){
+
+}

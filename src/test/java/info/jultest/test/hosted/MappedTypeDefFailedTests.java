@@ -2,11 +2,10 @@ package info.jultest.test.hosted;
 
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
-import static info.jultest.test.Commons.validateNullValue;
-import info.jultest.test.AssertHelper;
-import info.jultest.test.Commons;
-import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestRunner;
+
+import org.junit.Assert;
+import org.junit.Test;
+
 import info.julang.execution.EngineRuntime;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
@@ -14,10 +13,10 @@ import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.errorhandling.KnownJSException;
 import info.julang.modulesystem.ModuleInfo;
 import info.julang.typesystem.JType;
-import info.julang.typesystem.loading.ClassLoadingException;
-
-import org.junit.Assert;
-import org.junit.Test;
+import info.jultest.test.AssertHelper;
+import info.jultest.test.Commons;
+import info.jultest.test.TestExceptionHandler;
+import info.jultest.test.oo.ExceptionTestRunner;
 
 public class MappedTypeDefFailedTests {
 	

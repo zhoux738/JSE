@@ -100,7 +100,7 @@ public class EnumValue extends ObjectValue implements JCastable, IEnumVal {
 	 * @return
 	 */
 	public String getLiteral() {
-		return (StringValue.dereference(getMemberValue(JEnumBaseType.FIELD_LITERAL))).getStringValue();
+		return (StringValue.dereference(getMemberValue(JEnumBaseType.FIELD_LITERAL), true)).getStringValue();
 	}
 
 	private void setLiteral(String literal, MemoryArea memory) {

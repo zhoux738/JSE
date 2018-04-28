@@ -168,9 +168,9 @@ public class JConsole {
 		System.out.print(c);
 	}
 	
-	private static void printDouble(double d){
-		System.out.print(d);
-	}
+//	private static void printDouble(double d){
+//		System.out.print(d);
+//	}
 	
 	private static void printBool(boolean b){
 		System.out.print(b);
@@ -235,7 +235,7 @@ public class JConsole {
 			JConsole.printChar(((CharValue) val).getCharValue());
 			break;	
 		case FLOAT:
-			JConsole.printDouble(((FloatValue) val).getFloatValue());
+			JConsole.printString(((FloatValue) val).toString());
 			break;			
 		case INTEGER:
 			JConsole.printInt(((IntValue) val).getIntValue());

@@ -24,8 +24,8 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import info.julang.external.interfaces.JValueKind;
 import info.julang.external.interfaces.IExtValue.IByteVal;
+import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.operable.JAddable;
 import info.julang.typesystem.JType;
@@ -35,7 +35,7 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 /**
  * A value that stores a byte.
  */
-public class ByteValue extends BasicValue implements JAddable, IByteVal {
+public class ByteValue extends BasicValue implements JAddable, IByteVal, Comparable<JValue> {
 
 	/**
 	 * Create a new byte value with default value (0)
@@ -254,5 +254,25 @@ public class ByteValue extends BasicValue implements JAddable, IByteVal {
 		}
 		
 		return false;
+	}
+
+	@Override
+	public int compareTo(JValue v2) {
+		switch(v2.getKind()){
+		case BYTE:
+			byte b2 = ((ByteValue)v2).getByteValue();
+			return this.getValueInternal() - b2;
+		case FLOAT:
+			float f2 = ((FloatValue)v2).getFloatValue();
+			double d = this.getValueInternal() - f2;
+			return d > 0 ? 1 : d < 0 ? -1 : 0;
+		case INTEGER:
+			int i2 = ((IntValue)v2).getIntValue();
+			return this.getValueInternal() - i2;
+		default:
+		}
+		
+		// Not equal, but just incomparable
+		return 0;
 	}
 }

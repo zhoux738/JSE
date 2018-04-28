@@ -32,7 +32,7 @@ import info.julang.interpretation.expression.operand.IndexOperand;
 import info.julang.interpretation.expression.operand.OperandKind;
 import info.julang.memory.value.AttemptToAssignToNonLeftValueException;
 import info.julang.memory.value.JValue;
-import info.julang.memory.value.indexable.JIndexable;
+import info.julang.memory.value.indexable.IIndexable;
 
 /**
  * Assignment operation, such as <code>a = 5</code>. Returns the assignee.
@@ -77,9 +77,9 @@ public class AssignOp extends Operator {
 		// exposed on JIndexable. This is not only for uniformity but more importantly the 
 		// correctness. Since System.Collection.List and System.Collection.Map are indexable,
 		// we cannot modify an indexed value by directly assigning to the one returned
-		// by get() method, since that is merely an on-stack copy of the original value due
+		// by get() method, which is merely an on-stack copy of the original value due
 		// to replication at the end of method call.
-		JIndexable base = assignee.getBase();
+		IIndexable base = assignee.getBase();
 		JValue index = assignee.getIndex();
 		lval = base.setByIndex(index, rval);
 		return lval;

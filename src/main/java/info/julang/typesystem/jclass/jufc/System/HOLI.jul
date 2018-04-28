@@ -57,7 +57,8 @@ attribute Mapped {
 }
 
 /*
- * The method or constructor marked by this attribute bypasses type checking for the arguments passed along.
+ * The method or constructor marked by this attribute bypasses type checking for the arguments passed in and
+ * value to return. In most cases, simply use type [Any] as parameter and return type instead.  
  */
 [AttributeType(
 	target=AttributeTarget.METHOD|AttributeTarget.CONSTRUCTOR, 

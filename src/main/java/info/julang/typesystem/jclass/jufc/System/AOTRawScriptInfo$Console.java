@@ -80,7 +80,7 @@ public class AOTRawScriptInfo$Console extends RawScriptInfo {
         }
         
         public boolean isFinal() {
-            return false;
+            return true;
         }
         
         public boolean isConst() {

@@ -6,6 +6,8 @@ module System;
  * All Julian exceptions are derived from this class. An exception can be captured using the
  * classic try-catch blocks, where exception are matched against each catch section in the
  * script order.
+ *
+ * For more information about exception handling, see [here](tutorial: exception).
  */
 class Exception {
 
@@ -88,7 +90,7 @@ class DivByZeroException : Exception {
 	
 	/*
 	 * Create a standard DivByZeroException instance. While entirely legal, 
-	 * it's not recommended for a user to create such instances. 
+	 * it's rare for a user to create such instances. 
 	 * 
 	 * The message for this exception is fixed.
 	 */
@@ -116,9 +118,9 @@ class ArrayOutOfRangeException : Exception {
 }
 
 /*
- * Exception caused by attempting to dereference a variable that is null. This can be created by the engine when 
- * it is trying to dereference a null variable or intermediate value, but a user may also create this 
- * exception pre-emptively as part of the argument check.
+ * Exception caused by attempting to dereference a variable that is null. This can be created by the 
+ * engine when it is trying to dereference a null variable or intermediate value, but a user may also 
+ * create this exception pre-emptively as part of the argument check.
  */
 class NullReferenceException : Exception {
 	
@@ -139,7 +141,7 @@ class ArgumentException : Exception {
 	 * Create a standard ArgumentException instance with specified parameter name. 
 	 * The message format for this exception is fixed.
 	 *
-	 * [param: name] The name of parameter.
+	 * [param: name] The name of problematic parameter.
 	 */
 	ArgumentException(string name) : super("Argument '" + name + "' is invalid.") { }
 
@@ -152,8 +154,8 @@ class ArgumentException : Exception {
  * In Julian, a type is loaded when it's first used, so importing a module, and defining a type in the 
  * current script, doesn't trigger type loading. Only by referencing a type for the first time during
  * runtime will that type, along with all the dependencies, get loaded. If any type couldn't be loaded 
- * in this process, the entire type set will not be loaded. In Julian this is referred to as "Loading 
- * Completeness Principle", or simple LCP.
+ * in this process, the entire type closure will not be loaded. In Julian this is referred to as "Loading 
+ * Completeness Principle", or simple LCP. For more details on class loading, see [here](tutorial: type loading).
  *
  * A type may fail to load by various reasons. Most likely, since Julian is in interpreted language,
  * the semantic check on the type will only happen by the time the loading is attempted. So failing to
@@ -225,7 +227,7 @@ class PlatformOriginalException : Exception {
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: className] The faulting platform class's name.
-	 * [param: message] A message to describe the failure.
+	 * [param: msg] A message to describe the failure.
 	 */
 	PlatformOriginalException(string className, string msg) : super("(" + className + ") " + msg) {} 
 }
@@ -233,9 +235,10 @@ class PlatformOriginalException : Exception {
 /*
  * The thread stack hits the limit and thus new frame cannot be allocated.
  *
- * This is a fundamental system error and can be thrown anytime during the runtime, not necessarily where a function is called.
- * At the point of this failure there is no guarantee that the engine can continue to function normally so there is no point
- * of capturing it. In fact this exception won't be caught by catch block.
+ * This is a fundamental system error and can be thrown any time during the runtime, not necessarily 
+ * where a function is called. If the engine is experiencing such failure there is no guarantee that 
+ * it can continue to function normally so there is no point of capturing it. In fact this exception 
+ * won't be caught by catch clause in a [try-catch statement](tutorial: catch).
  */
 class StackOverflowException : Exception {
 
@@ -258,7 +261,7 @@ class IllegalAttributeUsageException : Exception {
 	/* 
 	 * Create an instance of IllegalAttributeUsageException with specified message. Mainly reserved for system use.
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	IllegalAttributeUsageException(String msg) : super(msg) {} 
 }
@@ -270,7 +273,7 @@ class IllegalAssignmentException : Exception {
 	/* 
 	 * Create an instance of IllegalAssignmentException with specified message. Mainly reserved for system use.
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	IllegalAssignmentException(String msg) : super(msg) {} 
 }
@@ -290,7 +293,7 @@ class IllegalCastingException : Exception {
 	/* 
 	 * Create an instance of IllegalCastingException with specified message. Mainly reserved for system use.
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	IllegalCastingException(String msg) : super(msg) {} 
 }
@@ -305,7 +308,7 @@ class IllegalMemberAccessException : Exception {
 	/* 
 	 * Create an instance of IllegalMemberAccessException with specified message. Mainly reserved for system use. 
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	IllegalMemberAccessException(String msg) : super(msg) {} 
 }
@@ -318,7 +321,7 @@ class IllegalTypeAccessException : Exception {
 	/* 
 	 * Create an instance of IllegalTypeAccessException with specified message. Mainly reserved for system use. 
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	IllegalTypeAccessException(String msg) : super(msg) {} 
 }
@@ -334,7 +337,7 @@ class HostingPlatformException : Exception {
 	/* 
 	 * Create an instance of HostingPlatformException with specified message. Mainly reserved for system use. 
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	HostingPlatformException(String msg) : super(msg) {} 
 }
@@ -346,9 +349,9 @@ class HostingPlatformException : Exception {
  */
 class MissingRequirementException : Exception { 
 	/* 
-	 * Create an instance of MissingRequirementException with specified message. Mainly reserved for system use.  
+	 * Create an instance of MissingRequirementException with specified message. Mainly reserved for system use.
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	MissingRequirementException(String msg) : super(msg) {} 
 }
@@ -357,13 +360,13 @@ class MissingRequirementException : Exception {
  * The heap memory is all used and thus new object cannot be allocated.
  *
  * This is a fundamental system error and can be thrown any time during the runtime, not necessarily where a new
- * be created. Do not try to catch this exception.
+ * be created. <strong>Do not try to catch this exception.</strong>
  */
 class OutOfMemoryException : Exception { 
 	/*
-     * Create an instance of MissingRequirementException with specified message. Mainly reserved for system use.  
+     * Create an instance of MissingRequirementException with specified message. Mainly reserved for system use.
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	OutOfMemoryException(String msg) : super(msg) {} 
 }
@@ -374,9 +377,9 @@ class OutOfMemoryException : Exception {
  */
 class TypeIncompatibleException : Exception { 
 	/* 
-	 * Create an instance of TypeIncompatibleException with specified message. Mainly reserved for system use.  
+	 * Create an instance of TypeIncompatibleException with specified message. Mainly reserved for system use.
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	TypeIncompatibleException(String msg) : super(msg) {} 
 }
@@ -386,9 +389,9 @@ class TypeIncompatibleException : Exception {
  */
 class UndefinedVariableNameException : Exception { 
 	/* 
-	 * Create an instance of UndefinedVariableNameException with specified message. Mainly reserved for system use.  
+	 * Create an instance of UndefinedVariableNameException with specified message. Mainly reserved for system use.
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	UndefinedVariableNameException(String msg) : super(msg) {} 
 }
@@ -400,9 +403,9 @@ class UndefinedVariableNameException : Exception {
  */
 class UnknownMemberException : Exception { 
 	/* 
-	 * Create an instance of UnknownMemberException with specified message. Mainly reserved for system use.  
+	 * Create an instance of UnknownMemberException with specified message. Mainly reserved for system use.
 	 *
-	 * [param: message] The message for this exception.
+	 * [param: msg] The message for this exception.
 	 */
 	UnknownMemberException(String msg) : super(msg) {} 
 }
@@ -410,13 +413,17 @@ class UnknownMemberException : Exception {
 /*
  * The type being referred to is not known to the script engine.
  *
- * In Julian, when a type is first used it will be loaded. The type searching is performed against the current
+ * In Julian, a type is loaded when it is first used. The type searching is performed against the current
  * namespace pool, targeting the entire module path set, in addition to the system classes. The namespace pool
  * consists of all the imported module's name, as well as System module. If the type is not located under any
- * of these modules this exception will be thrown. 
+ * of these modules, this exception will be thrown. 
  */
 class UnknownTypeException : Exception { 
-	/* Create an instance of UnknownTypeException with specified message. Mainly reserved for system use. */
+	/* 
+	 * Create an instance of UnknownTypeException with specified message. Mainly reserved for system use. 
+	 * 
+	 * [param: msg] The message for this exception.
+	 */
 	UnknownTypeException(String msg) : super(msg) {} 
 }
 
@@ -425,7 +432,11 @@ class UnknownTypeException : Exception {
  * types of same name.
  */
 class IllegalModuleException : Exception { 
-	/* Create an instance of IllegalModuleException with specified message. Mainly reserved for system use. */
+	/* 
+	 * Create an instance of IllegalModuleException with specified message. Mainly reserved for system use. 
+	 * 
+	 * [param: msg] The message for this exception.
+	 */
 	IllegalModuleException(String msg) : super(msg) {} 
 }
 
@@ -434,6 +445,10 @@ class IllegalModuleException : Exception {
  * commonly used in the business error.
  */
 class IllegalStateException : Exception { 
-	/* Create an instance of IllegalStateException with specified message. */
+	/* 
+	 * Create an instance of IllegalStateException with specified message. 
+	 * 
+	 * [param: msg] The message for this exception.
+	 */
 	IllegalStateException(string msg) : super(msg) {} 
 }

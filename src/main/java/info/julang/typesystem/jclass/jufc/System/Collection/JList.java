@@ -32,12 +32,14 @@ import info.julang.hosting.SimpleHostedMethodProvider;
 import info.julang.hosting.execution.CtorNativeExecutor;
 import info.julang.hosting.execution.InstanceNativeExecutor;
 import info.julang.memory.value.ArrayIndexOutOfRangeException;
+import info.julang.memory.value.BoolValue;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.VoidValue;
 import info.julang.memory.value.indexable.JConcurrentModificationException;
+import info.julang.memory.value.operable.ValueComparator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +64,7 @@ public class JList {
 				.add("add", new AddExecutor())
 				.add("get", new GetExecutor())
 				.add("put", new PutExecutor())
+				.add("sort", new SortExecutor())
 				.add("remove", new RemoveExecutor())
 				.add("size", new SizeExecutor());
 		}
@@ -74,7 +77,7 @@ public class JList {
 
 		@Override
 		protected void initialize(ThreadRuntime rt, HostedValue hvalue, JList jlist, Argument[] args) throws Exception {
-			jlist.init();
+			jlist.init(hvalue);
 		}
 		
 	}
@@ -132,13 +135,26 @@ public class JList {
 		}
 		
 	}
+	
+	private static class SortExecutor extends InstanceNativeExecutor<JList> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JList jlist, Argument[] args) throws Exception {
+			boolean desc = ((BoolValue)(args[0].getValue().deref())).getBoolValue();
+			jlist.sort(rt, desc);
+			return VoidValue.DEFAULT;
+		}
+		
+	}
 
 	//----------------- implementation at native end -----------------//
 	
 	private List<JValue> list;
+	private HostedValue hvalue;
 	
-	public void init(){
+	public void init(HostedValue hvalue){
 		this.list = new ArrayList<JValue>();
+		this.hvalue = hvalue;
 	}
 	
 	public synchronized void add(JThread jt, JValue e){
@@ -178,6 +194,28 @@ public class JList {
 	
 	public int size(){
 		return list.size();
+	}
+	
+	public void sort(ThreadRuntime rt, final boolean desc){
+		final ListWrapper lw = new ListWrapper(rt, hvalue);
+		ListValueComparator comp = new ListValueComparator(lw, desc);
+		list.sort(comp);
+	}
+	
+	private class ListValueComparator extends ValueComparator {
+
+		private ListWrapper lw;
+		
+		public ListValueComparator(ListWrapper lw, boolean desc) {
+			super(desc);
+			this.lw = lw;
+		}
+
+		@Override
+		protected int compareObjectValues(JValue v1, JValue v2) {
+			return lw.compare(v1, v2);
+		}
+		
 	}
 
 	//---------------- thread safety ----------------//

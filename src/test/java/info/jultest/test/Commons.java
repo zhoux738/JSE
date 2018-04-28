@@ -228,7 +228,7 @@ public final class Commons {
 		// each element
 		for(int i = 0; i<avalue.getLength(); i++){
 			JValue v = avalue.getValueAt(i);
-			String sv = (StringValue.dereference(v)).getStringValue();
+			String sv = (StringValue.dereference(v, true)).getStringValue();
 			assertEquals(array[i], sv);
 		}
 	}

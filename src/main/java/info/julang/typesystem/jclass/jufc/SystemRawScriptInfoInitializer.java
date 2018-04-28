@@ -98,6 +98,14 @@ class SystemRawScriptInfoInitializer {
         map.put("System/Time.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Time>(
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Time.class));
+        
+        map.put("System/Util/Interfaces.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Interfaces>(
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Interfaces.class));
+        
+        map.put("System/Util/Math.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Math>(
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Math.class));
     }
     
 }

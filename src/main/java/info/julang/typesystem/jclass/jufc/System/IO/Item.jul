@@ -13,39 +13,43 @@ interface Item {
 
 	/*
 	 * Get the name of this item. This is only the simple name (with extension part) under the path. 
+	 *
+	 * [return] the simple name of this item.
 	 */
 	string getName();
 	
 	/*
 	 * Create this item.
 	 *
-	 * [return] True if the item was successfully created.
+	 * [return] true if the item was successfully created.
 	 */
 	bool create();
 	
 	/*
 	 * Delete this item.
 	 *
-	 * [return] True if the item was successfully deleted.
+	 * [return] true if the item was successfully deleted; false if the item either didn't exist, or encountered an IO error.
 	 */
 	bool delete();
 	
 	/*
 	 * Get the absolute path of this item. This doesn't include the name.
+	 *
+	 * [return] the absolute path under which this item resides.
 	 */
 	string getPath();
 	
 	/*
 	 * Whether this item exist on file system.
 	 *
-	 * [return] True if the item exists.
+	 * [return] true if the item exists.
 	 */
 	bool exists();
 	
 	/*
 	 * Whether this item is a file
 	 *
-	 * [return] True if the item is a file; false a directory.
+	 * [return] true if the item is a file; false a directory.
 	 */
 	bool isFile();
 	

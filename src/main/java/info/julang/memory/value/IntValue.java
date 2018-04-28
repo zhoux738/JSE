@@ -35,7 +35,7 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 /**
  * A value that stores an integer.
  */
-public class IntValue extends BasicValue implements JAddable, IIntVal {
+public class IntValue extends BasicValue implements JAddable, IIntVal, Comparable<JValue> {
 
 	/**
 	 * Create a new int value with default value (0)
@@ -254,5 +254,25 @@ public class IntValue extends BasicValue implements JAddable, IIntVal {
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public int compareTo(JValue v2) {
+		switch(v2.getKind()){
+		case BYTE:
+			byte b2 = ((ByteValue)v2).getByteValue();
+			return this.getValueInternal() - b2;
+		case FLOAT:
+			float f2 = ((FloatValue)v2).getFloatValue();
+			double d = this.getValueInternal() - f2;
+			return d > 0 ? 1 : d < 0 ? -1 : 0;
+		case INTEGER:
+			int i2 = ((IntValue)v2).getIntValue();
+			return this.getValueInternal() - i2;
+		default:
+		}
+		
+		// Not equal, but just incomparable
+		return 0;
 	}
 }

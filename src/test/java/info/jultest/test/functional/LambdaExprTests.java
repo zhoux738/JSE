@@ -58,6 +58,19 @@ public class LambdaExprTests {
 	}
 	
 	/**
+	 * Return lambda from lambda.
+	 */
+	@Test
+	public void returnLambdaFromLambdaTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.FUNCTIONAL, FEATURE, "lambda_07.jul"));
+		
+		validateIntValue(gvt, "v", 8);
+	}
+	
+	/**
 	 * Return lambda from function.
 	 */
 	@Test
