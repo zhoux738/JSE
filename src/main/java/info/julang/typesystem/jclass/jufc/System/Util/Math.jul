@@ -21,13 +21,43 @@ final class Math {
 	 * The base of the natural logarithms.
 	 */
 	public static const float E  = 2.718281828;
+	
+	/*
+	 * The positive infinity of float number.
+	 */
+	public static const float INF = (float)"(INF)";
+	
+	/*
+	 * The negative infinity of float number.
+	 */
+	public static const float NINF = (float)"(-INF)";
 
 	private static void check(string mname, var v){
     	if (!(v is int || v is byte || v is float)) {
     		throw new ArgumentException("argument passed to " + mname + " is not a number.");
     	}	
 	}
-	
+
+	/*
+	 * Check whether a value is a number. A value of [int] or [byte] type is a number. A [float] value
+	 * is usually also a number except if it explicitly represents Not-A-Number, which can happen when
+	 * an arithmetic expression yielded illegal intermediate or final result.
+	 *
+	 * [param: v] The value to be checked.
+	 * [return] True if this value is a number; false if not.
+	 */
+    public static bool isNumber(var v) {
+		if (v is int || v is byte) {
+			return true;
+		}
+		
+		if (v is float) {
+			return _checkNumber((float)v);
+		}
+		
+		return false;
+    }
+    	
 	/*
 	 * Get the absolute value of the numeral argument.
 	 *
@@ -297,4 +327,6 @@ final class Math {
     private hosted static float _arccos(var v);
 	[Bridged(name="power")]
     private hosted static float _power(var a, var b);
+	[Bridged(name="checkNumber")]
+    private hosted static bool _checkNumber(float f);   
 }

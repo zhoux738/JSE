@@ -1,0 +1,47 @@
+// with class A : B, call B.f on a
+import System.Reflection;
+
+class Anc {
+	protected int value;
+	int getValue(){
+		return value;
+	}
+}
+
+class B : Anc {
+	int dbl(int input){
+		return value = input * 2;
+	}
+}
+
+class A2 : Anc { // unrelated to B
+	int dbl(int input){
+		return value = input * 2;
+	}
+}
+
+class A3 : B { // new method on subclass
+	int trip(int input){
+		return value = input * 3;
+	}
+}
+
+int res1, res2;
+
+Method method1 = typeof(A2).getMethods("dbl")[0];
+B b1 = new B();
+b1.dbl(7);
+try {
+	int res1 = method1.call(new var[]{b1, 10});
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	res1 = b1.getValue();
+}
+
+Method method2 = typeof(A3).getMethods("trip")[0];
+B b2 = new B();
+b2.dbl(11);
+try {
+	int res2 = method2.call(new var[]{b2, 10});
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	res2 = b2.getValue();
+}

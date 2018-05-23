@@ -24,6 +24,7 @@ SOFTWARE.
 
 package info.julang.interpretation.expression.operand;
 
+import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.expression.Operand;
 import info.julang.langspec.Keywords;
 
@@ -42,16 +43,19 @@ public class NameOperand extends Operand {
 	
 	private boolean composite;
 	
-	public static final NameOperand THIS = new NameOperand(Keywords.THIS);
+	private boolean mutable;
 	
-	public static final NameOperand SUPER = new NameOperand(Keywords.SUPER);
+	public static final NameOperand THIS = new NameOperand(Keywords.THIS, false);
+	
+	public static final NameOperand SUPER = new NameOperand(Keywords.SUPER, false);
 	
 	public String getName() {
 		return name;
 	}
 	
-	public NameOperand(String name){
+	public NameOperand(String name, boolean mutable){
 		this.name = name;
+		this.mutable = mutable;
 	}
 
 	@Override
@@ -60,8 +64,12 @@ public class NameOperand extends Operand {
 	}
 	
 	public void addPart(String part){
-		composite = true;
-		this.name += "." + part;
+		if (mutable) {
+			composite = true;
+			this.name += "." + part;
+		} else {
+			throw new JSEError("Trying to mutate immutable name operand: " + this.name);
+		}
 	}
 
 	/**

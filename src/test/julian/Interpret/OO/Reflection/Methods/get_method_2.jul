@@ -1,0 +1,27 @@
+import System.Reflection;
+import System.Collection;
+
+class UrClass {
+	private void fi1(int i){} // invisible on MyClass
+	protected void fi2(int i){} // visible on MyClass
+}
+
+class MyClass : UrClass {
+	private void fi3(int i){}
+	void fi4(int i){}
+}
+
+Type t = typeof(MyClass);
+Method[] mtds = t.getMethods();
+
+Map map = new Map();
+map["fi1"] = true;
+map["fi2"] = true;
+map["fi3"] = true;
+map["fi4"] = true;
+for(Method m : mtds){
+	map.remove(m.getName());
+}
+
+int remaining = map.size();
+

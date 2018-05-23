@@ -55,6 +55,7 @@ import java.util.regex.Pattern;
 public class ModuleContext {
 
 	public final static String MD_VERSION = "jse.version";
+	public static final String OFFICIAL_WEBSITE = "official.website";
 	
 	public static interface TypeDocProcessor {
 
@@ -183,17 +184,16 @@ public class ModuleContext {
 		case "bool": 
 		case "char": 
 		case "void":
-		case "any":
 			return new TypeInfo("", simpleName, dimension, null, builtInTyps.get(simpleName));
 		case "Function": 
 		case "Object":
 		case "Array": 
 		case "Enum":
 		case "Attribute":
+		case "Any":
 		case "string": 
 			return new TypeInfo("", simpleName, dimension, ClassSubtype.CLASS, builtInTyps.get(simpleName.toLowerCase()));
 		case "String":
-		case "Any":
 		case "Byte":
 		case "Float":
 		case "Bool":
@@ -202,6 +202,7 @@ public class ModuleContext {
 		case "Integer":
 			return getTypeInfo("int", dimension, ns);
 		case "var":
+		case "any":
 			return getTypeInfo("Any", dimension, ns);
 		}
 		
@@ -254,6 +255,9 @@ public class ModuleContext {
 				if (bt == JStringType.getInstance()){
 					tname = "string";
 				}
+				break;
+			case ANY:
+				tname = "any";
 				break;
 			default:
 				throw new DocGenException("Do not recognize " + bt.getName());	

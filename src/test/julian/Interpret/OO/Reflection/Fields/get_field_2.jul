@@ -1,0 +1,36 @@
+import System.Reflection;
+import System.Collection;
+
+class P {
+	public int i; // inheritable
+	private int j; // self
+}
+
+class C : P {
+	private int j; // self
+	protected int k; // inheritable
+}
+
+class D : C {
+	int l; // inheritable
+}
+
+bool checkAll(Field[] actual, string all){
+	List list = new List();
+	for(Field t : actual){
+		list.add(t.getName());
+	}
+	
+	list.sort(false);
+	
+	string res = "";
+	for(string s : list){
+		res += s;
+	}
+	
+	return res == all; 
+}
+
+bool b1 = checkAll(typeof(D).getFields(), "ikl");
+bool b2 = checkAll(typeof(C).getFields(), "ijk");
+bool b3 = checkAll(typeof(P).getFields(), "ij");

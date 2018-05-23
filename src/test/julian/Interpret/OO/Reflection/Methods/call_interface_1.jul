@@ -1,0 +1,38 @@
+// with class A : B, call B.f on a
+import System.Reflection;
+
+interface MyInf {
+	int func(int input);
+}
+
+class MyCls2 : MyInf {
+	int func(int input){
+		return input * 2;
+	}
+}
+
+class MyCls3 : MyInf {
+	int func(int input){
+		return input * 3;
+	}
+}
+
+abstract class MyInfBase : MyInf {
+	int func(int input){
+		return input * getFactor();
+	}
+	
+	protected abstract int getFactor();
+}
+
+class MyCls4 : MyInfBase {
+	protected int getFactor(){
+		return 4;
+	}
+}
+
+Method method = typeof(MyInf).getMethods("func")[0];
+
+int res2 = method.call(new var[]{new MyCls2(), 10});
+int res3 = method.call(new var[]{new MyCls3(), 10});
+int res4 = method.call(new var[]{new MyCls4(), 10});

@@ -1,0 +1,80 @@
+import System.Reflection;
+import System.Collection;
+
+class MyClass {
+	// INSTANCE //
+	// PUBLIC //
+	// single built-in type
+	void fi(int i){}
+	// double built-in type
+	void fs_i(string s, int i){}
+	// single array type
+	void fsa(string[] arr){}
+	// single custom type
+	void fmc(MyClass mc){}
+	// no arguments
+	void f0(){}
+	
+	// PRIVATE //
+	// single built-in type
+	private void pri_ff(float f){}
+	// double built-in type
+	private void pri_fs_b_mc(string s, bool b, MyClass mc){}
+	// single custom array type
+	private void pri_fmca(MyClass[] mcarr){}
+	// no arguments
+	private void pri_f0(){}
+	
+	// STATIC //
+	// no arguments 
+	static void s_f0(){}
+	// double built-in type
+	static void s_fs_i(string s, int i){}
+	// private mixed types
+	private static void s_fmca_f_c(MyClass[] mcarr, float f, char c){}
+}
+
+bool checkAll(Method[] actual, string[] signatures){
+	Map map = new Map();
+	for(Method t : actual){
+		map[t.toString()] = t;
+	}
+	
+	int baseCnt = typeof(Object).getMethods().length;
+	
+	if (map.size() != signatures.length + baseCnt){
+		return false;
+	}
+	
+	bool passed = true;
+	for(string sig : signatures){
+		passed = passed && map[sig] != null;
+	}
+	
+	return passed; 
+}
+
+string[] signatures = new string[]{
+	//"[METHOD|hashCode()]",
+	//"[METHOD|getType()]",
+	//"[METHOD|toString()]",
+	//"[METHOD|equals(Any)]",
+	"[METHOD|pri_fmca([<default>.MyClass])]",
+	"[METHOD|fsa([String])]",
+	"[METHOD|fs_i(String, Integer)]",
+	"[METHOD|fmc(<default>.MyClass)]",
+	"[METHOD|pri_fs_b_mc(String, Bool, <default>.MyClass)]",
+	"[METHOD|f0()]",
+	"[METHOD|fi(Integer)]",
+	"[METHOD|pri_ff(Float)]",
+	"[METHOD|pri_f0()]",
+	"[METHOD|s_fmca_f_c([<default>.MyClass], Float, Char)]",
+	"[METHOD|s_f0()]",
+	"[METHOD|s_fs_i(String, Integer)]"
+};
+
+Type t = typeof(MyClass);
+Method[] mtds = t.getMethods();
+
+bool res = checkAll(mtds, signatures);
+

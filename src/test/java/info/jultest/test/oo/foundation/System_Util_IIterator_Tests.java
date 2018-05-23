@@ -3,6 +3,8 @@ package info.jultest.test.oo.foundation;
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateStringArrayValue;
+import static info.jultest.test.Commons.validateStringValue;
+import static info.jultest.test.Commons.validateBoolValue;
 
 import org.junit.Test;
 
@@ -68,5 +70,29 @@ public class System_Util_IIterator_Tests extends ExceptionTestsBase {
 			},
 			"iter_fault_1.jul",
 			28);
+	}
+	
+	@Test
+	public void arrayIteratorBasicTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "iter_array_1.jul"));
+
+		validateStringValue(gvt, "res", "aaabbbccc");
+		validateBoolValue(gvt, "b0", false);
+		validateBoolValue(gvt, "b1", true);
+	}
+	
+	@Test
+	public void stringIteratorBasicTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "iter_string_1.jul"));
+
+		validateStringValue(gvt, "res", "abc");
+		validateBoolValue(gvt, "b0", false);
+		validateBoolValue(gvt, "b1", true);
 	}
 }

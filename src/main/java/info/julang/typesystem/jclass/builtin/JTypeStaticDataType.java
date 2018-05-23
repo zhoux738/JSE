@@ -25,33 +25,31 @@ SOFTWARE.
 package info.julang.typesystem.jclass.builtin;
 
 import info.julang.typesystem.BuiltinTypes;
+import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
-import info.julang.typesystem.jclass.JClassMember;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.TypeBootstrapper;
 
 /**
- * A <i>Type</i> type meta-circularly represents a Julian class type.
- * <p/>
- * This type is used with type value, a particular kind of value stored in memory
- * that contains runtime data about a class type.
+ * A very special built-in type that's only used to serve as a type placeholder for the data object 
+ * containing the static members for a type. 
+ * <p>
+ * When a type is loaded into the runtime, an instance of static data object is created and stored
+ * on engine's heap area. This object contains all the static members of the type, as well as the 
+ * type metadata for that type.
  * 
  * @author Ming Zhou
  */
-public class JTypeType extends JClassType {
+public class JTypeStaticDataType extends JClassType {
 
-	private static JTypeType INSTANCE;
-
-	public JTypeType(String name) {
-		super(name, JTypeType.getInstance(), new JClassMember[0]);
-	}
+	private static JTypeStaticDataType INSTANCE;
 	
-	private JTypeType(){
+	private JTypeStaticDataType(){
 		
 	}
 
-	public static JTypeType getInstance() {
+	public static JTypeStaticDataType getInstance() {
 		return INSTANCE;
 	}
 
@@ -62,12 +60,12 @@ public class JTypeType extends JClassType {
 	
 	public static class BoostrapingBuilder implements TypeBootstrapper {
 		
-		private JTypeType proto;
+		private JTypeStaticDataType proto;
 		
 		@Override
-		public JTypeType providePrototype(){
+		public JTypeStaticDataType providePrototype(){
 			if(proto == null){
-				proto = new JTypeType();
+				proto = new JTypeStaticDataType();
 			}
 			return proto;
 		}
@@ -77,28 +75,21 @@ public class JTypeType extends JClassType {
 			//Parent
 			builder.setParent(farm.getStub(BuiltinTypes.OBJECT));
 
-			//Disallow inheritance from this class in script
+			//Make sure this type is not usable.
 			builder.setFinal(true);
-			
-			//Method
-			//TODO: add methods in future after the inheritance system is complete
-			/*
-			 * equalsTo
-			 * toString
-			 * getType
-			 */
+			builder.setAccessibility(Accessibility.PRIVATE);
 		}
 		
 		@Override
 		public void boostrapItself(JClassTypeBuilder builder){
-			if(JTypeType.INSTANCE == null){
-				JTypeType.INSTANCE = (JTypeType) builder.build(true);
+			if(JTypeStaticDataType.INSTANCE == null){
+				JTypeStaticDataType.INSTANCE = (JTypeStaticDataType) builder.build(true);
 			}
 		}
 		
 		@Override
 		public String getTypeName() {
-			return "Type";
+			return "TypeStaticData";
 		}
 	
 		@Override

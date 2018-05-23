@@ -1,0 +1,16 @@
+// baseline case: call on value of method's defining type.
+import System.Reflection;
+
+class MyClass {
+	int dbl(int input){
+		return input * 2;
+	}
+}
+
+Type t = typeof(MyClass);
+Method[] mtds = t.getMethods("dbl");
+
+MyClass mc = new MyClass();
+int res = mtds[0].call(new var[]{mc, 10});
+//Console.println(res);
+

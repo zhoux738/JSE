@@ -33,8 +33,10 @@ import info.julang.typesystem.jclass.JClassFieldMember;
 import info.julang.typesystem.jclass.JClassMember;
 import info.julang.typesystem.jclass.JClassMethodMember;
 import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.MemberType;
 import info.julang.util.Box;
+import info.julang.util.OneOrMoreList;
 
 import java.io.File;
 import java.util.List;
@@ -225,8 +227,47 @@ public class BuiltInClassDocParser extends BuiltInDocParserBase {
 
 	private void addMethodDoc(BuiltInClassType model, String name, AnnotationKVMap map, JClassType jtyp) {
 		boolean stat = map.is(AnnotationKVMap.Keys.STATIC);
-		JClassMember jcm = stat ? jtyp.getStaticMemberByName(name) : jtyp.getInstanceMemberByName(name);
-		if (jcm == null || jcm.getMemberType() != MemberType.METHOD){
+		
+		OneOrMoreList<JClassMethodMember> jcmms = stat ? 
+			jtyp.getStaticMethodMembersByName(name) : 
+			jtyp.getInstanceMethodMembersByName(name);
+			
+		JClassMethodMember jcm = null;
+		if (jcmms.hasOnlyOne()) {
+			jcm = jcmms.getFirst();
+		} else {
+			int offset = stat ? 0 : 1;
+			String[] typNames = map.getStringArray(AnnotationKVMap.Keys.PARAMTYPES);
+			int leng = typNames.length;
+			for (JClassMethodMember jcmm : jcmms){
+				JParameter[] jpms = jcmm.getMethodType().getParams();
+				if (leng == jpms.length - offset){ // JClassMethodMember contains 'this' as 0th arg; doc doesn't.
+					boolean matched = true;
+					for(int i = 0; i < leng; i++) {
+						String nameFromDoc = typNames[i];
+						String nameFromRuntime = jpms[i + offset].getType().getName();
+						if (!nameFromDoc.equals(nameFromRuntime)){
+							matched = false;
+							break;
+						}
+					}
+					
+					if (matched) {
+						jcm = jcmm;
+						break;
+					}
+				}
+			}
+		}
+
+		if (jcm == null) {
+			logger.warn(
+				"Cannot find a method member with name \"" + name + "\". " + 
+				"If the method is overloaded, make sure each of them is differentiated by paramTypes annotation.");
+			return;
+		}
+		
+		if (jcm.getMemberType() != MemberType.METHOD) {
 			logger.warn(
 				"Member " + name + " is not " + (stat ? "a static" : "an instance") + " method. " + 
 				"Specify isStatic in JulianDoc annotation for this field if it's a static member.");

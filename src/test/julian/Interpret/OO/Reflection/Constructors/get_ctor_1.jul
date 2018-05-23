@@ -1,0 +1,15 @@
+import System.Reflection;
+
+class MyClass {
+	int i;
+	MyClass(int i){
+		this.i = i;
+	}
+}
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+
+Constructor c0 = ctors[0];
+MyClass obj = c0.invoke(new var[]{ 10 });
+int val = obj.i;

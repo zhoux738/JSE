@@ -31,9 +31,9 @@ public interface IExtTypeTable {
 	/**
 	 * Initialize this type table with Julian's built-in class types.
 	 * 
-	 * @param builtinTypes
+	 * @param rt engine runtime
 	 */
-	public void initialize();
+	public void initialize(IExtEngineRuntime rt);
 	
 	/**
 	 * Finalize the given types.

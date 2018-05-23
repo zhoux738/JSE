@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.typesystem.jclass.builtin;
 
 import info.julang.hosting.HostedExecutable;
+import info.julang.langspec.Keywords;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.ExecutableType;
 import info.julang.typesystem.jclass.JParameter;
@@ -138,5 +139,12 @@ public class JMethodType extends JFunctionType implements ExecutableType {
 	@Override
 	public FunctionKind getFunctionKind(){
 		return FunctionKind.METHOD;
+	}
+	
+	@Override
+	public String getSignature() {
+		JParameter[] params = this.getParams();
+		boolean skipFirst = params != null && params.length > 0 && params[0].getName().equals(Keywords.THIS);
+		return getName() + "(" + JParameter.getSignature(this.getParams(), skipFirst) + ")";
 	}
 }

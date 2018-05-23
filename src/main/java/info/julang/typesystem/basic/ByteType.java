@@ -35,10 +35,10 @@ summary =
 + "\n * The byte type in Julian language. A byte type has a value range from -128 to 127, so it"
 + "\n * can be promoted to [int](Integer) without losing precision."
 + "\n * "
-+ "\n * byte type can participate in arithmetic operations such as '+' and '*' and '/'. It can aslo be"
++ "\n * Byte type can participate in arithmetic operations such as '+', '*' and '/'. It can also be"
 + "\n * concatenated to string value with '+' operator in the literal form of this value."
 + "\n * "
-+ "\n * byte is a primitive type. Therefore it can only be assigned to a variable with same type or "
++ "\n * Byte is a primitive type. Therefore it can only be assigned to a variable with same type or "
 + "\n * an [untyped](Any) variable."
 + "\n */"
 )

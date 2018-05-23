@@ -78,6 +78,7 @@ import info.julang.typesystem.jclass.JClassInitializerMember;
 import info.julang.typesystem.jclass.JClassMember;
 import info.julang.typesystem.jclass.JClassMethodMember;
 import info.julang.typesystem.jclass.JClassStaticConstructorMember;
+import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.JInterfaceTypeBuilder;
 import info.julang.typesystem.jclass.JParameter;
@@ -386,7 +387,8 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		JClassTypeBuilder builder){
 		FieldDeclInfo fieldDecl = (FieldDeclInfo) decl;
 		boolean sta = fieldDecl.isStatic();
-		if(fieldDecl.hasInitializer()){					
+		if(fieldDecl.hasInitializer()){
+			JClassType stub = builder.getStub();
 			// 1) return type
 			JType retType = AnyType.getInstance();
 			
@@ -395,13 +397,14 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 			
 			// 3) executable
 			InitializerExecutable exec = new InitializerExecutable(
-				ainfo.create((Expression_statementContext)fieldDecl.getAST()), builder.getStub(), sta);
+				ainfo.create((Expression_statementContext)fieldDecl.getAST()), stub, sta);
 			
 			// 4) assemble the type
 			JMethodType mType = new JMethodType(
-				"<init>-" + fieldDecl.getName(), ptypesArray, retType, exec, builder.getStub());
+				"<init>-" + fieldDecl.getName(), ptypesArray, retType, exec, stub);
 			
 			JClassInitializerMember mmember = new JClassInitializerMember(
+				stub,
 				fieldDecl.getName(),  // field name
 				sta, 				  // static
 				mType);
@@ -417,12 +420,9 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 			type = loadMemberType(context, typeName);
 			if (type.isObject()){
 				Accessibility.checkTypeVisibility((ICompoundType)type, builder.getStub(), true);
-			} 
-			// (The following check is not necessary as we already checked it when obtaining FieldDeclInfo. 
-			//  But in long term we may want to make this consistent with other void misuse errors.)
-			//else if (type == VoidType.getInstance()) {
-			//	throw new IllegalClassDefinitionException(context, "Cannot use void as field type.", decl);
-			//}
+			} else if (type == VoidType.getInstance()) {
+				throw new IllegalClassDefinitionException(context, "Cannot use void as field type.", decl);
+			}
 		}
 		
 		JClassMember fmember = new JClassFieldMember(

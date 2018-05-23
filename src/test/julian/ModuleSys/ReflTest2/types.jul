@@ -1,0 +1,13 @@
+module ModuleSys.ReflTest2;
+
+class MyClass2 {
+
+	NotThisClass(){
+	
+	} 
+
+}
+
+class MyClass : MyClass2 {
+
+}

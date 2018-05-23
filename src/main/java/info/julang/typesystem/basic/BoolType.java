@@ -34,10 +34,10 @@ summary =
     "/*"
 + "\n * The boolean type in Julian language. There are only two values for this type: ```true``` and ```false```."
 + "\n * "
-+ "\n * bool type can participate in boolean operations such as '&&', '||' and '!'. It can aslo be"
++ "\n * Bool type can participate in boolean operations such as '&&', '||' and '!'. It can aslo be"
 + "\n * concatenated to string value with '+' operator in the literal form of this value, 'true' or 'false'. "
 + "\n * "
-+ "\n * bool is a primitive type. Therefore it can only be assigned to a variable with same type or "
++ "\n * Bool is a primitive type. Therefore it can only be assigned to a variable with same type or "
 + "\n * an [untyped](Any) variable."
 + "\n */"
 )

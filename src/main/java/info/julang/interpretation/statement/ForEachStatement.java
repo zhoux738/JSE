@@ -117,7 +117,19 @@ public class ForEachStatement extends MultiBlockStatementBase {
 	}
 	
 	@Override
-	public void interpret(Context context) {
+	public void interpret(Context context) {		
+		try {
+			// enter for scope
+			context.getVarTable().enterScope();
+			interpretForEach(context);
+			context.getVarTable().exitScope();
+		} catch (JulianScriptException jse){
+			context.getVarTable().exitScope();
+			throw jse;
+		}
+	}
+	
+	private void interpretForEach(Context context) {
 		// 1) get iterable object
 		AstInfo<ExpressionContext> ahead = ainfo.create(head.expression());
 		ExpressionStatement es = new ExpressionStatement(runtime, ahead);
@@ -144,8 +156,7 @@ public class ForEachStatement extends MultiBlockStatementBase {
 		try {
 			iter.initialize(this.runtime, new InitArgs(context, true)); //applyAccLock
 			
-			// 3) create loop variable 
-			//    note we don't create a new scope here because it is already created in ForStatement's interpret method.
+			// 3) create loop variable
 			NewVarExecutor nve = new NewVarExecutor();
 			loopVar = nve.newVar(context, varId, varTypName);
 			

@@ -1,0 +1,19 @@
+class C {
+
+}
+
+class D {
+
+}
+
+C c = new C();
+Type t1 = c.getType();
+Type t2 = c.getType();
+bool bt0 = t1 == t2;
+
+D d = new D();
+Type t3 = d.getType();
+bool bt1 = t1 != t3;
+bool bt2 = t3 != null;
+bool bt3 = t2 != null;
+

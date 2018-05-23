@@ -24,10 +24,6 @@ SOFTWARE.
 
 package info.julang.hosting;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import info.julang.hosting.attributes.MappedHostedAttribute;
 import info.julang.hosting.mapped.IllegalTypeMappingException;
 import info.julang.hosting.mapped.inspect.MappedTypeInfo;
@@ -36,20 +32,12 @@ import info.julang.memory.value.AttrValue;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.typesystem.PlatformType;
 import info.julang.typesystem.jclass.annotation.IllegalAttributeUsageException;
-import info.julang.typesystem.jclass.jufc.System.DateTime;
-import info.julang.typesystem.jclass.jufc.System.JConsole;
-import info.julang.typesystem.jclass.jufc.System.JProcess;
-import info.julang.typesystem.jclass.jufc.System.ProcessPipeStream;
-import info.julang.typesystem.jclass.jufc.System.Collection.JList;
-import info.julang.typesystem.jclass.jufc.System.Collection.JMap;
-import info.julang.typesystem.jclass.jufc.System.Collection.JQueue;
-import info.julang.typesystem.jclass.jufc.System.Concurrency.ScriptLock;
-import info.julang.typesystem.jclass.jufc.System.Concurrency.ScriptThread;
-import info.julang.typesystem.jclass.jufc.System.IO.JDirectory;
-import info.julang.typesystem.jclass.jufc.System.IO.JFile;
-import info.julang.typesystem.jclass.jufc.System.IO.JFileStream;
-import info.julang.typesystem.jclass.jufc.System.Util.JMath;
+import info.julang.typesystem.jclass.jufc.SystemRawScriptInfoInitializer;
 import info.julang.util.Pair;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A manager of all the registered hosted methods.
@@ -73,23 +61,7 @@ public class HostedMethodManager {
 	private Map<String, HostedMethodProviderFactory> factories;
 	
 	// All the built-in hosted method providers.
-	// TODO - make this part auto-generated from juleng
-	private static HostedMethodProviderFactory[] BuiltInProviderFactories = 
-		new HostedMethodProviderFactory[]{
-			JFile.Factory,
-			JDirectory.Factory,
-			JConsole.Factory,
-			JList.Factory,
-			JMap.Factory,
-			JQueue.Factory,
-			ScriptThread.Factory,
-			ScriptLock.Factory,
-			DateTime.Factory,
-			JFileStream.Factory,
-			ProcessPipeStream.Factory,
-			JProcess.Factory,
-			JMath.Factory
-		};
+	private static HostedMethodProviderFactory[] BuiltInProviderFactories = SystemRawScriptInfoInitializer.getAllFactories();
 	
 	public void register(String apiset, HostedMethodProviderFactory factory){
 		factories.put(apiset, factory);

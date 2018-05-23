@@ -77,7 +77,7 @@ public class AttributeTests extends AttributeTestsBase {
 		
 		JClassMember mem = jct.getInstanceMemberByName("doSomething");
 		validateAnnotated(mem, 2);
-		validateTypeValue(tt, "doSomething", 2);
+		validateTypeValue(tt, mem.getKey(), 2);
 	}
 	
 	@Test
@@ -95,7 +95,7 @@ public class AttributeTests extends AttributeTestsBase {
 		JClassMember mem = jct.getInstanceMemberByName("doSomething");
 		validateAnnotated(mem, 1);
 		
-		validateTypeValue(tt, "doSomething");
+		validateTypeValue(tt, mem.getKey());
 	}
 	
 	@Test
@@ -113,7 +113,7 @@ public class AttributeTests extends AttributeTestsBase {
 		JClassMember mem = jct.getInstanceMemberByName("field1");
 		validateAnnotated(mem, 1);
 		
-		validateTypeValue(tt, "field1");
+		validateTypeValue(tt, mem.getKey());
 	}
 	
 	@Test
@@ -131,7 +131,7 @@ public class AttributeTests extends AttributeTestsBase {
 		JClassMember mem = jct.getClassConstructors()[0];
 		validateAnnotated(mem, 1);
 		
-		validateTypeValue(tt, "MyClass");
+		validateTypeValue(tt, mem.getKey());
 	}
 	
 	@Test

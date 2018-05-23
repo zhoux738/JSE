@@ -34,13 +34,13 @@ public class System_Exception_Tests extends ExceptionTestsBase {
 	 * Should throw <font color="green">ArrayOutOfRangeException</font> if accessing an index out of range.
 	 */
 	@Test
-	public void arrayOutOfRangeExceptionTest() throws EngineInvocationError {
+	public void arrayOutOfRangeExceptionTest1() throws EngineInvocationError {
 		VariableTable gvt = new VariableTable(null);
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		TestExceptionHandler teh = installExceptionHandler(engine);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "exception_ArrayOutOfRange.jul"));
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "exception_ArrayOutOfRange_1.jul"));
 		
 		validateException(
 			teh, 
@@ -52,6 +52,23 @@ public class System_Exception_Tests extends ExceptionTestsBase {
 			},
 			null,
 			12);
+	}
+	
+	@Test
+	public void arrayOutOfRangeExceptionTest2() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		TestExceptionHandler teh = installExceptionHandler(engine);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "exception_ArrayOutOfRange_2.jul"));
+		
+		validateException(
+			teh, 
+			"System.ArrayOutOfRangeException",
+			"Access to array out of range. Index=1, Max=N/A.",
+			null,
+			null,
+			4);
 	}
 	
 	/**

@@ -1,0 +1,18 @@
+import System.Reflection;
+
+class MyClass {
+	MyClass(int i){
+	}
+}
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+Constructor c0 = ctors[0];
+
+bool res = false;
+try {
+  MyClass obj = c0.invoke(new var[]{ });
+  int val = obj.i;
+} catch (System.Reflection.ReflectedInvocationException refl){
+  res = refl.getMessage().contains("Incorrect number of arguments to constructor");
+}

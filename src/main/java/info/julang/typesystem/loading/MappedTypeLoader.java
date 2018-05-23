@@ -257,7 +257,7 @@ public class MappedTypeLoader {
 			JParameter[] ptypesArray = new JParameter[0];
 			MappedInitializerExecutable exec = new MappedInitializerExecutable(typ, kmt, mfi.getFieldMember(), true);
 			JMethodType mType = new JMethodType("<init>-" + fname, ptypesArray, kmt.getType(), exec, typ);
-			JClassInitializerMember initializer = new JClassInitializerMember(fname, true, mType);
+			JClassInitializerMember initializer = new JClassInitializerMember(typ, fname, true, mType);
 			builder.addInitializerMember(initializer);
 		}
 		

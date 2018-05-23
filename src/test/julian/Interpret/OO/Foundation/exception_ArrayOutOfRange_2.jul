@@ -1,0 +1,4 @@
+import System;
+
+int[] arr = new int[0];
+arr[1] = 240;

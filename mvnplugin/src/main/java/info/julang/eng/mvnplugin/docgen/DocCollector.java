@@ -24,64 +24,6 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.docgen;
 
-import info.julang.eng.mvnplugin.GlobalLogger;
-import info.julang.eng.mvnplugin.ScriptInfoBag;
-import info.julang.eng.mvnplugin.SystemModuleProcessor;
-import info.julang.eng.mvnplugin.docgen.DocModel.Constructor;
-import info.julang.eng.mvnplugin.docgen.DocModel.EnumEntry;
-import info.julang.eng.mvnplugin.docgen.DocModel.Field;
-import info.julang.eng.mvnplugin.docgen.DocModel.InterfaceType;
-import info.julang.eng.mvnplugin.docgen.DocModel.Method;
-import info.julang.eng.mvnplugin.docgen.DocModel.Type;
-import info.julang.eng.mvnplugin.docgen.DocModel.TypeDescription;
-import info.julang.eng.mvnplugin.docgen.DocModel.TypeRef;
-import info.julang.eng.mvnplugin.docgen.ModuleContext.TypeDocProcessor;
-import info.julang.eng.mvnplugin.htmlgen.ApiIndexModel;
-import info.julang.eng.mvnplugin.htmlgen.MarkDown2HtmlConverter;
-import info.julang.eng.mvnplugin.htmlgen.WebsiteGenerator;
-import info.julang.eng.mvnplugin.htmlgen.WebsiteResources;
-import info.julang.eng.mvnplugin.mdgen.MarkdownConverter;
-import info.julang.eng.mvnplugin.mdgen.TutorialInfo;
-import info.julang.eng.mvnplugin.mdgen.TutorialInfo.ChapterInfo;
-import info.julang.eng.mvnplugin.mdgen.TutorialInfo.IChapterInfo;
-import info.julang.execution.namespace.NamespacePool;
-import info.julang.execution.symboltable.TypeTable;
-import info.julang.interpretation.IllegalLiteralException;
-import info.julang.interpretation.syntax.ClassDeclInfo;
-import info.julang.interpretation.syntax.CtorDeclInfo;
-import info.julang.interpretation.syntax.FieldDeclInfo;
-import info.julang.interpretation.syntax.MemberDeclInfo;
-import info.julang.interpretation.syntax.MethodDeclInfo;
-import info.julang.interpretation.syntax.MethodDeclInfo.TypeAndName;
-import info.julang.interpretation.syntax.ParsedTypeName;
-import info.julang.interpretation.syntax.SyntaxHelper;
-import info.julang.langspec.ast.JulianParser.Attribute_definitionContext;
-import info.julang.langspec.ast.JulianParser.Class_definitionContext;
-import info.julang.langspec.ast.JulianParser.Class_member_declarationContext;
-import info.julang.langspec.ast.JulianParser.Enum_definitionContext;
-import info.julang.langspec.ast.JulianParser.Enum_member_declaration_bodyContext;
-import info.julang.langspec.ast.JulianParser.Enum_member_declaration_initializerContext;
-import info.julang.langspec.ast.JulianParser.Enum_member_declarationsContext;
-import info.julang.langspec.ast.JulianParser.Field_declarationContext;
-import info.julang.langspec.ast.JulianParser.Interface_definitionContext;
-import info.julang.langspec.ast.JulianParser.Interface_member_declarationContext;
-import info.julang.langspec.ast.JulianParser.Last_enum_member_declarationContext;
-import info.julang.langspec.ast.JulianParser.Ordinary_enum_member_declarationContext;
-import info.julang.langspec.ast.JulianParser.ProgramContext;
-import info.julang.memory.HeapArea;
-import info.julang.memory.simple.SimpleHeapArea;
-import info.julang.modulesystem.RequirementInfo;
-import info.julang.modulesystem.naming.FQName;
-import info.julang.modulesystem.prescanning.RawClassInfo;
-import info.julang.modulesystem.prescanning.RawScriptInfo;
-import info.julang.parser.ANTLRHelper;
-import info.julang.parser.AstInfo;
-import info.julang.parser.LazyAstInfo;
-import info.julang.typesystem.jclass.Accessibility;
-import info.julang.typesystem.jclass.jufc.FoundationClassParser;
-import info.julang.typesystem.loading.depresolving.HardDependencyResolver;
-import info.julang.typesystem.loading.depresolving.IDependencyResolver;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -109,6 +51,67 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
+import info.julang.eng.mvnplugin.GlobalLogger;
+import info.julang.eng.mvnplugin.ScriptInfoBag;
+import info.julang.eng.mvnplugin.SystemModuleProcessor;
+import info.julang.eng.mvnplugin.docgen.DocModel.Constructor;
+import info.julang.eng.mvnplugin.docgen.DocModel.EnumEntry;
+import info.julang.eng.mvnplugin.docgen.DocModel.Field;
+import info.julang.eng.mvnplugin.docgen.DocModel.InterfaceType;
+import info.julang.eng.mvnplugin.docgen.DocModel.Method;
+import info.julang.eng.mvnplugin.docgen.DocModel.Type;
+import info.julang.eng.mvnplugin.docgen.DocModel.TypeDescription;
+import info.julang.eng.mvnplugin.docgen.DocModel.TypeRef;
+import info.julang.eng.mvnplugin.docgen.ModuleContext.TypeDocProcessor;
+import info.julang.eng.mvnplugin.htmlgen.ApiIndexModel;
+import info.julang.eng.mvnplugin.htmlgen.MarkDown2HtmlConverter;
+import info.julang.eng.mvnplugin.htmlgen.WebsiteGenerator;
+import info.julang.eng.mvnplugin.htmlgen.WebsiteResources;
+import info.julang.eng.mvnplugin.mdgen.MarkdownConverter;
+import info.julang.eng.mvnplugin.mdgen.TutorialInfo;
+import info.julang.eng.mvnplugin.mdgen.TutorialInfo.ChapterInfo;
+import info.julang.eng.mvnplugin.mdgen.TutorialInfo.IChapterInfo;
+import info.julang.execution.namespace.NamespacePool;
+import info.julang.execution.simple.SimpleEngineRuntime;
+import info.julang.execution.symboltable.TypeTable;
+import info.julang.execution.symboltable.VariableTable;
+import info.julang.interpretation.IllegalLiteralException;
+import info.julang.interpretation.syntax.ClassDeclInfo;
+import info.julang.interpretation.syntax.CtorDeclInfo;
+import info.julang.interpretation.syntax.FieldDeclInfo;
+import info.julang.interpretation.syntax.MemberDeclInfo;
+import info.julang.interpretation.syntax.MethodDeclInfo;
+import info.julang.interpretation.syntax.MethodDeclInfo.TypeAndName;
+import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.interpretation.syntax.SyntaxHelper;
+import info.julang.langspec.ast.JulianParser.Attribute_definitionContext;
+import info.julang.langspec.ast.JulianParser.Class_definitionContext;
+import info.julang.langspec.ast.JulianParser.Class_member_declarationContext;
+import info.julang.langspec.ast.JulianParser.Enum_definitionContext;
+import info.julang.langspec.ast.JulianParser.Enum_member_declaration_bodyContext;
+import info.julang.langspec.ast.JulianParser.Enum_member_declaration_initializerContext;
+import info.julang.langspec.ast.JulianParser.Enum_member_declarationsContext;
+import info.julang.langspec.ast.JulianParser.Field_declarationContext;
+import info.julang.langspec.ast.JulianParser.Interface_definitionContext;
+import info.julang.langspec.ast.JulianParser.Interface_member_declarationContext;
+import info.julang.langspec.ast.JulianParser.Last_enum_member_declarationContext;
+import info.julang.langspec.ast.JulianParser.Ordinary_enum_member_declarationContext;
+import info.julang.langspec.ast.JulianParser.ProgramContext;
+import info.julang.memory.HeapArea;
+import info.julang.memory.simple.SimpleHeapArea;
+import info.julang.modulesystem.ModuleManager;
+import info.julang.modulesystem.RequirementInfo;
+import info.julang.modulesystem.naming.FQName;
+import info.julang.modulesystem.prescanning.RawClassInfo;
+import info.julang.modulesystem.prescanning.RawScriptInfo;
+import info.julang.parser.ANTLRHelper;
+import info.julang.parser.AstInfo;
+import info.julang.parser.LazyAstInfo;
+import info.julang.typesystem.jclass.Accessibility;
+import info.julang.typesystem.jclass.jufc.FoundationClassParser;
+import info.julang.typesystem.loading.depresolving.HardDependencyResolver;
+import info.julang.typesystem.loading.depresolving.IDependencyResolver;
 
 /**
  * Generate JSON files containing Julian documentation for each system type. The generated files
@@ -178,7 +181,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 	/**
 	 * Collect all type's doc and serialize them per pattern
 	 * 
-	 * @param typeFilter to filter types to be serialized. This argument doesn't affect the scope of type scanning. 
+	 * @param typeFilter to filter types/chapters to be serialized. This argument doesn't affect the scope of type scanning. 
 	 * All the JuFC and built-in types will be scanned and extracted no matter what. This value only controls
 	 * whether to serialize the doc from the extracted information. 
 	 * @param markdown If true, also serialize the doc to Markdown format, if the pattern matches.
@@ -224,7 +227,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 			}
 			
 			genUserDocs(pat, stype);
-			tut.serialize(mc, tutIndex);
+			tut.serialize(pat, mc, tutIndex);
 			
 			if (wg != null) {
 				wg.genWebsite(apiIndex, tutIndex);
@@ -277,6 +280,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 			md.version = prop.getProperty(ModuleContext.MD_VERSION);
 			
 			mc.addMetatdata(ModuleContext.MD_VERSION, md.version);
+			mc.addMetatdata(ModuleContext.OFFICIAL_WEBSITE, prop.getProperty(ModuleContext.OFFICIAL_WEBSITE));
 			
 			String result = serialize0(md);
 			try (FileWriter fw = new FileWriter(metadata)){
@@ -550,7 +554,10 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 	private TypeTable initTypeSystem(){
 		HeapArea heap = new SimpleHeapArea();
 		TypeTable tt = new TypeTable(heap);
-		tt.initialize();
+		ModuleManager mm = new ModuleManager();
+		VariableTable gvt = new VariableTable(null);
+		SimpleEngineRuntime sert = new SimpleEngineRuntime(heap, gvt, tt, mm);
+		tt.initialize(sert);
 		return tt;
 	}
 	

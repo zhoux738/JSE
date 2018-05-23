@@ -1,0 +1,133 @@
+module System.Reflection;
+
+import System;
+
+/*
+ * A field member defined on a type.
+ *
+ * A field can be either static or instance-scoped, with the latter representing a piece of data shared 
+ * among the instances of that class. When accessing to a field through reflection, an instance field requires
+ * specifying the access target, namely the instance on which the field is to be accessed.
+ *
+ * There are two operations that can be done on a field: getting the data from it and setting data to it.
+ * [code]
+ *   class Box {
+ *     private int value = 5;
+ *   }
+ *
+ *   Field f = typeof(Box).getField("value");
+ *   Box box = new Box();
+ *   int val = f.get(box); // get 5
+ *   f.set(box, 7); // set box.value to 7
+ * [code: end]
+ */
+[Bridged(apiset="System.Reflection.Field")]
+class Field : Member {
+	
+	/*
+	 * A method's kind is [FIELD](type: System.Reflection.MemberKind#FIELD).
+	 *
+	 * [return] Always [FIELD](type: System.Reflection.MemberKind#FIELD) 
+	 */
+	MemberKind getKind(){
+		return MemberKind.FIELD;
+	}
+
+	/*
+	 * Get the name of this field.
+	 *
+	 * [return] The name of this field.
+	 */	
+	string getName(){
+		return _getName();
+	}
+
+	/*
+	 * Whether this field is static or instance-scoped.
+	 *
+	 * [return] True if the field is static; false instance-scoped.
+	 */		
+	bool isStatic(){
+		return _isStatic();
+	}
+
+	/*
+	 * Whether this field is constant. A constant field cannot be mutated after initialization.
+	 *
+	 * [return] True if the field is constant.
+	 */		
+	bool isConst(){
+		return _isConst();
+	}
+	
+	/*
+	 * Get the value held by this field on the given instance.
+	 *
+	 * If this field is static, the argument is disregarded. If this field is instance-scoped, the argument
+	 * must be of either the same type as the field's defining type, or a type that derives from the defining
+	 * type. In the case of latter, it's also required that the field be visible to the class to which the 
+	 * object belongs. In all other cases [ReflectedInvocationException](type: ReflectedInvocationException) 
+	 * will be thrown.
+	 *
+	 * [param: instance] The instance to retrieve the field from. Disregarded if it's a static field.
+	 * [return] The value held by this field on the instance target.
+	 * [throws: ReflectedInvocationException] Mostly thrown when calling on an instance field with illegal instance
+	 * target, such as null or having a type not compatible with the field's defining type.
+	 */
+	[Bridged(name="get")]
+	hosted var get(var instance);
+
+	/*
+	 * Set the value to this field on the given instance.
+	 *
+	 * If this field is static, the [first argument](param: instance) is disregarded. If this field is instance-scoped, the argument
+	 * must be of either the same type as the field's defining type, or a type that derives from the defining
+	 * type. In the case of latter, it's also required that the field be visible to the class to which the 
+	 * object belongs. In all other cases [ReflectedInvocationException](type: ReflectedInvocationException) 
+	 * will be thrown.
+	 *
+	 * [param: instance] The instance to retrieve the field from. Disregarded if it's a static field.
+	 * [param: value] The value to set to this field.
+	 * [throws: ReflectedInvocationException] Can be thrown when calling on an instance field with illegal instance
+	 * target, such as null or having a type not compatible with the field's defining type. Can also be thrown due to
+	 * an actual error raised from variable assignment, in which case this exception was created as a wrapper and the 
+	 * caller must call [getCause()](type: System.Exception#getCause) to get the original exception.
+	 */	
+	[Bridged(name="set")]
+	hosted void set(var instance, var value);
+	
+	/*
+	 * Get the type of this field.
+	 *
+	 * [return] The field's type.
+	 */
+	[Bridged(name="getType")]
+	hosted Type geType();	
+	
+	/*
+	 * Get a string representation of this field member.
+	 *
+	 * [return] A string in form of ```[FIELD|name:type]```. Example: ```[FIELD|value:int]```
+	 */
+	string toString(){
+		return _toString();
+	}
+
+	//--- private members ---//
+	
+	[Bridged(name="ctor")]
+	private hosted Field();
+	
+	[Bridged(name="getName")]
+	private hosted string _getName();
+	
+	[Bridged(name="isStatic")]
+	private hosted bool _isStatic();
+	
+	[Bridged(name="isConst")]
+	private hosted bool _isConst();
+	
+	[Bridged(name="toString")]
+	private hosted string _toString();
+	
+}

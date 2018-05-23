@@ -1,0 +1,17 @@
+import System;
+import System.Reflection;
+
+class MyClass {
+	static int value;
+	static void fun(){
+		value = 5;
+	}
+}
+
+void gfun(){
+	Method method = typeof(MyClass).getMethods("fun")[0];
+	return method.call(new var[0]);
+}
+
+gfun();
+int value = MyClass.value * 2;

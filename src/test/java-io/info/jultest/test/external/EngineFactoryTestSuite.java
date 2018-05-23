@@ -12,7 +12,7 @@ import info.julang.external.interfaces.IExtVariableTable;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class EngineFactoryTests {
+public class EngineFactoryTestSuite {
 	
 	@Test
 	public void createFactoryTest() {

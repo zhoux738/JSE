@@ -7,9 +7,10 @@ import info.julang.external.EngineFactory.EngineParamPair;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.interfaces.IExtEngineRuntime;
 import info.julang.external.interfaces.IExtValue;
+import info.julang.external.interfaces.IExtValue.IHostedVal;
+import info.julang.external.interfaces.IExtValue.IStringVal;
 import info.julang.external.interfaces.IExtVariableTable;
 import info.julang.external.interfaces.JValueKind;
-import info.julang.external.interfaces.IExtValue.IStringVal;
 
 /**
  * A helper classes used for {@link EngineFactory}-based tests. Engines and components 
@@ -51,10 +52,13 @@ public final class EFCommons {
 	 * @param feature can be null. The script file will be located directly under [SRC]/julian/Interpret/{group}.
 	 * @param scriptName
 	 */
-	public static IExtEngineRuntime runViaFactory(String group, String feature, String scriptName) throws EngineInvocationError {
+	public static IExtEngineRuntime runViaFactory(String group, String feature, String scriptName, String modPath) throws EngineInvocationError {
 		String path = Commons.makeScriptPath(group, feature, scriptName);
 		EngineFactory fact = new TestCaseEngineFactory();
 		EngineParamPair pair = fact.createEngineAndRuntime();
+		if (modPath != null) {
+			pair.getFirst().getContext().addModulePath(modPath);
+		}
 		pair.getFirst().runFile(path);
 		return pair.getSecond();
 	}
@@ -134,4 +138,13 @@ public final class EFCommons {
 		IStringVal sv = (IStringVal)value;
 		assertEquals(v, sv.getStringValue());
 	}
+
+// There are several ways of doing this.
+// 1) implement IRefValue
+// 2) add a hook on IExtScriptEngine so that we can verify inside the loader
+//	public static void validateHostedValue(IExtVariableTable vt, String varName, Class<?> clazz) {
+//		IExtValue value = vt.getValue(varName);
+//		assertNotNull(value);
+//		assertEquals(JValueKind.OBJECT, value.getKind());
+//	}
 }

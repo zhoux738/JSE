@@ -1,0 +1,21 @@
+import ModuleSys.FullMod;
+
+Type t = typeof(MyClass);
+string fn = t.getFullName();
+string mn = t.getModuleName();
+string sn = t.getSimpleName();
+
+t = typeof(int);
+string fn2 = t.getFullName();
+string mn2 = t.getModuleName();
+string sn2 = t.getSimpleName();
+
+t = typeof(string);
+string fn3 = t.getFullName();
+string mn3 = t.getModuleName();
+string sn3 = t.getSimpleName();
+
+t = typeof(int[]);
+string fn4 = t.getFullName();
+string mn4 = t.getModuleName();
+string sn4 = t.getSimpleName();

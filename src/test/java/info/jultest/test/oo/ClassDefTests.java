@@ -4,6 +4,7 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
+import static info.jultest.test.Commons.validateBoolValue;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -199,14 +200,16 @@ public class ClassDefTests extends ClassTestBase {
 		validateIntValue(gvt, "j", 5);
 	}
 	
-	//Uncomment this to test
-	//@Test
-	public void devTest() throws EngineInvocationError {
+	@Test
+	public void constMemberTest() throws EngineInvocationError {
 		VariableTable gvt = new VariableTable(null);
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "devtest.jul"));
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "item_8.jul"));
+		
+		validateIntValue(gvt, "v", 5);
+		validateBoolValue(gvt, "b", true);
 	}
 	
 	@Test

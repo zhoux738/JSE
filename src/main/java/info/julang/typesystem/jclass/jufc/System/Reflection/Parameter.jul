@@ -1,0 +1,38 @@
+module System.Reflection;
+
+import System;
+
+/*
+ * The parameter of a constructor or method.
+ */
+[Bridged(apiset="System.Reflection.Parameter")]
+class Parameter {
+
+	[Bridged(name="ctor")]
+	private hosted Parameter();
+
+	/*
+	 * Get the name of this parameter.
+	 *
+	 * [return] The name of this parameter.
+	 */	
+	[Bridged(name="getName")]
+	hosted string getName();
+
+	/*
+	 * Get the type of this parameter.
+	 *
+	 * [return] The type of this parameter.
+	 */		
+	[Bridged(name="getType")]
+	hosted Type getType();
+	
+	/*
+	 * Get a string representation of this parameter.
+	 *
+	 * [return] A string in form of ```[PARAM|name:type]```
+	 */	
+	string toString(){
+		return "[PARAM|" + getName() + ":" + getType().getFullName() + "]";
+	}
+}

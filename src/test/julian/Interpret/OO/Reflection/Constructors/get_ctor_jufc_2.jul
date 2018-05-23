@@ -1,0 +1,48 @@
+import System.Reflection;
+
+class C {
+	private C(){
+	
+	}
+}
+
+class D {
+
+}
+
+class E {
+	[Reflected(visible=false)]
+	private E(){
+	
+	}
+}
+
+class F {
+	[Reflected(visible=false)]
+	public F(){
+	
+	}
+}
+
+Type t;
+Constructor[] ctors;
+
+// no ctor marked as visible
+t = typeof(E);
+ctors = t.getConstructors();
+int totalCtors0a = ctors.length;
+
+// 1 private ctor
+t = typeof(C);
+ctors = t.getConstructors();
+int totalCtors1a = ctors.length;
+
+// 1 default public ctor
+t = typeof(D);
+ctors = t.getConstructors();
+int totalCtors1b = ctors.length;
+
+// no ctor marked as visible
+t = typeof(F);
+ctors = t.getConstructors();
+int totalCtors0b = ctors.length;

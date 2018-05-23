@@ -136,6 +136,7 @@ public class JEnumType extends JDefinedClassType {
 			JMethodType mType = new JMethodType("<init>-" + fieldName, params, retType, exec, enumTyp);
 			
 			JClassInitializerMember mmember = new JClassInitializerMember(
+				builder.getStub(),
 				fieldName,  // field name
 				true, 		// static
 				mType);

@@ -1,0 +1,9 @@
+import System.Lang;
+
+bool b0, b1;
+try { void[] value; } catch (BadSyntaxException ex) { 
+  b0 = ex.getMessage().contains("Cannot declare array type with void as element type");
+}
+try { Void[] value; } catch (BadSyntaxException ex) { 
+  b1 = ex.getMessage().contains("Cannot declare array type with void as element type");
+}

@@ -210,22 +210,4 @@ public class Context {
 	public static Context createSystemLoadingContext(ThreadRuntime rt){
 		return new SystemLoadingContext(rt);
 	}
-	
-//	/**
-//	 * Get {@link EngineRuntime engine runtime} derived from this context.
-//	 * 
-//	 * @return
-//	 */
-//	public EngineRuntime getEngineRuntime() {
-//		if (engineRt == null) {
-//			synchronized (this) {
-//				if (engineRt == null) {
-//					engineRt = new SimpleEngineRuntime(
-//						heap, varTable.getGlobal(), typTable, mm, tr.getInternalTypeResolver(), tm);				
-//				}
-//			}
-//		}
-//		
-//		return engineRt;
-//	}
 }

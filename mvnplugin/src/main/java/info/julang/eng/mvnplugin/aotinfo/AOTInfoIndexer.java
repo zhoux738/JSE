@@ -24,18 +24,23 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.aotinfo;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.velocity.VelocityContext;
-
 import info.julang.eng.mvnplugin.ScriptInfoBag;
 import info.julang.eng.mvnplugin.SystemModuleProcessor;
 import info.julang.modulesystem.prescanning.RawClassInfo;
 import info.julang.modulesystem.prescanning.RawScriptInfo;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
+import org.apache.velocity.VelocityContext;
 
 /**
  * Generate Java classes containing critical information about JuFC modules and types within.
@@ -45,6 +50,8 @@ import info.julang.modulesystem.prescanning.RawScriptInfo;
  * @author Ming Zhou
  */
 public class AOTInfoIndexer extends SystemModuleProcessor<ScriptInfoBagEx> {
+	
+	private static final String AOTClassPrefix = "AOTRawScriptInfo$";
 	
 	public AOTInfoIndexer(File moduleRoot, Log logger){
 		super(moduleRoot, logger);
@@ -76,7 +83,7 @@ public class AOTInfoIndexer extends SystemModuleProcessor<ScriptInfoBagEx> {
 		String absPath = dir.getAbsolutePath();
 		String fileName = sib.getFileName();
 		
-		String className = "AOTRawScriptInfo$" + fileName;
+		String className = AOTClassPrefix + fileName;
 		String modName = absPathToModName(absPath);
 		
 		VelocityContext context = new VelocityContext();
@@ -98,6 +105,7 @@ public class AOTInfoIndexer extends SystemModuleProcessor<ScriptInfoBagEx> {
 		String absPath = rootDir.getAbsolutePath() + "/SystemRawScriptInfoInitializer.java";
 		VelocityContext context = new VelocityContext();
 		
+		Map<String, List<ClassInfo>> map = new HashMap<String, List<ClassInfo>>();
 		List<ClassInfo> cis = new ArrayList<ClassInfo>();
 		for(ScriptInfoBagEx bag : scripts){
 			RawScriptInfo rsi = bag.getRawScriptInfo();
@@ -106,12 +114,49 @@ public class AOTInfoIndexer extends SystemModuleProcessor<ScriptInfoBagEx> {
 			String path = bag.getEmbeddedScriptPath();
 			ClassInfo ci = new ClassInfo(modName, className, path);
 			cis.add(ci);
+			
+			List<ClassInfo> list = map.get(modName);
+			if (list == null) {
+				list = new ArrayList<ClassInfo>();
+				map.put(modName, list);
+			}
+			
+			list.add(ci);
 		}
-
+		
 		context.put("tv_class_infos", cis);
 		
+		Set<Entry<String, List<ClassInfo>>> set = map.entrySet();
+		context.put("tv_module_class_infos", set);
+		
+		List<String> platformFactoryRefs = new ArrayList<String>();
+		loadJavaSrcFiles(rootDir, platformFactoryRefs);
+		context.put("tv_factory_refs", platformFactoryRefs);
+		
 		mergeToFile("SystemRawScriptInfoInitializer.vm", context, new File(absPath));
+		
 	}
+	
+    protected void loadJavaSrcFiles(File root, List<String> javaFiles) throws MojoExecutionException {
+        if (root.isFile()){
+            String fname = root.getName();
+            if (fname.endsWith(".java") && !fname.startsWith(AOTClassPrefix)){
+            	try {
+					String ref = PlatformClassAnalyzer.findFactoryReference(root);
+					if (ref != null) {
+						javaFiles.add(ref);
+					}
+				} catch (FileNotFoundException e) {
+					throw new MojoExecutionException("Cannot load a Java source file.", e);
+				}
+            }
+        } else if (root.isDirectory()){
+            File[] children = root.listFiles();
+            for(File f : children){
+            	loadJavaSrcFiles(f, javaFiles);
+            }
+        }
+    }
 }
 
 class ScriptInfoBagEx extends ScriptInfoBag {

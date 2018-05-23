@@ -1,14 +1,36 @@
 package info.julang.typesystem.jclass.jufc;
 
 import info.julang.modulesystem.prescanning.RawScriptInfo;
+import info.julang.hosting.HostedMethodProviderFactory;
 
 import java.util.Map;
 
 /**
  * This source file is automatically generated.
  */
-class SystemRawScriptInfoInitializer {
+public class SystemRawScriptInfoInitializer {
 
+    public static HostedMethodProviderFactory[] getAllFactories(){
+       return new HostedMethodProviderFactory[]{
+#foreach( $tv_factory_ref in $tv_factory_refs )
+           $tv_factory_ref,
+#end
+       };
+    }
+
+    static void initializeFileLocations(Map<String, String[]> map){
+#foreach( $tv_module_class_info in $tv_module_class_infos )
+#set( $mod = $tv_module_class_info.Key )
+#set( $class_infos = $tv_module_class_info.Value )
+		map.put("$mod", new String[]{
+#foreach( $class_info in $class_infos )
+#set( $cn = $class_info.ClassName )
+			"$cn",
+#end
+		});
+#end
+    }
+    
     static void initialize(Map<String, SystemRawScriptInfoFactory<? extends RawScriptInfo>> map){
 #foreach( $class_info in $tv_class_infos )
         #set( $mod = $class_info.Module )

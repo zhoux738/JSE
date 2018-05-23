@@ -1,0 +1,48 @@
+class C {
+
+}
+
+interface I {
+
+}
+
+final class FC : I {
+
+}
+
+bool[] check(Type t){
+	bool[] ar = new bool[5];
+	ar[0] = t.isPrimitive();
+	ar[1] = t.isClass();
+	ar[2] = t.isInterface();
+	ar[3] = t.isArray();
+	ar[4] = t.isFinal();
+	return ar;
+}
+
+Type t = typeof(C);
+bool[] c_arr = check(t);
+
+t = typeof(I);
+bool[] i_arr = check(t);
+
+t = typeof(FC);
+bool[] fc_arr = check(t);
+
+t = typeof(C[]);
+bool[] ca_arr = check(t);
+
+t = typeof(I[][]);
+bool[] iaa_arr = check(t);
+
+t = typeof(int);
+bool[] int_arr = check(t);
+
+t = typeof(int[]);
+bool[] inta_arr = check(t);
+
+t = typeof(var);
+bool[] var_arr = check(t);
+
+t = typeof(var[]);
+bool[] vara_arr = check(t);

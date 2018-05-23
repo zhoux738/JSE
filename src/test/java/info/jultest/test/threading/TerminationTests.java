@@ -27,7 +27,7 @@ public class TerminationTests extends ThreadingTestBase {
 	
 	@Test
 	public void terminateWhileCreatingNewThreadsTest() throws EngineInvocationError, IOException {
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "terminate_1.jul");
+		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "terminate_1.jul", null);
 		IExtVariableTable gvt = rt.getGlobalVariableTable();
 		IIntVal x = getIntValue(gvt, "x");
 		Assert.assertTrue("x = " + x, x.getIntValue() > 1);
@@ -44,7 +44,7 @@ public class TerminationTests extends ThreadingTestBase {
 	
 	@Test
 	public void terminateLongRunningThreadTest() throws EngineInvocationError, IOException {
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "terminate_2.jul");
+		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "terminate_2.jul", null);
 		IExtVariableTable gvt = rt.getGlobalVariableTable();
 
 		int x = getIntValue(gvt, "x").getIntValue();

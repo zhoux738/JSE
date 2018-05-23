@@ -344,4 +344,19 @@ public class ExpressionTests {
 			false, 
 			-1);
 	}
+	
+	// call non-function
+	// index non-indexable
+	// use non-boolean as condition
+	@Test
+	public void sematicErrorTest1() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "semantic_error_1.jul"));
+		
+		validateBoolValue(gvt, "b0", true);
+		validateBoolValue(gvt, "b1", true);
+		validateBoolValue(gvt, "b2", true);
+	}
 }

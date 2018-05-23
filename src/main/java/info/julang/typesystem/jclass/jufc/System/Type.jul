@@ -1,0 +1,358 @@
+module System;
+
+import System.Concurrency;
+import System.Collection;
+import System.Reflection;
+
+/*
+ * The runtime metadata for a script type.
+ *
+ * Julian script types, be it built-in or user-defined, class-based or primitive, all have an engine-scoped 
+ * singleton Type object that carries the type's metadata throughout the engine lifecycle. A Type object is
+ * usually the starting point of any reflection-based logic.
+ * 
+ * There are three ways to obtain Type in runtime. If type is known at the time the code is written, one can 
+ * use ```typeof``` operator on a type name:
+ * [code]
+ *   Type t0 = typeof(MyModule.MyClass);
+ *   Type t1 = typeof(string);
+ *   Type t2 = typeof(int[]);
+ * [code: end]
+ *
+ * Alternatively, we can also retrieve the type of a runtime object via [getType()](type: Object#getType()) 
+ * method:
+ * [code]
+ *   MyClass inst = new MyClass();
+ *   ... ...
+ *   Type t0 = inst.getType(inst);
+ *   Type t1 = typeof(MyClass);
+ *   bool same = t0 == t1; // true
+ * [code: end] 
+ *
+ * The third and the most flexible way is to get type dynamically by [Type.load()](#load). If the type is not 
+ * loaded, ```load()``` will trigger type loading, same to what happens when a type is used for the first time. 
+ * Otherwise the Type object will be immediately returned from engine's type storage.
+ *
+ * Type usually serves as a starting point for invoking reflection API. For more details, 
+ * see [here](tutorial: reflection].
+ */
+[Bridged(apiset="System.Type")]
+class Type {
+	
+	/*
+	 * Load a type with specified name. If the type is not loaded, this method will trigger loading of the 
+	 * entire dependency closure of the required type. Otherwise the Type object will be immediately returned 
+	 * from engine's type storage. This method is thread-safe.
+	 *
+	 * [param: typeName] The fully qualified type name, including dimension info, written in pairs of 
+	 * square brackets, at the end. The syntax is completely same to type identifier that appears at the 
+	 * start of a variable definition, so language-alias can be used (```int``` instead of Integer).
+	 * [throws: ReflectedInvocationException] This is a wrapper exception for the real cause of failure, which
+	 * can be type definition error, syntax error on the type name, type not found, etc. So always call ```getCause()```
+	 * to inspect the original error.
+	 * [return] The loaded type.
+	 */
+	[Bridged(name="load")]
+	hosted static Type load(string typeName);
+	
+	/*
+	 * Get the fully qualified type name. This will always return canonical name, not language-level alias
+	 * for certain built-in types.
+	 *
+	 * [return] The fully qualified type name.
+	 */
+	string getFullName(){
+		if (name == null) {
+			sync(lock){
+				if (name == null) {
+					name = _getFullName();
+				}
+			}
+		}
+		
+		return name;
+	}
+	
+	/*
+	 * Get the simple name of this type, i.e. excluding the part for module. For a type with fully qualified 
+	 * name "A.B.C", this method will return "C". This will always return canonical name, not language-level 
+	 * alias for certain built-in types.
+	 *
+	 * [return] The simple type name. For some built-in types this name is same to full name returned by [getFullName()](#getFullName). 
+	 */
+	string getSimpleName(){
+		if (name == null) {
+			getFullName();
+		}
+		
+		int index = name.lastIndexOf('.', name.length - 1);
+		return index >= 0 ? name.substring(index + 1, name.length) : name;
+	}
+	
+	/*
+	 * Get the module name of this type, i.e. excluding the part for module. For a type with fully qualified 
+	 * name "A.B.C", this method will return "A.B".
+	 *
+	 * [return] The module name. For some built-in types which do not have a module this returns null. 
+	 */
+	string getModuleName(){
+		if (name == null) {
+			getFullName();
+		}
+		
+		int index = name.lastIndexOf('.', name.length - 1);
+		return index >= 0 ? name.substring(0, index) : null;	
+	}
+	
+	/*
+	 * Check whether the type is primitive. A type is primitive if it's [int], [byte], [float], [bool] or [char]. Any
+	 * other types, including [string], [any] and [array](Array) type with primitive elements, are not primitive.
+	 *
+	 * [return] True if this type is one of the five primitive types.
+	 */
+	[Bridged(name="isPrimitive")]
+	hosted bool isPrimitive();
+	
+	/*
+	 * Check whether the type is a class type. Interface types, primitive types, [Any] and Void type is not class type; all the other are. 
+	 *
+	 * [return] True if this type is a class type, inheriting, or exactly is, [Object].
+	 */
+	[Bridged(name="isClass")]
+	hosted bool isClass();
+	
+	/*
+	 * Check whether the type is an interface type.
+	 *
+	 * [return] True if this type is an interface type.
+	 */
+	[Bridged(name="isInterface")]
+	hosted bool isInterface();
+
+	/*
+	 * Check whether the type is an Array type. Array type is also a class type.
+	 *
+	 * [return] True if this type is a class type, inheriting, or exactly is, [Array].
+	 */	
+	[Bridged(name="isArray")]
+	hosted bool isArray();
+
+	/*
+	 * Check whether the type is finalized and thus cannot be inherited.
+	 *
+	 * [return] True if this type is finalized; false if a class can inherit from it.
+	 */
+	[Bridged(name="isFinal")]
+	hosted bool isFinal();
+	
+	/*
+	 * Get the parent type of this type. A class type, other than [Object], must have one parent. Calling
+	 * this method on Object, interface, or other non-class types always returns null.
+	 *
+	 * [return] The parent type of this type. 
+	 */
+	[Bridged(name="getParent")]
+	hosted Type getParent();
+	
+	/*
+	 * Get the constructors of this type in no particular order.
+	 *
+	 * For system types, this will only return constructors that are marked as visible to reflection. For
+	 * user-defined types, this will return all constructors, regardless of its defined visibility, unless 
+	 * it's marked as invisible. See [Reflected](System.Reflection.Reflected) for the usage of attribute.
+	 * 
+	 * [return] All the constructors, defined explicitly or implicitly, on this type. For non-class types,
+	 * this will always return a 0-sized array.
+	 */ 
+	Constructor[] getConstructors(){
+		if (ctors == null) {
+			sync(lock){
+				if (ctors == null) {
+					ctors = _getCtors();
+				}
+			}
+		}
+		
+		return ctors;
+	}
+
+	/*
+	 * Get the methods of this type in no particular order.
+	 *
+	 * For system types, this will only return methods that are marked as visible to reflection. For
+	 * user-defined types, this will return all methods that are visible inside this type, unless 
+	 * it's marked as invisible. See [Reflected](System.Reflection.Reflected) for the usage of attribute.
+	 *
+	 * Methods that are visible inside this type include all method members defined on this type, as well
+	 * as all the method members inherited from ancestors yet not hidden by a new member with same signature.
+	 * So if a protected member is not overridden, it will be showing up in the result array. If it's been
+	 * overridden in this type, the latest definition will be included in the array instead:
+	 * [code]
+	 *  class Parent {
+	 *    void fun1(){ }
+	 *    void fun2(){ }
+	 *  }
+	 *  class Child : Parent {
+	 *    void fun1(){ } // Override fun1
+	 *  }
+	 *
+	 *  // Returns an array of size = 2, including Parent.fun2() and Child.fun1()
+	 *  Method[] methods = typeof(Child).getMethods();
+	 * [code: end]
+	 * 
+	 * [return] All the methods, defined explicitly or implicitly, on this type. For types that are neither
+	 * class nor interface, this will always return a 0-sized array.
+	 */ 
+	Method[] getMethods(){
+		if (methods == null) {
+			sync(lock){
+				if (methods == null) {
+					methods = _getMethods();
+				}
+			}
+		}
+		
+		return methods;
+	}
+	
+	/*
+	 * Get the methods of this type with specified name in no particular order.
+	 * 
+	 * This method applies a simple filter on top of ```getMethods()```. For more information
+	 * on the mechanic of method retrieval, refer to the documentation of [that method](#getMethods()).
+	 * 
+	 * [param: name] The name of method to search.
+	 * [return] All the methods of the specified name, defined explicitly or implicitly, on this type.
+	 */
+	Method[] getMethods(string name){
+		Method[] methods = getMethods();
+		List l = new List();
+		for(int i = 0; i < methods.length; i++){
+			if (name == methods[i].getName()){
+				l.add(methods[i]);
+			}
+		}
+		
+		methods = new Method[l.size()];
+		int i = 0;
+		for(Method m : l){
+			methods[i] = m;
+			i++;
+		}
+		
+		return methods;
+	}
+
+	/*
+	 * Get the directly implemented or extended interfaces.
+	 * 
+	 * The result array will only include those that are declared as the interface types for the current type. In
+	 * particular, it doesn't include any interfaces that can be recursively discovered by tracing through the
+	 * type definition chain. In one example:
+	 * [code]
+	 *   interface A { } 
+	 *   interface B : A { } 
+	 *   interface C { } 
+	 *   class MyClass : B, C { } 
+	 *
+	 *   Type[] types0 = typeof(MyClass).getInterfaces(); // size = 2: B and C
+	 *   Type[] types1 = typeof(B).getInterfaces(); // size = 1: A
+	 * [code: end]
+	 *
+	 * [return] The directly implemented or extended interfaces. In case of types which do not have
+	 * interfaces, including all non-class types, this returns a 0-sized Type array.
+	 */
+	Type[] getInterfaces(){
+		if (intfs == null) {
+			sync(lock){
+				if (intfs == null) {
+					intfs = _getInterfaces();
+				}
+			}
+		}
+		
+		return intfs;
+	}
+
+	/*
+	 * Get the fields of this type in no particular order.
+	 *
+	 * For system types, this will only return fields that are marked as visible to reflection. For
+	 * user-defined types, this will return all fields that are visible inside this type, unless 
+	 * it's marked as invisible. See [Reflected](System.Reflection.Reflected) for the usage of attribute.
+	 *
+	 * Fields that are visible inside this type include all field members defined on this type, as well
+	 * as all the field members inherited from ancestors.
+	 * 
+	 * [return] All the fields, defined explicitly or implicitly, on this type.
+	 */ 
+	Field[] getFields(){
+		if (fields == null) {
+			sync(lock){
+				if (fields == null) {
+					fields = _getFields();
+				}
+			}
+		}
+		
+		return fields;
+	}
+	
+	/*
+	 * Get the field of this type with specified name.
+	 * 
+	 * This method applies a simple filter on top of ```getFields()```. For more information
+	 * on the mechanic of method retrieval, refer to the documentation of [that method](#getFields()).
+	 * 
+	 * [param: name] The name of field to search.
+	 * [return] The field of the given name. If not found, returns null.
+	 */
+	Field getField(string name){
+		Field[] fields = getFields();
+		int len = fields.length;
+		for(int i = 0; i < len; i++){
+			if (name == fields[i].getName()){
+				return fields[i];
+			}
+		}
+		
+		return null;
+	}
+	
+	/*
+	 * Get a string representation of this type.
+	 *
+	 * [return] A string in form of ```[Type|full-name]```. Example: ```[TYPE|MyModule.MyClass]```
+	 */	
+	string toString(){
+		return "[TYPE|" + getFullName() + "]";
+	}
+	
+	//--- private members ---//
+	
+	private Type(){
+		lock = new Lock();
+	}
+	
+	private string name;
+	private Lock lock;
+	
+	[Bridged(name="getFullName")]
+	private hosted string _getFullName();
+	
+	[Bridged(name="getCtors")]
+	private hosted Constructor[] _getCtors();
+	private Constructor[] ctors;
+		
+	[Bridged(name="getMethods")]
+	private hosted Method[] _getMethods();
+	private Method[] methods;
+		
+	[Bridged(name="getInterfaces")]
+	private hosted Type[] _getInterfaces();
+	private Type[] intfs;
+		
+	[Bridged(name="getFields")]
+	private hosted Field[] _getFields();
+	private Field[] fields;
+}

@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.interpretation.expression.operator;
 
 import static info.julang.langspec.Operators.IS;
+
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.interpretation.context.Context;
@@ -38,7 +39,6 @@ import info.julang.typesystem.AnyType;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.jclass.ICompoundType;
-import info.julang.typesystem.jclass.builtin.JObjectType;
 
 /**
  * Is operator is used to check if a value is of type A.

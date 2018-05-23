@@ -1,0 +1,8 @@
+Type t1 = typeof(string);
+Type t2 = "".getType();
+bool b0 = t1 == t2;
+
+Type t3 = typeof(Object);
+Object o = new Object();
+Type t4 = o.getType();
+bool b1 = t3 == t4;

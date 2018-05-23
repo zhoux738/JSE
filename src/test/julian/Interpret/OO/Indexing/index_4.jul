@@ -1,0 +1,8 @@
+import System.Util;
+
+int[] arr = new int[]{5, 7, 11};
+
+int i1 = arr.at(1);
+arr.at(1, 100);
+int i100 = arr[1];
+bool b = arr.size() == arr.length;

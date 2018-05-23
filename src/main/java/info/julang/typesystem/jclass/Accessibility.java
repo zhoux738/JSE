@@ -36,6 +36,7 @@ import info.julang.parser.ANTLRHelper;
 import info.julang.typesystem.IllegalMemberAccessException;
 import info.julang.typesystem.IllegalTypeAccessException;
 import info.julang.typesystem.UnknownMemberException;
+import info.julang.util.OneOrMoreList;
 
 /**
  * The accessibility of an object type's member: public, protected or private
@@ -224,7 +225,7 @@ public enum Accessibility {
 		ContextType contextType, 
 		boolean isStatic, 
 		boolean throwIfNotFound){
-		
+
 		ClassMemberMap cmm = null;
 		ClassMemberLoaded cml = null;
 		
@@ -262,7 +263,8 @@ public enum Accessibility {
 			cmm = ((JClassType)declaredType).getMembers(isStatic);
 			// Here we only check the 1st one because the type loading process ensures that 
 			// overloaded methods are of same visibility (Julian restriction).
-			cml = cmm.getLoadedMemberByName(memberName).getFirst();
+			OneOrMoreList<ClassMemberLoaded> all = cmm.getLoadedMemberByName(memberName);
+			cml = all.getFirst();
 			if(cml == null){
 				if(throwIfNotFound){
 					throw new UnknownMemberException(declaredType, memberName, isStatic);		
@@ -270,6 +272,7 @@ public enum Accessibility {
 					return null;
 				}
 			}
+			
 			JClassType definingType = cmm.getContributingTypes()[cml.getRank()];
 			Accessibility acc = cml.getClassMember().getAccessibility();
 			switch(acc){

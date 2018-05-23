@@ -24,14 +24,21 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
+import info.julang.execution.Argument;
+import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
+import info.julang.interpretation.context.Context;
+import info.julang.interpretation.internal.NewObjExecutor;
+import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.memory.MemoryArea;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
-import info.julang.typesystem.jclass.ICompoundType;
+import info.julang.typesystem.jclass.JClassConstructorMember;
+import info.julang.typesystem.jclass.JClassMember.MemberKey;
 import info.julang.typesystem.jclass.JClassType;
-import info.julang.typesystem.jclass.builtin.JTypeType;
+import info.julang.typesystem.jclass.builtin.JTypeStaticDataType;
+import info.julang.typesystem.jclass.jufc.System.ScriptType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,12 +81,12 @@ public class TypeValue extends ObjectValue {
 	}
 
 	/**
-	 * This will only return {@link JTypeType}. To get the actual class type this type value
+	 * This will only return {@link JTypeStaticDataType}. To get the actual class type this type value
 	 * represents, call {@link #getValueType()} instead.
 	 */
 	@Override
 	public JType getType() {
-		return JTypeType.getInstance();
+		return JTypeStaticDataType.getInstance();
 	}
 	
 	/**
@@ -101,7 +108,7 @@ public class TypeValue extends ObjectValue {
 	
 	private List<AttrValue> typeAttrs;
 	
-	private Map<String, List<AttrValue>> typeMemberAttrs;
+	private Map<MemberKey, List<AttrValue>> typeMemberAttrs;
 	
 	/**
 	 * Add an attribute value to the class type.
@@ -118,18 +125,18 @@ public class TypeValue extends ObjectValue {
 	/**
 	 * Add an attribute value to a class member.
 	 * 
-	 * @param name
+	 * @param key
 	 * @param attr
 	 */
-	public void addMemberAttrValue(String name, AttrValue attr){
+	public void addMemberAttrValue(MemberKey key, AttrValue attr){
 		// See note for getMemberValue on the missing checks.
 		if(typeMemberAttrs == null){
-			typeMemberAttrs = new HashMap<String, List<AttrValue>>();
+			typeMemberAttrs = new HashMap<MemberKey, List<AttrValue>>();
 		}
-		List<AttrValue> vals = typeMemberAttrs.get(name);
+		List<AttrValue> vals = typeMemberAttrs.get(key);
 		if(vals == null){
 			vals = new ArrayList<AttrValue>();
-			typeMemberAttrs.put(name, vals);
+			typeMemberAttrs.put(key, vals);
 		}
 		vals.add(attr);
 	}
@@ -148,12 +155,12 @@ public class TypeValue extends ObjectValue {
 	 * 
 	 * @return null if no attributes on this member.
 	 */
-	public List<AttrValue> getMemberAttrValues(String name) {
+	public List<AttrValue> getMemberAttrValues(MemberKey mkey) {
 		// See note for getMemberValue on the missing checks.
 		if(typeMemberAttrs == null){
 			return null;
 		}
-		return typeMemberAttrs.get(name);
+		return typeMemberAttrs.get(mkey);
 	}
 	
 	@Override
@@ -175,5 +182,44 @@ public class TypeValue extends ObjectValue {
 		}
 
 		return false;
+	}
+	
+	//--------------------- storage of System.Type instance ---------------------//
+
+	private ObjectValue typeObject;
+	
+	/**
+	 * Get <font color="green"><code>System.Type</code></font> object for this type. 
+	 * This object will be created the first time this method is called.
+	 * 
+	 * @param runtime
+	 */
+	public ObjectValue getScriptTypeObject(ThreadRuntime runtime) {
+		if (typeObject == null) {
+			synchronized(TypeValue.class){
+				if (typeObject == null) {
+					JClassType typeClassType = (JClassType) runtime.getTypeTable().getType(ScriptType.FQCLASSNAME);
+					if (typeClassType == null) {
+						Context context = Context.createSystemLoadingContext(runtime);
+						runtime.getTypeResolver().resolveType(context, ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME), true);
+						typeClassType = (JClassType) runtime.getTypeTable().getType(ScriptType.FQCLASSNAME);
+					}
+					
+					JClassConstructorMember typeClassCtor = typeClassType.getClassConstructors()[0];
+					
+					NewObjExecutor noe = new NewObjExecutor(runtime);
+					ObjectValue ov = noe.newObjectInternal(typeClassType, typeClassCtor, new Argument[0]);
+					
+					ScriptType st = new ScriptType();
+					st.setType(this.type);
+					HostedValue hv = (HostedValue)ov;
+					hv.setHostedObject(st);
+					
+					typeObject = ov;
+				}
+			}
+		}
+		
+		return typeObject;
 	}
 }

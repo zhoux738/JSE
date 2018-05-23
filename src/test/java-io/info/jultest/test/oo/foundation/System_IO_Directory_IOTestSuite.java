@@ -40,7 +40,7 @@ public class System_IO_Directory_IOTestSuite {
 		dir.deleteOnExit();
 	    
 		// 2) create a global var "path" and set temp directory's full path to it
-	    tt.initialize();		
+	    tt.initialize(engine.getRuntime());		
 	    gvt.addVariable("path", new StringValue(heap, dir.getAbsolutePath()));
 		
 		// 3) in dir_1.jul, new up a direcotry using "path", and run various methods
@@ -91,7 +91,7 @@ public class System_IO_Directory_IOTestSuite {
 //			}
 			
 			// 2) create a global var "path" and set temp directory's full path to it	
-		    tt.initialize();	
+		    tt.initialize(engine.getRuntime());	
 		    gvt.addVariable("path", new StringValue(heap, dir.getAbsolutePath()));
 			
 			// 3) in dir_2.jul, new up a direcotry using "path", and run various methods

@@ -80,6 +80,14 @@ public @interface JulianDoc {
 	String[] params() default {};
 	
 	/**
+	 * The type for each parameter. The length should be aligned with that of {@link #params()}.
+	 * Ignored if not annotating a field which contains the method implementation.
+	 * <p>
+	 * Each element is a Type name corresponding to the parameter at the same index.
+	 */
+	String[] paramTypes() default {};;
+	
+	/**
 	 * Detailed description about the exceptions to be thrown. 
 	 * Ignored if not annotating a field which contains the method implementation.
 	 * <p>
@@ -93,5 +101,10 @@ public @interface JulianDoc {
 	 * Each element is a fully qualified type name.
 	 */
 	String[] references() default {};
+	
+	/**
+	 * Interfaces implemented/extended by this type.
+	 */
+	String[] interfaces() default {};
 	
 }

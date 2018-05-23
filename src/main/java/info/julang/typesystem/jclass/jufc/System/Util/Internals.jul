@@ -1,0 +1,49 @@
+module System.Util;
+
+// The implementation of System.Util.IIterator for Array type.
+internal class ArrayIterator : IIterator {
+
+ 	private var array;
+ 	private int max;
+ 	private int index;
+ 	
+ 	internal ArrayIterator(Array array){
+ 		this.array = array;
+ 		this.max = array.length - 1;
+ 		this.index = 0;
+ 	}
+ 
+ 	bool hasNext() {
+ 		return index <= max;
+ 	}
+	
+	var next(){
+		var val = array[index];
+		index++;
+		return val;
+	}
+}
+
+// The implementation of System.Util.IIterator for String type.
+internal class StringIterator : IIterator {
+
+ 	private var str;
+ 	private int max;
+ 	private int index;
+ 	
+ 	internal StringIterator(string str){
+ 		this.str = str;
+ 		this.max = str.length - 1;
+ 		this.index = 0;
+ 	}
+ 
+ 	bool hasNext() {
+ 		return index <= max;
+ 	}
+	
+	var next(){
+		var val = str[index];
+		index++;
+		return val;
+	}
+}

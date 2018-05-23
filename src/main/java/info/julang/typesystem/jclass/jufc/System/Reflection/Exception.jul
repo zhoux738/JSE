@@ -1,0 +1,24 @@
+module System.Reflection;
+
+import System;
+
+/*
+ * An exception to throw when a reflection-based invocation faulted due to an exception.
+ *
+ * A class member, such as [Constructor](type: System.Reflection.Constructor), can be invoked
+ * programmatically. If the execution fails, the original exception will be propagated and caught
+ * by script engine, which then wraps it inside an instance of this exception.
+ */
+class ReflectedInvocationException : Exception {
+	
+	/*
+	 * Create a standard ReflectedInvocationException instance. While entirely legal, 
+	 * it's not recommended for a user to create such instances.
+	 *
+	 * [param: message] The error message.
+	 */
+	ReflectedInvocationException(string message) : super(message) {
+		
+	}
+
+}

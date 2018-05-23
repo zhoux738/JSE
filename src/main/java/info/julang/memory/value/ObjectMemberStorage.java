@@ -24,13 +24,6 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import info.julang.execution.symboltable.TypeTable;
 import info.julang.external.exceptions.JSEError;
 import info.julang.memory.MemoryArea;
@@ -40,10 +33,20 @@ import info.julang.typesystem.jclass.ClassMemberMap;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassFieldMember;
 import info.julang.typesystem.jclass.JClassMember;
+import info.julang.typesystem.jclass.JClassMethodMember;
 import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.MemberType;
 import info.julang.typesystem.jclass.builtin.JConstructorType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.util.OneOrMoreList;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * A class for hierarchically storing member values of an object.
@@ -202,26 +205,45 @@ public class ObjectMemberStorage {
 	 * @param name
 	 * @param startingType start searching from this type upwards; 
 	 * if null, from the bottom (the type this value is of by declaration).
+	 * @param includeNonvisible if true, also include private members from ancestor types
 	 * @return a list of overloaded members for that name.
 	 */
-	OneOrMoreList<ObjectMember> getMemberByName(String name, ICompoundType startingType){
+	OneOrMoreList<ObjectMember> getMemberByName(String name, ICompoundType startingType, boolean includeNonvisible){
 		OneOrMoreList<ObjectMember> memberList = members.get(name);
 		if(memberList != null){
 			if(startingType == null){
 				return memberList;
 			} else {
-				OneOrMoreList<ClassMemberLoaded> cmls = cmm.getLoadedMemberByName(startingType, name);
+				if (memberList.hasOnlyOne()) {
+					return memberList;
+				}
+			
+				OneOrMoreList<ClassMemberLoaded> cmls = cmm.getLoadedMemberByName(startingType, name, includeNonvisible);
 				if(cmls != null){
-					List<ObjectMember> tlist = new ArrayList<>();
-					for(ClassMemberLoaded cml :cmls){
-						int rank = cml.getRank();
-						for(ObjectMember om : memberList){
-							if(om.getClassRank() >= rank){
-								tlist.add(om);
-							}
-						}		
+					// Assume we have a class hierarchy from root (2) with each class defining one or more 
+					// overloaded versions of method A.
+					//
+					//   | A1       | 2
+					//   |    A2    | 1
+					//   | A1    A3 | 0
+					//
+					// Calling getLoadedMemberByName from 0 returns cmls: ClassMemberLoaded[] = A1(0), A3(0), A2(1)
+					// Note A1(1) is hidden by A1(0) and thus not returned.
+					//
+					// And memberList would include:
+					//   a1(0), a3(0), a2(1), a1(2)
+					//
+					// Then, for each member in memberlist, determine which version in cmls it is corresponding to,
+					// and add it into the result list if there is a match; when all the versions in cmls are matched 
+					// the algorithm ends.
+					
+					Mixer mixer = new Mixer(cmls);
+					for(ObjectMember om : memberList){
+						OneOrMoreList<ObjectMember> list = mixer.match(om);
+						if (list != null) {
+							return list;
+						}
 					}
-					return new OneOrMoreList<ObjectMember>(tlist);
 				}
 			}
 		}
@@ -281,6 +303,103 @@ public class ObjectMemberStorage {
 		}
 		T getVal() {
 			return val;
+		}
+	}
+	
+	//------- Helper classes used by getMemberByName(String, ICompoundType) to determine --------//
+	//----- the subset of properties that should be exposed on an object of particular type -----//
+	
+	private static class Mixer {
+		private Set<MixerKey> set;
+		private List<ObjectMember> tlist;
+		
+		private Mixer(OneOrMoreList<ClassMemberLoaded> cmls){
+			set = new HashSet<MixerKey>();
+			for(ClassMemberLoaded cml : cmls){
+				set.add(new MixerKey(cml));
+			}
+			tlist = new ArrayList<ObjectMember>();
+		}
+		
+		private OneOrMoreList<ObjectMember> match(ObjectMember om){
+			JValue jval = om.getValue().deref();
+			MixerKey key = new MixerKey(jval, om.getClassRank());
+			if (set.remove(key)){
+				// Found the match
+				tlist.add(om);
+				if (set.size() == 0) {
+					return new OneOrMoreList<ObjectMember>(tlist);
+				}
+			}
+			
+			return null;
+		}
+	}
+	
+	private static class MixerKey {
+		private int rank;
+		private MemberType mtype;
+		private String sig;
+		
+		private MixerKey(ClassMemberLoaded cml) {
+			JClassMember jcm = cml.getClassMember();
+			mtype = jcm.getMemberType();
+			switch(mtype){
+			case FIELD:
+				sig = "";
+				break;
+			case METHOD:
+				JClassMethodMember jcmm = (JClassMethodMember)jcm;
+				sig = jcmm.getMethodType().getSignature();
+				break;
+			default:
+				break;
+			}
+			rank = cml.getRank();
+		}
+		
+		private MixerKey(JValue jval, int rnk) {
+			if (jval instanceof MethodValue){
+				MethodValue mv = (MethodValue)jval;
+				sig = mv.getMethodType().getSignature();
+				mtype = MemberType.METHOD;
+			} else {
+				sig = "";
+				mtype = MemberType.FIELD;
+			}
+			
+			rank = rnk;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((sig == null) ? 0 : sig.hashCode());
+			result = prime * result + ((mtype == null) ? 0 : mtype.hashCode());
+			result = prime * result + rank;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MixerKey other = (MixerKey) obj;
+			if (sig == null) {
+				if (other.sig != null)
+					return false;
+			} else if (!sig.equals(other.sig))
+				return false;
+			if (mtype != other.mtype)
+				return false;
+			if (rank != other.rank)
+				return false;
+			return true;
 		}
 	}
 }

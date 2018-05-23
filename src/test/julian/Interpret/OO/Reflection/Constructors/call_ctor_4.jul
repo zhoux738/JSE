@@ -1,0 +1,28 @@
+import System.Reflection;
+
+class MyClass {
+	int i;
+	MyClass(int i) {
+		this.i = 100 / i;
+	}
+	
+	private MyClass(string s) : this(s.length){
+	}
+}
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+Constructor ctor = null;
+for(Constructor c : ctors){
+	if (c.getParameters()[0].getType()==typeof(string)) {
+		ctor = c;
+		break;
+	}
+}
+
+bool b = false;
+try {
+	MyClass obj = ctor.invoke(new var[]{ "" } );
+} catch (ReflectedInvocationException ex) {
+	b = ex.getCause().getType()==typeof(System.DivByZeroException);
+}

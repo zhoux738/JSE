@@ -53,7 +53,7 @@ public class System_IO_AsyncFileStream_IOTestSuite {
 			}
 			
 			// 2) create a global var "path" and set temp file's full path to it	
-			tt.initialize();
+			tt.initialize(engine.getRuntime());
 			gvt.addVariable("path", new StringValue(heap, temp.getAbsolutePath()));
 			
 			// 3) in script, new up a file stream using "path", and call various methods
@@ -88,7 +88,7 @@ public class System_IO_AsyncFileStream_IOTestSuite {
 			}
 			
 			// 2) create a global var "path" and set temp file's full path to it	
-			tt.initialize();
+			tt.initialize(engine.getRuntime());
 			gvt.addVariable("path", new StringValue(heap, temp.getAbsolutePath()));
 			
 			// 3) in script, new up a file stream using "path", and call various methods
@@ -141,7 +141,7 @@ public class System_IO_AsyncFileStream_IOTestSuite {
 			}
 			
 			// 2) create a global var "path" and set temp file's full path to it	
-			tt.initialize();
+			tt.initialize(engine.getRuntime());
 			gvt.addVariable("path", new StringValue(heap, temp.getAbsolutePath()));
 			
 			// 3) in script, new up a file stream using "path", and call various methods

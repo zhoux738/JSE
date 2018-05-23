@@ -37,6 +37,7 @@ import info.julang.external.interop.ExtValue.ExtObjValue;
 import info.julang.external.interop.ExtValue.ExtStringValue;
 import info.julang.interpretation.expression.Operator;
 import info.julang.memory.MemoryArea;
+import info.julang.typesystem.JArgumentException;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.basic.BasicType;
@@ -48,19 +49,34 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 public final class ValueUtilities {
 
 	/**
+	 * Try to get an integer from the given value. Throws if it's not an int or byte.
+	 * 
+	 * @param val
+	 * @param argName If the value is compatible with integer, throws an JArgumentException with this argument.
+	 * @return An integer extracted from the given value.
+	 */
+	public static int getIntValue(JValue val, String argName){
+		val = val.deref();
+		switch(val.getKind()){
+		case BYTE:
+			return ((ByteValue)val).getByteValue();
+		case INTEGER:
+			return ((IntValue)val).getIntValue();
+		default:
+			break;
+		}
+		
+		throw new JArgumentException(argName);
+	}
+	
+	/**
 	 * Get the built-in kind of this value, if it is an object value (or reference to an object value).
 	 * 
 	 * @param val
 	 * @return
 	 */
 	public static JValueKind getBuiltinKind(JValue val){
-		return getBuiltinKind(val, true);
-	}
-	
-	public static JValueKind getBuiltinKind(JValue val, boolean unwrapAndDeref){
-		if(unwrapAndDeref){
-			val = val.deref();
-		}
+		val = val.deref();
 		if(val.getKind() == JValueKind.OBJECT){
 			ObjectValue ov = (ObjectValue) val;
 			return ov.getBuiltInValueKind();

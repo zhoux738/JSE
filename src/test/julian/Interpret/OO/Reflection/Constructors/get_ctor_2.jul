@@ -1,0 +1,31 @@
+import System.Reflection;
+
+class MyClass {
+	int i;
+	MyClass(int i){
+		init(i);
+	}
+	
+	private void init(int i) {
+		if (i < 0) {
+			throw new ArgumentException("value");
+		}
+		
+		this.i = i;
+	}
+}
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+
+Constructor c0 = ctors[0];
+string res = "";
+try {
+	MyClass obj = c0.invoke(new var[]{ -10 });
+} catch (System.Reflection.ReflectedInvocationException rex) {
+	Exception ex = rex.getCause();
+	if (ex is System.ArgumentException) {
+		res = ex.getMessage();
+		// Console.println(res);
+	}
+}

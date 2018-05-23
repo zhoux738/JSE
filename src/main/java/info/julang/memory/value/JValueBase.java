@@ -85,7 +85,7 @@ public abstract class JValueBase implements JValue {
 		return isConst;
 	}
 	
-	void setConst(boolean isConst) {
+	public void setConst(boolean isConst) {
 		this.isConst = isConst;
 	}
 

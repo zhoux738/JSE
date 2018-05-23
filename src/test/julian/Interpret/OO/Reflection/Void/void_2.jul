@@ -1,0 +1,22 @@
+import System;
+import System.Reflection;
+
+class MyClass {
+	static void fun(){}
+}
+
+Method method = typeof(MyClass).getMethods("fun")[0];
+var ex0, ex1;
+try {
+	var val = method.call(new var[0]);
+} catch (Exception ex){
+	ex0 = ex;
+}
+try {
+	var val = MyClass.fun();
+} catch (Exception ex){
+	ex1 = ex;
+}
+
+bool r0 = ex0.getType() == ex1.getType();
+bool r1 = ex0.getType() == typeof(System.IllegalAssignmentException);

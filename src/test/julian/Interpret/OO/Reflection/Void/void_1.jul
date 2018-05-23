@@ -1,0 +1,10 @@
+import System.Reflection;
+import System.Collection;
+
+class MyClass {
+	void fi(int i){}
+}
+
+Method m = typeof(MyClass).getMethods("fi")[0];
+Type ret = m.getReturnType();
+bool r0 = typeof(Void) == ret;

@@ -36,10 +36,10 @@ summary =
 + "\n * to 2147483647 (2^-31 - 1). It can be hard-cast to [byte](Byte) with all digits above the 7th "
 + "\n * lost; it can also be implicitly cast to [float](Float) without precision change."
 + "\n * "
-+ "\n * int type can participate in arithmetic operations such as '+' and '*' and '/'. It can aslo be"
++ "\n * Integer type can participate in arithmetic operations such as '+' and '*' and '/'. It can aslo be"
 + "\n * concatenated to string value with '+' operator in the literal form of this value."
 + "\n * "
-+ "\n * int is a primitive type. Therefore it can only be assigned to a variable with same type or "
++ "\n * Integer is a primitive type. Therefore it can only be assigned to a variable with same type or "
 + "\n * an [untyped](Any) variable."
 + "\n */"
 )

@@ -41,7 +41,7 @@ public class System_IO_File_IOTestSuite {
 		}
 	    
 		// 2) create a global var "path" and set temp file's full path to it	
-	    tt.initialize();
+	    tt.initialize(engine.getRuntime());
 	    gvt.addVariable("path", new StringValue(heap, temp.getAbsolutePath()));
 		
 		// 3) in file_1.jul, new up a file using "path", and run various methods

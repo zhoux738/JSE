@@ -4,6 +4,8 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
+import static info.jultest.test.Commons.validateBoolValue;
+import static info.jultest.test.Commons.validateCharValue;
 
 import org.junit.Test;
 
@@ -53,6 +55,30 @@ public class System_Util_IIndexable_Tests extends ExceptionTestsBase {
 		validateIntValue(gvt, "i300", 300);
 		validateIntValue(gvt, "i4k", 4000);
 		validateIntValue(gvt, "i10k", 10000);
+	}
+	
+	@Test
+	public void indexerOnArrayTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "index_4.jul"));
+
+		validateIntValue(gvt, "i1", 7);
+		validateIntValue(gvt, "i100", 100);
+		validateBoolValue(gvt, "b", true);
+	}
+	
+	@Test
+	public void indexerOnStringTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "index_5.jul"));
+
+		validateIntValue(gvt, "len", 3);
+		validateCharValue(gvt, "c1", 'b');
+		validateCharValue(gvt, "c2", 'b');
 	}
 	
 	// Verify that indexer syntax ([index]) is interpreted as function call seamlessly.

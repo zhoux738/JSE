@@ -107,7 +107,7 @@ public class InstanceMethodNameResolver implements INameResolver, IContextAware<
 		
 		ICompoundType jct = Accessibility.checkMemberAccess(thisValue.getClassType(), name, type, context, ContextType.IMETHOD, false, false);
 		
-		OneOrMoreList<ObjectMember> mems = thisValue.getMemberValueByClass(name, jct);
+		OneOrMoreList<ObjectMember> mems = thisValue.getMemberValueByClass(name, jct, true);
 		if(mems == null){
 			return null;
 		} else if(mems.hasOnlyOne()){

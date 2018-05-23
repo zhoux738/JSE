@@ -1,0 +1,65 @@
+import System.Reflection;
+import System.Collection;
+
+class MyClass {
+	// INSTANCE //
+	// PUBLIC //
+	// built-in type
+	int i;
+	// array type
+	string[] arr;
+	// custom type
+	MyClass next;
+	
+	// PRIVATE //
+	// built-in type
+	private bool b;
+	// built-in type
+	private string s;
+	// custom array type
+	private MyClass[] children;
+	
+	// STATIC //
+	// built-in type
+	static string s_s;
+	// private custom array type
+	private static MyClass[] s_children;
+}
+
+bool checkAll(Field[] actual, string[] signatures){
+	Map map = new Map();
+	for(Field t : actual){
+		map[t.toString()] = t;
+	}
+	
+	if (map.size() != signatures.length){
+		return false;
+	}
+	
+	bool passed = true;
+	for(string sig : signatures){
+		passed = passed && map[sig] != null;
+	}
+	
+	return passed; 
+}
+
+string[] signatures = new string[]{
+	"[FIELD|i:Integer]",
+	"[FIELD|next:<default>.MyClass]",
+	"[FIELD|children:[<default>.MyClass]]",
+	"[FIELD|b:Bool]",
+	"[FIELD|arr:[String]]",
+	"[FIELD|s:String]",
+	"[FIELD|s_children:[<default>.MyClass]]",
+	"[FIELD|s_s:String]"
+};
+
+Type t = typeof(MyClass);
+Field[] flds = t.getFields();
+
+//for(Field fld : flds){
+//	Console.println(fld);
+//}
+
+bool res = checkAll(flds, signatures);

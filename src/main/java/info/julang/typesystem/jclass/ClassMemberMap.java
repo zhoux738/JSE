@@ -31,6 +31,7 @@ import info.julang.util.OneOrMoreList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -80,7 +81,7 @@ public class ClassMemberMap {
 	 * @return null if not found.
 	 */
 	public OneOrMoreList<ClassMemberLoaded> getLoadedMemberByName(String name){
-		return getLoadedMemberByName(0, name);
+		return getLoadedMemberByName(0, name, true);
 	}
 	
 	/**
@@ -88,15 +89,16 @@ public class ClassMemberMap {
 	 * 
 	 * @param type
 	 * @param name
+	 * @param includeNonvisible if true, include private members too
 	 * @return
 	 */
-	public OneOrMoreList<ClassMemberLoaded> getLoadedMemberByName(JType type, String name){
+	public OneOrMoreList<ClassMemberLoaded> getLoadedMemberByName(JType type, String name, boolean includeNonvisible){
 		Integer rank = rankMap.get(type.getName());
 		if(rank == null){
 			return null;
 		}
 		
-		return getLoadedMemberByName(rank, name);
+		return getLoadedMemberByName(rank, name, includeNonvisible);
 	}
 	
 	/**
@@ -143,7 +145,7 @@ public class ClassMemberMap {
 		return array;
 	}
 
-	private OneOrMoreList<ClassMemberLoaded> getLoadedMemberByName(int rank, String name){
+	private OneOrMoreList<ClassMemberLoaded> getLoadedMemberByName(int rank, String name, boolean includeNonvisible){
 		// Starting from the root type, place all the members of the given name to a map,
 		// with those from subclasses overriding methods of same signature defined in any 
 		// ancestor.
@@ -160,28 +162,36 @@ public class ClassMemberMap {
 		// and calling getLoadedMemberByName(1, "fun") returns
 		//   P.fun(int), G.fun() and P.fun(string)
 		
-//		// Starting from the specified type, try to find a member of the given name.
+		// Starting from the specified type, try to find a member of the given name.
 		if(typeMemsArray != null){
-//			for(int i = rank; i < typeMemsArray.length; i++){
-//				Map<String, OneOrMoreList<ClassMemberLoaded>> map = typeMemsArray[i];
-//				OneOrMoreList<ClassMemberLoaded> cml = map.get(name);
-//				if(cml!=null){
-//					return cml;
-//				}
-//			}
-			
-			Map<MemberKey, ClassMemberLoaded> loaded = new HashMap<>();
+			// The members are added in top-down order but will be returned in bottom-up order.
+			Map<MemberKey, ClassMemberLoaded> loaded = new LinkedHashMap<>();
 			for(int i = typeMemsArray.length - 1; i >= rank ; i--){
 				Map<String, OneOrMoreList<ClassMemberLoaded>> map = typeMemsArray[i];
 				OneOrMoreList<ClassMemberLoaded> cmls = map.get(name);
 				if(cmls!=null){
 					for(ClassMemberLoaded cml : cmls){
-						loaded.put(cml.getClassMember().getKey(), cml);
+						JClassMember jcm = cml.getClassMember();
+						if (i == rank || includeNonvisible || jcm.getAccessibility().isSubclassVisible()) {
+							loaded.put(jcm.getKey(), cml);
+						}
 					}
 				}
 			}
 			
-			OneOrMoreList<ClassMemberLoaded> result = new OneOrMoreList<>(loaded.values());
+			Collection<ClassMemberLoaded> coll = loaded.values();
+			int len = coll.size();
+			ClassMemberLoaded[] arr = new ClassMemberLoaded[len];
+			int i = len - 1;
+			for(ClassMemberLoaded cml : coll){
+				arr[i] = cml;
+				i--;
+			}
+			OneOrMoreList<ClassMemberLoaded> result = new OneOrMoreList<>();
+			for (int j = 0; j < len; j++) {
+				result.add(arr[j]);
+			}
+			
 			return result;
 		}
 		

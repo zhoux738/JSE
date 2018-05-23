@@ -35,6 +35,6 @@ import info.julang.parser.AstInfo;
 public class IsExpression extends TypeExpressionBase {
 
 	public IsExpression(ThreadRuntime rt, AstInfo<ExpressionContext> ec) {
-		super(rt, KnownOperators.IS, ((E_isContext)ec.getAST()).type(), ec.create(((E_isContext)ec.getAST()).expression()), 1);
+		super(rt, KnownOperators.IS, ((E_isContext)ec.getAST()).type(), ec.create(((E_isContext)ec.getAST()).expression()), 0);
 	}
 }

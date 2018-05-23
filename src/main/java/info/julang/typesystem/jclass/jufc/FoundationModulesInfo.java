@@ -44,52 +44,7 @@ public final class FoundationModulesInfo {
 		}
 		
 		allModuleClasses = new HashMap<String, String[]>();
-		allModuleClasses.put("System", new String[]{
-			// Exceptions
-			"Exception",
-			// Hosted method attributes
-			"HOLI",
-			"PlatformObject",
-			"Console",
-			// Annotation
-			"Annotation",
-			// Utilities
-			"Time",
-			"Process"
-		});
-		allModuleClasses.put("System.IO", new String[]{
-			// File System
-			"Item",
-			"File",
-			"Directory",
-			// Stream API
-			"Stream",
-			"FileStream",
-			// Exceptions
-			"Exception"
-		});
-		allModuleClasses.put("System.Lang", new String[]{
-			// Exceptions
-			"Exception"
-		});
-		allModuleClasses.put("System.Util", new String[]{
-			"Interfaces",
-			"Math"
-		});
-		allModuleClasses.put("System.Collection", new String[]{
-			// Containers
-			"Container",
-			"List",
-			"Map",
-			"Queue",
-			// Exceptions
-			"Exception"
-		});
-		allModuleClasses.put("System.Concurrency", new String[]{
-			"Thread",
-			"Lock",
-			"Promise"
-		});
+		SystemRawScriptInfoInitializer.initializeFileLocations(allModuleClasses);
 		
 		initialized = true;
 	}

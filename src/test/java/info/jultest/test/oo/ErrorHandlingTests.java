@@ -3,6 +3,7 @@ package info.jultest.test.oo;
 import info.jultest.test.Commons;
 import info.jultest.test.FakeJThread;
 import info.julang.execution.namespace.NamespacePool;
+import info.julang.execution.simple.SimpleEngineRuntime;
 import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.JThread;
@@ -52,7 +53,12 @@ public class ErrorHandlingTests {
 		mt = new FakeJThread();
 		memory = new SimpleHeapArea();
 		tt = new TypeTable(memory);
-		tt.initialize();
+		
+		ModuleManager mm = new ModuleManager();
+		VariableTable gvt = new VariableTable(null);
+		SimpleEngineRuntime sert = new SimpleEngineRuntime(memory, gvt, tt, mm);
+		
+		tt.initialize(sert);
 		
 		manager = new ModuleManager();
 		manager.loadModule(mt, "System");

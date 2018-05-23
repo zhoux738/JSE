@@ -41,7 +41,7 @@ import info.julang.typesystem.jclass.builtin.JEnumBaseType;
 import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 import info.julang.typesystem.jclass.builtin.JStringType;
-import info.julang.typesystem.jclass.builtin.JTypeType;
+import info.julang.typesystem.jclass.builtin.JTypeStaticDataType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -171,7 +171,7 @@ public final class BuiltinTypeBootstrapper {
 		map.add(new BuiltinTypeBuilder(BuiltinTypes.OBJECT, new JObjectType.BoostrapingBuilder()));
 		map.add(new BuiltinTypeBuilder(BuiltinTypes.STRING, new JStringType.BoostrapingBuilder()));
 		map.add(new BuiltinTypeBuilder(BuiltinTypes.ARRAY, new JArrayBaseType.BoostrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.TYPE, new JTypeType.BoostrapingBuilder()));
+		map.add(new BuiltinTypeBuilder(BuiltinTypes.TYPE, new JTypeStaticDataType.BoostrapingBuilder()));
 		map.add(new BuiltinTypeBuilder(BuiltinTypes.ENUM, new JEnumBaseType.BoostrapingBuilder()));
 		map.add(new BuiltinTypeBuilder(BuiltinTypes.ATTRIBUTE, new JAttributeBaseType.BoostrapingBuilder()));
 		map.add(new BuiltinTypeBuilder(BuiltinTypes.FUNCTION, JFunctionType.PrototypeBuilder));	

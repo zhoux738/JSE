@@ -59,10 +59,23 @@ public class JMath {
 				.add("cos", new CosExecutor())
 				.add("arcsin", new ArcSinExecutor())
 				.add("arccos", new ArcCosExecutor())
-				.add("power", new PowerExecutor());
+				.add("power", new PowerExecutor())
+				.add("checkNumber", new CheckNumberExecutor());
 		}
 		
 	};
+	
+	private static class CheckNumberExecutor extends StaticNativeExecutor<JMath> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
+			FloatValue fv = (FloatValue)args[0].getValue().deref();
+			float f = fv.getFloatValue();
+			boolean b = !Float.isNaN(f);
+			JValue v = TempValueFactory.createTempBoolValue(b);
+			return v;
+		}
+	}
 	
 	private static class PowerExecutor extends StaticNativeExecutor<JMath> {
 		

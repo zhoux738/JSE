@@ -1,0 +1,5 @@
+module ModuleSys.FullMod;
+
+class MyClass {
+
+}

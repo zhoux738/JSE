@@ -24,22 +24,37 @@ SOFTWARE.
 
 package info.julang.execution.symboltable;
 
-import info.julang.external.exceptions.JSEError;
-import info.julang.external.interfaces.IExtMemoryArea;
-import info.julang.memory.MemoryArea;
-import info.julang.memory.value.TypeValue;
-import info.julang.typesystem.JType;
-import info.julang.typesystem.basic.CharType;
-import info.julang.typesystem.jclass.BuiltinTypeBootstrapper;
-import info.julang.typesystem.jclass.JClassType;
-import info.julang.typesystem.jclass.builtin.JArrayType;
-import info.julang.util.OneOrMoreList;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import info.julang.execution.EngineRuntime;
+import info.julang.execution.namespace.NamespacePool;
+import info.julang.execution.threading.JThread;
+import info.julang.execution.threading.JThreadManager;
+import info.julang.execution.threading.StackAreaFactory;
+import info.julang.execution.threading.ThreadRuntime;
+import info.julang.execution.threading.ThreadStack;
+import info.julang.external.exceptions.JSEError;
+import info.julang.external.interfaces.IExtEngineRuntime;
+import info.julang.external.interfaces.IExtMemoryArea;
+import info.julang.interpretation.context.Context;
+import info.julang.memory.MemoryArea;
+import info.julang.memory.StackArea;
+import info.julang.memory.simple.SimpleStackArea;
+import info.julang.memory.value.TypeValue;
+import info.julang.modulesystem.IModuleManager;
+import info.julang.modulesystem.ModuleManager;
+import info.julang.typesystem.JType;
+import info.julang.typesystem.jclass.BuiltinTypeBootstrapper;
+import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.builtin.IDeferredBuildable;
+import info.julang.typesystem.jclass.builtin.JArrayType;
+import info.julang.typesystem.loading.InternalTypeResolver;
+import info.julang.util.OneOrMoreList;
 
 /**
  * Type table contains all the definition of types during runtime.
@@ -80,13 +95,18 @@ public class TypeTable implements ITypeTable {
 		}
 	}
 	
+	private static class ArrayTypeInfo {
+		JArrayType type;
+		TypeValue value;
+	}
+	
 	private boolean initialized;
 	
 	private MemoryArea heap;
 	
 	private Map<String, TypeInfo> types = new HashMap<String, TypeInfo>();
 	
-	private Map<String, JArrayType> arrayTypes = Collections.synchronizedMap(new HashMap<String, JArrayType>());
+	private Map<String, ArrayTypeInfo> arrayTypes = Collections.synchronizedMap(new HashMap<String, ArrayTypeInfo>());
 	
 	public static TypeTable singleton;
 	
@@ -159,10 +179,15 @@ public class TypeTable implements ITypeTable {
 	 * @return null if no type of given name is defined.
 	 */
 	public synchronized TypeValue getValue(String fqname, boolean requireFinalized){
-		TypeInfo info = types.get(fqname);
-		return 
-			info == null ? null : 
-				(requireFinalized && !info.finalized) ? null : info.value;
+		if(fqname.startsWith("[")) {
+			ArrayTypeInfo info = arrayTypes.get(fqname);
+			return info == null ? null : info.value;
+		} else {
+			TypeInfo info = types.get(fqname);
+			return 
+				info == null ? null : 
+					(requireFinalized && !info.finalized) ? null : info.value;
+		}
 	}
 	
 	/**
@@ -188,23 +213,43 @@ public class TypeTable implements ITypeTable {
 	/**
 	 * Initialize this type table with Julian's built-in class types.
 	 * 
-	 * @param builtinTypes
+	 * @param rt
 	 */
-	public synchronized void initialize() {
+	public synchronized void initialize(IExtEngineRuntime rt) {
 		if(!initialized){
+			// Build built-in class types
 			Map<String, JClassType> builtinTypes = BuiltinTypeBootstrapper.bootstrapClassTypes();
-
+			
+			// Add built-in class types to type table
+			List<IDeferredBuildable> deferred = new ArrayList<IDeferredBuildable>();
 			for(Entry<String, JClassType> entry : builtinTypes.entrySet()) {
 				JClassType type = entry.getValue();
-				addType(entry.getKey(), type, true);
+				if (type.deferBuild()){
+					deferred.add((IDeferredBuildable)type);
+				}
 				
+				addType(entry.getKey(), type, true);
 				if (JArrayType.isArrayType(type)) {
-					arrayTypes.put(type.getName(), (JArrayType)type);
+					ArrayTypeInfo ati = new ArrayTypeInfo();
+					ati.type = (JArrayType)type;
+					ati.value = new TypeValue(heap, type);
+					arrayTypes.put(type.getName(), ati);
 				}
 			}
-			
+
+			// Add built-in primitive types to type table
 			BuiltinTypeBootstrapper.bootstrapNonClassTypes(this);
 
+			// Complete building for certain built-in class types which have references to JuFC types
+			EngineRuntime ert = (EngineRuntime)rt;
+			ModuleManager mmg = (ModuleManager)ert.getModuleManager();
+			PreRunningThreadRuntime tr = new PreRunningThreadRuntime(ert);
+			mmg.loadModule(tr.getJThread(), "System.Util");
+			Context context = Context.createSystemLoadingContext(tr);
+			for(IDeferredBuildable bd : deferred){
+				bd.completeBuild(context);
+			}
+			
 			initialized = true;
 		}
 	}
@@ -256,7 +301,8 @@ public class TypeTable implements ITypeTable {
 	 */
 	public JArrayType getArrayType(JType elementType){
 		String name = "[" + elementType.getName() + "]";
-		return arrayTypes.get(name);
+		ArrayTypeInfo ati = arrayTypes.get(name);
+		return ati != null ? ati.type : null;
 	}
 	
 	/**
@@ -267,13 +313,87 @@ public class TypeTable implements ITypeTable {
 	public synchronized void addArrayType(JArrayType arrayType){
 		String etname = arrayType.getElementType().getName();
 		String name = "[" + etname + "]";
-		JType type = arrayTypes.get(name);
-		if(type==null){
-			arrayTypes.put(name, arrayType);
+		ArrayTypeInfo ati = arrayTypes.get(name);
+		if(ati == null){
+			ati = new ArrayTypeInfo();
+			ati.type = arrayType;
+			ati.value = new TypeValue(heap, arrayType);
+			arrayTypes.put(name, ati);
 			
 			// TODO - Add a reference to the element type. Note we must use the innermost element type.
 			//TypeInfo tinfo = types.get(getInnerMostElementType(arrayType));
 			//tinfo.addArrayType(arrayType);
+		}
+	}
+	
+	/**
+	 * An internal thread runtime used only for pre-runtime type loading.
+	 * 
+	 * @author Ming Zhou
+	 */
+	private class PreRunningThreadRuntime implements ThreadRuntime {
+
+		private EngineRuntime engineRt;
+		private ThreadStack ts;
+		
+		private PreRunningThreadRuntime(EngineRuntime engineRt){
+			this.engineRt = engineRt;
+			final StackArea ssa = new SimpleStackArea();
+			this.ts = new ThreadStack(new StackAreaFactory(){
+
+				@Override
+				public StackArea createStackArea() {
+					return ssa;
+				}
+				
+			}, new VariableTable(null));
+			this.ts.pushFrame();
+			this.ts.setNamespacePool(new NamespacePool());
+		}
+		
+		@Override
+		public JThread getJThread(){
+			return null;
+		}
+		
+		@Override
+		public MemoryArea getHeap() {
+			return engineRt.getHeap();
+		}
+
+		@Override
+		public ITypeTable getTypeTable() {
+			return engineRt.getTypeTable();
+		}
+		
+		@Override
+		public IVariableTable getGlobalVariableTable() {
+			return engineRt.getGlobalVariableTable();
+		}
+
+		@Override
+		public StackArea getStackMemory() {
+			return ts.getStackArea();
+		}
+
+		@Override
+		public ThreadStack getThreadStack() {
+			return ts;
+		}
+
+		@Override
+		public IModuleManager getModuleManager() {
+			return engineRt.getModuleManager();
+		}
+
+		@Override
+		public InternalTypeResolver getTypeResolver() {
+			return engineRt.getTypeResolver();
+		}
+
+		@Override
+		public JThreadManager getThreadManager() {
+			return engineRt.getThreadManager();
 		}
 	}
 }

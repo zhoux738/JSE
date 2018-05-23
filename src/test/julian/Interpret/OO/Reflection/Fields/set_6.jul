@@ -1,0 +1,17 @@
+// set with illegal value
+import System.Reflection;
+
+class C {
+	public int i;
+}
+
+C c = new C();
+Field field = c.getType().getField("i");
+
+bool b1 = false;
+try {
+	field.set(c, "ab");
+} catch (System.Reflection.ReflectedInvocationException ex){
+	Exception _ex = ex.getCause();
+	b1 = _ex is System.IllegalAssignmentException && _ex.getMessage().contains("Cannot assign a value");
+}

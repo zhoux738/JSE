@@ -1,0 +1,28 @@
+// instance, obj.typ == field.typ
+import System.Reflection;
+
+class MyClass {
+	private int i;
+	private string str;
+	
+	MyClass(int i, string str){
+		this.i = i;
+		this.str = str;
+	}
+	
+	string toString(){
+		return i + '_' + str;
+	}
+}
+
+MyClass mc = new MyClass(5, "abc");
+Type t = mc.getType();
+Field field = null;
+
+field = t.getField("i");
+field.set(mc, 7);
+
+field = t.getField("str");
+field.set(mc, "def");
+
+string s = mc.toString();

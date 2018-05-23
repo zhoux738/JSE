@@ -24,6 +24,7 @@ SOFTWARE.
 
 package info.julang.execution;
 
+import info.julang.langspec.Keywords;
 import info.julang.memory.value.JValue;
 
 public final class ArgumentUtil {
@@ -39,7 +40,7 @@ public final class ArgumentUtil {
 			return null;
 		}
 		
-		return "this".equals(args[0].getName()) ? args[0] : null;
+		return Keywords.THIS.equals(args[0].getName()) ? args[0] : null;
 	}
 
 	/**

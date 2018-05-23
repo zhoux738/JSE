@@ -1,0 +1,17 @@
+class C {
+
+}
+
+class D {
+
+}
+
+Type t1 = typeof(C);
+Type t2 = typeof(C);
+bool bt0 = t1 == t2;
+
+Type t3 = typeof(D);
+bool bt1 = t1 != t3;
+bool bt2 = t3 != null;
+bool bt3 = t2 != null;
+bool bt4 = t3 == new D().getType();

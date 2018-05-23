@@ -1,0 +1,39 @@
+// argument-induced exceptions
+import System.Reflection;
+
+class MyClass {
+	int dbl(int input){
+		return input;
+	}
+}
+
+MyClass mc = new MyClass();
+Method mtd = mc.getType().getMethods("dbl")[0];
+
+bool b0 = false;
+try {
+	int res = mtd.call(new var[]{null, 3});
+} catch (System.Reflection.ReflectedInvocationException ex){
+	b0 = ex.getMessage().contains("Cannot invoke an instance method without a target object");
+}
+
+bool b1 = false;
+try {
+	int res = mtd.call(new var[0]);
+} catch (System.Reflection.ReflectedInvocationException ex){
+	b1 = ex.getMessage().contains("Cannot invoke an instance method without a target object");
+}
+
+bool b2 = false;
+try {
+	int res = mtd.call(new var[]{mc});
+} catch (System.Reflection.ReflectedInvocationException ex){
+	b2 = ex.getCause().getMessage().contains("Wrong number of arguments");
+}
+
+bool b3 = false;
+try {
+	int res = mtd.call(new var[]{5});
+} catch (System.Reflection.ReflectedInvocationException ex){
+	b3 = ex.getMessage().contains("Cannot invoke an instance method against a primitive value");
+}

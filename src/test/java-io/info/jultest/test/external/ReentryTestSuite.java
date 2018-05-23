@@ -9,7 +9,7 @@ import info.julang.external.JulianScriptEngine;
 import info.julang.external.exceptions.ExternalBindingException;
 import info.julang.external.exceptions.JSEException;
 
-public class ReentryTests {
+public class ReentryTestSuite {
 	
 	private JulianScriptEngine jse = null;
 	

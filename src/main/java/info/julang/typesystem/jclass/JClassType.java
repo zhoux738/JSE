@@ -81,7 +81,14 @@ public class JClassType extends JInterfaceType implements IMapped {
 	
 	private JClassConstructorMember[] constructorArray;
 	
-	// private JClassMethodMember[] absMethods;
+	/**
+	 * A flag used to mark the state of initialization. As long as this field is set to true, the class
+	 * is free to freeze its properties and generate some others with permanent effect. Set this flag
+	 * to false for built-in types which involves multi-staged bootstrapping process and use 
+	 * {@link info.julang.typesystem.jclass.builtin.IDeferredBuildable#preInitialize() preInitialize()} 
+	 * to flip it back. <code>preInitialize()</code> will be called when the type is eventually sealed.
+	 */
+	protected boolean initialized;
 	
 	//----------------------- Constructors -----------------------//
 	
@@ -105,13 +112,14 @@ public class JClassType extends JInterfaceType implements IMapped {
 	public JClassType(String name, JClassType parent, JClassMember[] members, JClassProperties props){
 		super(name, members, new JInterfaceType[0], props);
 		this.parent = parent == null ? JObjectType.getInstance() : parent;
+		this.initialized = true;
 	}
 	
 	/**
 	 * Create a new JClassType. Only used by Builder.
 	 */
 	protected JClassType(){
-		
+		this.initialized = true;
 	}
 	
 	//----------------------- Members only allowed in a class -----------------------//
@@ -169,19 +177,21 @@ public class JClassType extends JInterfaceType implements IMapped {
 	public OneOrMoreList<JClassMethodMember> getStaticMethodMembersByName(String name) {
 		ClassMemberMap memMap = getMembers(true);
 		OneOrMoreList<ClassMemberLoaded> cmls = memMap.getLoadedMemberByName(name);
-		OneOrMoreList<JClassMethodMember> res = new OneOrMoreList<JClassMethodMember>();
-		if(cmls != null){
-			for(ClassMemberLoaded cml : cmls){
-				JClassMember jcm = cml.getClassMember();
-				if (jcm.getMemberType() == MemberType.METHOD){
-					res.add((JClassMethodMember)jcm);
-				}
-			}
-		}
-		
-		return res;
+		return getAllMethodMembers(cmls);
 	}
-
+	
+	/**
+	 * Get all instance methods on visible on this class. This include all methods defined locally 
+	 * and any public/protected method defined above the hierarchy.
+	 * 
+	 * @param name the method's name
+	 */
+	public OneOrMoreList<JClassMethodMember> getInstanceMethodMembersByName(String name) {
+		ClassMemberMap memMap = getMembers(false);
+		OneOrMoreList<ClassMemberLoaded> cmls = memMap.getLoadedMemberByName(this, name, false);
+		return getAllMethodMembers(cmls);
+	}
+	
 	@Override
 	public JClassMember[] getClassStaticMembers(){
 		// Note:
@@ -217,12 +227,22 @@ public class JClassType extends JInterfaceType implements IMapped {
 	public ClassMemberMap getMembers(boolean isStatic){
 		if(isStatic){
 			if(staticMembers == null){
-				staticMembers = new ClassMemberMap(this, isStatic);
+				ClassMemberMap cmp = new ClassMemberMap(this, isStatic);
+				if (this.initialized) {
+					staticMembers = cmp;
+				} else {
+					return cmp;
+				}
 			}
 			return staticMembers;
 		} else {
 			if(instanceMembers == null){
-				instanceMembers = new ClassMemberMap(this, isStatic);
+				ClassMemberMap cmp = new ClassMemberMap(this, isStatic);
+				if (this.initialized) {
+					instanceMembers = cmp;
+				} else {
+					return cmp;
+				}
 			}
 			return instanceMembers;
 		}
@@ -290,8 +310,6 @@ public class JClassType extends JInterfaceType implements IMapped {
 		return parent;
 	}
 	
-
-	
 	/**
 	 * Get the corresponding value's kind for this type.
 	 * <p/>
@@ -324,6 +342,15 @@ public class JClassType extends JInterfaceType implements IMapped {
 		}
 		
 		return super.getConvertibilityTo(another);
+	}
+	
+	/**
+	 * If this returns true, part of the type is to be built after the initialization. This is only applicable to 
+	 * built-in types.The caveat is that if this returns, this instance can be cast to 
+	 * {@link info.julang.typesystem.jclass.builtin.IDeferredBuildable IDeferredBuildable}. 
+	 */
+	public boolean deferBuild(){
+		return false;
 	}
 	
 	/**
@@ -371,4 +398,19 @@ public class JClassType extends JInterfaceType implements IMapped {
 		
 		return null;
 	}
+	
+	private OneOrMoreList<JClassMethodMember> getAllMethodMembers(OneOrMoreList<ClassMemberLoaded> cmls){
+		OneOrMoreList<JClassMethodMember> res = new OneOrMoreList<JClassMethodMember>();
+		if(cmls != null){
+			for(ClassMemberLoaded cml : cmls){
+				JClassMember jcm = cml.getClassMember();
+				if (jcm.getMemberType() == MemberType.METHOD){
+					res.add((JClassMethodMember)jcm);
+				}
+			}
+		}
+		
+		return res;
+	}
+
 }

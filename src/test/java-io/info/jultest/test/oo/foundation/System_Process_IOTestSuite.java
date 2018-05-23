@@ -126,7 +126,7 @@ public class System_Process_IOTestSuite {
 			try {
 				// 2) create a global var "path" and set temp file's full path
 				// to it
-				tt.initialize();
+				tt.initialize(engine.getRuntime());
 				String path = temp.getAbsolutePath();
 				gvt.addVariable("path", new StringValue(heap, path));
 
@@ -242,7 +242,7 @@ public class System_Process_IOTestSuite {
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 
 		// 2) pass along classpath
-		tt.initialize();
+		tt.initialize(engine.getRuntime());
 		gvt.addVariable("cp", new StringValue(heap, cp));
 
 		// 3) in process_4.jul, new up a file using "path", and use its
@@ -285,7 +285,7 @@ public class System_Process_IOTestSuite {
 
 		try {
 			// 2) create a global var "path" and set temp file's full path to it
-			tt.initialize();
+			tt.initialize(engine.getRuntime());
 			String path = temp.getAbsolutePath();
 			String path2 = temp2.getAbsolutePath();
 			gvt.addVariable("path", new StringValue(heap, path));

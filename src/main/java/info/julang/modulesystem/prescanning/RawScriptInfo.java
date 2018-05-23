@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.BadSyntaxException;
 import info.julang.interpretation.syntax.ClassDeclInfo;
 import info.julang.interpretation.syntax.SyntaxHelper;

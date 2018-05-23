@@ -66,6 +66,8 @@ public enum KnownJSException {
 	
 	ConcurrentModification("System.Collection.ConcurrentModificationException"),
 	
+	ReflectedInvocation("System.Reflection.ReflectedInvocationException"),
+	
 	;
 	
 	private String fullName;

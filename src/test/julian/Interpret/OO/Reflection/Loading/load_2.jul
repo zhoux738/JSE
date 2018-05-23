@@ -1,0 +1,6 @@
+import System.Reflection;
+
+Type typ = Type.load("ModuleSys.ReflTest.ControlPanel");
+typ = Type.load("ModuleSys.ReflTest.ControlPanel");
+Field f = typ.getField("Volume");
+int v = f.get(null);

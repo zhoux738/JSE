@@ -428,7 +428,7 @@ public final class DocModel {
 
 		/**
 		 * Process the documentation block for this syntax element. The input is a string enclosed by
-		 * &#47*; and *&#47;
+		 * &#47;* and *&#47;
 		 */
 		public void processRawDoc(String raw){
 			String[] lines = raw.split("\n");
@@ -551,7 +551,7 @@ public final class DocModel {
 					if (header.length() > 0) { // Header detected
 						String contents = "";
 						if (mark < l2.length()){
-							contents = l2.substring(mark).trim();
+							contents = l2.substring(mark).trim() + ' ';
 						}
 						
 						Pair<String, String> kpair = null;
@@ -1383,6 +1383,9 @@ public final class DocModel {
 			ConversionHelper.addTypeRefsFromArray(
 				attributes.getStringArray(AnnotationKVMap.Keys.REFERENCES),
 				this.references);
+			ConversionHelper.addTypeRefsFromArray(
+				attributes.getStringArray(AnnotationKVMap.Keys.INTERFACES),
+				this.interfaces);
 		}
 		
 		@Override

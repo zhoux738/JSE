@@ -1,0 +1,46 @@
+// with class A : B, call B.f on a
+import System.Reflection;
+
+interface MyInf {
+	int func(int input);
+}
+
+class MyCls2 : MyInf {
+	int func(int input){
+		return input * 2;
+	}
+}
+
+abstract class MyCls3Base : MyInf {
+	int func(int input){
+		return input * 3;
+	}
+	
+	abstract int func3(int input);
+}
+
+class MyCls3 : MyCls3Base {
+	int func3(int input){
+		return input * 3;
+	}
+}
+
+Method method = typeof(MyInf).getMethods("func")[0];
+
+bool r0 = false;
+try {
+	method.callExact(new var[]{new MyCls2(), 10});
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	r0 = ex.getMessage().contains("not implemented.");
+}
+
+MyCls3 mc3 = new MyCls3();
+method = typeof(MyCls3Base).getMethods("func3")[0];
+bool r1 = false;
+try {
+	method.callExact(new var[]{mc3, 10});
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	r1 = ex.getMessage().contains("not implemented.");
+}
+
+int val = method.call(new var[]{mc3, 10});

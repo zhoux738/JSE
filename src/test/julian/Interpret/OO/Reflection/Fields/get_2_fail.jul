@@ -1,0 +1,44 @@
+// obj.typ : field.typ
+import System.Reflection;
+
+class UrClass  {
+	private int i;
+	private string str;
+	UrClass(int i, string s){
+		this.i = i;
+		this.str = s;
+	}
+}
+
+class MyClass : UrClass {
+	private int i;
+	MyClass(int i, string s):super(i,s){
+		this.i = i * 2;
+	}
+}
+
+bool b0, b1;
+
+MyClass mc = new MyClass(5, "abc");
+Type t = null;
+Field field = null;
+
+t = typeof(UrClass);
+
+try {
+	field = t.getField("i");
+	int i = field.get(mc);
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	b0 = true;
+}
+
+try {
+	field = t.getField("str");
+	string str = field.get(mc);
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	b1 = true;
+}
+
+t = typeof(MyClass);
+field = t.getField("i");
+int i = field.get(mc);

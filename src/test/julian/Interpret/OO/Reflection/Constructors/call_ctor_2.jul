@@ -1,0 +1,18 @@
+import System.Reflection;
+
+abstract class MyClass {
+	MyClass(){
+	}
+}
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+Constructor c0 = ctors[0];
+
+bool res = false;
+try {
+  MyClass obj = c0.invoke(new var[0]);
+  int val = obj.i;
+} catch (System.Reflection.ReflectedInvocationException refl){
+  res = refl.getCause().getMessage().contains("Cannot instantiate an abstract class");
+}

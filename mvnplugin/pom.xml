@@ -72,18 +72,7 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <!-- Contains all the templates -->
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <includes>
-          <include>**/*</include>
-        </includes>
-      </resource>
-    </resources>
-    
-    <!-- <sourceDirectory>E:\Personal\Development\repo\jse\src\main\java</sourceDirectory> -->
+  <build>    
     <plugins> 
        <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -138,6 +127,26 @@
         </executions>
       </plugin>
     </plugins>
+  
+    <!-- Contains all the templates --> 
+    <resources>
+      <resource>
+        <directory>../src/main/java</directory>
+        <includes>
+          <include>**/*.jul</include>
+          <include>**/jse.*.template</include>
+        </includes>
+        <excludes>
+          <exclude>**/*test*.*</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
 
 </project>

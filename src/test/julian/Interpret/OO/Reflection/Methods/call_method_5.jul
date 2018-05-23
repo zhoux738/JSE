@@ -1,0 +1,24 @@
+// throw
+import System.Reflection;
+
+class MyClass {
+	int dbl(int input){
+		if (input > 0) {
+			return dbl(input--);
+		} else {
+			throw new Exception("This error is doomed.");
+		}
+	}
+}
+
+MyClass mc = new MyClass();
+Method mtd = mc.getType().getMethods("dbl")[0];
+
+bool b = false;
+try {
+	int res = mtd.call(new var[]{mc, 3});
+} catch (System.Reflection.ReflectedInvocationException ex){
+	b = ex.getCause().getMessage().equals("This error is doomed.");
+}
+//Console.println(res);
+

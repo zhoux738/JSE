@@ -52,7 +52,7 @@ public class TypeConversionTests {
 		
 		EngineRuntime rt = engine.getRuntime();
 		ITypeTable tt = rt.getTypeTable();
-		tt.initialize();
+		tt.initialize(rt);
 		
 		Assert.assertEquals(3, toValue(new IntValue(rt.getHeap(), 3)));
 		Assert.assertEquals("abc", toValue(new StringValue(rt.getHeap(), "abc")));
@@ -99,7 +99,7 @@ public class TypeConversionTests {
 		
 		EngineRuntime rt = engine.getRuntime();
 		ITypeTable tt = rt.getTypeTable();
-		tt.initialize();
+		tt.initialize(rt);
 		
 		Context ctxt = makeUnthreadedContext(rt);
 		
@@ -134,7 +134,7 @@ public class TypeConversionTests {
 		
 		EngineRuntime rt = engine.getRuntime();
 		ITypeTable tt = rt.getTypeTable();
-		tt.initialize();
+		tt.initialize(rt);
 		
 		Context ctxt = makeUnthreadedContext(rt);
 		
@@ -156,7 +156,7 @@ public class TypeConversionTests {
 		
 		EngineRuntime rt = engine.getRuntime();
 		ITypeTable tt = rt.getTypeTable();
-		tt.initialize();
+		tt.initialize(rt);
 		
 		Context ctxt = makeUnthreadedContext(rt);
 		

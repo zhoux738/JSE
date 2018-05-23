@@ -1,0 +1,12 @@
+import System.Util;
+
+string res = "";
+string[] strs = new string[]{"aaa", "bbb", "ccc"};
+IIterator iter = strs.getIterator();
+for(var v : iter){
+	res += v;
+}
+
+bool b0 = iter.hasNext();
+iter = strs.getIterator();
+bool b1 = iter.hasNext();

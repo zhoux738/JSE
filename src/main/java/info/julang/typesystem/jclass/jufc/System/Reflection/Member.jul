@@ -1,0 +1,67 @@
+module System.Reflection;
+
+import System;
+
+/*
+ * The kind of a class member.
+ */
+enum MemberKind {
+
+    /* The member is a field and can be cast to [Field](type: System.Reflection.Field). */
+	FIELD,
+	
+    /* The member is a method and can be cast to [Method](type: System.Reflection.Method). */
+	METHOD,
+
+    /* The member is a constructor and can be cast to [Constructor](type: System.Reflection.Constructor). */
+	CONSTRUCTOR
+}
+
+/*
+ * This attribute is used to mark the visibility of a type member though reflection API.
+ *
+ * By default, all the members of a user-defined type, regardless of the visibility as defined in source code, 
+ * are exposed through reflection. So one can invoke a private method without any problem. This attribute
+ * can be used to suppress the visibility of members which are considered absolutely off-limit to any means of access.
+ *
+ * System APIs, on the other hand, do not expose non-public members though reflection. This attribute is
+ * sometimes used to override the default behavior to grant visibility to certain non-public members. Such usage,
+ * however, is generally rare.
+ */
+[AttributeType(allowMultiple=false, target=AttributeTarget.CONSTRUCTOR|AttributeTarget.METHOD|AttributeTarget.FIELD)] 
+attribute Reflected {
+	bool visible;
+}
+
+/*
+ * The interface defining certain shared properties of a class member.
+ */
+interface Member {
+
+    /*
+	 * Get the [kind](MemberKind) of this member. Typically used before downcasting.
+	 *
+	 * [return] The kind of this member.
+	 */
+	MemberKind getKind();
+	
+    /*
+	 * Get the name of this member. Note due to class inheritance and method overloading, there could
+	 * be multiple methods possessing the same name. All the constructors have the same name as that of 
+	 * the containing class.
+	 * 
+	 * [return] The member's name.
+	 */	
+	string getName();
+	
+	/*
+	 * Whether this member is static. Constructors are always non-static, but methods and fields can 
+	 * vary for each member.
+	 *
+	 * If a member is static, accessing to it requires specification of the instance target, which is 
+	 * prominently supplied among the arguments upon the pertaining calls.
+	 *
+	 * [return] True if the member is static; false instance-scoped.
+	 */
+	bool isStatic();
+}

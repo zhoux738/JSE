@@ -84,8 +84,9 @@ public class PrimaryExpression extends ExpressionBase {
 			operand = Operand.createBoolOperand(false);
 			break;
 		case JulianLexer.THIS:
-			if(context.getContextType() == ContextType.FUNCTION){
-				throw new RuntimeCheckException("'this' cannot be used in global function or script.");
+			ContextType ct = context.getContextType();
+			if(ct == ContextType.FUNCTION || ct == ContextType.SMETHOD){
+				throw new RuntimeCheckException("'this' cannot be used in script, global function or static method.");
 			}
 			operand = NameOperand.THIS;
 			break;

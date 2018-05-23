@@ -1,0 +1,21 @@
+import System.Reflection;
+
+bool b = false;
+try {
+	Type typ = Type.load("ModuleSys.ReflTest2.MyClass");
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	b = ex.getCause().getMessage().contains("System.ClassLoadingException");
+}
+
+/*
+As of 0.1.17, the message is in format like this:
+System.Reflection.ReflectedInvocationException: Failed when loading type through reflection.
+  from  (...\repo\jse\src\test\julian\Interpret\OO\Reflection\Loading\load_5.jul, 3)
+Caused by:
+System.Exception: Multiple exceptions:
+[1]
+    ... ...
+[2]
+    System.ClassLoadingException: Encountered an error when loading ModuleSys.ReflTest2.MyClass
+    ... ...
+*/

@@ -10,6 +10,7 @@ import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.interfaces.JValueKind;
+import info.julang.interpretation.errorhandling.KnownJSException;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
@@ -210,6 +211,12 @@ public class ClassAccTests {
 		
 		//	int vv2 = Settings.getVolume();
 		validateIntValue(gvt, "vv2", 100);
+	}
+	
+	@Test
+	public void classInitTest1() throws EngineInvocationError {
+ 		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.OO, FEATURE);
+		runner.executeAndExpect("class_init_1.jul", KnownJSException.RuntimeCheck, null, "static method");
 	}
 
 }

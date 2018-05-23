@@ -38,10 +38,11 @@ public class JClassInitializerMember extends JClassMethodMember {
 	private String fieldName;
 	
 	public JClassInitializerMember(
+		ICompoundType definingType,
 		String fieldName,
 		boolean isStatic,
 		JMethodType type) {
-		super(null, "__init_" + fieldName, Accessibility.HIDDEN, isStatic, false, type, null);
+		super(definingType, "__init_" + fieldName, Accessibility.HIDDEN, isStatic, false, type, null);
 		this.fieldName = fieldName;
 	}
 

@@ -96,6 +96,22 @@ public class JParameter implements IUntyped {
 		return names;
 	}
 	
+	public static String getSignature(JParameter[] params, boolean skipFirst) {
+		int start = skipFirst ? 1 : 0;
+		StringBuilder sig = new StringBuilder();
+		int last = params.length - 1;
+		for(int i = start; i<last; i++){
+			sig.append(params[i].getType().getName());
+			sig.append(", ");
+		}
+		
+		if (last >= start) {
+			sig.append(params[last].getType().getName());
+		}
+		
+		return sig.toString();
+	}
+	
 	//--------------- Object (for debugging) ---------------//
 	
 	@Override

@@ -1,0 +1,19 @@
+import System;
+import System.Reflection;
+
+Type vtyp = typeof(Void);
+
+string s0 = vtyp.getFullName();
+string s1 = vtyp.getSimpleName();
+
+bool b0 = vtyp.isPrimitive();
+bool b1 = vtyp.isClass();
+bool b2 = vtyp.isInterface();
+bool b3 = vtyp.isArray();
+bool b4 = vtyp.isFinal();
+bool b5 = vtyp.getParent() == null;
+bool b6 = vtyp.getModuleName() == null;
+
+int i1 = vtyp.getConstructors().length;
+int i2 = vtyp.getMethods().length;
+int i3 = vtyp.getInterfaces().length;

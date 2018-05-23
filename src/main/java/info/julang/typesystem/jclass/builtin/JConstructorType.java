@@ -40,6 +40,7 @@ import info.julang.typesystem.jclass.MethodExecutable;
 public class JConstructorType extends JFunctionType implements ExecutableType {
 	
 	private boolean hosted;
+	private JType containingType;
 	
 	/**
 	 * Create a new Constructor type with script-defined executable.
@@ -50,6 +51,7 @@ public class JConstructorType extends JFunctionType implements ExecutableType {
 	 */
 	public JConstructorType(String name, JParameter[] params, MethodExecutable executable, JType containingType) {
 		super(name, params, null, executable);
+		this.containingType = containingType;
 	}
 	
 	/**
@@ -62,6 +64,7 @@ public class JConstructorType extends JFunctionType implements ExecutableType {
 	public JConstructorType(String name, JParameter[] params, HostedExecutable executable, JType containingType) {
 		super(name, params, null, executable);
 		hosted = true;
+		this.containingType = containingType;
 	}
 	
 	/**
@@ -107,5 +110,20 @@ public class JConstructorType extends JFunctionType implements ExecutableType {
 	@Override
 	public FunctionKind getFunctionKind(){
 		return FunctionKind.CONSTRUCTOR;
+	}
+	
+	/**
+	 * Get the type that contains this constructor.
+	 */
+	public JType getContainingType(){
+		return containingType;
+	}
+	
+	/**
+	 * Get a signature of this constructor, including name and param list.
+	 */
+	@Override
+	public String getSignature() {
+		return containingType.getName() + "(" + JParameter.getSignature(this.getParams(), true) + ")";
 	}
 }

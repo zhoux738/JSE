@@ -42,23 +42,33 @@ import info.julang.typesystem.JType;
 public abstract class TypeExpressionBase extends ExpressionBase {
 
 	private TypeContext tc;
-	private int indexOfType;
+	private int indexOfValue;
 	
-	protected TypeExpressionBase(ThreadRuntime rt, Operator op, TypeContext tc, AstInfo<ExpressionContext> ec, int indexOfType) {
+	/**
+	 * @param rt runtime
+	 * @param op the operator
+	 * @param tc the AST for type
+	 * @param ec the AST for expression. Can be null if indexOfValue == -1
+	 * @param indexOfValue the index of operand that represents value. Can be -1, 0 and 1. If -1, there is no value operand in this expression.
+	 */
+	protected TypeExpressionBase(ThreadRuntime rt, Operator op, TypeContext tc, AstInfo<ExpressionContext> ec, int indexOfValue) {
 		super(rt, ec, op);
 		this.tc = tc;
-		this.indexOfType = indexOfType;
+		this.indexOfValue = indexOfValue;
 	}
 
 	@Override
 	public Operand evaluate(Context context) {
-		Operand[] operands = new Operand[2];
-		IExpression expr = getExpression(ec);
-		operands[1 - indexOfType] = expr.evaluate(context);
+		boolean indexAndType = indexOfValue >= 0;
+		Operand[] operands = new Operand[indexAndType ? 2 : 1];
+		if (indexAndType) {
+			IExpression expr = getExpression(ec);
+			operands[indexOfValue] = expr.evaluate(context);
+		}
 
 		ParsedTypeName ptn = SyntaxHelper.parseTypeName(tc);
 		JType type = context.getTypeResolver().resolveType(ptn);
-		operands[indexOfType] = new TypeOperand(type);
+		operands[indexAndType ? 1 - indexOfValue : 0] = new TypeOperand(type);
 		
 		Operand ores = op.apply(context, operands);
 		return ores;

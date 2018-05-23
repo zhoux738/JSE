@@ -63,6 +63,7 @@ public class JSECodeGenMojo extends AbstractMojo {
 
     public void execute() throws MojoExecutionException {
     	Log logger = getLog();
+    	GlobalLogger.set(logger);
 
     	if (skip) {
     		logger.info("Pre-compile source generation disabled.");
@@ -77,6 +78,7 @@ public class JSECodeGenMojo extends AbstractMojo {
     	try {
         	AOTInfoIndexer loader = new AOTInfoIndexer(jufcRoot, logger);
         	loader.loadAll();
+    		logger.info("IMPORTANT - refresh project in IDE to synchronize the latest changes. Failing to do so may cause build and test errors in IDE.");
     	} catch (Throwable ex) {
         	logger.error(ex);
         	throw ex;

@@ -30,6 +30,7 @@ import info.julang.typesystem.BuiltinTypes;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
+import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassType;
 
 /**
@@ -107,7 +108,7 @@ public class JArrayType extends JArrayBaseType {
 			return false;
 		}
 		
-		JClassType ctype = (JClassType) type;
+		ICompoundType ctype = (ICompoundType) type;
 		
 		return ctype.getParent() == JArrayBaseType.getInstance();
 	}
@@ -156,5 +157,10 @@ public class JArrayType extends JArrayBaseType {
 		}
 		
 		return super.getConvertibilityTo(another);
+	}
+	
+	@Override
+	public boolean deferBuild(){
+		return false;
 	}
 }

@@ -32,7 +32,7 @@ alias = "char",
 name = "Char",
 summary = 
     "/*"
-+ "\n * The char type in Julian language. A char value corresponds to the literal representation of "
++ "\n * The character type in Julian language. A char value corresponds to the literal representation of "
 + "\n * the code point on ASCII table."
 + "\n * "
 + "\n * In Julian, the char value can be written in literal form quoted with single quote ('). Usually"
@@ -42,13 +42,13 @@ summary =
 + "\n * '\\NNN', where N is a digit that is between 0 and 7, inclusive. Note the max value is '\176' (or"
 + "\n * 126 if cast to a byte or an integer)."
 + "\n * "
-+ "\n * char type can be hard-cast to byte or integer value as the index of its code point on ASCII table."
++ "\n * Char type can be hard-cast to byte or integer value as the index of its code point on ASCII table."
 + "\n * For example, 'a' has a numerical value of 97."
 + "\n * "
-+ "\n * char type can be concatenated to other characters or string value with '+' operator in the literal"
++ "\n * Char type can be concatenated to other characters or string value with '+' operator in the literal"
 + "\n * form of this value."
 + "\n * "
-+ "\n * char is a primitive type. Therefore it can only be assigned to a variable with same type or "
++ "\n * Char is a primitive type. Therefore it can only be assigned to a variable with same type or "
 + "\n * an [untyped](Any) variable."
 + "\n */"
 )

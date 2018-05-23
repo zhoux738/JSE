@@ -27,10 +27,14 @@ package info.julang.typesystem.jclass.builtin;
 import info.julang.execution.Argument;
 import info.julang.execution.ArgumentUtil;
 import info.julang.execution.Result;
+import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.hosting.HostedExecutable;
 import info.julang.interpretation.IllegalArgumentsException;
+import info.julang.interpretation.context.Context;
+import info.julang.interpretation.internal.NewObjExecutor;
+import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.ArrayValueFactory;
 import info.julang.memory.value.BasicArrayValue;
@@ -38,13 +42,16 @@ import info.julang.memory.value.BasicArrayValueExposer;
 import info.julang.memory.value.CharValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.memory.value.ValueUtilities;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
 import info.julang.typesystem.JArgumentException;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.VoidType;
 import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.basic.CharType;
 import info.julang.typesystem.basic.IntType;
@@ -52,16 +59,21 @@ import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.conversion.TypeIncompatibleException;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
+import info.julang.typesystem.jclass.ICompoundTypeBuilder;
+import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassFieldMember;
 import info.julang.typesystem.jclass.JClassMethodMember;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
+import info.julang.typesystem.jclass.JInterfaceType;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.TypeBootstrapper;
 import info.julang.typesystem.jclass.builtin.JObjectType.MethodNames;
 import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
 import info.julang.typesystem.jclass.builtin.doc.JulianFieldMemberDoc;
 import info.julang.typesystem.jclass.builtin.doc.JulianFieldMembersDoc;
+import info.julang.typesystem.jclass.jufc.SystemTypeNames;
+import info.julang.typesystem.loading.ITypeResolver;
 
 /**
  * The String type as in<br/>
@@ -97,7 +109,8 @@ summary =
 + "\n * "
 + "\n * String supports concatenaton operation by '+', which can also be used along with values of other types, as long as at"
 + "\n * least one operand is string."
-+ "\n */"
++ "\n */",
+interfaces = { "System.Util.IComparable", "System.Util.IIndexable", "System.Util.IIterable" }
 )
 @JulianFieldMembersDoc(
 	@JulianFieldMemberDoc(
@@ -105,7 +118,7 @@ summary =
 		summary = "/* The length of this string. */"
 	)
 )
-public class JStringType extends JClassType {
+public class JStringType extends JClassType implements IDeferredBuildable {
 
 	public static FQName FQNAME = new FQName("String");
 	
@@ -116,7 +129,8 @@ public class JStringType extends JClassType {
 	}
 	
 	private JStringType() {
-		
+		super();
+		initialized = false;
 	}
 	
 	public static boolean isStringType(JType type){
@@ -294,8 +308,7 @@ public class JStringType extends JClassType {
 					    stringType),
 				    null));
 
-			//compare 
-			// (ideally, we should implement System.Util.IComparable)
+			//compare
 			builder.addInstanceMember(
 				new JClassMethodMember(
 					builder.getStub(), 
@@ -328,6 +341,23 @@ public class JStringType extends JClassType {
 					    stringType),
 				    null));
 
+			//lastIndexOf
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(), 
+					"lastIndexOf", Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						"lastIndexOf",
+						new JParameter[]{
+							new JParameter("this", stringType), 
+							new JParameter("search"), 
+							new JParameter("offset", IntType.getInstance()), 
+						}, 
+						IntType.getInstance(), 
+					    METHOD_lastIndexOf,
+					    stringType),
+				    null));
+			
 			//firstOf
 			builder.addInstanceMember(
 				new JClassMethodMember(
@@ -426,7 +456,9 @@ public class JStringType extends JClassType {
 		@Override
 		public void boostrapItself(JClassTypeBuilder builder){
 			if(JStringType.INSTANCE == null){
-				JStringType.INSTANCE = (JStringType) builder.build(true);
+				JStringType jst = (JStringType) builder.build(false);
+				jst.setBuilder(builder);
+				JStringType.INSTANCE = jst;
 			}
 		}
 		
@@ -571,6 +603,8 @@ public class JStringType extends JClassType {
 		summary =   "/*"
 				+ "\n * Compare this string against another value, which can be either a string or a char. If the"
 				+ "\n * other value is neither string nor char, returns 0."
+				+ "\n * "
+				+ "\n * This method implements [System.Util.IComparable]."
 				+ "\n */",
 		params = {"The other value to compare to."},
 		returns = "If a negative value, this string is alphabetically less than the other; if positive, larger; if 0, equal or incomparable.",
@@ -594,15 +628,15 @@ public class JStringType extends JClassType {
 	// indexOf
 	@JulianDoc(
 		summary =   "/*"
-				+ "\n * Get the starting index (0-based) of the given string or character within this string."
+				+ "\n * Get the starting index (0-based) of the first occurence of the given string or character within this string."
 				+ "\n * "
 				+ "\n * If only checking for the existence within the entire string, consider using [contains()](#contains) instead."
 				+ "\n */",
-		params = {"The sub-string, or a single chracater, to search with this string. "
+		params = {"The sub-string, or a single chracater, to search within this string from the specified index, from left to right. "
 				+ "Note this method is special in that it can take two different types.",
-				"The index on the this string from which the search will be performed."},
+				"The index on this string from which the forward search will be performed."},
 		returns = "If a non-negative value, it's the index marking the start of the first occurence of "
-		        + "the given string/character; if negative, the given stirng/chracter doesn't exist.",
+		        + "the given string/character; if negative, the given stirng/character doesn't exist.",
 		exceptions = {"System.TypeIncompatibleException: if the parameter has a type which is neither string nor char."}
 	)
 	private static HostedExecutable METHOD_indexOf  = new HostedExecutable(FQNAME, "indexOf") {
@@ -620,6 +654,36 @@ public class JStringType extends JClassType {
 			return new Result(TempValueFactory.createTempIntValue(res));
 		}
 	};
+	
+	// lastIndexOf
+	@JulianDoc(
+		summary =   "/*"
+				+ "\n * Get the starting index (0-based) of the last occurence of the given string or character within this string."
+				+ "\n * "
+				+ "\n * If only checking for the existence within the entire string, consider using [contains()](#contains) instead."
+				+ "\n */",
+		params = {"The sub-string, or a single chracater, to search within this string from the specified index, from right to left. "
+				+ "Note this method is special in that it can take two different types.",
+				"The index on the this string from which the backward search will be performed."},
+		returns = "If a non-negative value, it's the index marking the start of the last occurence of "
+		        + "the given string/character; if negative, the given stirng/character doesn't exist.",
+		exceptions = {"System.TypeIncompatibleException: if the parameter has a type which is neither string nor char."}
+	)
+	private static HostedExecutable METHOD_lastIndexOf  = new HostedExecutable(FQNAME, "lastIndexOf") {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			StringValue thisVal = ArgumentUtil.<StringValue>getThisValue(args);
+			StringValue searchVal = JStringType.coerceStringValue(this.methodName, 1, args, runtime);
+			IntValue offsetVal = ArgumentUtil.<IntValue>getArgumentValue(2, args);
+			
+			// Execute in Java
+			int res = thisVal.getStringValue().lastIndexOf(searchVal.getStringValue(), offsetVal.getIntValue());
+			
+			// Convert the result to Julian type
+			return new Result(TempValueFactory.createTempIntValue(res));
+		}
+	};
 
 	// firstOf
 	@JulianDoc(
@@ -631,7 +695,7 @@ public class JStringType extends JClassType {
 		params = {"The sub-string, or a single chracater, to search with this string. "
 				+ "Note this method is special in that it can take two different types."},
 		returns = "If a non-negative value, it's the index marking the start of the first occurence of "
-		        + "the given string/character; if negative, the given stirng/chracter doesn't exist.",
+		        + "the given string/character; if negative, the given stirng/character doesn't exist.",
 		exceptions = {"System.TypeIncompatibleException: if the parameter has a type which is neither string nor char."}
 	)
 	private static HostedExecutable METHOD_firstOf  = new HostedExecutable(FQNAME, "firstOf") {
@@ -779,6 +843,110 @@ public class JStringType extends JClassType {
 		}
 	};
 	
+	// getIterator() : IIterator
+	@JulianDoc(
+		name = "getIterator",
+		isStatic = false,
+		summary =   "/*"
+				+ "\n * Get an iterator from this string. The iterator produces characters which consist of this string."
+				+ "\n * "
+				+ "\n * This is the implementation of [System.Util.IIterable]."
+				+ "\n */",
+		params = { },
+		exceptions = { },
+		returns = "A string iterator ready to [move on](type: System.Util.IIterator#next)."
+	)
+	private static HostedExecutable METHOD_get_iterator = new HostedExecutable(FQNAME, SystemTypeNames.MemberNames.AT) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			StringValue src = (StringValue)(args[0].getValue().deref());
+			
+			// Load StringIterator, an internal type that implements IIterator on top of an array
+			ITypeTable tt = runtime.getTypeTable();
+			JType typ = tt.getType(SystemTypeNames.System_Util_StringIterator);
+			if (typ == null) {
+				Context context = Context.createSystemLoadingContext(runtime);
+				typ = (JInterfaceType)context.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_StringIterator));
+			}
+			
+			// Create an instance of StringIterator
+			NewObjExecutor noe = new NewObjExecutor(runtime);
+			JClassType jct = (JClassType)typ;
+			JClassConstructorMember jccm = jct.getClassConstructors()[0];
+			ObjectValue result = noe.newObjectInternal(jct, jccm, new Argument[] { new Argument("str", src) } );
+			
+			return new Result(TempValueFactory.createTempRefValue(result));
+		}
+	};
+	
+	// at(var) : var
+	@JulianDoc(
+		name = "at",
+		isStatic = false,
+		summary =   "/*"
+				+ "\n * Get the character at specified index."
+				+ "\n * "
+				+ "\n * This is the implementation of getter method on [System.Util.IIndexble]."
+				+ "\n */",
+		params = {"An index at which the character is to be retrieved."},
+		paramTypes = {"Any"},
+		exceptions = { "System.ArrayOutOfRangeException: When the index is out of range."},
+		returns = "The value retrieved."
+	)
+	private static HostedExecutable METHOD_get = new HostedExecutable(FQNAME, SystemTypeNames.MemberNames.AT) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			StringValue src = (StringValue)(args[0].getValue().deref());
+			JValue val = args[1].getValue();
+			int index = ValueUtilities.getIntValue(val, "index"); // argument exception
+			JValue ele = src.getValueAt(index); // array out-of-index exception
+			return new Result(ele);
+		}
+	};
+	
+	// at(var, var)
+	@JulianDoc(
+		name = "at",
+		isStatic = false,
+		summary =   "/*"
+				+ "\n * This method is implemented for [System.Util.IIndexble], but due to the immutability of string "
+				+ "\n * it will do nothing."
+				+ "\n */",
+		params = {"An index at which the given value is to be set.", "The value to set."},
+		paramTypes = {"Any", "Any"},
+		exceptions = { }
+	)
+	private static HostedExecutable METHOD_set = new HostedExecutable(FQNAME, SystemTypeNames.MemberNames.AT) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			return Result.Void;
+		}
+	};
+	
+	// size() : int
+	@JulianDoc(
+		name = "size",
+		isStatic = false,
+		summary =   "/*"
+				+ "\n * Get the length of the string."
+				+ "\n * "
+				+ "\n * This is the implementation of ```size()``` method on [System.Util.IIndexble]. This is equivalent to [length](#length) field."
+				+ "\n */",
+		params = { },
+		returns = "The length of this array."
+	)
+	private static HostedExecutable METHOD_size = new HostedExecutable(FQNAME, SystemTypeNames.MemberNames.SIZE) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			StringValue src = (StringValue)(args[0].getValue().deref());
+			JValue ele = TempValueFactory.createTempIntValue(src.getLength());
+			return new Result(ele);
+		}
+	};
+	
 	//------------------------------- Object -------------------------------//
 	
 	// toString() : string
@@ -873,5 +1041,110 @@ public class JStringType extends JClassType {
 		}
 		
 		throw new IllegalArgumentsException(methodName, "Wrong number of arguments");
+	}
+	
+	//--------------- IDeferredBuildable ---------------//
+	
+	private ICompoundTypeBuilder builder;
+	
+	@Override
+	public boolean deferBuild(){
+		return true;
+	}
+	
+	@Override
+	public void completeBuild(Context context) {
+		if (builder != null) {
+			JInterfaceType jit = null;
+			ITypeResolver resolver = context.getTypeResolver();
+			jit = (JInterfaceType)resolver.resolveType(ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_IComparable));
+			builder.addInterface(jit);
+			jit = (JInterfaceType)resolver.resolveType(ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_IIndexable));
+			builder.addInterface(jit);
+			jit = (JInterfaceType)resolver.resolveType(ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_IIterable));
+			builder.addInterface(jit);
+			
+			/*
+			 * System.Util.IIndexable:
+			 *   var at(var)
+			 *   void at(var, var)
+			 *   int size()
+			 */			
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(),
+					SystemTypeNames.MemberNames.AT, Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						SystemTypeNames.MemberNames.AT,
+						new JParameter[]{
+							new JParameter("this", JStringType.INSTANCE),
+							new JParameter("index"),
+						}, 
+						AnyType.getInstance(), 
+						METHOD_get,
+						JStringType.INSTANCE),
+				    null));
+			
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(),
+					SystemTypeNames.MemberNames.AT, Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						SystemTypeNames.MemberNames.AT,
+						new JParameter[]{
+							new JParameter("this", JStringType.INSTANCE),
+							new JParameter("index"),
+							new JParameter("value"),
+						}, 
+						VoidType.getInstance(), 
+						METHOD_set,
+						JStringType.INSTANCE),
+				    null));
+	
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(),
+					SystemTypeNames.MemberNames.SIZE, Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						SystemTypeNames.MemberNames.SIZE,
+						new JParameter[]{
+							new JParameter("this", JStringType.INSTANCE),
+						}, 
+						IntType.getInstance(), 
+						METHOD_size,
+						JStringType.INSTANCE),
+				    null));
+			
+			// System.Util.IIterable
+			// IIterator getIterator()
+
+			jit = (JInterfaceType)context.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_IIterator));
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(),
+					SystemTypeNames.MemberNames.GET_ITERATOR, Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						SystemTypeNames.MemberNames.GET_ITERATOR,
+						new JParameter[]{
+							new JParameter("this", JStringType.INSTANCE),
+						}, 
+						jit, 
+						METHOD_get_iterator,
+						JStringType.INSTANCE),
+				    null));
+			
+			builder.seal();
+			builder = null;
+		}
+	}
+
+	@Override
+	public void setBuilder(ICompoundTypeBuilder builder) {
+		this.builder = builder;
+	}
+
+	@Override
+	public void preInitialize() {
+		this.initialized = true;
 	}
 }

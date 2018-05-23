@@ -124,18 +124,28 @@ public class JClassTypeBuilder extends JInterfaceTypeBuilder {
 			}
 
 			if (performCheck){
-				JClassMember pmember = parent.getInstanceMemberByName(name);
-				if(pmember != null){
+				OneOrMoreList<ClassMemberLoaded> cmls = parent.getMembers(false).getLoadedMemberByName(name);
+				for (ClassMemberLoaded cml : cmls) {
+					JClassMember pmember = cml.getClassMember();
+					boolean visible = pmember.getAccessibility().isSubclassVisible();
 					// 2.1) the member is non-private and yet it has a different type than this one
-					if(pmember.getAccessibility().isSubclassVisible()){
-						if(member.getMemberType() != pmember.getMemberType()){
+					if(visible){
+						MemberType localMemTyp = member.getMemberType();
+						MemberType parentMemTyp = pmember.getMemberType();
+						if(localMemTyp != parentMemTyp){
 							throw new RuntimeCheckException(
 								"A member of incompatible type with name \"" + name + 
 								"\" is already defined in the parent class of " + classType.getName());
 						}
+						
+						if(localMemTyp == MemberType.FIELD) {
+							throw new RuntimeCheckException(
+								"A non-private field member of with name \"" + name + 
+								"\" is already defined in the parent class of " + classType.getName());
+						}
 					}
-					// 2.2) the member's visibility is reduced by the new member
-					if(Accessibility.isAbsolutelyLessVisibleThan(
+					// 2.2) the member is non-private and its visibility is reduced by the new member
+					if(visible && Accessibility.isAbsolutelyLessVisibleThan(
 						member.getAccessibility(), pmember.getAccessibility())){
 						throw new RuntimeCheckException(
 							"A member with name \"" + name + 

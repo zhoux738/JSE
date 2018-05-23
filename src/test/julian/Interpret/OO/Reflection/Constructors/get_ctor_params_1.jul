@@ -1,0 +1,23 @@
+import System.Reflection;
+
+class MyClass {
+	MyClass(int i, string s){
+	}
+}
+
+class UrClass {
+	UrClass(MyClass mc){
+	}
+}
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+Parameter[] params = ctors[0].getParameters();
+bool res1 = params.length == 2 && params[0].toString() == "[PARAM|i:Integer]" && params[1].toString() == "[PARAM|s:String]";
+
+Type t2 = typeof(UrClass);
+Constructor[] ctors2 = t2.getConstructors();
+Parameter[] params2 = ctors2[0].getParameters();
+bool res2 = params2.length == 1 && params2[0].toString() == "[PARAM|mc:<default>.MyClass]";
+
+bool res3 = params2[0].getType() == t;

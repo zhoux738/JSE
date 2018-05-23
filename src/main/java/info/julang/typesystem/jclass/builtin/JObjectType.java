@@ -29,9 +29,12 @@ import info.julang.execution.ArgumentUtil;
 import info.julang.execution.Result;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.HostedExecutable;
+import info.julang.interpretation.context.Context;
+import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.memory.value.TypeValue;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
@@ -39,13 +42,15 @@ import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
-import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
+import info.julang.typesystem.jclass.ICompoundTypeBuilder;
 import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassMethodMember;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.TypeBootstrapper;
+import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
+import info.julang.typesystem.jclass.jufc.System.ScriptType;
 
 /**
  * The Object type is the root type in Julian's type system
@@ -100,7 +105,7 @@ summary =
 + "\n * For more detailed description on Object and typing system in general, see [Julian Tutorial]."
 + "\n */"
 )
-public class JObjectType extends JClassType {
+public class JObjectType extends JClassType implements IDeferredBuildable {
 
 	private static final String TYPE_NAME = "Object";
 	
@@ -108,7 +113,8 @@ public class JObjectType extends JClassType {
 	public static enum MethodNames {
 		toString,
 		equals,
-		hashCode
+		hashCode,
+		getType
 	}
 	
 	public static final FQName FQNAME = new FQName(TYPE_NAME);
@@ -120,7 +126,8 @@ public class JObjectType extends JClassType {
 	}
 	
 	private JObjectType() {
-		
+		super();
+		this.initialized = false;
 	}
 
 	@Override
@@ -144,11 +151,6 @@ public class JObjectType extends JClassType {
 		public void implementItself(JClassTypeBuilder builder, TypeFarm farm){
 			//Parent - no parent, Object is the root of all.
 			builder.setParent(null);
-			
-			//TODO: add the following methods
-			/*
-			 * getType() : Type
-			 */
 			
 			JClassType objectType = farm.getStub(BuiltinTypes.OBJECT);
 			JClassType stringType = farm.getStub(BuiltinTypes.STRING);
@@ -222,7 +224,9 @@ public class JObjectType extends JClassType {
 		@Override
 		public void boostrapItself(JClassTypeBuilder builder){
 			if(JObjectType.INSTANCE == null){
-				JObjectType.INSTANCE = (JObjectType) builder.build(true);
+				JObjectType jabt = (JObjectType) builder.build(false);
+				jabt.setBuilder(builder);
+				JObjectType.INSTANCE = jabt;
 			}
 		}
 		
@@ -336,4 +340,73 @@ public class JObjectType extends JClassType {
 			return new Result(TempValueFactory.createTempIntValue(thisValue.hashCode()));
 		}
 	};
+	
+	// getType() : Any (in fact, System.Type)
+	@JulianDoc(
+		summary =   "/*"
+				+ "\n * Get the class information for this object."
+				+ "\n * "
+				+ "\n * The metadata about the class for a runtime object is stored in an engine-wide singleton object"
+				+ "\n * of [Type](type: System.Type) type. Note what this method returns is the runtime class to which"
+				+ "\n * the object immediately belongs. To get metadata about the parent or ancestor classes, or any"
+				+ "\n * interfaces, use API provided by Type against the returned object."
+				+ "\n */",
+		params = { },
+		returns = "A Type object which contains the class information for this object."
+	)
+	private static HostedExecutable METHOD_getType = new HostedExecutable(FQNAME, MethodNames.getType.name()) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			ObjectValue thisVal = ArgumentUtil.<ObjectValue>getThisValue(args);
+			
+			TypeValue tv = runtime.getTypeTable().getValue(thisVal.getType().getName());
+			ObjectValue ov = tv.getScriptTypeObject(runtime);
+			
+			// Convert the result to Julian type
+			return new Result(TempValueFactory.createTempRefValue(ov));
+		}
+	};
+	
+	//--------------- IDeferredBuildable ---------------//
+	
+	private ICompoundTypeBuilder builder;
+	
+	@Override
+	public boolean deferBuild(){
+		return true;
+	}
+	
+	@Override
+	public void completeBuild(Context context) {
+		if (builder != null) {
+			JClassType jct = (JClassType)context.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME));	
+			// getType()
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(), MethodNames.getType.name(), Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						MethodNames.getType.name(),
+						new JParameter[]{
+							new JParameter("this", INSTANCE)
+						}, 
+						jct, 
+					    METHOD_getType, 
+					    INSTANCE), 
+					null));
+			
+			builder.seal();
+			builder = null;
+		}
+	}
+
+	@Override
+	public void setBuilder(ICompoundTypeBuilder builder) {
+		this.builder = builder;
+	}
+
+	@Override
+	public void preInitialize() {
+		this.initialized = true;
+	}
 }

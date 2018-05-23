@@ -1,0 +1,18 @@
+import System.Reflection;
+import ModuleSys.ReflTest;
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+
+string s0, s1;
+
+for (var ctor : ctors) {
+	var sig = ctor.toString();
+	if (sig == "[CTOR|ModuleSys.ReflTest.MyClass(Integer)]") {
+		var obj = ctor.invoke(new var[]{ 10 });
+		s0 = obj.toString();
+	} else if (sig == "[CTOR|ModuleSys.ReflTest.MyClass(Integer, String)]") {
+		var obj = ctor.invoke(new var[]{ 20, "ABC" });
+		s1 = obj.toString();
+	}
+}

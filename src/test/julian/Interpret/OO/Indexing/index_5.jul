@@ -1,0 +1,8 @@
+import System.Util;
+
+string str = "abc";
+
+char c1 = str.at(1); // b
+str.at(1, 'e');
+char c2 = str[1]; // b
+int len = str.size(); // b

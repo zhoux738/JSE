@@ -34,6 +34,7 @@ public enum Operators {
 	DOT				(10, Associativity.LEFT),	// .
 	
 	NEW				(10, Associativity.RIGHT),
+	TYPEOF			(10, Associativity.LEFT),
 	
 	NEGATE			(20, Associativity.RIGHT),	// !
 	MINUS			(20, Associativity.RIGHT),	// -
@@ -104,59 +105,4 @@ public enum Operators {
 	 * The associativity of this operator.
 	 */
 	public Associativity associativity;
-	
-	/*
-	 * Given a token kind, return corresponding operator.
-	 * <p/>
-	 * This can return an operator without considering context. Thus it cannot differentiate '-' (minus) and '-' (negative).
-	 * 
-	 * @param tkind
-	 * @return null if it the token is not an operator.
-	 *
-	public static Operators getOperator(TokenKind tkind){
-		if(tokOpMap == null){
-			initializeTokOpMap();
-		}
-		
-		return tokOpMap.get(tkind);
-	}
-	
-	private static void initializeTokOpMap() {
-		tokOpMap.put(TokenKind.LEFT_SQUARE, INDEX);
-		tokOpMap.put(TokenKind.DOT, DOT);
-	
-		tokOpMap.put(TokenKind.NEW, NEW);
-	
-		tokOpMap.put(TokenKind.MINUS, SUB); // or Negative
-		tokOpMap.put(TokenKind.INCREMENT, ADDSELF);
-		tokOpMap.put(TokenKind.DECREMENT, SUBSELF);
-	
-		tokOpMap.put(TokenKind.MULTIPLY, MULTIPLY);
-		tokOpMap.put(TokenKind.DIVIDE, DIVIDE);
-	
-		tokOpMap.put(TokenKind.PLUS, ADD);
-		tokOpMap.put(TokenKind.MINUS, SUB);
-	
-		tokOpMap.put(TokenKind.LT, LT);
-		tokOpMap.put(TokenKind.LT_EQ, LTEQ);
-		tokOpMap.put(TokenKind.GT, GT);
-		tokOpMap.put(TokenKind.GT_EQ, GTEQ);
-	
-		tokOpMap.put(TokenKind.EQUAL, EQ);
-		tokOpMap.put(TokenKind.NOT_EQUAL, NEQ);
-	
-		tokOpMap.put(TokenKind.NEGATION, NEGATE);	// !
-		tokOpMap.put(TokenKind.AND, AND);			// &&
-		tokOpMap.put(TokenKind.OR, OR);				// ||
-	
-		tokOpMap.put(TokenKind.ASSIGN, ASSIGN);
-		tokOpMap.put(TokenKind.PLUS_SELF, ADDSELF);
-		tokOpMap.put(TokenKind.MINUS_SELF, SUBSELF);
-		tokOpMap.put(TokenKind.MULTIPLY_SELF, MULTIPLYSELF);
-		tokOpMap.put(TokenKind.DIVIDE_SELF, DIVIDESELF);
-	}
-
-	private static Map<TokenKind, Operators> tokOpMap = new HashMap<TokenKind, Operators>();
-	*/
-	
 }

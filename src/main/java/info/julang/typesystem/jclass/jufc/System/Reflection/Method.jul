@@ -1,0 +1,200 @@
+module System.Reflection;
+
+import System;
+import System.Concurrency;
+
+/*
+ * A method member defined on a type.
+ *
+ * A method can be either static or instance-scoped, with the latter representing a piece of logic shared 
+ * among the instances of that class. When calling a method through reflection, an instance method requires
+ * specifying the invocation target, namely the instance against which the method is to be performed.
+ *
+ * There are two manners in which a method can be called by reflection. The first is to 
+ * [call with dynamic dispatching](#call). This approach shows semantic behaver similar to that of method 
+ * calling in source code: while the Method instance may be obtained from a certain class A, the method to be
+ * called on against an instance b may be a different one.
+ * [code]
+ *   class Machine {
+ *     void run(){
+ *       Console.println("machining running...");
+ *     }
+ *   }
+ *   class Car : Machine {
+ *     void run(){
+ *       Console.println("car running...");
+ *     }
+ *   } 
+ *
+ *   Method m = typeof(Machine).getMethod("run")[0];
+ *   Car c = new Car();
+ *   m.call(new var[]{c}); // car running...
+ * [code: end]
+ *
+ * To call without dynamic dispatching, use [callExact()](#callExact) instead. In this case the exact logic
+ * represented by the Method instance will be invoked against the given object. This usually means a more
+ * narrow condition on which the call would be allowed. Most prominently, the object must be of a derived
+ * type of the method's defining type, and the method must be visible throughout the hierarchy.
+ */
+[Bridged(apiset="System.Reflection.Method")]
+class Method : Member {
+	
+	/*
+	 * A method's kind is [METHOD](type: System.Reflection.MemberKind#METHOD).
+	 *
+	 * [return] Always [METHOD](type: System.Reflection.MemberKind#METHOD) 
+	 */
+	MemberKind getKind(){
+		return MemberKind.METHOD;
+	}
+	
+	/*
+	 * Get the name of this method. Note there could be multiple methods possessing the same name due to class 
+	 * inheritance and method overloading.
+	 *
+	 * [return] The name of this method
+	 */
+	string getName(){
+		return _getName();
+	}
+
+	/*
+	 * Whether this method is static or instance-scoped.
+	 *
+	 * [return] True if the method is static; false instance-scoped.
+	 */	
+	bool isStatic(){
+		return _isStatic();
+	}
+
+	/*
+	 * Call the method without dynamic dispatching.
+	 *
+	 * Since the exact method must be invoked, the instance object must be either of the same type as the method's defining 
+	 * type, or a subtype derived from the defining type. In the case of latter, it's also required that the method be
+	 * visible to the class to which the object belongs. In all other cases [ReflectedInvocationException](type: ReflectedInvocationException) 
+	 * will be thrown.
+	 * 
+	 * [param: args] The argument array. If this is an instance method, the first one must be the instance target, whose 
+	 * runtime type is subject to various restrictions.
+	 * [return] The result returned by the method. If a method returns ```void```, the only proper way of dealing with it is
+	 * to either ignore the result or return it if the calling function's return type is also ```void```.
+	 * [throws: ReflectedInvocationException] This exception can be thrown for a variety of reasons. If a pre-check failed 
+	 * on the type of arguments or calling legality (such as attempting to call an abstract method), the exception contains
+	 * the error information directly. If the method being invoked threw, this exception was created as a wrapper and the 
+	 * caller must call [getCause()](type: System.Exception#getCause) to get the original exception.
+	 */
+	[Bridged(name="callExact")]
+	hosted var callExact(var[] args);
+
+	/*
+	 * Call the method with dynamic dispatching.
+	 *
+	 * A call by dynamic dispatching behaves semantically similar to in-source method invocation through method call 
+	 * operator, i.e. ```fun()```. The most significant implication is that the method to be actually invoked is not necessarily
+	 * the one represented by this Method object. Instead, reflection API's internal logic will determine the appropriate 
+	 * method implementation in the context of given instance target. More concretely, there are several situations in consideration.
+	 *
+	 * (1) If the method's defining type (to be referred as "_defining type_") is same to the instance's runtime type (to 
+	 * be referred as "_instance type_"), the method will be called as is.<br>
+	 * (2) If _instance type_ inherits from _defining type_, the actual method implementation of same signature on _instance type_
+	 * will be called. This implies the call will fault if the method is private.<br>
+	 * (3) If _defining type_ inherits from _instance type_, the actual method implementation of same signature on _instance type_, 
+	 * should it exist, will be called.<br>
+	 * (4) In all other cases [ReflectedInvocationException](type: ReflectedInvocationException) will be thrown.
+	 * 
+	 * [param: args] The argument array. If this is an instance method, the first one must be the instance target, whose 
+	 * runtime type is subject to various restrictions.
+	 * [return] The result returned by the method. If a method returns ```void```, the only proper way of dealing with it is
+	 * to either ignore the result or return it if the calling function's return type is also ```void```.
+	 * [throws: ReflectedInvocationException] This exception can be thrown for a variety of reasons. If a pre-check failed 
+	 * on the type of arguments or calling legality (such as attempting to call an abstract method), the exception contains
+	 * the error information directly. If the method being invoked threw, this exception was created as a wrapper and the 
+	 * caller must call [getCause()](type: System.Exception#getCause) to get the original exception.
+	 */
+	[Bridged(name="call")]
+	hosted var call(var[] args);
+	
+	/*
+	 * Get parameters of this method. The implicit first argument for instance-scoped methods is not included.
+	 *
+	 * [return] An array of [Parameters](type: Parameter).
+	 */
+	Parameter[] getParameters(){
+		if (params == null) {
+			sync(lock){
+				if (params == null) {
+					params = _getParams();
+				}
+			}
+		}
+		
+		return params;
+	}
+	
+	/*
+	 * Bind this method to an instance to get an callable [Function] object. This has a similar effect to getting the
+	 * Function directly from an object with dot operator.
+	 * [code]
+	 *   class Car {
+	 *     void run(){ }
+	 *   }
+	 *
+	 *   Car car = new Car;
+	 *   Function f0 = car.run;
+	 *   // The following has a similar effect 
+	 *   Function f1 = car.getType().getMethod("run")[0].bind(car);
+	 *
+	 *   // In this case, the two are actually the same object. But this is not always the case.
+	 *   // For example, if the method is overloaded, the dot operator will result in a method 
+	 *   // group object, while bind() always wraps a single method.
+	 *   Console.println(f0 == f1);
+	 * [code: end]
+	 *
+	 * The binding is based on the same algorithm as dynamic dispatching.
+	 *
+	 * [param: target] The instance to bind to. If this is a static method, this argument is disregarded.
+	 * [return] A [Function] object that can be invoked by function-call syntax.
+	 */
+	[Bridged(name="bind")]
+	hosted Function bind(var target);
+
+	/*
+	 * Get the return type of this method.
+	 *
+	 * [return] The return type.
+	 */
+	[Bridged(name="getReturnType")]
+	hosted Type getReturnType();
+	
+	/*
+	 * Get a string representation of this method member.
+	 *
+	 * [return] A string in form of ```[METHOD|method-signature]```. ```method-signature``` contains method name 
+	 * and each parameter's type. Example: ```[METHOD|fun(int, MyModule.MyClass)]```
+	 */
+	string toString(){
+		return _toString();
+	}
+	
+	//--- private members ---//
+	
+	[Bridged(name="ctor")]
+	private hosted Method();
+	
+	private Lock lock = new Lock();
+	
+	[Bridged(name="getName")]
+	private hosted string _getName();
+	
+	[Bridged(name="isStatic")]
+	private hosted bool _isStatic();
+	
+	[Bridged(name="toString")]
+	private hosted string _toString();
+		
+	[Bridged(name="getParams")]
+	private hosted Parameter[] _getParams();
+	private Parameter[] params;
+	
+}

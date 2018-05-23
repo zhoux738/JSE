@@ -1,0 +1,10 @@
+// const members
+
+public class Item {
+	static int value = 5;
+	static Item(){
+		this.value = 10;
+	}
+}
+
+Item item;

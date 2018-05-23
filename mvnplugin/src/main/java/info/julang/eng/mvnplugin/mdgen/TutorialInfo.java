@@ -49,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.maven.plugin.MojoExecutionException;
 
@@ -131,7 +132,10 @@ public class TutorialInfo {
 		}
 	}
 	
-	public void serialize(ModuleContext mc, ApiIndexModel.TutorialIndexModel tutIndex) throws MojoExecutionException {
+	public void serialize(
+		Pattern pat, ModuleContext mc, ApiIndexModel.TutorialIndexModel tutIndex) 
+		throws MojoExecutionException {
+		
 		File dir = new File(tutDocRoot, "markdown");
 		if (!dir.exists()) {
 			dir.mkdirs();
@@ -144,26 +148,28 @@ public class TutorialInfo {
 		try {
 			int i = 1;
 			for (ChapterInfo ch : chs) {
-				GlobalLogger.get().info("Generating MD for tutorial: " + ch.title + " ...");
-				String input = ch.doc.toString();
-				List<IParsedDocSection> list = SummaryConvertor.convert(mc, this, np, input, TutorialPseudoType.INSTANCE, null);
-				File output = new File(dir, ch.name + ".md");
-				try (MarkdownWriter writer = new MarkdownWriter(output)){
-					writer.add(
-						StylizedString
-						.create("CHAPTER " + i, false)
-						.addColor(Color.decode("0xC8C8C8"))
-						.setSize(3)
-						.inTag("<p style=\"margin-bottom: 0px\">"));
-					writer.nextLine(2, false);
-					writer.append(list);
-				}
-				
-				if (stype == SerializationType.WEBSITE) {
-					File htmlFile = new File(htmlDocRoot, ch.name + ".html");
-					MarkDown2HtmlConverter htmlConv = new MarkDown2HtmlConverter(output);
-					String contents = htmlConv.convert();
-					merger.mergeDocTemplate(tutIndex, WebsiteResources.tutorial, "", ch.getTitle(), contents, htmlFile, ch);
+				if (pat.matcher(ch.title).matches()){
+					GlobalLogger.get().info("Generating MD for tutorial: " + ch.title + " ...");
+					String input = ch.doc.toString();
+					List<IParsedDocSection> list = SummaryConvertor.convert(mc, this, np, input, TutorialPseudoType.INSTANCE, null);
+					File output = new File(dir, ch.name + ".md");
+					try (MarkdownWriter writer = new MarkdownWriter(output)){
+						writer.add(
+							StylizedString
+							.create("CHAPTER " + i, false)
+							.addColor(Color.decode("0xC8C8C8"))
+							.setSize(3)
+							.inTag("<p style=\"margin-bottom: 0px\">"));
+						writer.nextLine(2, false);
+						writer.append(list);
+					}
+					
+					if (stype == SerializationType.WEBSITE) {
+						File htmlFile = new File(htmlDocRoot, ch.name + ".html");
+						MarkDown2HtmlConverter htmlConv = new MarkDown2HtmlConverter(output);
+						String contents = htmlConv.convert();
+						merger.mergeDocTemplate(tutIndex, WebsiteResources.tutorial, "", ch.getTitle(), contents, htmlFile, ch);
+					}
 				}
 				
 				i++;

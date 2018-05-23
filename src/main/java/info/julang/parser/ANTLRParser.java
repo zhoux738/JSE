@@ -24,22 +24,6 @@ SOFTWARE.
 
 package info.julang.parser;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BailErrorStrategy;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.DefaultErrorStrategy;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenSource;
-import org.antlr.v4.runtime.atn.PredictionMode;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
-
 import info.julang.dev.GlobalSetting;
 import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.BadSyntaxException;
@@ -47,6 +31,20 @@ import info.julang.langspec.ast.JulianLexer;
 import info.julang.langspec.ast.JulianParser;
 import info.julang.langspec.ast.JulianParser.ProgramContext;
 import info.julang.util.OSTool;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenSource;
+import org.antlr.v4.runtime.atn.PredictionMode;
 
 /**
  * The class to parse Julian script. The input must be a syntactically complete unit that 
@@ -78,6 +76,18 @@ public class ANTLRParser {
 		this.fileName = shouldCanonicalize ? OSTool.canonicalizePath(fileName) : fileName;
 		this.stream = stream;
 		handler = new JSEParsingHandler();
+	}
+	
+	/**
+	 * Create a parser for the given source code which must constitute a legitimate script.
+	 * 
+	 * @param src
+	 */
+	public static ANTLRParser createMemoryParser(String src){
+		String fileName = "<unknown>";// The file name doesn't matter since this is used only by internals.
+		ByteArrayInputStream bais = new ByteArrayInputStream(src.getBytes());
+		ANTLRParser ap = new ANTLRParser(fileName, bais, false);
+		return ap;
 	}
 
 	/**

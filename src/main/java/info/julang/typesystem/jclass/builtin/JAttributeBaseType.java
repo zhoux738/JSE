@@ -26,10 +26,10 @@ package info.julang.typesystem.jclass.builtin;
 
 import info.julang.typesystem.BuiltinTypes;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
-import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.TypeBootstrapper;
+import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
 
 /**
  * This base class contains most data and logic shared among concrete Attribute types. Note while <font color="green">Attribute</font>

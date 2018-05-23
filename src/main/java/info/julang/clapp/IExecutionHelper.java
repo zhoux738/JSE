@@ -25,8 +25,6 @@ SOFTWARE.
 package info.julang.clapp;
 
 import info.julang.external.exceptions.JSEException;
-import info.julang.external.interop.IBinding;
-import info.julang.util.Pair;
 
 /**
  * An interface abstracting the way to create and execute a script engine.

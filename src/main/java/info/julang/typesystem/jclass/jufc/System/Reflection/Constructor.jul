@@ -1,0 +1,110 @@
+module System.Reflection;
+
+import System;
+import System.Concurrency;
+
+/*
+ * A constructor member defined on a type.
+ *
+ * A constructor plays the major role in initialization of an instance under a certain class. In source code,
+ * a programmer uses ```new``` operator to invoke some constructor through dynamic binding, where engine
+ * will decide in runtime the appropriate constructor to call given the arguments passed along. In contrast,
+ * this class allows calling against an exact constructor.
+ */
+[Bridged(apiset="System.Reflection.Constructor")]
+class Constructor : Member {
+	
+	/*
+	 * A constructor's kind is [CONSTRUCTOR](type: System.Reflection.MemberKind#CONSTRUCTOR).
+	 *
+	 * [return] Always [CONSTRUCTOR](type: System.Reflection.MemberKind#CONSTRUCTOR) 
+	 */
+	MemberKind getKind(){
+		return MemberKind.CONSTRUCTOR;
+	}
+	
+	/*
+	 * Get the name of this constructor, which is always the simple name of the class it belongs to.
+	 *
+	 * [return] The name of this constructor
+	 */
+	string getName(){
+		return _getName();
+	}
+	
+	/*
+	 * A constructor is always false.
+	 *
+	 * [return] Always false
+	 */
+	bool isStatic(){
+		return false;
+	}
+
+	/*
+	 * Invoke this constructor to create a new object of the class to which the constructor belongs.
+	 *
+	 * This is the programmatic way of class instantiation, which involves a series of steps similar
+	 * to, but not entirely aligned with, the process initiated by `new` operator. Upon calling this method,
+	 * the script engine will 
+	 * (1) allocate memory on heap for this given class <br>
+	 * (2) initialize each instance fields by default value or initializer expressions <br>
+	 * (3) call **exactly** this constructor with the object itself represented by 'this' keyword. Forwarding calls
+	 * to other constructors apply. <br>
+	 * (4) return the object <br>
+	 *
+	 * [param: args] The argument array.
+	 * [return] The object that has been initialized by this constructor.
+	 * [throws: ReflectedInvocationException] This exception can be thrown for a variety of reasons. If a pre-check failed 
+	 * on the type of arguments or calling legality (such as attempting to call a constructor of an abstract class), the 
+	 * exception contains the error information directly. If the constructor being invoked threw, this exception was 
+	 * created as a wrapper and the caller must call [getCause()](type: System.Exception#getCause) to get the original 
+	 * exception.
+	 */
+	[Bridged(name="invoke")]
+	hosted Object invoke(var[] args);
+
+	/*
+	 * Get parameters of this constructor. The implicit 'this' argument is not included.
+	 *
+	 * [return] An array of [Parameters](type: Parameter).
+	 */
+	Parameter[] getParameters(){
+		if (params == null) {
+			sync(lock){
+				if (params == null) {
+					params = _getParams();
+				}
+			}
+		}
+		
+		return params;
+	}
+
+	/*
+	 * Get a string representation of this constructor member.
+	 *
+	 * [return] A string in form of ```[CTOR|ctor-signature]```. ```ctor-signature``` contains constructor name 
+	 * and each parameter's type. Example: ```[CTOR|MyClass(string)]```
+	 */	
+	string toString(){
+		return _toString();
+	}
+	
+	//--- private members ---//
+	
+	[Bridged(name="ctor")]
+	private hosted Constructor();
+	
+	private Lock lock = new Lock();
+	
+	[Bridged(name="getName")]
+	private hosted string _getName();
+	
+	[Bridged(name="toString")]
+	private hosted string _toString();
+		
+	[Bridged(name="getParams")]
+	private hosted Parameter[] _getParams();
+	private Parameter[] params;	
+}

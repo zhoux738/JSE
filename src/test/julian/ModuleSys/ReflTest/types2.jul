@@ -1,0 +1,9 @@
+module ModuleSys.ReflTest;
+
+class ControlPanel {
+	static int Volume;
+	
+	static ControlPanel(){
+		ControlPanel.Volume += 10;
+	}
+}

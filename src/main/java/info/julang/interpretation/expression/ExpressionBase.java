@@ -52,6 +52,7 @@ import info.julang.interpretation.expression.sub.NewExpression;
 import info.julang.interpretation.expression.sub.OrExpression;
 import info.julang.interpretation.expression.sub.PrimaryExpression;
 import info.julang.interpretation.expression.sub.TertiaryExpression;
+import info.julang.interpretation.expression.sub.TypeofExpression;
 import info.julang.interpretation.expression.sub.UnaryExpression;
 import info.julang.langspec.ast.JulianParser.ExpressionContext;
 import info.julang.memory.value.BoolValue;
@@ -113,6 +114,9 @@ public abstract class ExpressionBase implements IExpression {
 			break;
 		case "E_newContext":
 			expr = new NewExpression(rt, subAst);
+			break;
+		case "E_typeofContext":
+			expr = new TypeofExpression(rt, subAst);
 			break;
 		case "E_castContext":
 			expr = new CastExpression(rt, subAst);

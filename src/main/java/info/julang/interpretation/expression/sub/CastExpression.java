@@ -35,6 +35,6 @@ import info.julang.parser.AstInfo;
 public class CastExpression extends TypeExpressionBase {
 
 	public CastExpression(ThreadRuntime rt, AstInfo<ExpressionContext> ec) {
-		super(rt, new CastOp(rt), ((E_castContext)ec.getAST()).type(), ec.create(((E_castContext)ec.getAST()).expression()), 0);
+		super(rt, new CastOp(rt), ((E_castContext)ec.getAST()).type(), ec.create(((E_castContext)ec.getAST()).expression()), 1);
 	}
 }

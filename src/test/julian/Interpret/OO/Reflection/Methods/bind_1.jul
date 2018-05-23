@@ -1,0 +1,16 @@
+import System.Reflection;
+
+class MyClass {
+	private int value;
+	int dbl(int input){
+		value += input * 2;
+		return value;
+	}
+}
+
+MyClass mc = new MyClass();
+Function fun = mc.getType().getMethods("dbl")[0].bind(mc);
+Function fun2 = mc.dbl;
+
+int i = fun(5); // 0 => 10
+int j = fun2(7); // 10 => 24

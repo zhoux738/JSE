@@ -1,0 +1,27 @@
+// Define a method
+class G {
+	string fun(){ return "G.fun"; }
+}
+
+// Introduce two new 
+class P : G {
+	string fun(int i){ return "P.fun_i"; }
+	string fun(string s){ return "P.fun_s"; }
+}
+
+// Override one, introduce a new 
+class C : P {
+	string fun(string s){ return "C.fun_s"; }
+	string fun(bool b){ return "C.fun_b"; }
+}
+
+// Override another
+class C2 : C {
+	string fun(bool b){ return "C2.fun_b"; }
+}
+
+C2 inst = new C2();
+string s0 = inst.fun(); // G.fun
+string s1 = inst.fun(1); // P.fun_i
+string s2 = inst.fun(""); // C.fun_s
+string s3 = inst.fun(true); // C2.fun_b

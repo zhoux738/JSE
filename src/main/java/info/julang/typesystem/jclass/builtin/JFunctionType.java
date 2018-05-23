@@ -342,4 +342,11 @@ public class JFunctionType extends JClassType implements ExecutableType {
 		
 		return sb.toString();
 	}
+	
+	/**
+	 * Get a signature of this function, including name and param list.
+	 */
+	public String getSignature() {
+		return getName() + "(" + JParameter.getSignature(this.getParams(), false) + ")";
+	}
 }

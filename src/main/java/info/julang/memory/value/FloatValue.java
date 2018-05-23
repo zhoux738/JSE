@@ -221,11 +221,11 @@ public class FloatValue extends BasicValue implements JAddable, IFloatVal, Compa
 	@Override
 	public String toString(){
 		float f = getFloatValue();
-		if (f == Float.NEGATIVE_INFINITY) {
+		if (Float.isInfinite(f)) {
 			return NEG_INF_STR;
-		} else if (f == Float.POSITIVE_INFINITY) {
+		} else if (Float.isInfinite(-f)) {
 			return POS_INF_STR;
-		} else if (f == Float.NaN) {
+		} else if (Float.isNaN(f)) {
 			return NAN_STR;
 		}
 		

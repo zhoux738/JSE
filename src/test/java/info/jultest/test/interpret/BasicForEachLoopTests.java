@@ -106,6 +106,16 @@ public class BasicForEachLoopTests {
 	}
 	
 	@Test
+	public void basicForEachTwiceTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "foreach_08.jul"));
+		
+		validateIntValue(gvt, "sum", 2000);
+	}
+	
+	@Test
 	public void basicForEachLoopOnListTest() throws EngineInvocationError {
 		VariableTable gvt = new VariableTable(null);		
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);

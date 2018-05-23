@@ -10,7 +10,7 @@ import info.julang.external.interfaces.IExtVariableTable;
 
 import org.junit.Test;
 
-public class RunViaEngineFactoryTests {
+public class RunViaEngineFactoryTestSuite {
 	
 	// Script execution, system class loading, test infrastructure
 	@Test

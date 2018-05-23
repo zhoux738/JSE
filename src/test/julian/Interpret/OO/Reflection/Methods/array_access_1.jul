@@ -1,0 +1,19 @@
+// access array via reflection
+import System.Reflection;
+
+int[] arr = new int[]{1,2,3};
+
+Type t = arr.getType();
+Method[] methods = t.getMethods("at");
+Method getter, setter;
+for(Method method : methods){
+	if (method.getParameters().length == 2) {
+		setter = method;
+	} else if (method.getParameters().length == 1) {
+		getter = method;
+	}
+}
+
+int v2 = getter.call(new var[]{arr, 1});
+setter.call(new var[]{arr, 1, 20});
+int v20 = getter.call(new var[]{arr, 1});

@@ -1,0 +1,15 @@
+// obj.typ : field.typ, both types have fields of same name
+import System.Reflection;
+
+class P {
+	public int i;
+}
+
+class C : P {
+}
+
+C c = new C();
+Field field = typeof(P).getField("i");
+field.set(c, 5);
+
+int ic = c.i;

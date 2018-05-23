@@ -1,0 +1,61 @@
+// with class A : B, call exactly B.f on a (no dynamic dispatching)
+import System.Reflection;
+
+class B {
+	protected int value;
+	int inc(int input){
+		return value = input * 2;
+	}
+	
+	int getValue(){
+		return value;
+	}
+	
+	private int pinc(int input){
+		return value = input * 5;
+	}
+}
+class A1 : B { // overrride
+	int dec(int input){
+		return value -= input;
+	}
+}
+
+class A2 { // unrelated
+	int dec(int input){
+		return value -= input;
+	}
+}
+
+Method m_dec = typeof(A1).getMethods("dec")[0];
+
+// Call against a parent object
+bool r0 = false;
+B b0 = new B();
+try {
+	int res0 = m_dec.callExact(new var[]{b0, 10});
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	r0 = b0.getValue() == 0;
+}
+
+// Call against an unrelated object
+m_dec = typeof(A2).getMethods("dec")[0];
+bool r1 = false;
+B b1 = new B();
+try {
+	int res1 = m_dec.callExact(new var[]{b1, 10});
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	r1 = b1.getValue() == 0;
+}
+
+// Call private method
+Method m_pinc = typeof(B).getMethods("pinc")[0];
+bool r2 = false;
+A1 a1 = new A1();
+try {
+	int res2 = m_pinc.callExact(new var[]{a1, 10});
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	r2 = ex.getMessage().contains("Cannot invoke a non-public/protected method") && a1.getValue() == 0;
+}
+
+

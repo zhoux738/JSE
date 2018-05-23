@@ -91,7 +91,7 @@ public abstract class Operand {
 	}
 	
 	public static Operand createNameOperand(String name){
-		return new NameOperand(name);
+		return new NameOperand(name, true);
 	}
 	
 	public static Operand createIndexOperand(IIndexable base, JValue index, IIndexable iind){

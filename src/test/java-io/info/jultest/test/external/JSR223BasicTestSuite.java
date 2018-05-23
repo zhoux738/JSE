@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import info.julang.jsr223.JulianScriptingEngine;
 
-public class JSR223BasicTests {
+public class JSR223BasicTestSuite {
 	
 	private JulianScriptingEngine jse = null;
 	

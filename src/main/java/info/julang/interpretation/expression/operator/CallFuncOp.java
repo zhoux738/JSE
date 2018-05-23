@@ -31,6 +31,8 @@ import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.interpretation.IllegalArgumentsException;
+import info.julang.interpretation.JNullReferenceException;
+import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.expression.Operand;
 import info.julang.interpretation.expression.Operator;
@@ -89,8 +91,15 @@ public class CallFuncOp extends Operator {
 		
 		if(tryNameAndValue){
 			// 1) if the callee is a name or value, check if it is a method
-			ObjectValue ov = RefValue.dereference(lval);
-			if(ov != null && ov.getBuiltInValueKind() == JValueKind.FUNCTION){
+			lval = lval.deref();
+			ObjectValue ov = null;
+			if(lval == RefValue.NULL) {
+				throw new JNullReferenceException();
+			} else if (lval instanceof ObjectValue) {
+				ov = (ObjectValue)lval;
+			}
+			
+			if (ov != null && ov.getBuiltInValueKind() == JValueKind.FUNCTION) {
 				FuncValue fv = (FuncValue) ov;
 				JMethodType mt = null;
 				
@@ -126,9 +135,11 @@ public class CallFuncOp extends Operator {
 						calleeAsName != null ? calleeAsName : "<function unknown>", 
 						operands);
 				default:
-					break;
-				}
-			}		
+					throw new JSEError("The callee operand in function call has a function type not recognized.");
+				}				
+			}
+			
+			throw new RuntimeCheckException("The target is not a function and cannot be invoked.");
 		}
 
 // (This branch is no longer in use since global function is added to GVT as a variable)

@@ -149,8 +149,13 @@ public abstract class NativeExecutorBase implements INativeExecutor {
 	}
 	
 	protected ArrayValue getArray(Argument[] args, int index){
-		JValue val = args[index].getValue().deref();
-		return (ArrayValue) val;
+		Argument a = args[index];
+		try {
+			JValue val = a.getValue().deref();
+			return (ArrayValue) val;
+		} catch (ClassCastException e) {
+			throw new JArgumentException(a.getName());
+		}
 	}
 	
 	/**

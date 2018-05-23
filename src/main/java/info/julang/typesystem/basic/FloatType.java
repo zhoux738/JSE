@@ -36,10 +36,10 @@ summary =
 + "\n * rought value range of approximately &lbrack;-3.40282347E+38F, 3.40282347E+38F&rbrack;. It can be cast to "
 + "\n * [int](Integer) with all precision lost."
 + "\n * "
-+ "\n * float type can participate in arithmetic operations such as '+' and '*' and '/'. It can aslo be"
++ "\n * Float type can participate in arithmetic operations such as '+', '*' and '/'. It can also be"
 + "\n * concatenated to string value with '+' operator in the literal form of this value."
 + "\n * "
-+ "\n * int is a primitive type. Therefore it can only be assigned to a variable with same type or "
++ "\n * Float is a primitive type. Therefore it can only be assigned to a variable with same type or "
 + "\n * an [untyped](Any) variable."
 + "\n */"
 )

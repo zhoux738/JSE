@@ -1,0 +1,35 @@
+// obj.typ == field.typ, both types have fields of same name
+import System.Reflection;
+
+class P {
+	private int i;
+	int getVal(){
+		return i;
+	}
+}
+
+class C : P {
+	private int i;
+	int getVal2(){
+		return i;
+	}
+}
+
+C c = new C();
+Type t = c.getType();
+Field field = null;
+
+field = t.getField("i");
+field.set(c, 5);
+
+int ip = c.getVal();
+int ic = c.getVal2();
+
+// Now use parent type's field to set the value
+bool b = false;
+try {
+	field = typeof(P).getField("i");
+	field.set(c, 7);
+} catch (System.Reflection.ReflectedInvocationException ex) {
+	b = true;
+}

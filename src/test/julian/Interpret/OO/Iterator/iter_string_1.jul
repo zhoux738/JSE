@@ -1,0 +1,12 @@
+import System.Util;
+
+string res = "";
+string str = "abc";
+IIterator iter = str.getIterator();
+for(var v : iter){
+	res += v;
+}
+
+bool b0 = iter.hasNext();
+iter = str.getIterator();
+bool b1 = iter.hasNext();

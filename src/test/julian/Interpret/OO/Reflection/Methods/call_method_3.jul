@@ -1,0 +1,34 @@
+// with class B : A, call B.f on a
+import System.Reflection;
+
+class B {
+	protected int value;
+	int dbl(int input){
+		return value = input * 2;
+	}
+	
+	int getValue(){
+		return value;
+	}
+}
+
+class A2 : B { // inherit
+}
+
+class A3 : B { // overrride
+	int dbl(int input){
+		return value = input * 3;
+	}
+}
+
+Method method1 = typeof(A2).getMethods("dbl")[0];
+B b1 = new B();
+int res1 = method1.call(new var[]{b1, 10});
+int res1a = b1.getValue();
+
+Method method2 = typeof(A3).getMethods("dbl")[0];
+B b2 = new B();
+int res2 = method2.call(new var[]{b2, 10});
+int res2a = b2.getValue();
+
+//Console.println(res2);

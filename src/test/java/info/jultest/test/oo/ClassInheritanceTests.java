@@ -11,6 +11,7 @@ import info.julang.dev.GlobalSetting;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
+import info.julang.interpretation.errorhandling.KnownJSException;
 import info.julang.memory.value.IllegalAssignmentException;
 import info.julang.typesystem.loading.ClassLoadingException;
 
@@ -89,6 +90,52 @@ public class ClassInheritanceTests {
 		runner.executeAndExpect("item_1.jul", new ClassLoadingException(new TestLoadingState("", null, false)));
 	}
 	
+	@Test
+	public void privateMemberTest1() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "private_1.jul"));
+
+		validateIntValue(gvt, "res", 12);
+		validateIntValue(gvt, "res2", 3);
+	}
+	
+	@Test
+	public void privateMemberTest2() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "private_2.jul"));
+
+		validateIntValue(gvt, "res5", 5);
+		validateIntValue(gvt, "res11", 11);
+	}
+	
+	@Test
+	public void privateMemberTest3() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "private_3.jul"));
+
+		validateIntValue(gvt, "i1", 100);
+		validateIntValue(gvt, "i2", 0);
+		validateIntValue(gvt, "i3", 0);
+		validateIntValue(gvt, "i4", 200);
+	}
+	
+	@Test
+	public void fieldOverrideTest1() throws EngineInvocationError {
+		Assume.assumeTrue(GlobalSetting.EnableJSE);
+		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.OO, FEATURE);
+		runner.executeAndExpect("field_1.jul", 
+			KnownJSException.ClassLoading,
+			KnownJSException.RuntimeCheck,
+			"A non-private field member of with name",
+			"is already defined in");
+	}
+	
 	// C can have a private method with same name in P.
 	@Test
 	public void visibilityTest1() throws EngineInvocationError {
@@ -114,5 +161,19 @@ public class ClassInheritanceTests {
 		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "visibility_2.jul"));
 		
 		validateStringValue(gvt, "s", "Person");
+	}
+	
+	@Test
+	public void comprehensiveTest1() throws EngineInvocationError {
+		Assume.assumeTrue(GlobalSetting.EnableJSE);
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "comprehensive_1.jul"));
+		
+		validateStringValue(gvt, "s0", "G.fun");
+		validateStringValue(gvt, "s1", "P.fun_i");
+		validateStringValue(gvt, "s2", "C.fun_s");
+		validateStringValue(gvt, "s3", "C2.fun_b");
 	}
 }

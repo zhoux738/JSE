@@ -10,6 +10,7 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.TypeValue;
 import info.julang.modulesystem.ModuleInfo;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.jclass.JClassMember.MemberKey;
 import info.julang.typesystem.jclass.JDefinedClassType;
 import info.julang.typesystem.jclass.annotation.IAnnotated;
 import info.julang.typesystem.jclass.annotation.JAnnotation;
@@ -47,11 +48,11 @@ public class AttributeTestsBase {
 		}
 	}
 	
-	protected void validateTypeValue(TypeTable tt, String memberName){
+	protected void validateTypeValue(TypeTable tt, MemberKey memberName){
 		validateTypeValue(tt, memberName, 1);
 	}
 	
-	protected void validateTypeValue(TypeTable tt, String memberName, int size){
+	protected void validateTypeValue(TypeTable tt, MemberKey memberName, int size){
 		JValue val = tt.getValue(getModName() + ".MyClass");
 		assertEquals(TypeValue.class, val.getClass());
 		TypeValue tv = (TypeValue) val;

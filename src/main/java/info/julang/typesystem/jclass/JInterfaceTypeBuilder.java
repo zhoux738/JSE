@@ -30,6 +30,7 @@ import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.errorhandling.IHasLocationInfo;
 import info.julang.typesystem.jclass.JClassMember.MemberKey;
 import info.julang.typesystem.jclass.annotation.JAnnotation;
+import info.julang.typesystem.jclass.builtin.IDeferredBuildable;
 import info.julang.typesystem.loading.ISemanticChecker;
 import info.julang.util.OneOrMoreList;
 
@@ -129,6 +130,8 @@ public class JInterfaceTypeBuilder implements ICompoundTypeBuilder {
 	
 	@Override
 	public void addInstanceMember(JClassMember member){
+		checkSealed();
+		
 		Map<String, OneOrMoreList<JClassMember>> map = compoundType.instanceMemberMap;
 		if(map==null){
 			compoundType.instanceMemberMap = map = new HashMap<String, OneOrMoreList<JClassMember>>();
@@ -164,6 +167,8 @@ public class JInterfaceTypeBuilder implements ICompoundTypeBuilder {
 	
 	@Override
 	public void addInterface(JInterfaceType interfaceType){
+		checkSealed();
+		
 		if(compoundType.interfaceList == null){
 			compoundType.interfaceList = new ArrayList<JInterfaceType>();
 		}
@@ -193,7 +198,11 @@ public class JInterfaceTypeBuilder implements ICompoundTypeBuilder {
 
 	@Override
 	public JInterfaceType build(boolean sealNow){
-		sealed = sealNow;		
+		sealed = sealNow;
+		if (sealed && compoundType instanceof IDeferredBuildable) {
+			IDeferredBuildable deferred = (IDeferredBuildable) compoundType;
+			deferred.preInitialize();
+		}
 		return compoundType;
 	}
 	
@@ -201,6 +210,10 @@ public class JInterfaceTypeBuilder implements ICompoundTypeBuilder {
 	@Override
 	public void seal(){
 		sealed = true;
+		if (sealed && compoundType instanceof IDeferredBuildable) {
+			IDeferredBuildable deferred = (IDeferredBuildable) compoundType;
+			deferred.preInitialize();
+		}
 	}
 	
 	@Override

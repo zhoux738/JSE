@@ -1,0 +1,24 @@
+Object fun = new Object();
+
+Exception e0, e1;
+string m0, m1;
+
+try {
+	fun(5);
+} catch (Exception ex) {
+	e0 = ex;
+}
+
+Object get(){
+	return fun;
+}
+
+try {
+	get()(5);
+} catch (Exception ex) {
+	e1 = ex;
+}
+
+bool b0 = e0.getType().equals(e1.getType());
+bool b1 = e0.getMessage().equals(e1.getMessage());
+bool b2 = e0.getMessage().contains("The target is not a function and cannot be invoked");

@@ -1,0 +1,25 @@
+class P {
+	private int i;
+	
+	public int setAndGetVal(int v){
+		return i = v;
+	}
+}
+
+class C : P {
+	int v;
+	private void i(int v){
+		this.v += v;
+	}
+	
+	public void f(){
+		this.i(5); // referring to C.i()
+		i(7); // also referring to C.i()
+	}
+}
+
+
+C c = new C();
+c.f();
+int res = c.v;
+int res2 = c.setAndGetVal(3);

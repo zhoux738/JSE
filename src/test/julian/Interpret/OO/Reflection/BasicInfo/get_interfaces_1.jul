@@ -1,0 +1,38 @@
+import System.Collection;
+
+interface I1 { }
+interface I2 { }
+interface I3 { }
+interface I4 : I3 { }
+class C : I1, I2 { }
+class D : C, I4 { }
+
+Type tc = typeof(C);
+Type td = typeof(D);
+Type i1 = typeof(I1);
+Type i2 = typeof(I2);
+Type i3 = typeof(I3);
+Type i4 = typeof(I4);
+
+bool checkAll(Type[] actual, Type[] expected){
+	Map map = new Map();
+	for(Type t : actual){
+		map[t.toString()] = t;
+	}
+	
+	if (map.size() != expected.length){
+		return false;
+	}
+	
+	bool passed = true;
+	for(Type t2 : expected){
+		passed = passed && map[t2.toString()] != null;
+	}
+	
+	return passed; 
+}
+
+bool res1 = checkAll(tc.getInterfaces(), new Type[]{i1, i2});
+bool res2 = checkAll(td.getInterfaces(), new Type[]{i4});
+bool res3 = checkAll(i4.getInterfaces(), new Type[]{i3});
+bool res4 = i3.getInterfaces().length == 0;

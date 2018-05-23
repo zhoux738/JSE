@@ -1,0 +1,36 @@
+// obj.typ : field.typ
+import System.Reflection;
+
+class TheirClass {
+	string[] arr;
+}
+
+class UrClass : TheirClass {
+	int i;
+	string str;
+}
+
+class MyClass : UrClass {
+
+}
+
+MyClass mc = new MyClass();
+mc.i = 5;
+mc.str = "abc";
+mc.arr = new string[]{"uvw", "xyz"};
+
+Type t = typeof(UrClass);
+Field field = null;
+
+field = t.getField("i");
+int i = field.get(mc);
+
+field = t.getField("str");
+string str = field.get(mc);
+
+field = t.getField("arr");
+string[] arr = field.get(mc);
+arr[1] = "def";
+arr = field.get(mc);
+string arr0 = arr[0];
+string arr1 = arr[1];

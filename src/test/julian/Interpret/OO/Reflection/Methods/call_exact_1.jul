@@ -1,0 +1,40 @@
+// with class A : B, call exactly B.f on a (no dynamic dispatching)
+import System.Reflection;
+
+class B {
+	protected int value;
+	int inc(int input){
+		return value = input * 2;
+	}
+	
+	int getValue(){
+		return value;
+	}
+}
+class A3 : B { // overrride
+	int inc(int input){
+		return value = input * 3;
+	}
+}
+class A4 : A3 { // overrride
+	int inc(int input){
+		return value = input * 4;
+	}
+}
+
+Method method = typeof(B).getMethods("inc")[0];
+
+B b = new B();
+int res0 = method.callExact(new var[]{b, 10});
+int res0a = b.getValue();
+//Console.println(res0a);
+
+A3 a3 = new A3();
+int res3 = method.callExact(new var[]{a3, 10});
+int res3a = a3.getValue();
+//Console.println(res3a);
+
+A4 a4 = new A4();
+int res4 = method.callExact(new var[]{a4, 10});
+int res4a = a4.getValue();
+//Console.println(res4a);

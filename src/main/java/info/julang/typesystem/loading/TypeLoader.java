@@ -637,13 +637,12 @@ public class TypeLoader {
 			}
 		} else {
 			// Check B - can this attribute be applied to field/method/constructor?
-			String memberName = member != null ? member.getName() : null;
 			MemberType memberType = member.getMemberType();
 			int target = MetaAnnotation.convertMemberTypeToTarget(memberType);
 			checkAnnotationApplicability(aName, metaAnno, allAnnos, target, memberType.name().toLowerCase());
 			
 			if (tvalue != null) {
-				tvalue.addMemberAttrValue(memberName, av);
+				tvalue.addMemberAttrValue(member.getKey(), av);
 			}
 		}
 		

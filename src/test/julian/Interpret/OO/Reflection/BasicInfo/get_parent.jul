@@ -1,0 +1,18 @@
+class C {
+
+}
+
+class D : C {
+
+}
+
+Type tc = typeof(C);
+Type to = tc.getParent();
+string sc = tc.toString();
+string so = to.toString();
+
+Type td = typeof(D);
+bool b1 = td.getParent() == tc;
+
+Type root = to.getParent();
+bool b2 = root == null;

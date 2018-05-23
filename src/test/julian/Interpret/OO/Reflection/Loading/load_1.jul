@@ -1,0 +1,22 @@
+import System.Reflection;
+
+Type typ = Type.load("ModuleSys.ReflTest.Setting");
+Constructor[] ctors = typ.getConstructors();
+
+int i0, i1=-1, i2;
+
+for(int i = 0; i < ctors.length; i++){
+	Constructor ctor = ctors[i];
+	if (ctor.getParameters().length == 1){
+		var setting0 = ctor.invoke(new var[]{10});
+		i0 = setting0.value;
+	} else {
+		var setting1 = ctor.invoke(new var[]{});
+		i1 = setting1.value;
+		
+		Field f = typ.getField("Min");
+		f.set(null, 5);
+		var setting2 = ctor.invoke(new var[]{});
+		i2 = setting2.value;
+	}
+}

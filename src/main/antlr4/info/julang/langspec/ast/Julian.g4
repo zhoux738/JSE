@@ -144,7 +144,7 @@ THIS :         'this';
 THROW :        'throw';
 TRUE :         'true';
 TRY :          'try';
-TYPEOF :       'typeof';         // RESERVED
+TYPEOF :       'typeof';
 VAR:           'var';
 VOID :         'void';
 VOLATILE :     'volatile';       // RESERVED
@@ -413,6 +413,7 @@ lambda_body
 //    DOT                (10, Associativity.LEFT),    // .
     
 //    NEW                (10, Associativity.RIGHT),
+//    TYPEOF             (10, Associativity.LEFT),
     
 //    NEGATE             (20, Associativity.RIGHT),   // !
 //    INC                (20, Associativity.LEFT),    // ++
@@ -461,6 +462,7 @@ expression
     | expression DOT IDENTIFIER                                              # e_dot
     | expression ( INCREMENT | DECREMENT )                                   # e_increment
     | NEW creator                                                            # e_new
+    | TYPEOF LEFT_PAREN type RIGHT_PAREN                                     # e_typeof
     | LEFT_PAREN type RIGHT_PAREN expression                                 # e_cast          // 20
     | ( PLUS | MINUS | NEGATION | COMPLEMENT ) expression                    # e_unary         // 20 (no pre INCREMENT | DECREMENT )
     | expression ( MULTIPLY | DIVIDE | MODULO ) expression                   # e_multiply      // 30

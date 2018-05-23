@@ -1,17 +1,12 @@
 package info.jultest.test.oo;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-
-import org.junit.Assert;
-
 import info.julang.execution.EngineRuntime;
+import info.julang.typesystem.AnyType;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.basic.IntType;
+import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassFieldMember;
@@ -22,6 +17,13 @@ import info.julang.typesystem.jclass.JInterfaceType;
 import info.julang.typesystem.jclass.MemberType;
 import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JStringType;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+
+import org.junit.Assert;
 
 public class ClassTestBase {
 
@@ -93,6 +95,7 @@ public class ClassTestBase {
 			all.add(MemberInfo.createMethod("toString").returns(JStringType.getInstance()));
 			all.add(MemberInfo.createMethod("equals").returns(BoolType.getInstance()));
 			all.add(MemberInfo.createMethod("hashCode").returns(IntType.getInstance()));
+			all.add(MemberInfo.createMethod("getType").returns(new LoadedType("System.Type")));
 		}
 		MemberInfo[] ret = new MemberInfo[all.size()];
 		return all.toArray(ret);
@@ -169,7 +172,13 @@ public class ClassTestBase {
 			JFunctionType ft = mm.getMethodType();
 			
 			if(returnType != null){
-				Assert.assertSame(ft.getReturnType(), returnType);
+				if (returnType == AnyType.getInstance()) {
+					Assert.assertTrue(ft.getReturn().isUntyped());
+				} else if (returnType instanceof LoadedType){
+					Assert.assertEquals(returnType.getName(), returnType.getName());
+				} else {
+					Assert.assertSame(returnType, ft.getReturnType());
+				}
 			}
 			
 			if(TripleState.isRelevant(abs)){
@@ -246,5 +255,45 @@ public class ClassTestBase {
 		static TripleState fromBool(boolean b){
 			return b ? TRUE : FALSE;
 		}
+	}
+	
+	static class LoadedType implements JType {
+
+		private String name;
+		
+		LoadedType(String name){
+			this.name = name;
+		}
+		
+		@Override
+		public JTypeKind getKind() {
+			return JTypeKind.CLASS;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public Convertibility getConvertibilityTo(JType type) {
+			return Convertibility.UNCONVERTIBLE;
+		}
+
+		@Override
+		public boolean isBasic() {
+			return false;
+		}
+
+		@Override
+		public boolean isObject() {
+			return true;
+		}
+
+		@Override
+		public boolean isBuiltIn() {
+			return false;
+		}
+		
 	}
 }

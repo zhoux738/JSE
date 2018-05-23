@@ -1,0 +1,17 @@
+// obj.typ : field.typ, both types have fields of same name
+import System.Reflection;
+
+class C {
+	public const int i = 3;
+}
+
+C c = new C();
+Field field = c.getType().getField("i");
+bool b0 = field.isConst();
+bool b1 = false;
+try {
+	field.set(c, 5);
+} catch (System.Reflection.ReflectedInvocationException ex){
+	Exception _ex = ex.getCause();
+	b1 = _ex is System.IllegalAssignmentException && _ex.getMessage().contains("Cannot change a constant value");
+}

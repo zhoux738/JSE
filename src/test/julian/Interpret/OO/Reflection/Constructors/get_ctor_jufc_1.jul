@@ -1,0 +1,12 @@
+import System.Reflection;
+import System.Collection;
+
+// 1 ctor marked as visible
+Type t = typeof(List);
+Constructor[] ctors = t.getConstructors();
+int totalList = ctors.length;
+
+// no ctors marked as visible
+t = typeof(Type);
+ctors = t.getConstructors();
+int totalType = ctors.length;

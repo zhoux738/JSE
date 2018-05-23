@@ -24,14 +24,16 @@ SOFTWARE.
 
 package info.julang.typesystem;
 
-import java.util.Map;
-
 import info.julang.JSERuntimeException;
 import info.julang.interpretation.errorhandling.KnownJSException;
 import info.julang.typesystem.jclass.ClassMemberLoaded;
 import info.julang.typesystem.jclass.ClassMemberMap;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.util.OneOrMoreList;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The exception thrown when a non-existing member of some type is referenced.
@@ -54,10 +56,16 @@ public class UnknownMemberException extends JSERuntimeException {
 			ClassMemberMap cmm = jct.getMembers(isStatic);
 			StringBuilder sb = new StringBuilder();
 			sb.append("The following are found: ");
+			sb.append(System.lineSeparator());
+			sb.append("  ");
+			Set<String> names = new HashSet<String>();
 			for (Map<String, OneOrMoreList<ClassMemberLoaded>> map : cmm.getDefinedMembers()){
 				for (String s : map.keySet()){
-					sb.append(s);
-					sb.append(", ");
+					if (!names.contains(s)) {
+						sb.append(s);
+						sb.append(", ");
+						names.add(s);
+					}
 				}
 			}
 			

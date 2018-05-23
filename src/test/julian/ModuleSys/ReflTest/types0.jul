@@ -1,0 +1,16 @@
+module ModuleSys.ReflTest;
+
+class MyClass {
+	int i;
+	string s;
+	MyClass(int i) : this(i, "(none)"){
+		
+	}
+	MyClass(int i, string s){
+		this.i = i;
+		this.s = s;
+	}
+	string toString(){
+		return s + '-' + i;
+	}
+}

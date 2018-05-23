@@ -1,0 +1,15 @@
+// If subclass-visible field is defined in the upper level, subclass cannot hide it
+
+class P {
+	public int i;
+}
+
+class C1 : P {
+}
+
+class C : C1 {
+	public int i;
+}
+
+
+C c = new C();

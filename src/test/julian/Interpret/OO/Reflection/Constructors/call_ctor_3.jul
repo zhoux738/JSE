@@ -1,0 +1,23 @@
+import System.Reflection;
+
+class UrClass {
+	int i;
+	UrClass(int i){
+		this.i = i;
+	}
+}
+
+class MyClass : UrClass {
+	string s;
+	MyClass(string s) : super(s.length){
+		this.s = s;
+	}
+}
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+Constructor c0 = ctors[0];
+
+MyClass obj = c0.invoke(new var[]{ "abc" } );
+string s = obj.s;
+int i = obj.i;

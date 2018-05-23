@@ -1,0 +1,19 @@
+import System.Reflection;
+
+bool b0, b1, b2;
+try {
+	Type typ = Type.load("3ab");
+} catch (Exception ex) {
+	b0 = ex.getCause() is System.Lang.BadSyntaxException;
+}
+try {
+	Type typ = Type.load("a[]b[]");
+} catch (Exception ex) {
+	b1 = ex.getCause() is System.Lang.BadSyntaxException;
+}
+
+try {
+	Type typ = Type.load("AbsNonExistTyp");
+} catch (Exception ex) {
+	b2 = ex.getCause() is System.MissingRequirementException;
+}

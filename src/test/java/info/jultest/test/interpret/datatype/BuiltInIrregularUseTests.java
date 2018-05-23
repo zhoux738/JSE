@@ -98,7 +98,7 @@ public class BuiltInIrregularUseTests extends ExceptionTestsBase {
 			"illegal_void_03.jul", 
 			KnownJSException.ClassLoading, 
 			KnownJSException.BadSyntax, 
-			"Illegal member type for class field declaration: void");
+			"Cannot use void as field type");
 	}
 
 	// void as ctor type

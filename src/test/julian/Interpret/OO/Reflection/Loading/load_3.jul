@@ -1,0 +1,19 @@
+import System.Reflection;
+
+Type typ = Type.load("int");
+int i0 = typ == typeof(int) ? 1 : 0;
+
+Type typ2 = Type.load("int[][]");
+Constructor[] ctors2 = typ2.getConstructors();
+int i1 = ctors2.length;
+bool b0 = typ2.isArray();
+
+Type typ3 = Type.load("var");
+Constructor[] ctors3 = typ.getConstructors();
+int i2 = ctors3.length;
+string s0 = typ3.getSimpleName();
+
+Type typ4 = Type.load("var[]");
+Constructor[] ctors4 = typ.getConstructors();
+int i3 = ctors4.length;
+bool b1 = typ4.isArray();

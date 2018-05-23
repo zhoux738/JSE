@@ -38,7 +38,6 @@ import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.JClassType;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,9 +96,7 @@ public final class JSExceptionFactory {
 				} else {
 					code = "dummy" + initSource;
 				}
-				String fileName = "<unknown>";// The file name doesn't matter since this is used only by internals.
-				ByteArrayInputStream bais = new ByteArrayInputStream(code.getBytes());
-				ANTLRParser ap = new ANTLRParser(fileName, bais, false);
+				ANTLRParser ap = ANTLRParser.createMemoryParser(code);
 				ap.parse(true, false);// Since this is called by internals, do not expect a grammar error.
 				AstInfo<ProgramContext> ainfo = ap.getAstInfo();
 

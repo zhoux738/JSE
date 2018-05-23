@@ -222,7 +222,7 @@
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <testSourceDirectory>src/test/java-io</testSourceDirectory>
             <includes>
-                <include>**/*IOTestSuite.*</include>
+                <include>**/*TestSuite.*</include>
             </includes>
         </configuration>
       </plugin>

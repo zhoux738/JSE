@@ -1,0 +1,29 @@
+// static, obj.typ == field.typ
+import System.Reflection;
+
+class MyClass {
+	static int i;
+	static string str;
+	static string[] arr;
+}
+
+MyClass.i = 5;
+MyClass.str = "abc";
+MyClass.arr = new string[]{"uvw", "xyz"};
+
+Type t = typeof(MyClass);
+Field field = null;
+
+field = t.getField("i");
+field.set(null, 7);
+
+string s0 = MyClass.str;
+field = t.getField("str");
+field.set(null, "def");
+
+field = t.getField("arr");
+field.set(null, new string[]{"qwe", "rty"});
+
+int i = MyClass.i;
+string s1 = MyClass.str;
+string s2 = MyClass.arr[1];

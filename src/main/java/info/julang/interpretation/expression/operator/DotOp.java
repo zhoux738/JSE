@@ -46,6 +46,7 @@ import info.julang.interpretation.expression.operand.StaticMemberOperand;
 import info.julang.interpretation.expression.operand.TypeOperand;
 import info.julang.interpretation.expression.operand.ValueOperand;
 import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.langspec.Keywords;
 import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.MethodGroupValue;
@@ -166,7 +167,7 @@ public class DotOp extends Operator {
 								ICompoundType superType = thisType.getParent();
 								if(superType != null){
 									checkAccessibility(superType, memberName, context, false);
-									OneOrMoreList<ObjectMember> mvs = lov.getMemberValueByClass(memberName, superType);
+									OneOrMoreList<ObjectMember> mvs = lov.getMemberValueByClass(memberName, superType, true);
 									if(mvs.size() == 0){
 										throw new UnknownMemberException(superType, memberName, false);
 									} else {
@@ -201,7 +202,7 @@ public class DotOp extends Operator {
 								MethodValue[] mvs = mgv.getMethodValues();
 								MethodValue[] ims = new MethodValue[mvs.length]; // instance members of same name
 								for (int i = 0; i < ims.length; i++){
-									OneOrMoreList<ObjectMember> overloads = mvs[i].getMemberValueByClass(memberName, null);
+									OneOrMoreList<ObjectMember> overloads = mvs[i].getMemberValueByClass(memberName, null, true);
 									if (overloads.size() == 1){
 										JValue tempVal = overloads.getFirst().getValue().deref();
 										if (tempVal != null && tempVal instanceof MethodValue){
@@ -218,7 +219,16 @@ public class DotOp extends Operator {
 						} 
 						
 						if (mvalue == null){
-							OneOrMoreList<ObjectMember> overloads = lov.getMemberValueByClass(memberName, null);
+							ICompoundType thisType = null;
+							if(context.getContextType() == ContextType.IMETHOD && lop.getKind() == OperandKind.NAME){
+								NameOperand nameOd = (NameOperand) operands[0];
+								if (Keywords.THIS.equals(nameOd.getName())){
+									MethodContext mc = (MethodContext)context;
+									thisType = mc.getContainingType();
+								}
+							}
+							
+							OneOrMoreList<ObjectMember> overloads = lov.getMemberValueByClass(memberName, thisType, false);
 							if(overloads != null){
 								if (overloads.size() == 1){
 									mvalue = overloads.getFirst().getValue();

@@ -1,0 +1,42 @@
+// A method always accesses to the private members defined in the same class
+
+class Employee {
+	private int income;
+	void earn(int i) {
+		income += i;
+	}
+	int getIncome(){
+		return income;
+	} 
+}
+
+class Worker : Employee {
+	private int income;
+	
+	int getWorkerIncome(){
+		return income;
+	} 
+}
+
+class Driver : Employee {
+	private int income;
+	
+	int getIncome(){
+		return income;
+	}
+	
+	int getDriverIncome(){
+		return super.getIncome();
+	}
+}
+
+
+Worker w = new Worker();
+w.earn(100);
+int i1 = w.getIncome();
+int i2 = w.getWorkerIncome();
+
+Driver d = new Driver();
+d.earn(200);
+int i3 = d.getIncome();
+int i4 = d.getDriverIncome();

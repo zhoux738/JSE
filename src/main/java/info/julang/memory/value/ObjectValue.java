@@ -136,7 +136,7 @@ public class ObjectValue extends JValueBase implements IObjectVal {
 	 */
 	public JValue getMemberValue(String name){
 		ObjectMember om = null;
-		OneOrMoreList<ObjectMember> oms = getMemberValueByClass(name, null);
+		OneOrMoreList<ObjectMember> oms = getMemberValueByClass(name, null, true);
 		if(oms != null && oms.size() > 0){
 			om = oms.getFirst();
 		}
@@ -151,7 +151,7 @@ public class ObjectValue extends JValueBase implements IObjectVal {
 	 * @return
 	 */
 	public MethodValue[] getMethodMemberValues(String name){
-		OneOrMoreList<ObjectMember> oms = getMemberValueByClass(name, null);
+		OneOrMoreList<ObjectMember> oms = getMemberValueByClass(name, null, true);
 		List<MethodValue> list = new ArrayList<MethodValue>();
 		if(oms != null){
 			for(ObjectMember om : oms){
@@ -181,13 +181,15 @@ public class ObjectValue extends JValueBase implements IObjectVal {
 	 * 
 	 * @param name
 	 * @param typ
+	 * @param includeNonvisible If true, include all private members from ancestor classes also
 	 * @return
 	 */
-	public OneOrMoreList<ObjectMember> getMemberValueByClass(String name, ICompoundType typ){
-		// Note:
-		// We perform no checks here. This method is ultimately called by either JSE internals during interpretation, 
-		// or some reflection API. And we assume in both cases the null result will be handled correctly at the callsite.
-		return members.getMemberByName(name, typ);
+	public OneOrMoreList<ObjectMember> getMemberValueByClass(String name, ICompoundType typ, boolean includeNonvisible){
+		// If we filter out the private members from ancestors, must first determine the current type.
+		if (!includeNonvisible && typ == null) {
+			typ = this.getClassType();
+		}
+		return members.getMemberByName(name, typ, false);
 	}
 
 	/**
@@ -255,14 +257,6 @@ public class ObjectValue extends JValueBase implements IObjectVal {
 	@Override
 	public IIndexable asIndexer(){
 		String fname = type.getName();
-//		// TODO - Remove special handling for List and Map
-//		if(JList.FullTypeName.equals(fname)){
-//			return new ListIndexable((ObjectValue)this);
-//		} 
-//		else if(JMap.FullTypeName.equals(fname)){
-//			return new MapIndexable((ObjectValue)this);
-//		} 
-//		else 
 		if (hasInterface("System.Util.IIndexable")){
 			// If a user-defined class implements System.Util.Indexer, convert it to ObjectIndexable			
 			ObjectIndexable oi = new ObjectIndexable(this, fname);

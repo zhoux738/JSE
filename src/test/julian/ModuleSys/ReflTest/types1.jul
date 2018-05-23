@@ -1,0 +1,14 @@
+module ModuleSys.ReflTest;
+
+class Setting {
+	static int Min;
+	
+	int value;
+	
+	Setting(int value){
+		this.value = value;
+	}
+	
+	Setting():this(Setting.Min){
+	}
+}

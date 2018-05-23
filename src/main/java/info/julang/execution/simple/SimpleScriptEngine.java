@@ -149,7 +149,7 @@ public class SimpleScriptEngine implements IScriptEngine {
 		
 		EngineRuntime runtime = getRuntime();
 		
-		runtime.getTypeTable().initialize();
+		runtime.getTypeTable().initialize(runtime);
 		
 		IModuleManager modManager = runtime.getModuleManager();
 		modManager.clearModulePath();

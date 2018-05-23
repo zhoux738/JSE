@@ -1,0 +1,9 @@
+import System.Lang;
+
+bool b0, b1;
+try { void value; } catch (RuntimeCheckException ex) { b0 = true; } 
+try { Void value; } catch (RuntimeCheckException ex) { b1 = true; } 
+
+int i = 0;
+Void fun(){ i++; }
+fun();

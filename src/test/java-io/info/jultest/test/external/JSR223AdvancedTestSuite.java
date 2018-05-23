@@ -19,7 +19,7 @@ import javax.script.ScriptException;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class JSR223AdvancedTests {
+public class JSR223AdvancedTestSuite {
 	
 	@Test
 	public void bindingTest1() throws ScriptException {

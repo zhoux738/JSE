@@ -1,0 +1,14 @@
+// const members
+
+public class Item {
+	const int value = 5;
+}
+
+Item item = new Item();
+int v = item.value;
+bool b = false;
+try {
+	item.value = 13;
+} catch (System.IllegalAssignmentException ex) {
+	b = true;
+}

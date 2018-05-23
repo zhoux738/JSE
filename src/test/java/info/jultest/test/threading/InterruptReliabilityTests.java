@@ -26,7 +26,7 @@ public class InterruptReliabilityTests extends ThreadingTestBase {
 	
 	@Test
 	public void interruptSleepingAfterStartTest() throws EngineInvocationError, IOException {
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "interrupt_1.jul");
+		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "interrupt_1.jul", null);
 		IExtVariableTable gvt = rt.getGlobalVariableTable();
 		
 		validateIntValue(gvt, "icnt", 1);
@@ -35,7 +35,7 @@ public class InterruptReliabilityTests extends ThreadingTestBase {
 	
 	@Test
 	public void interruptSelfSleepingTest() throws EngineInvocationError, IOException {
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "interrupt_2.jul");
+		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "interrupt_2.jul", null);
 		IExtVariableTable gvt = rt.getGlobalVariableTable();
 		
 		validateIntValue(gvt, "icnt", 10);
@@ -44,7 +44,7 @@ public class InterruptReliabilityTests extends ThreadingTestBase {
 	
 	@Test
 	public void interruptBeforeAndAfterRunningTest() throws EngineInvocationError, IOException {
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "interrupt_3.jul");
+		IExtEngineRuntime rt = runViaFactory(Commons.Groups.THREADING, FEATURE, "interrupt_3.jul", null);
 		IExtVariableTable gvt = rt.getGlobalVariableTable();
 		
 		validateIntValue(gvt, "icnt", 0);

@@ -1,0 +1,9 @@
+class D {
+
+}
+
+void fun(){
+	Type t1 = typeof(C); // fail!
+}
+
+fun();

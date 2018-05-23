@@ -1,0 +1,7 @@
+import System.Util;
+
+float inf = Math.INF;
+float ninf = Math.NINF;
+bool b0 = inf == inf + 5; // Positive INF + any finite number is still positive INF
+bool b1 = !Math.isNumber(inf + ninf); // Positive INF + Negative INF makes no mathematical sense
+bool b2 = ninf == Math.log(0);

@@ -4,10 +4,15 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
+import static info.jultest.test.EFCommons.runViaFactory;
+import static info.jultest.test.Commons.validateBoolValue;
 import info.jultest.test.Commons;
+import info.jultest.test.EFCommons;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
+import info.julang.external.interfaces.IExtEngineRuntime;
+import info.julang.external.interfaces.IExtVariableTable;
 
 import org.junit.Test;
 
@@ -97,6 +102,15 @@ public class AdvancedFunctionInvocationTests {
 		validateIntValue(gvt, "x", 120);
 	}
 
+	@Test
+	public void nonFunctionTest() throws EngineInvocationError {
+		IExtEngineRuntime rt = runViaFactory(Commons.Groups.IMPERATIVE, FEATURE, "fun_adv_06.jul", Commons.SRC_REPO_ROOT);
+		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		
+		EFCommons.validateBoolValue(gvt, "b0", true);
+		EFCommons.validateBoolValue(gvt, "b1", true);
+		EFCommons.validateBoolValue(gvt, "b2", true);
+	}
 	
 	@Test
 	public void returnFromIfTest() throws EngineInvocationError {

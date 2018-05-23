@@ -28,12 +28,14 @@ import info.julang.execution.InContextTypeResolver;
 import info.julang.execution.namespace.NamespaceConflictException;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
+import info.julang.interpretation.BadSyntaxException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.typesystem.AnyType;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.UnknownTypeException;
+import info.julang.typesystem.VoidType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.util.OneOrMoreList;
 
@@ -182,6 +184,9 @@ public class InternalTypeResolver {
 
 	private JType finishLoading(ITypeTable tt, JType typ, ParsedTypeName typeName) {
 		if(typeName.getDimensionNumber() > 0){
+			if (typ == VoidType.getInstance()) {
+				throw new BadSyntaxException("Cannot declare array type with void as element type.");
+			}
 			return JArrayType.createJArrayType(tt, typ, typeName.getDimensionNumber());
 		} else {
 			return typ;

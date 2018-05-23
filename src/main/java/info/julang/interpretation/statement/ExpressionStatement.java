@@ -28,7 +28,7 @@ import info.julang.execution.Result;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadAbortedException;
 import info.julang.execution.threading.ThreadRuntime;
-import info.julang.external.exceptions.JSEError;
+import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.StatementBase;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.expression.DelegatingExpression;
@@ -104,6 +104,6 @@ public class ExpressionStatement extends StatementBase implements IHasResult {
 			}
 		}
 		
-		throw new JSEError("The statement didn't produce a boolean value.");
+		throw new RuntimeCheckException("The statement didn't produce a boolean value.");
 	}
 }

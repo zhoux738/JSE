@@ -24,12 +24,6 @@ SOFTWARE.
 
 package info.julang.interpretation.internal;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import info.julang.execution.Argument;
 import info.julang.execution.EngineRuntime;
 import info.julang.execution.Executable;
@@ -47,12 +41,15 @@ import info.julang.memory.MemoryArea;
 import info.julang.memory.value.AttrValue;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.JValueBase;
+import info.julang.memory.value.ObjectMember;
 import info.julang.memory.value.ObjectValue;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.jclass.ConstructorForwardExecutable;
 import info.julang.typesystem.jclass.ConstructorNotFoundException;
+import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassConstructorMember.ForwardInfo;
 import info.julang.typesystem.jclass.JClassInitializerMember;
@@ -64,6 +61,12 @@ import info.julang.typesystem.jclass.builtin.JAttributeType;
 import info.julang.typesystem.jclass.builtin.JConstructorType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * A facade class that creates a new object of certain class. It allocates memory,
@@ -275,7 +278,26 @@ public class NewObjExecutor {
 					try {
 						Result res = mtype.getExecutable().execute(rt, initArgs);
 						JValue val = res.getReturnedValue(false);
-						val.assignTo(obj.getMemberValue(initializer.getFieldName()));
+						
+						String name = initializer.getFieldName();
+						ICompoundType typ = initializer.getDefiningType();
+						ObjectMember om = obj.getMemberValueByClass(name, typ, true).getFirst();
+						JValue target = om.getValue();
+						
+						// If the value is a const, temporarily enable mutation
+						JValueBase jvb = null;
+						try {
+							if (target.isConst()) {
+								jvb = (JValueBase)target;
+								jvb.setConst(false);
+							}
+							
+							val.assignTo(target);
+						} finally {
+							if (jvb != null) {
+								jvb.setConst(true);
+							}
+						}
 					} catch (EngineInvocationError e) {
 						throw new JSEError(
 							"An error occurs while invoking initializer for field " + 

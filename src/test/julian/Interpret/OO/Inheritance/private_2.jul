@@ -1,0 +1,17 @@
+class P {
+	private int i = 11;
+	int getValue() {
+		return i;
+	}
+}
+
+class C : P {
+	int i(int v) {
+		return v;
+	}
+}
+
+
+C c = new C();
+int res5 = c.i(5);
+int res11 = c.getValue();

@@ -66,8 +66,10 @@ public class AnnotationKVMap {
 		final static String NAME = "name";
 		final static String RETURNS = "returns";
 		final static String PARAMS = "params";
+		final static String PARAMTYPES = "paramTypes";
 		final static String EXCEPTIONS = "exceptions";
 		final static String REFERENCES = "references";
+		final static String INTERFACES = "interfaces";
 	}
 	
 	private static Map<String, PropertyType> ProTypes;
@@ -81,6 +83,8 @@ public class AnnotationKVMap {
 		ProTypes.put(Keys.RETURNS, PropertyType.String);
 		ProTypes.put(Keys.PARAMS, PropertyType.StringArray);
 		ProTypes.put(Keys.REFERENCES, PropertyType.StringArray);
+		ProTypes.put(Keys.INTERFACES, PropertyType.StringArray);
+		ProTypes.put(Keys.PARAMTYPES, PropertyType.StringArray);
 		ProTypes.put(Keys.EXCEPTIONS, PropertyType.StringPairArray);
 	}
 	

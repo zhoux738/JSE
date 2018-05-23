@@ -413,9 +413,6 @@ public final class SyntaxHelper {
 		// 3) Type
 		TypeContext tc = fieldDecl.type();
 		ParsedTypeName ptn = parseTypeName(tc);
-		if(ptn.getBasicType() == VoidType.getInstance()){
-			throw new BadSyntaxException("Illegal member type for class field declaration: void.", ainfo.create(tc));
-		}
 		declInfo.setTypeName(ptn);
 		
 		// 4) Name
@@ -665,9 +662,6 @@ public final class SyntaxHelper {
 				break;
 			case JulianLexer.VOID:
 				type = VoidType.getInstance();
-				if (rank > 0){
-					throw new BadSyntaxException("Cannot declare array type with void as element type.");
-				}
 				break;
 			case JulianLexer.VAR:
 				type = AnyType.getInstance();

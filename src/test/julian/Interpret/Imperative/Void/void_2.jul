@@ -1,0 +1,17 @@
+import System.Lang;
+
+class MyClass1 {
+	void value;
+}
+
+class MyClass2 {
+	Void value;
+}
+
+bool b0, b1;
+try { MyClass1 mc; } catch (System.ClassLoadingException ex) { 
+	b0 = ex.getCause().getMessage().contains("Cannot use void as field type"); 
+} 
+try { MyClass2 mc; } catch (System.ClassLoadingException ex) { 
+	b1 = ex.getCause().getMessage().contains("Cannot use void as field type"); 
+} 

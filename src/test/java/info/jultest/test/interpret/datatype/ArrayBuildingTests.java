@@ -33,7 +33,7 @@ public class ArrayBuildingTests {
 		
 		EngineRuntime rt = engine.getRuntime();
 		ITypeTable tt = rt.getTypeTable();
-		tt.initialize();
+		tt.initialize(rt);
 		JArrayType strArrTyp = JArrayType.createJArrayType(tt, JStringType.getInstance(), false);
 		
 		ObjectArrayValue.Builder builder0 = new ObjectArrayValue.Builder(
@@ -74,7 +74,7 @@ public class ArrayBuildingTests {
 		
 		EngineRuntime rt = engine.getRuntime();
 		ITypeTable tt = rt.getTypeTable();
-		tt.initialize();
+		tt.initialize(rt);
 		
 		ArrayValueBuilder builder = ArrayValueBuilderHelper.getBuilder(IntType.getInstance(), rt.getHeap(), tt);
 		

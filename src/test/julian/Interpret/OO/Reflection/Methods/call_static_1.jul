@@ -1,0 +1,25 @@
+// baseline case: call on value of method's defining type.
+import System.Reflection;
+import System.Collection;
+
+class MyClass {
+	static int dbl(int input){
+		return input * 2;
+	}
+	
+	private static int dbl2(int input){
+		return input * 2;
+	}
+	
+	static int value;
+	static int dbl3(int input){
+		return value = input * 2;
+	}
+}
+
+Type t = typeof(MyClass);
+int res1 = t.getMethods("dbl")[0].call(new var[]{10});
+int res2 = t.getMethods("dbl2")[0].call(new var[]{10});
+t.getMethods("dbl3")[0].call(new var[]{10});
+int res3 = MyClass.value;
+

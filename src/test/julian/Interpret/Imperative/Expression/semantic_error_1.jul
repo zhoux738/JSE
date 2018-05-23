@@ -1,0 +1,19 @@
+// call non-function
+// index non-indexable
+// use non-boolean as condition
+
+int a = 4;
+
+//The statement didn't produce a boolean value
+bool test(Function f, string msg) {
+	try {
+		f();
+		return false;
+	} catch (Exception ex) {
+		return ex.getMessage().contains(msg);
+	}
+}
+
+bool b0 = test(()=>{ if (a) {} }, "The statement didn't produce a boolean value");
+bool b1 = test(()=>a[1], "The operator '[ ]' can only apply on an indexable object");
+bool b2 = test(()=>a(), "The target is not a function and cannot be invoked.");

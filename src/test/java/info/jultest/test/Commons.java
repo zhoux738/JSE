@@ -1,5 +1,7 @@
 package info.jultest.test;
 
+import static info.jultest.test.Commons.getScriptFile;
+import static info.jultest.test.Commons.makeSimpleEngine;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -16,6 +18,7 @@ import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.EngineInitializationOption;
+import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.memory.HeapArea;
 import info.julang.memory.simple.SimpleHeapArea;
 import info.julang.memory.value.ArrayValue;
@@ -126,6 +129,14 @@ public final class Commons {
 	
 	public static SimpleScriptEngine makeSimpleEngine(VariableTable gvt, boolean reentry){
 		return makeSimpleEngine(gvt, new ModuleManager(), reentry);
+	}
+	
+	public static VariableTable runInline(String feature, String script) throws EngineInvocationError{
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
+		engine.run(getScriptFile(Commons.Groups.OO, feature, script));
+		return gvt;
 	}
 	
 	public static void validateBoolArrayValue(VariableTable vt, String varName, boolean[] array){
