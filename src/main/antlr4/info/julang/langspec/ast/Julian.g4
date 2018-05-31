@@ -69,6 +69,55 @@ grammar Julian;
 @lexer::members {
 public static final int JULDOC = 2;
 public static final int SKIPPED = 3;
+
+private Token lastToken = null;
+
+@Override
+public Token nextToken() {
+    Token next = super.nextToken();
+
+    if (next.getChannel() == Token.DEFAULT_CHANNEL) {
+        this.lastToken = next;
+    }
+
+    return next;
+}
+
+private boolean treatAsRegex() {
+    if (this.lastToken == null) {
+        return true;
+    }
+    
+    switch (this.lastToken.getType()) {
+    	// references
+        case JulianLexer.IDENTIFIER:
+        case JulianLexer.THIS:
+        case JulianLexer.SUPER:
+        case JulianLexer.NULL:
+        // built-in types
+        case JulianLexer.BOOL:
+        case JulianLexer.BYTE:
+        case JulianLexer.INT:
+        case JulianLexer.CHAR:
+        case JulianLexer.STRING:
+        case JulianLexer.FLOAT:
+        case JulianLexer.VOID:
+	    // pair closer
+        case JulianLexer.RIGHT_BRACKET:
+        case JulianLexer.RIGHT_CURLY:
+        case JulianLexer.RIGHT_PAREN:
+		// values
+        case JulianLexer.CHAR_LITERAL:
+        case JulianLexer.STRING_LITERAL:
+        case JulianLexer.REGEX_LITERAL:
+        case JulianLexer.INTEGER_LITERAL:
+        case JulianLexer.REAL_LITERAL:
+            return false;
+        default:
+            return true;
+	}
+}
+
 }
 
 // 1. Comments
@@ -264,7 +313,23 @@ fragment FRG_STR_CHAR
   : ~["\\]    // Note that different from other languages, we accept actual line breaker in Julian's string literal
   ;
 
-// 7. Operators
+// 7. Regex Literals
+
+REGEX_LITERAL
+  : '/' FRG_REGEX_LITERAL_CHAR+ { treatAsRegex() }? '/'
+  ;
+
+fragment FRG_ESCAPE_CHAR_FROM_REGEX_LITERAL
+  : '\\' FRG_ESCAPE_CHAR_COMMON
+  | '\\' [/.^$\|\[\]\(\)\*\+\?\\-] // Must sync with RG_CHAR in Regex.g4
+  ;
+   
+fragment FRG_REGEX_LITERAL_CHAR 
+  : ~[/\r\n\\]
+  | FRG_ESCAPE_CHAR_FROM_REGEX_LITERAL
+  ;
+
+// 8. Operators
 
 // Scoping
 LEFT_CURLY :                  '{';
@@ -491,6 +556,7 @@ primary
     |   REAL_LITERAL 
     |   CHAR_LITERAL 
     |   STRING_LITERAL
+    |   REGEX_LITERAL
     |   NULL
     |   '(' expression ')'
     ;

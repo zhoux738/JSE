@@ -1,0 +1,17 @@
+import System.Util;
+
+bool failRegex(string pattern) {
+	try {
+		Regex reg = new Regex(pattern);
+		return false;
+	} catch (System.Util.UnrecognizedRegexException ex) {
+		//Console.println(ex.getMessage());
+		return true;
+	}
+}
+
+bool b0 = failRegex("[[]");
+bool b1 = failRegex("[a-x[D-F]]");
+bool b2 = failRegex("[^^]");
+bool b3 = failRegex("a()c");
+bool b4 = failRegex("(?1)");

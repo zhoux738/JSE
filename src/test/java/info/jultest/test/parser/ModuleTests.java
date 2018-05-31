@@ -2,7 +2,7 @@ package info.jultest.test.parser;
 
 import org.junit.Test;
 
-public class ModuleTests extends ParserRunner {
+public class ModuleTests extends JulianParserRunner {
 	
 	@Override
 	public String getFeature() {
@@ -11,32 +11,32 @@ public class ModuleTests extends ParserRunner {
 	
 	@Test
 	public void importTest1() {
-	    invokeParser("import_01.jul");
+	    parseFile("import_01.jul");
 	}
 	
 	@Test
 	public void importTest2() {
-	    invokeParser("import_02.jul");
+	    parseFile("import_02.jul");
 	}
 	
 	@Test
 	public void importTest3() {
-	    invokeParser("import_03.jul");
+	    parseFile("import_03.jul");
 	}
 	
 	@Test
 	public void moduleTest1() {
-	    invokeParser("module_01.jul");
+	    parseFile("module_01.jul");
 	}
 	
 	@Test
 	public void moduleTest2() {
-	    invokeParser("module_02.jul");
+	    parseFile("module_02.jul");
 	}
 	
 	@Test
 	public void moduleTest3() {
-	    invokeParser("module_03.jul");
+	    parseFile("module_03.jul");
 	}
 	
 }

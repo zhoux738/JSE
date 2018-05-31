@@ -1,0 +1,40 @@
+import System.Util;
+
+string summarize(Match m) {
+	if (m.isMatched()){
+		int g = m.getGroups();
+		string acc = g + ":";
+		for(int i = 1; i <= g; i++){
+			acc += m.getGroup(i);
+			if (i < g ) {
+				acc += '/';
+			}
+		}
+	
+		return acc;
+	}	 else {
+		return "Not matched";
+	}
+}
+
+Regex reg = new Regex("([0-9]+)\\.([0-9]+)");
+Match m = reg.matchAll("128.1");
+string acc0 = summarize(m);
+//Console.println(acc0);
+
+m = reg.matchAll("128a1");
+string acc1 = summarize(m);
+//Console.println(acc1);
+
+reg = new Regex("^({})([^a-z])$");
+m = reg.matchNext("{}A");
+string acc2 = summarize(m);
+//Console.println(acc2);
+
+m = reg.matchNext("{}f");
+string acc3 = summarize(m);
+//Console.println(acc3);
+
+m = reg.matchNext("{}fg");
+string acc4 = summarize(m);
+//Console.println(acc4);

@@ -1,0 +1,6 @@
+// Reference to Regex without import
+
+var r = /abc|def/;
+var m = r.matchNext("xabcdef");
+m.next();
+string s0 = m.getText();

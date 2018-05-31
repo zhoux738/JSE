@@ -1,0 +1,22 @@
+module System.Util;
+
+import System;
+import System.Lang;
+
+/*
+ * An exception to throw when creating a regex with illegal character sequence.
+ */
+class UnrecognizedRegexException : BadSyntaxException {
+	
+	/*
+	 * Create a standard UnrecognizedRegexException instance. While entirely legal, 
+	 * it's not recommended for a user to create such instances.
+	 *
+	 * [param: message] An supplemental error message describing the details.
+	 */
+	UnrecognizedRegexException(string message) 
+		: super("Regex input unrecognized." + (message == null ? "" : " " + message)) {
+		
+	}
+
+}

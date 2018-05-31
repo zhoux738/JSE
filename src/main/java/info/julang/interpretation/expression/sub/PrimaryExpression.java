@@ -24,8 +24,6 @@ SOFTWARE.
 
 package info.julang.interpretation.expression.sub;
 
-import org.antlr.v4.runtime.tree.TerminalNode;
-
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.RuntimeCheckException;
@@ -36,12 +34,18 @@ import info.julang.interpretation.expression.IExpression;
 import info.julang.interpretation.expression.KnownOperators;
 import info.julang.interpretation.expression.Operand;
 import info.julang.interpretation.expression.operand.NameOperand;
+import info.julang.interpretation.expression.operand.ValueOperand;
 import info.julang.langspec.ast.JulianLexer;
 import info.julang.langspec.ast.JulianParser.E_primaryContext;
 import info.julang.langspec.ast.JulianParser.ExpressionContext;
 import info.julang.langspec.ast.JulianParser.PrimaryContext;
+import info.julang.memory.value.ObjectValue;
 import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
+import info.julang.typesystem.jclass.jufc.System.Util.JRegex;
+import info.julang.typesystem.jclass.jufc.System.Util.RegexSanitizer;
+
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  * The lowest level of expression tree where token sequences are converted to operands.
@@ -69,6 +73,7 @@ public class PrimaryExpression extends ExpressionBase {
 	    //   |  REAL_LITERAL 
 	    //   |  CHAR_LITERAL 
 	    //   |  STRING_LITERAL
+	    //   |  REGEX_LITERAL
 	    //   |  NULL
 	    //   |  '(' expression ')'
 	    //   ;
@@ -107,6 +112,11 @@ public class PrimaryExpression extends ExpressionBase {
 			break;
 		case JulianLexer.STRING_LITERAL:
 			operand = Operand.createStringOperand(ANTLRHelper.reEscapeAsString(node.getText(), true));
+			break;
+		case JulianLexer.REGEX_LITERAL:
+			String raw = node.getText();
+			ObjectValue ov = JRegex.createRegexObjectFromRegexLiteral(raw, rt);
+			operand = new ValueOperand(ov);
 			break;
 		case JulianLexer.NULL:
 			operand = Operand.NullOperand;

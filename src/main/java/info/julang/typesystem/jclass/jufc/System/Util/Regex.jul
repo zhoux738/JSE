@@ -1,0 +1,244 @@
+module System.Util;
+
+import System;
+
+/*
+ * The **reg**ular **ex**pression.
+ *
+ * Julian implements a core regex in a similar syntax as Perl and JavaScript, but intentionally doesn't
+ * build extension features into it, such as various named patterns, occurrence count, non-greedy matching,
+ * etc. If advanced feature is required, the user can use type mapping API to call directly to regex
+ * facilities provided by the platform.
+ *
+ * The supported constructs include:
+ * <ul>
+ * <li><span class="l">union</span><span class="r"><code>a|b</code></span></li>
+ * <li><span class="l">concatenation</span><span class="r"><code>abc</code></span></li>
+ * <li><span class="l">quantifiers</span><span class="r"><code>? &#42; +</code> (representing zero-or-one, zero-or-more and one-or-more, respectively)</span></li>
+ * <li><span class="l">range</span><span class="r"><code>&#91;a-zA-Z&#93;</code></span></li>
+ * <li><span class="l">negated range</span><span class="r"><code>&#91;^0-9&#93;</code></span></li>
+ * </ul>
+ * Additionally, these characters have special meaning:
+ * <ul>
+ * <li>```.``` matches every character</li>
+ * <li>```^``` matches the start of input</li>
+ * <li>```$``` matches the end of input</li>
+ * </ul>
+ * One can also use ```()``` to capture the groups. Groups can be retrieved by [Match.getGroup(int)](Match#getGroup).
+ * [code]
+ *    Regex r = new Regex("(a?(b*)c?)"); // There will be two groups in the matching result, if matched.
+ * [code: end]
+ *
+ * Regex has language-level support in Julian. To create a regex literal, enclose the pattern with '/'.
+ * Such literals are more clean to use in comparison to calling the constructor, especially when escaping
+ * multiple metacharacters in the pattern.
+ * [code]
+ *    Regex r = /ab&#42;d?e/; 
+ * [code: end]
+ *
+ * The metacharacters are: <code>. | - ( ) &#91; &#93; ? &#42; + &#92;</code>. If matching a character which happens to be
+ * the metacharacter, use ```\``` to escape:
+ * [code]
+ *    Regex r = /a&#92;.b/; // Matches exactly "a.b", not "a{any character}b"
+ * [code: end]
+ *
+ * The regex API can be used in one of two ways. The first is to match the pattern against the entire
+ * input with [matchAll(string)](#matchAll), which returns a [Match] object that contains the matching
+ * info, but effectively cannot move forward anymore, as the entire input has been matched.
+ * [code]
+ *    Match m = /ab+c/.matchAll("abbbbc");
+ *    bool result = m.isMatched(); // true
+ *    m.next(); // since we have matched the entire string, this will only result in a mismatch
+ *    result = m.isMatched(); // false
+ * [code: end]
+ *
+ * The alternative is to match by [matchNext(string)](#matchNext), which will try to match the first occurrence
+ * of the pattern in the input. The [Match] object it returns contains the matching info for the
+ * previous match, and the user may call [next()](Match#next) to find the next match, until the entire
+ * input is through. In this approach, the [Match] object remains stateful and updates itself every time
+ * [next()](Match#next) is called before the entire input has been matched.
+ * [code]
+ *    Match m = /ab+c/.matchAll("abbbbcacabc");
+ *    while (m.isMatched()) {
+ *      string text = m.getText(); // Get the matched text;
+ *      Console.println(text);
+ *      m.next(); // Match the next occurrence pattern "ab+c"
+ *    }
+ *
+ *    // (output)
+ *    // abbbbc
+ *    // abc
+ * [code: end]
+ */
+[Bridged(apiset="System.Util.Regex")]
+class Regex {
+
+	/*
+	 * Create a new Regex object with the given pattern.
+	 *
+	 * [param: pattern] The regex pattern.
+	 * [throws: UnrecognizedRegexException] If the input is an illegal regex pattern.
+	 */
+	Regex(string pattern){
+		try {
+			_init(pattern);
+		} catch (Exception ure) {
+			Exception ex = ure.getCause();
+			if (ex != null) {
+				throw ex;
+			} else {
+			 	throw ure;
+			}
+		}
+	}
+
+	[Bridged(name="ctor")]
+	private hosted void _init(string pattern);
+	
+	/*
+	 * Find the first occurrence of the pattern in the given input.
+	 *
+	 * [param: input] The input to match from the beginning.
+	 * [return] A [Match] object that contains the matching information. 
+	 * If it's a match, one may call [next()](Match#next) to get the next occurrence.
+	 */
+	[Bridged(name="matchNext")]
+	hosted Match matchNext(string input);
+	
+	/*
+	 * Match the entire input against this pattern.
+	 *
+	 * [param: input] The input to match in its entirety.
+	 * [return] A [Match] object that contains the matching information.
+	 */
+	[Bridged(name="matchAll")]
+	hosted Match matchAll(string input);
+
+}
+
+/*
+ * A stateful object tracking the result from the previous matching attempt.
+ *
+ * The instances of this class are created by APIs on [Regex]. In addition to reporting whether it's a match, 
+ * this class also provides break-down information such as the indexes of the matched region within the given
+ * input and the text for each captured group.
+ *
+ * Once created, a Match object is associated with a Regex pattern. Methods such as [next()](#next) will be
+ * called against that particular regex.
+ *
+ * [see: Regex]
+ */
+[Bridged(apiset="System.Util.Match")]
+class Match {
+
+	private bool matched;
+	private int start;
+	private int end;
+	private int groups;
+	private bool complete;
+	
+	private Match(bool matched, int start, int end, int groups, bool complete){
+		update(matched, start, end, groups, complete);
+	}
+	
+	private void update(bool matched, int start, int end, int groups, bool complete){
+		this.matched = matched;
+		this.start = start;
+		this.end = end;
+		this.groups = groups;
+		this.complete = complete;
+	}
+	
+	/*
+	 * Whether the previous attempt at matching, possibly driven by either [next()](#next) 
+	 * or [matchAll(string)](Regex#matchAll), was successful.
+	 *
+	 * [return] True if the previous matching was successful.
+	 */
+	bool isMatched(){
+		return matched;
+	}
+
+	/*
+	 * Get the 0-based start index of matched region.
+	 *
+	 * [return] The start index of matched region, if matched; undefined if not.
+	 */
+	int getStart(){
+		return start;
+	}
+
+	/*
+	 * Get the 0-based end index of matched region.
+	 *
+	 * [return] The end index of matched region, if matched; undefined if not.
+	 */	
+	int getEnd(){
+		return end;
+	}
+	
+	/*
+	 * Get the count of groups. Each ```()``` pair in a pattern forms one group. Note since a group may
+	 * fall under an optional part of the regex, the value returned by this method is not necessarily
+	 * equal to the total count of pairs in the pattern.
+	 * 
+	 * This method doesn't count group 0, defined as entire matched region.
+	 *
+	 * [return] The count of groups. 0 if no group is found in the pattern.
+	 */	
+	int getGroups(){
+		return groups;
+	}
+	
+	/*
+	 * Try to find the next occurrence of the pattern.
+	 *
+	 * If this Match object was returned from [Regex.matchAll(string)](Regex#matchAll), calling this method will
+	 * return false.
+	 *
+	 * [return] True if found, with tracking info updated. The user may call methods such as [getStart](#getStart)
+	 * to get the matching details. False if not found, and at this point results from those methods are undefined.
+	 */
+	bool next() {
+		if (complete) {
+			return this.matched = false;
+		}
+		
+		return _next(this);
+	}
+	
+	/*
+	 * Get the text of the matched region.
+	 *
+	 * [return] The text of the matched region. Note in the case of successful full-match this is same to the match input.
+	 */
+	[Bridged(name="getText")]
+	hosted String getText();
+	
+	/*
+	 * Get the text for each captured group.
+	 *
+	 * The groups are captured in the order of left parenthesis. The group 0 is reserved for the entire matched region
+	 * and thus is always available should the match succeed. Therefore suppose [getGroups()] returns N, this method can be
+	 * called with any integer between 0 and N, inclusive. An example:
+	 * [code]
+	 *    Regex r = new Regex("(a?(b*)c?)(e+)");
+	 *    Match m = r.matchAll("abee");
+	 *    m.getGroups(); // 3
+	 *    m.getGroup(0); // The entire matched region - equivalent to getText()
+	 *    m.getGroup(1); // ab
+	 *    m.getGroup(2); // b
+	 *    m.getGroup(3); // ee
+	 * [code: end]
+	 *
+	 * [param: index] The group index.
+	 * [return] The captured group text.
+	 * [throws: System.ArrayOutOfRangeException] When the index is out of range.
+	 */
+	[Bridged(name="getGroup")]
+	hosted String getGroup(int index);
+	
+	[Bridged(name="next")]
+	private hosted bool _next(Match m); // will call update()
+	
+}

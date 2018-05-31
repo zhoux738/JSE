@@ -1,0 +1,25 @@
+import System.Util;
+
+string summarize(Match m) {
+	string acc = m.getText();
+	int g = m.getGroups();
+	acc += ":" + g + ":";
+	for(int i = 1; i <= g; i++){
+		acc += m.getGroup(i);
+		if (i < g ) {
+			acc += '/';
+		}
+	}
+
+	return acc;
+}
+
+Regex reg = new Regex("_(abc|def)_");
+Match m = reg.matchAll("_abc_");
+string acc0 = summarize(m);
+//Console.println(acc0);
+
+reg = new Regex("a((b|c)[x-z]*)([^def]+)");
+m = reg.matchAll("abxxyyzzmnp");
+string acc1 = summarize(m);
+//Console.println(acc1);

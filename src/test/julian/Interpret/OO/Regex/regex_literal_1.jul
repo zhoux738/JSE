@@ -1,0 +1,7 @@
+import System.Util;
+
+var reg = /ab*c?d+e/;
+bool b0 = reg.matchAll("abbbcdde").isMatched();
+
+reg = /\/.\//;
+bool b1 = reg.matchAll("/a/").isMatched();

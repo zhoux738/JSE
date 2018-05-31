@@ -40,6 +40,7 @@ public class IllegalMemberAccessException extends JSERuntimeException {
 		ACC_INSTANCE_MEMBER_FROM_STATIC_CONTEXT,
 		ACC_INVISIBLE_MEMBER,
 		ACC_RESERVED_FOR_SYSTEM_USE_MEMBER,
+		ACC_ATTEMPT_MEMBER_ACCESS_ON_NON_OBJECT
 	}
 	
 	private static final long serialVersionUID = -1921742899860918060L;
@@ -61,6 +62,8 @@ public class IllegalMemberAccessException extends JSERuntimeException {
 			return "Cannot refer to an invisible class member (" + mName + "). Type name: " + tName;
 		case ACC_RESERVED_FOR_SYSTEM_USE_MEMBER:
 			return "Cannot refer to a class member (" + mName + ") reserved for system use. Type name: " + tName;
+		case ACC_ATTEMPT_MEMBER_ACCESS_ON_NON_OBJECT:
+			return "Cannot refer to any member on type " + tName;
 		}
 		
 		return "Illegal access to member \"" + mName + "\" of type " + tName;
@@ -97,6 +100,16 @@ public class IllegalMemberAccessException extends JSERuntimeException {
 	 */
 	public static IllegalMemberAccessException referReservedMemberEx(String tName, String mName){
 		return new IllegalMemberAccessException(tName, mName, AccessExceptionType.ACC_RESERVED_FOR_SYSTEM_USE_MEMBER);
+	}
+	
+	/**
+	 * Make an exception about trying to access to A.B, where A is not an Object.
+	 * 
+	 * @param tName
+	 * @return
+	 */
+	public static IllegalMemberAccessException referMemberOnNonObjectEx(String tName){
+		return new IllegalMemberAccessException(tName, null, AccessExceptionType.ACC_ATTEMPT_MEMBER_ACCESS_ON_NON_OBJECT);
 	}
 
 	@Override

@@ -30,6 +30,8 @@ public class SystemRawScriptInfoInitializer {
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptParam.Factory,
            info.julang.typesystem.jclass.jufc.System.ScriptType.Factory,
            info.julang.typesystem.jclass.jufc.System.Util.JMath.Factory,
+           info.julang.typesystem.jclass.jufc.System.Util.JRegex.Factory,
+           info.julang.typesystem.jclass.jufc.System.Util.Match.Factory,
        };
     }
 
@@ -58,9 +60,11 @@ public class SystemRawScriptInfoInitializer {
 			"Parameter",
 		});
 		map.put("System.Util", new String[]{
+			"Exception",
 			"Interfaces",
 			"Internals",
 			"Math",
+			"Regex",
 		});
 		map.put("System.IO", new String[]{
 			"Directory",
@@ -200,6 +204,10 @@ public class SystemRawScriptInfoInitializer {
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Type>(
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Type.class));
         
+        map.put("System/Util/Exception.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Exception>(
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Exception.class));
+        
         map.put("System/Util/Interfaces.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Interfaces>(
             info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Interfaces.class));
@@ -211,6 +219,10 @@ public class SystemRawScriptInfoInitializer {
         map.put("System/Util/Math.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Math>(
             info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Math.class));
+        
+        map.put("System/Util/Regex.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Regex>(
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Regex.class));
     }
     
 }

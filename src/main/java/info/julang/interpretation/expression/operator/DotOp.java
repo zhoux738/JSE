@@ -25,7 +25,6 @@ SOFTWARE.
 package info.julang.interpretation.expression.operator;
 
 import static info.julang.langspec.Operators.DOT;
-
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
@@ -57,6 +56,7 @@ import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.TypeValue;
 import info.julang.memory.value.UntypedValue;
+import info.julang.typesystem.IllegalMemberAccessException;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.UnknownMemberException;
@@ -280,6 +280,8 @@ public class DotOp extends Operator {
 					} else {
 						throw new UnknownMemberException(typ, memberName, true);
 					}
+				} else {
+					throw IllegalMemberAccessException.referMemberOnNonObjectEx(lval.getType().getName());
 				}
 			}
 		}

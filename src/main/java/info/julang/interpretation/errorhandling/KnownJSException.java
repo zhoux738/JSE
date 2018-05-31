@@ -68,6 +68,8 @@ public enum KnownJSException {
 	
 	ReflectedInvocation("System.Reflection.ReflectedInvocationException"),
 	
+	UnrecognizedRegex("System.Util.UnrecognizedRegexException"),
+	
 	;
 	
 	private String fullName;

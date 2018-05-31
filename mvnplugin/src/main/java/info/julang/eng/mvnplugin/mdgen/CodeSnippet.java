@@ -46,6 +46,7 @@ public class CodeSnippet implements IParsedDocSection {
 	static final Color KeywordColor = new Color(153, 51, 102, 255);
 	static final Color CommentColor = new Color(102, 153, 102, 255);
 	static final Color LiteralColor = new Color(51, 0, 255, 255);
+	static final Color RegexLiteralColor = new Color(0, 206, 209, 255);
 	
 	private String str;
 	
@@ -97,6 +98,10 @@ public class CodeSnippet implements IParsedDocSection {
 			case JulianLexer.STRING_LITERAL:
 			case JulianLexer.CHAR_LITERAL:
 				text = getStylizedString(t, LiteralColor, false, false);
+				sb.append(text);
+				break;
+			case JulianLexer.REGEX_LITERAL:
+				text = getStylizedString(t, RegexLiteralColor, false, false);
 				sb.append(text);
 				break;
 			case JulianLexer.EOF:

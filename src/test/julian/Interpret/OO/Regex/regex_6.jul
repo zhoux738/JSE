@@ -1,0 +1,8 @@
+import System.Util;
+
+Regex reg = new Regex("a.+c");
+bool b0 = reg.matchAll("abc").isMatched();
+
+reg = new Regex("a{2}");
+bool b1 = reg.matchAll("aa").isMatched();
+bool b2 = reg.matchAll("a{2}").isMatched();

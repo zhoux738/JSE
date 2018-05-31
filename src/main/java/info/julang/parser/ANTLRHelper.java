@@ -60,6 +60,84 @@ public class ANTLRHelper {
 	}
 	
 	/**
+	 * Convert regex literal into a properly escape string to feed to Regex constructor.
+	 * The enclosing '/'s will be removed; certain escaping sequences, such as '\/', will be replaced by the intended character.
+	 * 
+	 * @param input
+	 * @return the string with escape sequences properly substituted.
+	 */
+	public static String convertRegexLiteral(String input){
+		// We will scan the chars between the leading and trailing char, which would be '/'.
+		int len = input.length() - 1;
+		
+		// Allocate a string builder with sufficient capacity
+		StringBuilder sb = new StringBuilder(len);
+		
+		for(int i = 1; i < len; i++){
+			char c1 = input.charAt(i);
+			if (c1 != '\\'){
+				sb.append(c1);
+				continue;
+			}
+			
+			// Escape mode
+			try {
+				// This check is necessary, since the chance is that we are hitting a '\' at the end, which
+				// is followed be the enclosing quote symbol. We must not take into account this symbol.
+				if (i+1 >= len){
+					throw new IndexOutOfBoundsException();
+				}
+				char c2 = input.charAt(i+1); //IndexOutOfBoundsException 
+				boolean found = true;
+				
+				// Except for '\/', preserve the original sequence.
+				// Make sure this synchronizes with "fragment FRG_ESC_" lexer rules in Regex.g4
+				switch (c2){
+				case '/':
+					sb.append('/'); 
+					break;
+				case '[': 
+				case ']': 
+				case '(': 
+				case ')': 
+				case '*': 
+				case '+': 
+				case '?': 
+				case '-': 
+				case '|': 
+				case '^': 
+				case '$': 
+				case '.': 
+				case '\\': 
+				case 'n': 
+				case 't': 
+				case 'r': 
+				case 'f': 
+				case 'v': 
+				case 'b':
+					sb.append(c1); 
+					sb.append(c2); 
+					break;
+				default:
+					found = false;
+				}
+				
+				if (found){
+					i++;
+					continue;
+				}	
+			} catch (IndexOutOfBoundsException ie){
+				throw new BadSyntaxException("Unexpected termination of regex literal value.");
+			} catch (NumberFormatException fe) {
+				throw new BadSyntaxException("Cannot convert an escape sequences in regex literal.");
+			}
+			
+			throw new BadSyntaxException("Regex literal value contains undefined escape sequences.");
+		}
+		
+		return sb.toString();
+	}
+	/**
 	 * Convert escape sequences to the target char in a string. For example, if the input is ['\', 'n', 'a', '\', 't'],
 	 * the result would be ['\n', 'a', '\t']. Escape sequences include control chars, ASCII code and Unicode. 
 	 * 

@@ -1,0 +1,18 @@
+import System.Util;
+
+string summarize(Match m) {
+	return "" + m.isMatched() + ':' + m.getStart() + ':' + m.getEnd() + '(' + m.getGroups() + ')';
+}
+
+string[] strs = new string[2];
+Regex reg = new Regex("a(b*)(c?)(d+)e");
+Match m = reg.matchNext("abbbcddeade");
+
+int i = 0;
+while(m.isMatched()){
+	string s0 = summarize(m);
+	//Console.println(s0);
+	strs[i] = s0;
+	i++;
+	m.next();
+}

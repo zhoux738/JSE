@@ -34,7 +34,7 @@ import System.Reflection;
  * Otherwise the Type object will be immediately returned from engine's type storage.
  *
  * Type usually serves as a starting point for invoking reflection API. For more details, 
- * see [here](tutorial: reflection].
+ * see [here](tutorial: reflection).
  */
 [Bridged(apiset="System.Type")]
 class Type {

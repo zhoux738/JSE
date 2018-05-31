@@ -1,0 +1,15 @@
+import System.Util;
+
+string summarize(Match m) {
+	return "" + m.isMatched() + ':' + m.getStart() + ':' + m.getEnd() + '(' + m.getGroups() + ')';
+}
+
+Regex reg = new Regex("ab*c?d+e");
+Match m = reg.matchAll("abbbcdde");
+string s0 = summarize(m);
+
+m = reg.matchAll("ade");
+string s1 = summarize(m);
+
+m = reg.matchAll("abce");
+string s2 = summarize(m);

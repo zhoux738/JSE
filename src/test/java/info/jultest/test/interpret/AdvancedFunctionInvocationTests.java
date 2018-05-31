@@ -8,11 +8,14 @@ import static info.jultest.test.EFCommons.runViaFactory;
 import static info.jultest.test.Commons.validateBoolValue;
 import info.jultest.test.Commons;
 import info.jultest.test.EFCommons;
+import info.jultest.test.oo.ExceptionTestRunner;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.interfaces.IExtEngineRuntime;
 import info.julang.external.interfaces.IExtVariableTable;
+import info.julang.memory.value.IllegalAssignmentException;
+import info.julang.typesystem.IllegalMemberAccessException;
 
 import org.junit.Test;
 
@@ -181,5 +184,11 @@ public class AdvancedFunctionInvocationTests {
 		validateIntValue(gvt, "x1", 40);
 		validateIntValue(gvt, "x2", 100);
 		validateIntValue(gvt, "x3", 600);
+	}
+	
+	@Test
+	public void returnVoidTest() throws EngineInvocationError {		
+		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.IMPERATIVE, FEATURE);
+		runner.executeAndExpect("fun_ret_07.jul", IllegalMemberAccessException.referMemberOnNonObjectEx(""));
 	}
 }

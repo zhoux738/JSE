@@ -1,0 +1,11 @@
+import System.Util;
+
+var reg = /[xyz]+/; // comments
+bool b0 = reg.matchAll("xxx").isMatched();
+
+bool b1 = /[^xyz]+/.matchAll("abc").isMatched();
+
+bool fun(Regex reg, string input){
+	return reg.matchAll(input).isMatched();
+}
+bool b2 = fun(/...//*comments*/, "abc");

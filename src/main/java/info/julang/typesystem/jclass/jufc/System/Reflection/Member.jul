@@ -30,6 +30,12 @@ enum MemberKind {
  */
 [AttributeType(allowMultiple=false, target=AttributeTarget.CONSTRUCTOR|AttributeTarget.METHOD|AttributeTarget.FIELD)] 
 attribute Reflected {
+
+    /*
+     * True to mark this member as visible to reflection API; false invisible.
+     *
+     * Members of of user-defined types are default to visible unless this property overwrites it.
+     */
 	bool visible;
 }
 

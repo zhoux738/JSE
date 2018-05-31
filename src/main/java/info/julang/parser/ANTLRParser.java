@@ -27,6 +27,7 @@ package info.julang.parser;
 import info.julang.dev.GlobalSetting;
 import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.BadSyntaxException;
+import info.julang.interpretation.errorhandling.IHasLocationInfo;
 import info.julang.langspec.ast.JulianLexer;
 import info.julang.langspec.ast.JulianParser;
 import info.julang.langspec.ast.JulianParser.ProgramContext;
@@ -268,19 +269,31 @@ public class ANTLRParser {
 	private class JSEParsingHandler extends JSEParsingHandlerBase {
 		@Override
 		public void syntaxError(
-			Recognizer<?, ?> arg0, Object tok, int lineNo, int columnNo, String msg, RecognitionException ex) {
+			Recognizer<?, ?> arg0, Object tok, final int lineNo, int columnNo, String msg, RecognitionException ex) {
 			// Remember the first offending token. A parsing error is fatal and not recoverable, 
 			// so it is pointless to keep track of other issues.
 			if (ANTLRParser.this.bse == null){
 				org.antlr.v4.runtime.Token faultingTok = null;
 				if (tok != null && tok instanceof org.antlr.v4.runtime.Token){
 					faultingTok = (org.antlr.v4.runtime.Token)tok;
+					ANTLRParser.this.bse = new BadSyntaxException(
+						"Encountered a syntax error during parsing.", fileName, faultingTok);
+				} else if (lineNo >= 1) {
+					ANTLRParser.this.bse = new BadSyntaxException(
+						"Encountered a syntax error during parsing.", new IHasLocationInfo(){
+							@Override
+							public String getFileName() {
+								return fileName;
+							}
+							@Override
+							public int getLineNumber() {
+								return lineNo;
+							}
+						});
 				} else {
-					tok = UnknowToken.INSTANCE;
+					ANTLRParser.this.bse = new BadSyntaxException(
+						"Encountered a syntax error during parsing.", fileName, UnknowToken.INSTANCE);
 				}
-
-				ANTLRParser.this.bse = new BadSyntaxException(
-					"Encountered a syntax error during parsing.", fileName, faultingTok);
 			}
 		}
 	}
