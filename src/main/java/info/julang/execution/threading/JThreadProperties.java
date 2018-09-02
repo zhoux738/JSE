@@ -30,13 +30,15 @@ public class JThreadProperties {
 	
 	private boolean isDaemon;
 	
+	private boolean io;
+	
 	private int rc;
 
 	public JThreadPriority getPripority() {
 		return pripority;
 	}
 
-	public void setPripority(JThreadPriority pripority) {
+	public void setPriority(JThreadPriority pripority) {
 		this.pripority = pripority;
 	}
 
@@ -61,5 +63,13 @@ public class JThreadProperties {
 	
 	public int getRunCount() {
 		return rc;
+	}
+
+	public boolean isIOThread() {
+		return io;
+	}
+	
+	public void setIOThread(boolean io) {
+		this.io = io;
 	}
 }

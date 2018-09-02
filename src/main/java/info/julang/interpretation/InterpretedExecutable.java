@@ -56,6 +56,7 @@ import info.julang.memory.MemoryArea;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
+import info.julang.typesystem.JType;
 import info.julang.typesystem.loading.InternalTypeResolver;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -78,7 +79,7 @@ import org.antlr.v4.runtime.Token;
  *  
  * @author Ming Zhou
  */
-public class InterpretedExecutable implements Executable {
+public class InterpretedExecutable implements Executable, IStackFrameInfo {
 
 	/**
 	 * The global type table
@@ -315,7 +316,7 @@ public class InterpretedExecutable implements Executable {
 	 */
 	protected void preExecute(ThreadRuntime runtime, StatementOption option, Argument[] args){
 		ThreadStack stack = runtime.getThreadStack();
-		stack.pushFrame();
+		stack.pushFrame(this);
 	}
 	
 	/**
@@ -326,5 +327,22 @@ public class InterpretedExecutable implements Executable {
 	 */
 	protected void postExecute(ThreadRuntime runtime, Result result){
 		runtime.getThreadStack().popFrame();
+	}
+	
+	//---------------------------- IStackFrameInfo ----------------------------//
+
+	@Override
+	public String getScriptPath() {
+		return ast != null ? ast.getFileName() : null;
+	}
+
+	@Override
+	public JType getContainingType() {
+		return null;
+	}
+	
+	@Override
+	public boolean isFromLooseScript() {
+		return false;
 	}
 }

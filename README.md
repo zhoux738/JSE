@@ -24,32 +24,34 @@ Main language features include
  * OO: class definition, inheritance, polymorphism
  * dynamic typing
  * meta-programming by code annotation
+ * reflection and introspection API
  * multi-threading and inter-thread synchronization
 
 The standard library shipped within the binary release covers
 
  * Data containers
+ * Regular expression
+ * Reflection
+ * Threading
+ * Asynchronous programming
  * File system
  * OS process control
- * Asynchronous programming
- * Networking (not available yet)
- * Data processing (not available yet)
+ * Networking
 
 ## Get Started
 
 1. Requirements:
 <br/> (1) JDK 1.7+; 
 <br/> (2) Apache Maven 3.0+;
-<br/> (3, Optional but strongly recommended) Apache Ant 1.9+; 
+<br/> (3) Apache Ant 1.9+; 
 <br/> (4, Optional but strongly recommended) Eclipse with Maven integration
 <br/> (5, Optional) Docker container 17+ (used only for JSE-223 compliance tests)
 2. Clone this project to `<ROOT>`, then start a command line.
-3. If Ant is installed, run 'ant bootstrap' from `<ROOT>`. Otherwise, run 'mvn install' from `<ROOT>/mvnplugin` to install *juleng*, a source generation Maven plugin that the main Maven project depends on. If new changes are made to this plugin itself, you must re-install. This can be done by calling 'ant build' if Ant is installed.
-4. To build, simply run 'ant' from `<ROOT>` if Ant is installed. Otherwise, run `mvn clean verify` from `<ROOT>`. Note juleng will be invoked during generate-sources phase and may have updated the source code under `<ROOT>/src`. Do not forget to add the changes to the commit.
+3. To bootstrap the development process, run 'ant bootstrap' from `<ROOT>`, then `ant build`. You must and only do this the first time you build the repository.
+4. To build, simply run 'ant' from `<ROOT>`. Alternatively, run `mvn clean verify` from `<ROOT>`. Note juleng, the Maven plugin for building JSE, will be invoked during generate-sources phase and may have updated the source code under `<ROOT>/src`. Do not forget to add the changes to the commit.
 5. To develop using Eclipse, import the Maven project from `<ROOT>`. To see the test scripts in the Package Explorer, add source folder link pointing to `<ROOT>/test/julian`, then remove it from the build path but keep the link. If making changes to juleng, also import the Maven project from `<ROOT>/mvnplugin`. You need then add two source folders to make it compile - the Java source folder from main project and the generated source folder containing ANTLR parsers from main project's target directory at `<ROOT>/target`. Update the Maven project afterwards.
-6. To run integration test, run 'ant test' from `<ROOT>` if Ant is installed. Otherwise, first build the project, then go to `<ROOT>/ci` and call `ant`, which will build Docker image and run a container with scripting engine deployed under standard JRE extension directory.
+6. To run integration test, run 'ant test' from `<ROOT>`. Alternatively, first build the project, then go to `<ROOT>/ci` and call `ant`, which will build Docker image and run a container with scripting engine deployed under standard JRE extension directory.
 
 ## Library Dependencies
 
 This project uses [ANTLR](http://www.antlr.org/) in both compile-time and run-time, and [Apache Velocity](http://velocity.apache.org/) in compile-time. All dependencies are managed through [Apache Maven](https://maven.apache.org/).
-

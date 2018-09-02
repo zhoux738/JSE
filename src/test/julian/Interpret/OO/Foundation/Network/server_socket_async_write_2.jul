@@ -1,0 +1,32 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+
+TestContext.set(_tskey, "port", ss.getLocalPort());
+//Console.println("binding " + ss.getLocalPort());
+
+Socket sock = ss.accept();
+
+AsyncStream stream = sock.getWriteStream();
+
+byte[][] buffers = new byte[5][];
+buffers[0] = "Hello ".toBytes();
+buffers[1] = "World! ".toBytes();
+buffers[2] = "This is ".toBytes();
+buffers[3] = "Julian, ".toBytes();
+buffers[4] = "a scripting language.".toBytes();
+
+stream.writeAsync(buffers[0], 0, buffers[0].length);
+stream.writeAsync(buffers[1], 0, buffers[1].length);
+stream.writeAsync(buffers[2], 0, buffers[2].length);
+stream.writeAsync(buffers[3], 0, buffers[3].length);
+Promise prom = stream.writeAsync(buffers[4], 0, buffers[4].length);
+//Console.println("all sent");
+
+var res = prom.getResult(true);
+sock.close();

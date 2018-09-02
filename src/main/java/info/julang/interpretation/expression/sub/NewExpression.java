@@ -129,7 +129,7 @@ public class NewExpression extends ExpressionBase {
 		
 		//array_creation_expression
 		//    : LEFT_BRACKET RIGHT_BRACKET (LEFT_BRACKET RIGHT_BRACKET)* array_initializer
-		//    | LEFT_BRACKET expression RIGHT_BRACKET (LEFT_BRACKET expression RIGHT_BRACKET)*
+		//    | LEFT_BRACKET expression RIGHT_BRACKET (LEFT_BRACKET expression RIGHT_BRACKET)* (LEFT_BRACKET RIGHT_BRACKET)?
 		//    ;
 	
 		ArrayValue arrVal = null;
@@ -140,11 +140,9 @@ public class NewExpression extends ExpressionBase {
 			int[] dims = new int[len];
 			
 			List<ExpressionContext> list = arrContext.expression();
-			if (len != list.size()){
-				throw new JSEError("Unexpected syntax error when evaluating new-array expression: dimension expressions and rank do not match.");
-			}
+			int exprLen = list.size();
 			
-			for (int i = 0; i < len; i++){
+			for (int i = 0; i < exprLen; i++){
 				ExpressionContext sec = list.get(i);
 				DelegatingExpression de = new DelegatingExpression(rt, ec.create(sec));
 				JValue value = de.getResult(context);
@@ -153,7 +151,16 @@ public class NewExpression extends ExpressionBase {
 					throw new RuntimeCheckException("A dimension expression must produce a value of integer type. But it has type of " + value.getType());
 				}
 
-				dims[i] = ((IntValue)value).getIntValue();
+				int length = ((IntValue)value).getIntValue();;
+                if (length < 0) {
+                    throw new RuntimeCheckException("A dimension expression must produce a non-negative integer. But it yielded " + length);
+                }
+				dims[i] = length;
+			}
+			
+			// The last dimension's length is undefined
+			if (len == exprLen + 1){
+                dims[exprLen] = ArrayValueFactory.UndefinedLength;
 			}
 			
 			arrVal = ArrayValueFactory.createArrayValue(context.getHeap(), context.getTypTable(), type, dims);

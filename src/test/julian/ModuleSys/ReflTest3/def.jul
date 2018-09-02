@@ -1,0 +1,9 @@
+module ModuleSys.ReflTest3;
+
+class MyClass {
+
+	string getPath(){
+		return Environment.getScript().getPath();
+	}
+
+}

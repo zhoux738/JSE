@@ -24,6 +24,30 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc.System.IO;
 
+import info.julang.execution.Argument;
+import info.julang.execution.Executable;
+import info.julang.execution.Result;
+import info.julang.execution.threading.IOThreadHandle;
+import info.julang.execution.threading.JThread;
+import info.julang.execution.threading.NullIOThreadHandle;
+import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.EngineInvocationError;
+import info.julang.hosting.HostedMethodProviderFactory;
+import info.julang.hosting.SimpleHostedMethodProvider;
+import info.julang.hosting.execution.CtorNativeExecutor;
+import info.julang.interpretation.context.Context;
+import info.julang.interpretation.errorhandling.JulianScriptException;
+import info.julang.memory.value.ArrayValue;
+import info.julang.memory.value.BasicArrayValue;
+import info.julang.memory.value.FuncValue;
+import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.JValue;
+import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.TempValueFactory;
+import info.julang.memory.value.VoidValue;
+import info.julang.typesystem.jclass.jufc.System.Concurrency.PromiseHandleWrapper;
+import info.julang.util.Box;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,26 +61,6 @@ import java.nio.channels.CompletionHandler;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-
-import info.julang.execution.Argument;
-import info.julang.execution.threading.JThread;
-import info.julang.execution.threading.ThreadRuntime;
-import info.julang.hosting.HostedMethodProviderFactory;
-import info.julang.hosting.SimpleHostedMethodProvider;
-import info.julang.hosting.execution.CtorNativeExecutor;
-import info.julang.hosting.interop.FunctionCaller;
-import info.julang.interpretation.context.Context;
-import info.julang.interpretation.errorhandling.JulianScriptException;
-import info.julang.memory.value.ArrayValue;
-import info.julang.memory.value.BasicArrayValue;
-import info.julang.memory.value.FuncValue;
-import info.julang.memory.value.HostedValue;
-import info.julang.memory.value.JValue;
-import info.julang.memory.value.ObjectValue;
-import info.julang.memory.value.TempValueFactory;
-import info.julang.memory.value.VoidValue;
-import info.julang.typesystem.jclass.jufc.System.Concurrency.PromiseHandleWrapper;
-import info.julang.util.Box;
 
 public class JFileStream {
 	
@@ -77,6 +81,7 @@ public class JFileStream {
 				.add("skip", new SkipExecutor())
 				.add("flush", new FlushExecutor())
 				.add("close", new CloseExecutor())
+				.add("writeAsync", new WriteArrayAsyncExecutor())
 				.add("readAsync", new ReadArrayAsyncExecutor())
 				.add("readAllAsync", new ReadArrayToEOFAsyncExecutor());
 		}
@@ -227,22 +232,43 @@ public class JFileStream {
 	
 	//---------------------------------- AsyncStream ----------------------------------//
 	
-	// private hosted void _readAsync(byte[] buffer, int offset, int count, Function callback, PromiseHandle handle);
+	// private hosted void _writeAsync(byte[] buffer, int offset, PromiseHandle handle);
+	protected static class WriteArrayAsyncExecutor extends IOInstanceNativeExecutor<JFileStream> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
+			ArrayValue array = getArray(args, 0);
+			int offset = getInt(args, 1);
+			ObjectValue handleObj = getObject(args, 2);
+			
+			BasicArrayValue bav = (BasicArrayValue) array;
+			byte[] target = (byte[]) bav.getPlatformArrayObject();
+
+			//FileStreamReadAsyncCallbackInvoker cb = new FileStreamReadAsyncCallbackInvoker(rt, callback, handleObj);
+			PromiseHandleWrapper handle = new PromiseHandleWrapper(rt, handleObj);
+			jfs.writeAsync(rt, target, offset, handle);
+			
+			return VoidValue.DEFAULT;
+		}
+		
+	}
+	
+	// private hosted void _readAsync(byte[] buffer, int offset, Function callback, PromiseHandle handle);
 	protected static class ReadArrayAsyncExecutor extends IOInstanceNativeExecutor<JFileStream> {
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
 			ArrayValue array = getArray(args, 0);
 			int offset = getInt(args, 1);
-			FuncValue callback = getFunction(args, 2);
-			ObjectValue handleObj = getObject(args, 3);
+			//FuncValue callback = getFunction(args, 2);
+			ObjectValue handleObj = getObject(args, 2);
 			
 			BasicArrayValue bav = (BasicArrayValue) array;
 			byte[] target = (byte[]) bav.getPlatformArrayObject();
 
-			FileStreamReadAsyncCallbackInvoker cb = new FileStreamReadAsyncCallbackInvoker(rt, callback, handleObj);
+			//FileStreamReadAsyncCallbackInvoker cb = new FileStreamReadAsyncCallbackInvoker(rt, callback, handleObj);
 			PromiseHandleWrapper handle = new PromiseHandleWrapper(rt, handleObj);
-			jfs.readAsync(rt, target, offset, false, cb, handle);
+			jfs.readAsync(rt, target, offset, null, handle);
 			
 			return VoidValue.DEFAULT;
 		}
@@ -261,9 +287,9 @@ public class JFileStream {
 			BasicArrayValue bav = (BasicArrayValue) array;
 			byte[] target = (byte[]) bav.getPlatformArrayObject();
 
-			FileStreamReadAsyncCallbackInvoker cb = new FileStreamReadAsyncCallbackInvoker(rt, callback, handleObj);
+			StreamReadAsyncCallback cb = new StreamReadAsyncCallback(callback, handleObj);
 			PromiseHandleWrapper handle = new PromiseHandleWrapper(rt, handleObj);
-			jfs.readAsync(rt, target, 0, true, cb, handle);
+			jfs.readAsync(rt, target, 0, cb, handle);
 			
 			return VoidValue.DEFAULT;
 		}
@@ -344,9 +370,6 @@ public class JFileStream {
 	}
 	
 	protected void close() throws IOException {
-		if (closed) {
-			throw new JSEIOException(getStreamType() + " stream is already closed.");
-		}
 		try {
 			if (getInputStream() != null) {
 				getInputStream().close();
@@ -456,15 +479,25 @@ public class JFileStream {
 	 *     |                   |                           | 
 	 */
 	
-	// read data => invoke callback => set handle
-	private void readAsync(ThreadRuntime rt, byte[] target, int offset, boolean repeat, FileStreamReadAsyncCallbackInvoker callback, PromiseHandleWrapper handle) {
+	/**
+	 * Read data => invoke callback (if not null) => set handle.
+	 * 
+	 * @param rt
+	 * @param target Read bytes to this buffer
+	 * @param offset
+	 * @param callback Can be null
+	 * @param handle
+	 */
+	private void readAsync(ThreadRuntime rt, byte[] target, int offset, StreamReadAsyncCallback callback, PromiseHandleWrapper handle) {
 		try {
 			if (offset >= target.length){
 				// Invoke callback
-				callback.invokeWithReadCountAndHandle(0);
+				if (callback != null){
+					callback.invokeWithReadCountAndHandle(rt, 0);
+				}
+				
 				// Resolve
 				handle.resolve(0);
-				
 				return;
 			}
 		
@@ -472,7 +505,30 @@ public class JFileStream {
 			AsynchronousFileChannel achan = AsynchronousFileChannel.open(p, StandardOpenOption.READ);
 			ByteBuffer buffer = ByteBuffer.wrap(target);
 			Box<Integer> box = new Box<Integer>(0);
-			readAsync(rt.getJThread(), buffer, achan, offset, repeat, callback, handle, box);
+			readAsync0(rt, null, buffer, achan, offset, callback, handle, box);
+		} catch (IOException e) {
+			// Reject
+			JSEIOException jseioe = new JSEIOException(e);
+			JulianScriptException jse = jseioe.toJSE(rt, Context.createSystemLoadingContext(rt));
+			handle.reject(jse.getExceptionValue());
+		}
+	}
+	
+	private void writeAsync(
+		ThreadRuntime rt, byte[] source, int offset, PromiseHandleWrapper handle) {
+		try {
+			if (offset >= source.length){
+				// Resolve
+				handle.resolve(0);
+				return;
+			}
+		
+			Path p = Paths.get(path);
+			AsynchronousFileChannel achan = AsynchronousFileChannel.open(p, StandardOpenOption.WRITE);
+			ByteBuffer buffer = ByteBuffer.wrap(source);
+			buffer.position(offset);
+			Box<Integer> box = new Box<Integer>(0);
+			writeAsync0(rt, null, buffer, achan, handle, box);
 		} catch (IOException e) {
 			// Reject
 			JSEIOException jseioe = new JSEIOException(e);
@@ -482,60 +538,212 @@ public class JFileStream {
 	}
 	
 	/**
-	 * Reads from a file channel, and invokes callback once or multile times until EOF.
+	 * Reads from a file channel, invokes callback 0+ times until EOF, upon which settles the promise.
 	 * 
-	 * @param thread    the thread on which this was initiated. The callback is not necessarily run on the same thread.
-	 * @param buffer    a buffer to hold the read data.
-	 * @param achan     the file channel
-	 * @param position  the initial position on the buffer to read the data into
-	 * @param repeat    whether to repeat the reading process. If false, read only once, either filling buffer or hitting EOF; if 
-	 *                  true, read as many times as it takes to hit EOF, always filling the buffer except perhaps the last time. 
-	 * @param callback  the user callback to be invoked after each time the channel was read 
-	 * @param handle    the promise handle of type <code><font color="green">System.Concurrency.PromiseHandle</font></code> that 
-	 *                  can be used to settle the promise associated with this asynchronous call.
-	 * @param totalRead the count of bytes read so far
+	 * @param rt        The runtime for the thread on which this was initiated. The callback is not necessarily run on the 
+	 *                  same thread.
+	 * @param iothread  A Julian IO thread on which to invoke the callback. If null, this method will fetch one if the 
+	 *                  callback is not null.
+	 * @param buffer    A buffer to hold the read data.
+	 * @param achan     The file channel.
+	 * @param position  The initial position on the buffer to read the data into. 
+	 * @param callback  The user callback to be invoked after each time the channel was read. If null, the call will finish 
+	 *                  after the first read which either filled the buffer or hit EOF. If not null, will call this method 
+	 *                  recursively, and upon end of each call the buffer will be filled out, except perhaps the last time 
+	 *                  when the EOF was hit first. After each read, the callback will be invoked on the given IO thread.  
+	 * @param handle    The promise handle of type <code><font color="green">System.Concurrency.PromiseHandle</font></code> 
+	 *                  that can be used to settle the promise associated with this asynchronous call.
+	 * @param totalRead The count of bytes read so far.
 	 */
-	private void readAsync(
-		final JThread thread,
+	private void readAsync0(
+		final ThreadRuntime rt,
+		IOThreadHandle iothread0,
 		final ByteBuffer buffer, 
 		final AsynchronousFileChannel achan, 
 		final long position, 
-		final boolean repeat,
-		final FileStreamReadAsyncCallbackInvoker callback, 
+		final StreamReadAsyncCallback callback, 
 		final PromiseHandleWrapper handle,
 		final Box<Integer> totalRead) {
 		
+		final JThread thread = rt.getJThread();
+		final boolean repeat = callback != null;
+		
+		// initialize io-thread
+		final IOThreadHandle iothread = 
+			iothread0 != null ? 
+				iothread0 : // Use the given io-thread
+				repeat ? 
+					rt.getThreadManager().fetchIOThread(rt, true) : // Create a new one only if this is a repeated call
+					NullIOThreadHandle.INSTANCE;
+					
 		achan.read(
 			buffer, position, buffer, 
 			new CompletionHandler<Integer, ByteBuffer>() {
 				
 				@Override
-			    public void completed(Integer read, ByteBuffer bb) {
-			    	try {
+			    public void completed(final Integer read, final ByteBuffer bb) {
+					if (repeat) {
+						// [Code path for readToEndAsync]
+						// Once completed for each read, invoke the callback on Julian's IO thread.
+						iothread.post(
+							thread.getThreadRuntime(), 
+							new Executable(){
+
+								@Override
+								public Result execute(ThreadRuntime runtime, Argument[] args) throws EngineInvocationError {
+							    	try {
+							    		if (checkStreamState()) { 
+							    			return Result.Void;
+							    		}
+		
+										bb.flip();
+										
+										if (read > 0){
+											totalRead.set(totalRead.get() + read);
+											
+									        // Invoke callback
+											callback.invokeWithReadCountAndHandle(runtime, read);
+										}
+		
+							    		if (checkStreamState()) {
+							    			return Result.Void;
+							    		}
+										
+								        // Call recursively
+								        if (read > 0 && repeat){
+								        	readAsync0(rt, iothread, buffer, achan, position + read, callback, handle, totalRead);
+								        } else {
+								        	// Resolve
+											handle.resolve(totalRead.get());
+											iothread.complete();
+								        }
+							    	} catch (JulianScriptException jse){
+										// Reject
+										handle.reject(jse.getExceptionValue());
+										iothread.complete();
+							    	} catch (Exception ex){
+										// Reject
+										handle.reject(ex.getMessage()); // TODO - add cause?
+										iothread.complete();
+							    	}
+
+					    			return Result.Void;
+								}
+							
+							});						
+					} else {
+						// [Code path for readAsync]
+						// There is no callback, just settle the promise
+						try {
+				    		if (checkStreamState()) { 
+				    			return;
+				    		}
+
+							bb.flip();
+							
+							if (read > 0){
+								totalRead.set(totalRead.get() + read);
+							}
+
+				    		if (checkStreamState()) { 
+				    			return;
+				    		}
+							
+				    		// Resolve
+							handle.resolve(totalRead.get());
+				    	} catch (JulianScriptException jse){
+							// Reject
+							handle.reject(jse.getExceptionValue());
+				    	} catch (Exception ex){
+							// Reject
+							handle.reject(ex.getMessage()); // TODO - add cause?
+				    	}
+					}
+			    }
+	
+			    @Override
+			    public void failed(Throwable ex, ByteBuffer attachment) {
+					// Reject
+			    	if (ex instanceof JulianScriptException){
+						handle.reject(((JulianScriptException)ex).getExceptionValue());
+			    	} else {
+						handle.reject(ex.getMessage()); // TODO - add cause?
+			    	}
+                    iothread.complete();
+			    }
+			    
+			    // Return false if the stream should not be operated on anymore.
+			    private boolean checkStreamState(){
+					if (JFileStream.this.closed) {
+						throw new JSEIOException(getStreamType() + " stream is already closed.");
+					}
+					
+		    		if (thread.checkTermination()){
+						// Reject due to termination
+						handle.reject("Script engine is terminated.");
+                        iothread.complete();
+						return true;
+		        	}
+		    		
+		    		return false;
+			    }
+			}
+		);
+	}
+
+	/**
+	 * Writes into a file channel, and settles the promise at the end.
+	 * 
+	 * @param rt        The runtime for the thread on which this was initiated. The callback is not necessarily run on the 
+	 *                  same thread.
+	 * @param iothread  A Julian IO thread on which to invoke the callback. If null, this method will fetch one if the 
+	 *                  callback is not null.
+	 * @param buffer    A buffer to hold the data to write.
+	 * @param achan     The file channel.
+	 * @param position  The initial position on the buffer to read the data into.
+	 * @param handle    The promise handle of type <code><font color="green">System.Concurrency.PromiseHandle</font></code> 
+	 *                  that can be used to settle the promise associated with this asynchronous call.
+	 */
+	private void writeAsync0(
+		final ThreadRuntime rt,
+		IOThreadHandle iothread0,
+		final ByteBuffer buffer, 
+		final AsynchronousFileChannel achan,
+		final PromiseHandleWrapper handle,
+		final Box<Integer> totalWritten) throws IOException {
+		
+		final long offset = achan.size();
+		final JThread thread = rt.getJThread();
+	
+		// initialize io-thread
+		final IOThreadHandle iothread = 
+			iothread0 != null ? 
+				iothread0 : // Use the given io-thread
+				NullIOThreadHandle.INSTANCE;
+		
+		achan.write(
+			buffer, offset, buffer, 
+			new CompletionHandler<Integer, ByteBuffer>() {
+				
+				@Override
+			    public void completed(final Integer wrote, final ByteBuffer bb) {
+					try {
 			    		if (checkStreamState()) { 
 			    			return;
 			    		}
 
 						bb.flip();
 						
-						if (read > 0){
-							totalRead.set(totalRead.get() + read);
-							
-					        // Invoke callback
-							callback.invokeWithReadCountAndHandle(read);
+						if (wrote > 0){
+							totalWritten.set(totalWritten.get() + wrote);
 						}
 
 			    		if (checkStreamState()) { 
 			    			return;
 			    		}
 						
-				        // Call recursively
-				        if (read > 0 && repeat){
-				        	readAsync(thread, buffer, achan, position + read, repeat, callback, handle, totalRead);
-				        } else {
-				        	// Resolve
-							handle.resolve(totalRead.get());
-				        }
+			    		// Resolve
+						handle.resolve(totalWritten.get());
 			    	} catch (JulianScriptException jse){
 						// Reject
 						handle.reject(jse.getExceptionValue());
@@ -553,6 +761,7 @@ public class JFileStream {
 			    	} else {
 						handle.reject(ex.getMessage()); // TODO - add cause?
 			    	}
+                    iothread.complete();
 			    }
 			    
 			    // Return false if the stream should not be operated on anymore.
@@ -564,6 +773,7 @@ public class JFileStream {
 		    		if (thread.checkTermination()){
 						// Reject due to termination
 						handle.reject("Script engine is terminated.");
+                        iothread.complete();
 						return true;
 		        	}
 		    		
@@ -572,27 +782,4 @@ public class JFileStream {
 			}
 		);
 	}
-}
-
-/**
- * Dynamically invokes user's callback with (int read, ProcessHandle handle).
- * 
- * @author Ming Zhou
- */
-class FileStreamReadAsyncCallbackInvoker extends FunctionCaller {
-
-	private ObjectValue handleObj;
-	
-	public FileStreamReadAsyncCallbackInvoker(ThreadRuntime rt, FuncValue fv, ObjectValue handleObj) {
-		super(rt, fv, true);
-		this.handleObj = handleObj;
-	}
-	
-	public void invokeWithReadCountAndHandle(int read){
-		this.call(new JValue[] {
-			TempValueFactory.createTempIntValue(read),
-			TempValueFactory.createTempRefValue(handleObj)
-		}, true);
-	}
-	
 }

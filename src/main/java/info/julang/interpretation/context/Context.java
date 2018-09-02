@@ -28,8 +28,10 @@ import info.julang.execution.InContextTypeResolver;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadManager;
+import info.julang.execution.threading.ThreadFrame;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.resolving.INameResolver;
 import info.julang.memory.MemoryArea;
@@ -183,19 +185,18 @@ public class Context {
 	
 	private static class SystemLoadingContext extends FunctionContext {
 
-		SystemLoadingContext(ThreadRuntime rt) {
+		SystemLoadingContext(ThreadRuntime rt, MemoryArea mem, IVariableTable vt) {
 			super(
-				/* MemoryArea frame */     rt.getThreadStack().currentFrame().getMemory(), 
-				/* MemoryArea heap */      rt.getHeap(), 
-				/* VariableTable varTable */ 
-				                           rt.getThreadStack().currentFrame().getVariableTable(), 
-				/* TypeTable typTable */   rt.getTypeTable(),
+				/* MemoryArea frame */       mem, 
+				/* MemoryArea heap */        rt.getHeap(), 
+				/* VariableTable varTable */ vt, 
+				/* TypeTable typTable */     rt.getTypeTable(),
 				/* InternalTypeResolver typResolver */ 
-				                           rt.getTypeResolver(), 
-				/* ModuleManager mm */     rt.getModuleManager(), 
-				/* NamespacePool nsPool */ rt.getThreadStack().getNamespacePool(),
-				/* JThreadManager tm */    rt.getThreadManager(),
-				/* JThread jthread */      rt.getJThread());
+				                             rt.getTypeResolver(), 
+				/* ModuleManager mm */       rt.getModuleManager(), 
+				/* NamespacePool nsPool */   rt.getThreadStack().getNamespacePool(),
+				/* JThreadManager tm */      rt.getThreadManager(),
+				/* JThread jthread */        rt.getJThread());
 		}
 		
 	}
@@ -208,6 +209,12 @@ public class Context {
 	 * @return
 	 */
 	public static Context createSystemLoadingContext(ThreadRuntime rt){
-		return new SystemLoadingContext(rt);
+	    ThreadFrame frame = rt.getThreadStack().currentFrame();
+	    if (frame == null) {
+	        VariableTable vt = new VariableTable(rt.getGlobalVariableTable());
+	        return new SystemLoadingContext(rt, rt.getStackMemory(), vt);
+	    } else {
+            return new SystemLoadingContext(rt, frame.getMemory(), frame.getVariableTable());
+	    }
 	}
 }

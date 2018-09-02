@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.util.List;
 
 import org.junit.Assert;
@@ -129,6 +130,21 @@ public final class Commons {
 	
 	public static SimpleScriptEngine makeSimpleEngine(VariableTable gvt, boolean reentry){
 		return makeSimpleEngine(gvt, new ModuleManager(), reentry);
+	}
+	
+	public static EngineComponentSet buildSimpleEngine(){
+		VariableTable gvt = new VariableTable(null);
+		gvt.enterScope();
+		HeapArea heap = new SimpleHeapArea();
+		TypeTable tt = new TypeTable(heap);
+		SimpleScriptEngine engine = makeSimpleEngine(heap, gvt, tt, null);
+		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
+
+	    tt.initialize(engine.getRuntime());
+	    
+	    EngineComponentSet ecs = new EngineComponentSet(engine, heap, tt, gvt);
+	    
+	    return ecs;
 	}
 	
 	public static VariableTable runInline(String feature, String script) throws EngineInvocationError{
@@ -352,6 +368,16 @@ public final class Commons {
 		UntypedValue uvalue = (UntypedValue) value;
 		return uvalue.getActual();
 	}
+    
+    public static void validateNonEmptyStringValue(VariableTable vt, String varName){
+        JValue value = vt.getVariable(varName);
+        assertNotNull("Variable " + varName + " not defined?", value);
+        value = RefValue.tryDereference(value);
+        assertEquals(StringValue.class, value.getClass());
+        StringValue svalue = (StringValue) value;
+        String val = svalue.getStringValue();
+        assertTrue(val != null && val.length() > 0);
+    }
 	
 	public static void validateIntArrayValue(JValue val, int[] array){
 		assertTrue(ArrayValue.class.isAssignableFrom(val.getClass()));

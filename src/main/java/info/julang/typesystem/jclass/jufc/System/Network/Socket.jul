@@ -1,0 +1,234 @@
+module System.Network;
+
+import System;
+import System.IO;
+import System.Concurrency;
+
+/*
+ * A TCP socket.
+ *
+ * A socket can be created in two ways: either by one of the constructors defined on this class, or 
+ * by [accepting](ServerSocket#accept()) a connection request from [ServerSocket].
+ *
+ * Once connected, the socket provides two streams for I/O operations. Closing either of them will result
+ * in disconnection.
+ */
+[Bridged(apiset="System.Network.Socket")]
+class Socket : ISocket {
+
+	// Constructors. Configuration is copied to internal state.
+	
+	/*
+	 * Create a socket which is not bound yet.
+	 */
+	Socket() : this(true) {
+
+	}
+	
+	private Socket(bool create){
+		SocketConfig config = new SocketConfig();
+		if (create) {
+			_init(config);
+		}
+	}
+	
+	/*
+	 * Create a socket from a configuration object. Even if the object contains local address/port, 
+	 * the socket won't be bound to them until it initiates a connection.
+	 * [param: config] The TCP configuration.
+	 */
+	Socket(SocketConfig config){
+		SocketConfig _config = config.replicate();
+		_init(_config);
+	}
+	
+	/*
+	 * Create a socket from a configuration object. The socket won't be bound to the specified local 
+	 * address/port until it initiates a connection.
+	 *
+	 * [param: localHost] The local host name to bind to upon connection.
+	 * [param: localPort] The local port to bind to upon connection.
+	 */
+	Socket(string localHost, int localPort){
+		SocketConfig config = new SocketConfig();
+		config.setLocalAddress(localHost);
+		config.setLocalPort(localPort);
+		_init(config);
+	}
+
+	/*
+	 * Create a socket from a configuration object. The socket won't be bound to the specified local 
+	 * port until it initiates a connection.
+	 *
+	 * [param: localPort] The local port to bind to upon connection.
+	 */	
+	Socket(int localPort) : this (null, localPort) {
+
+	}
+	
+	[Bridged(name="ctor")]
+	private hosted void _init(SocketConfig config);
+	
+	// Basic operations
+	
+	/*
+	 * Bind this socket to a local address/port.
+	 * 
+	 * This has the effect of actually binding the socket to the specified address/port. Once the socket is bound,
+	 * it cannot be rebound to another address/port, and it will remain in [BOUND](SocketState#BOUND) state forever, 
+	 * even after disconnection.
+	 *
+	 * [param: localHost] The local host name to bind to upon connection.
+	 * [param: localPort] The local port to bind to upon connection.
+	 */
+	[Bridged(name="bind")]
+	hosted void bind(string localHost, int localPort);
+	
+	/*
+	 * Connect this socket to a remote address/port. 
+	 *
+	 * If the socket has not bound yet, this will first bind the socket to the local address/port as specified in
+	 * the constructors, should it have been instantiated in that fashion. Had no address/port been specified for this 
+	 * socket during construction, this method will first bind to a local address/port as provisioned by the OS, which
+	 * comprises of a local address resolved from local host name (see [Address.getLocal()](Address#getLocal)), and an
+	 * ephemeral local port.  
+	 */
+	[Bridged(name="connect")]
+	hosted void connect(string remoteHost, int remotePort);
+	
+	/*
+	 * Close this connection. This has no effect if the connection is not established yet. Closing a socket will
+	 * shut down the two I/O streams, and transition the socket's state from [CONNECTED](SocketState#CONNECTED) 
+	 * to either [CLOSED](SocketState#CLOSED) or [BOUND](SocketState#BOUND), if the local address has been explicitly
+	 * specified and [preserved](TCPOption#REUSEADDR).
+	 */
+	[Bridged(name="close")]
+	hosted void close();
+	
+	// Query internal states
+	
+	/*
+	 * Get the local host for this socket. If binding has not happened yet, returns the value 
+	 * set in [configuration](type: SocketConfig).
+	 * 
+	 * [return] The local host bound to or to bind to this socket. Null if no host has been specified yet.
+	 */
+	[Bridged(name="getLocalHost")]
+	hosted string getLocalHost();
+	
+	/*
+	 * Get the local port for this socket. If binding has not happened yet, returns the value 
+	 * set in [configuration](type: SocketConfig).
+	 * 
+	 * [return] The local port bound to or to bind to this socket. 0 if no port has been specified yet.
+	 */
+	[Bridged(name="getLocalPort")]
+	hosted int getLocalPort();
+	
+	[Bridged(name="getSetting")]
+	private hosted var _getSetting(string literal);
+	
+	/*
+	 * Get the setting for specified TCP option.
+	 *
+	 * [param: opt] The TCP option to query.
+	 * [return] The value set for this option. If the option is not set, the default value is returned. 
+	 * See [TCPOption] for more details on the type of each setting and the respective default values.
+	 */
+	var getSetting(TCPOption opt){
+		return _getSetting(opt.literal);
+	}
+	
+	/*
+	 * Get the remote host for this socket. Only returns non-null value when the socket is [in connection](SocketState#CONNECTED).
+	 * 
+	 * [return] The remote host connected to this socket. Null if the connection is not established.
+	 */
+	[Bridged(name="getRemoteHost")]
+	hosted string getRemoteHost();
+	
+	/*
+	 * Get the remote port for this socket. Only returns non-zero value when the socket is [in connection](SocketState#CONNECTED).
+	 * 
+	 * [return] The remote port connected to this socket. 0 if the connection is not established.
+	 */
+	[Bridged(name="getRemotePort")]
+	hosted int getRemotePort();
+	
+	/*
+	 * Get the state of this socket.
+	 *
+	 * Note that the socket's state always starts from [UNBOUND](SocketState#UNBOUND), and can transition into 
+	 * either [BOUND](SocketState#BOUND) through [bind()](#bind()) call. When it's connected, it will  
+	 * become [CONNECTED](SocketState#CONNECTED), but a transition from UNBOUND directly into CONNECTED is also
+	 * possible, if the local address has never been specifically designated before [connect()](#connect()) call.
+	 * When the connect is tore down, the state will go back to either [CLOSED](SocketState#CLOSED) 
+	 * or [BOUND](SocketState#BOUND), if the local address has been explicitly specified and [preserved](TCPOption#REUSEADDR).
+	 * 
+	 * Socket in Julian is for one-shot use. A socket cannot be resurrected after disconnection.
+	 *
+	 * [return] The state of this socket.
+	 */
+	SocketState getState(){
+		int st = _getState();
+		switch(st){
+		case 0: return SocketState.UNBOUND;
+		case 1: return SocketState.BOUND;
+		case 2: return SocketState.CONNECTED;
+		case 3: return SocketState.CLOSED;
+		}
+	}
+	
+	[Bridged(name="getState")]
+	private hosted int _getState();
+	
+	// IO
+	private Lock lck = new Lock();
+	private SocketStream rs;
+	private SocketStream ws;
+	
+	/*
+	 * Get the input stream from which one can read data transmitted from the other side of the socket. 
+	 * The stream supports both synchronous and asynchronous reading, but is neither markable nor seekable.
+	 * 
+	 * Only one input stream instance will be associated with each socket. Calling this multiple times
+	 * returns the same stream object. Closing this stream will cause the socket to be disconnected.
+	 * 
+	 * [return] An input stream enabled for reading operations.
+	 */
+	SocketStream getReadStream(){
+		if (rs == null) {
+			sync(lck){
+				if (rs == null) {
+					rs = _getStream(false); 
+				}
+			}
+		}
+		
+		return rs;
+	}
+
+	/*
+	 * Get the output stream to which one can send data out to the other side of the socket. 
+	 * The stream supports both synchronous and asynchronous reading, but is neither markable nor seekable.
+	 * 
+	 * Only one output stream instance will be associated with each socket. Calling this multiple times
+	 * returns the same stream object. Closing this stream will cause the socket to be disconnected.
+	 * 
+	 * [return] An output stream enabled for writing operations.
+	 */
+	SocketStream getWriteStream(){
+		if (ws == null) {
+			sync(lck){
+				if (ws == null) {
+					ws = _getStream(true); 
+				}
+			}
+		}
+		
+		return ws;
+	}	
+	
+	[Bridged(name="getStream")]
+	private hosted SocketStream _getStream(bool writable);
+}

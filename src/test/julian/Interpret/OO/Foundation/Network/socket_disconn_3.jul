@@ -1,0 +1,19 @@
+import System.Network;
+import System.IO;
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+TestContext.set(_tskey, "port", ss.getLocalPort());
+
+Socket sock = ss.accept();
+string s1 = sock.getState().literal;
+
+SocketStream stream = sock.getReadStream();
+stream.close();
+stream.close();
+string s2 = sock.getState().literal;
+
+sock.close();
+sock.close();
+string s3 = sock.getState().literal;

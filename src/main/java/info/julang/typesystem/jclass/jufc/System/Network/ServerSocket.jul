@@ -1,0 +1,158 @@
+module System.Network;
+
+import System;
+import System.IO;
+
+/*
+ * A TCP server socket that keeps listening to new connections.
+ *
+ * The server socket must be bound to a local port before it can start accepting new connections. 
+ * Once a request is coming it will perform the three-way handshake with the client and creates a
+ * [Socket] instance upon the successful establishment of the connection. The ensuing message 
+ * exchange and disconnection will be performed through [Socket]'s API.
+ */
+[Bridged(apiset="System.Network.ServerSocket")]
+class ServerSocket : ISocket {
+
+	// Constructors. Configuration is copied to internal state.
+	
+	/*
+	 * Create a new server socket with default configuration.
+	 */
+	ServerSocket(){
+		SocketConfig config = new SocketConfig();
+		_init(config);
+	}
+	
+	/*
+	 * Create a new server socket with given configuration.
+	 *
+	 * [param: config] Socket configuration
+	 */
+	ServerSocket(SocketConfig config){
+		SocketConfig _config = config.replicate();
+		_init(_config);
+	}
+	
+	/*
+	 * Create a new server socket with given local host and port.
+	 *
+	 * [param: localHost] The local host name to bind to before starting listening.
+	 * [param: localPort] The local port to bind to before starting listening. 0 if using a ephemeral port.
+	 */
+	ServerSocket(string localHost, int localPort){
+		SocketConfig config = new SocketConfig();
+		config.setLocalAddress(localHost);
+		config.setLocalPort(localPort);
+		_init(config);
+	}
+
+	/*
+	 * Create a new server socket with given local port.
+	 *
+	 * [param: localPort] The local port to bind to before starting listening. 0 if using an ephemeral port.
+	 */	
+	ServerSocket(int localPort){
+		SocketConfig config = new SocketConfig();
+		config.setLocalAddress(null);
+		config.setLocalPort(localPort);
+		_init(config);
+	}
+	
+	[Bridged(name="ctor")]
+	private hosted void _init(SocketConfig config);
+	
+	// Basic operations
+	
+	/*
+	 * Bind this server socket to a local address.
+	 *
+	 * [param: localHost] The local host name to bind to before starting listening.
+	 * [param: localPort] The local port to bind to before starting listening.
+	 */
+	[Bridged(name="bind")]
+	hosted void bind(string localHost, int localPort);
+	
+	/*
+	 * Accept the next connection.
+	 * 
+	 * If no host and/or port has been specified in the constructor or explicitly designated
+	 * in [bind()](#bind()) method, this method will first bind to a the local host on an ephemeral 
+	 * port. Otherwise it will bind to whatever is given.
+	 * 
+	 * This method blocks until the next connection comes, when it creates a [Socket](Socket) instance for 
+	 * the application to consume. The subsequent communication on that socket no longer concerns
+	 * the originating server socket. To keep the thread running for the subsequent connections,
+	 * it's typical to invoke certain asynchronous methods on the socket's I/O streams and let it go
+	 * to the next call on [bind()](#bind()) immediately. Alternatively, one can also spawn a new thread 
+	 * to process the socket in a synchronous way, although such practices, common to traditional server
+	 * programming, is not recommended in Julian, which prefers an async-first API model.
+	 *
+	 * [return] The socket created as the result of next connection. 
+	 */
+	[Bridged(name="accept")]
+	hosted Socket accept();
+	
+	/*
+	 * Close the server socket. This will only spin down the listening operation. It will not affect any
+	 * sockets created from this server socket.
+	 */
+	[Bridged(name="close")]
+	hosted void close();
+	
+	// Query internal states
+	
+	/*
+	 * Get the local host for this server socket. If binding has not happened yet, returns the value 
+	 * set in [configuration](type: SocketConfig).
+	 * 
+	 * [return] The local host bound to or to bind to this server socket. Null if no host has been specified yet.
+	 */
+	[Bridged(name="getLocalHost")]
+	hosted string getLocalHost();
+	
+	/*
+	 * Get the local port for this server socket. If binding has not happened yet, returns the value 
+	 * set in [configuration](type: SocketConfig).
+	 * 
+	 * [return] The local port bound to or to bind to this server socket. 0 if no port has been specified yet.
+	 */
+	[Bridged(name="getLocalPort")]
+	hosted int getLocalPort();
+	
+	[Bridged(name="getSetting")]
+	private hosted var _getSetting(string literal);
+	
+	/*
+	 * Get the setting for specified TCP option.
+	 *
+	 * [param: opt] The TCP option to query.
+	 * [return] The value set for this option. If the option is not set, the default value is returned. 
+	 * See [TCPOption] for more details on the type of each setting and the respective default values.
+	 */
+	var getSetting(TCPOption opt){
+		return _getSetting(opt.literal);
+	}
+
+	/*
+	 * Get the state of this server socket.
+	 *
+	 * Note that the server socket's state always starts from [UNBOUND](SocketState#UNBOUND), and can only transition into 
+	 * either [BOUND](SocketState#BOUND) through [bind()](#bind()) or [accept()](#accept()) call. It will remain bound
+	 * until it's explicitly closed by [closed()](#closed()), upon which it becomes [CLOSED](SocketState#CLOSED) 
+	 * or [BOUND](SocketState#BOUND), if the local address has been explicitly specified and [preserved](TCPOption#REUSEADDR).
+	 *
+	 * [return] The state of this server socket.
+	 */	
+	SocketState getState(){
+		int st = _getState();
+		switch(st){
+		case 0: return SocketState.UNBOUND;
+		case 1: return SocketState.BOUND;
+		case 3: return SocketState.CLOSED;
+		}
+	}
+	
+	[Bridged(name="getState")]
+	private hosted int _getState();
+}

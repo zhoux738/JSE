@@ -5,14 +5,6 @@ import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateByteArrayValue;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import org.junit.Test;
-
-import info.jultest.test.Commons;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.symboltable.VariableTable;
@@ -20,6 +12,17 @@ import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.memory.HeapArea;
 import info.julang.memory.simple.SimpleHeapArea;
 import info.julang.memory.value.StringValue;
+import info.jultest.test.Commons;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.CharBuffer;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
 
 //(Uncomment @RunWith for reliability test)
 //@org.junit.runner.RunWith(org.junit.runners.Parameterized.class)
@@ -32,6 +35,42 @@ public class System_IO_AsyncFileStream_IOTestSuite {
 //	}
 	
 	private static final String FEATURE = "Foundation/IO";
+	
+	@Test
+	public void writeAsyncTest() throws EngineInvocationError, IOException {
+		VariableTable gvt = new VariableTable(null);
+		gvt.enterScope();
+		HeapArea heap = new SimpleHeapArea();
+		TypeTable tt = new TypeTable(heap);
+		SimpleScriptEngine engine = makeSimpleEngine(heap, gvt, tt, null);
+		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
+	
+		File temp = null;
+		try {
+			// 1) create a temp file, write something		
+			temp = File.createTempFile("__jse_test_", ".tmp"); 
+			temp.deleteOnExit();
+			
+			// 2) create a global var "path" and set temp file's full path to it	
+			tt.initialize(engine.getRuntime());
+			gvt.addVariable("path", new StringValue(heap, temp.getAbsolutePath()));
+			
+			// 3) in script, new up a file stream using "path", and call various methods
+			engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "fs_writeasync_1.jul"));
+			
+			// 4) validation
+			validateIntValue(gvt, "finalWrite", 16);
+			try (FileReader fr = new FileReader(temp)){
+				CharBuffer cb = CharBuffer.allocate(30);
+				fr.read(cb);
+				cb.flip();
+				String str = cb.toString();
+				Assert.assertEquals("Hello world! This is Julian.", str);			
+			}			
+		} finally {
+			temp.delete();
+		}
+	}
 	
 	@Test
 	public void readAllAsyncTest() throws EngineInvocationError, IOException {

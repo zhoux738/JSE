@@ -1,0 +1,81 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+import ModuleSys.TestHelper;
+
+class SockProc {
+
+	private Socket sock;
+	private string result = "";
+	private int count;
+	
+	SockProc(Socket sock){
+		this.sock = sock;
+	}
+
+	void process(){
+		AsyncStream stream = sock.getReadStream();
+		
+		byte[] buffer = new byte[128];
+		Promise prom = stream.readToEndAsync(buffer, (count, handle) => {
+			if (count > 0) {
+				string s = String.fromBytes(buffer, "ascii", 0, count).trim();
+				//Console.println("read = " + s);
+				this.result += s;
+				if (s.endsWith("_fin")) {
+					sock.close();
+				}
+			}
+		});
+		
+		this.count = prom.getResult(true);
+		//Console.println(res);
+		sock.close();
+	}
+	
+	string getResult(){
+		if (result.endsWith("_fin")){
+			result = result.substring(0, result.length - 4);
+			count -= 4;
+		}
+		return sock.getRemotePort() + ": (" + count + ") " + result;
+	}
+
+}
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+TestContext.set(_tskey, "port", ss.getLocalPort());
+
+int max = 3;
+Thread[] thds = new Thread[max];
+string[] strs = new string[max];
+int i = 0;
+while (i < max) {
+	int j = i; // Must make a copy since locals are copy-by-ref inside lambda
+	Socket sock = ss.accept();
+	Thread t = new Thread(
+		() => {
+			SockProc sp = new SockProc(sock);
+			sp.process();
+			string s = sp.getResult();
+			//Console.println(s);
+			strs[j] = s;
+		}, 
+		"mythread-" + i, 
+		ThreadPriority.NORMAL);
+	t.start();
+	thds[i] = t;
+	i++;
+}
+
+for(int i = 0; i<max; i++){
+	thds[i].join();
+}
+
+Array.sort(strs, false);
+
+for(int i = 0; i<max; i++){
+	//Console.println(strs[i]);
+}

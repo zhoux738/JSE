@@ -1,0 +1,152 @@
+module System.Network;
+
+import System;
+import System.Util;
+
+/*
+ * The type of Internet Protocol address.
+ */
+enum AddressType {
+	/* IP address in format as specified by [RFC 791](https://tools.ietf.org/html/rfc791) */
+	IPv4,
+	/* IP address in format as specified by [RFC 2460](https://tools.ietf.org/html/rfc2460) */
+	IPv6,
+	/* The network address cannot be resolved from the given host name. */
+	Unresolved
+}
+
+/*
+ * The Internet Protocol address.
+ *
+ * The instantiation of this class is always done by the engine. A user usually provides an IP address,
+ * or a host name to one of static resolver methods on this class to get an instance of the resolved address.
+ */
+[Bridged(apiset="System.Network.NetAddress")]
+class NetAddress {
+
+	private string name;
+	private string address;
+	private AddressType type;
+	
+	private static Regex s_ipv4lo = /127\.([0-2]?[0-9]?[0-9])\.([0-2]?[0-9]?[0-9])\.([0-2]?[0-9]?[0-9])/;
+	
+	private NetAddress(String name, String address, int addrType) {
+		this.name = name;
+		this.address = address;
+		switch(addrType){
+		case 0: type = AddressType.IPv4; break;
+		case 1: type = AddressType.IPv6; break;
+		case 2: type = AddressType.Unresolved; break;
+		}
+	}
+	
+	/*
+	 * Get the type of this IP address.
+	 * [return] The type of this IP address. Note it could be [unresolved](AddressType#Unresolved).
+	 */
+	AddressType getType(){
+		return type;
+	}
+	
+	/*
+	 * Get the host name if this instance is resolved from it. If it is created by an address
+	 * literal this method returns the same string value.
+	 * [return] The host name or host address.
+	 */
+	string getName(){
+		return name;
+	}
+	
+	/*
+	 * Get host address as either specified or resolved from the host name. If the address 
+	 * was created by a host name but turned out to be unresolvable, returns null.
+	 * [return] The host name or host address.
+	 */	
+	string getAddress(){
+		return address;
+	}
+	
+	/*
+	 * Whether this address is a local loopback. Such address is backed by a virtual loopback network device
+	 * provided by the OS. Data coming from and to this address doesn't incur traffic on data link layer.
+	 * [return] True if the address is loopback.
+	 */
+	bool isLoopback(){
+		if (address == null) {
+			return false;
+		}
+		
+		if (address == "127.0.0.1" // most common IPv4 loopback, but we will check other 127.0.0.0/8 addresses later	
+		 || address == "::1"
+		 || address == "0000:0000:0000:0000:0000:0000:0000:0001"){
+			return true;
+		}
+		
+		if (type == AddressType.IPv4) {
+			Match m = NetAddress.s_ipv4lo.matchAll(address);
+			if (m.isMatched()){
+				//TODO - check value in [0-255] (need string-to-int conversion)
+				//g0 = m.getGroup(0);
+				//g1 = m.getGroup(1);
+				//g2 = m.getGroup(2);
+				
+				return true;
+			}	
+		}
+		
+		return false;
+	}
+	
+	/*
+	 * Try to resolve the host name to as many addresses as possible.
+	 *
+	 * If the name is an address itself no resolution will occur and the resultant array will only contain 
+	 * one address from the given name.
+	 * 
+	 * [param: name] The host name to resolve.
+	 * [return] An array of network addresses that are resolved from the given host name. If the name is 
+	 * unresolvable or illegal the array will be empty.
+	 */
+	[Bridged(name="resolveAll")]
+	hosted static NetAddress[] resolveAll(string name);
+
+	/*
+	 * Try to resolve the host name to an address.
+	 *
+	 * If the name is an address itself no resolution will occur and the argument will be directly converted
+	 * to an address object.
+	 * 
+	 * [param: name] The host name to resolve.
+	 * [return] A network address resolved from the given host name. Null if the name is unresolvable or illegal.
+	 */	
+	[Bridged(name="resolve")]
+	hosted static NetAddress resolve(string name);
+
+	/*
+	 * Get the local address. The address is resolved from local host name.
+	 *
+	 * [return] A network address representative of the local host.
+	 */
+	[Bridged(name="getLocal")]	
+	hosted static NetAddress getLocal();
+	
+	/*
+	 * Get an IPv4 loopback address.
+	 *
+	 * [return] An IPv4 loopback address.
+	 */
+	static NetAddress getLoopback(){
+		return new NetAddress("localhost", "127.0.0.1", 0);
+	}
+	
+	// Object
+	
+	/* [nodoc] */
+	string toString(){
+		string res = address != null ? address : "<unresolved>";
+		string nam = name != null ? name : "<unnamed>";
+		res += " (" + nam + ")";
+		return res;
+	}
+
+}

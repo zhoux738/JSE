@@ -86,6 +86,7 @@ import info.julang.typesystem.jclass.annotation.JAnnotation;
 import info.julang.typesystem.jclass.annotation.MetaAnnotation;
 import info.julang.typesystem.jclass.builtin.JAttributeType;
 import info.julang.typesystem.jclass.builtin.JConstructorType;
+import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.util.Box;
 import info.julang.util.Pair;
@@ -340,7 +341,7 @@ public class TypeLoader {
 	private List<String> postMature(
 		Context context, ITypeTable tt, List<ICompoundType> types, Map<String, ILoadingState> states, NewTypeGroup group, Box<ICompoundType> diag) {
 		// 2) create type values - CRUCIAL: this will materialize the type definitions into type objects 
-		//    and get them allocated on heap memory. Although we have not seal the types yet, after this 
+		//    and get them allocated on heap memory. Although we have not sealed the types yet, after this 
 		//    step the majority of methods on type builders become essentially useless.  
 		List<String> typeNames = new ArrayList<String>();
 		for(JType typ : types){
@@ -348,14 +349,16 @@ public class TypeLoader {
 			tt.addType(name, typ, false);
 			typeNames.add(name);
 		}
-		
-		// 3) static initializers
+	
+		// 3) static initializers for Enum types - this is to allow Annotation to refer to Enum values.
 		for(ICompoundType typ : types){
-			diag.set(typ);
-			TypeValue tvalue = tt.getValue(typ.getName());
-			applyInitializers(typ, tvalue, context);
+			if (JEnumType.isEnumType(typ)){
+				diag.set(typ);
+				TypeValue tvalue = tt.getValue(typ.getName());
+				applyInitializers(typ, tvalue, context);
+			}
 		}
-		
+
 		// 4) annotations
 		for(ICompoundType typ : types){
 			diag.set(typ);
@@ -363,7 +366,16 @@ public class TypeLoader {
 			applyAnnotations(typ, tvalue, context);
 		}
 		
-		// 4.1) mapping annotations were already computed at step 1). Just add them now.
+		// 5) static initializers for other types
+		for(ICompoundType typ : types){
+			if (!JEnumType.isEnumType(typ)){
+				diag.set(typ);
+				TypeValue tvalue = tt.getValue(typ.getName());
+				applyInitializers(typ, tvalue, context);
+			}
+		}
+		
+		// 6) mapping annotations were already computed at step 1). Just add them now.
 		if (group != null) {
 			Collection<Pair<ICompoundType, MappedTypeInfo>> ntypes = group.listAll();
 			for(Pair<ICompoundType, MappedTypeInfo> pair : ntypes){

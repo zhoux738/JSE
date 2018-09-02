@@ -102,6 +102,19 @@ public class LambdaInClassTests {
 		
 		validateIntValue(gvt, "x", 16);
 	}
+    
+    /*
+     * Lambda defined in an instance method refers to private member of that class
+     */
+    @Test
+    public void referToPrivateMemberTest() throws EngineInvocationError {
+        VariableTable gvt = new VariableTable(null);        
+        SimpleScriptEngine engine = makeSimpleEngine(gvt);
+        
+        engine.run(getScriptFile(Commons.Groups.FUNCTIONAL, FEATURE, "lambda_imethod_08.jul"));
+
+        validateIntValue(gvt, "x", 6);
+    }
 	
 	/*
 	 * Reference a static member.

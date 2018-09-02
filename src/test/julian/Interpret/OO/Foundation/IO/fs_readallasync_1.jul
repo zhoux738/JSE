@@ -7,7 +7,7 @@ byte[] buffer = new byte[3];
 int tc,  // total called
     tr;  // total read
 
-Promise p = astream.readAllAsync(buffer, read => tc++).then(read => {
+Promise p = astream.readToEndAsync(buffer, read => tc++).then(read => {
 	tr = read;
 });
 

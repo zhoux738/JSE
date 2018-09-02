@@ -1,0 +1,5 @@
+byte[] buffer = new byte[]{97, 98, 99};
+string s1 = String.fromBytes(buffer);
+
+buffer = new byte[]{97, 98, 99, 100, 101};
+string s2 = String.fromBytes(buffer, "ISO-8859-1", 1, 3);

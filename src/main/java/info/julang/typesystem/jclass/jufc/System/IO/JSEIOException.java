@@ -43,6 +43,10 @@ public class JSEIOException extends JSERuntimeException {
 	public JSEIOException(Exception inner) {
 		super("IO error", inner);
 	}
+	
+	protected JSEIOException(String message, Exception inner) {
+	    super(message, inner);
+	}
 
 	@Override
 	public KnownJSException getKnownJSException() {

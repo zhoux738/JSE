@@ -1,0 +1,10 @@
+import System.Network;
+
+NetAddress addr = NetAddress.resolve("10.20.30.40");
+string a1 = addr.getAddress(); // same as provided
+
+addr = NetAddress.resolve("www.google.com");
+string a2 = addr.getAddress(); // something
+
+addr = NetAddress.resolve("zzz12345.1h8slwn46xap0lk3xhzm9shg8dl3bs0.nonexisttld");
+string a3 = addr.getAddress(); // null

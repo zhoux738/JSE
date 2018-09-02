@@ -43,14 +43,21 @@ import java.util.Map;
 
 /**
  * Represents an interface type defined in Julian scripts.
- * <p/>
+ * <p>
  * This class defines all properties that are required and/or allowed in the definition of an interface.
- * This includes name, interfaces to extend from, static members, and abstract instance methods.
+ * This includes name, interfaces to extend from, static members (albeit not used), and abstract instance methods.
  * 
  * @author Ming Zhou
  */
 public class JInterfaceType implements ICompoundType {
 
+    // IMPLEMENTATION NOTES
+    // 
+    // Type loading is locked down to single thread, so in general the build-up process 
+    // happens within a single thread. However, methods marked with [LAZY LOADING] may not 
+    // be immediately called during type loading and therefore must be protected against  
+    // race condition.
+    
 	//------------ package-accessible members to allow incremental build-up ------------//
 	
 	String name;
@@ -139,39 +146,51 @@ public class JInterfaceType implements ICompoundType {
 		return properties;
 	}
 	
+	// [LAZY LOADING]
 	@Override
 	public JClassInitializerMember[] getClassInitializers(boolean isStatic){
 		// Note:
 		// Since Julian doesn't support dynamic type modification (adding a class member), we cache 
 		// the members in a separate array to save some time for later listing operations.
 		
-		if(initializerMemberList != null){
-			List<JClassInitializerMember> instInitMembers = new ArrayList<JClassInitializerMember>();
-			List<JClassInitializerMember> staticInitMembers = new ArrayList<JClassInitializerMember>();
-			
-			for(JClassInitializerMember init : initializerMemberList){
-				if(init.isStatic()){
-					staticInitMembers.add(init);
-				} else {
-					instInitMembers.add(init);
-				}
-			}
-			
-			staticInitializerArray = new JClassInitializerMember[staticInitMembers.size()];
-			staticInitializerArray = staticInitMembers.toArray(staticInitializerArray);
-			instanceInitializerArray = new JClassInitializerMember[instInitMembers.size()];
-			instanceInitializerArray = instInitMembers.toArray(instanceInitializerArray);			
-		} else {
-			return new JClassInitializerMember[0];
+	    if(initializerMemberList == null){
+	        return new JClassInitializerMember[0];
+	    }
+	    
+		if(staticInitializerArray == null){
+            synchronized(this){
+                if(staticInitializerArray == null){
+                    List<JClassInitializerMember> instInitMembers = new ArrayList<JClassInitializerMember>();
+                    List<JClassInitializerMember> staticInitMembers = new ArrayList<JClassInitializerMember>();
+                    
+                    for(JClassInitializerMember init : initializerMemberList){
+                        if(init.isStatic()){
+                            staticInitMembers.add(init);
+                        } else {
+                            instInitMembers.add(init);
+                        }
+                    }
+                    
+                    staticInitializerArray = new JClassInitializerMember[staticInitMembers.size()];
+                    staticInitializerArray = staticInitMembers.toArray(staticInitializerArray);
+                    instanceInitializerArray = new JClassInitializerMember[instInitMembers.size()];
+                    instanceInitializerArray = instInitMembers.toArray(instanceInitializerArray);   
+                }
+            }
 		}
 		
 		return isStatic ? staticInitializerArray : instanceInitializerArray;
 	}
-	
+
+	// [LAZY LOADING]
 	@Override
 	public JClassMember getInstanceMemberByName(String name) {
 		if (interfaceMembers == null) {
-			interfaceMembers = getInterfaceMembers();
+            synchronized(this){
+                if(interfaceMembers == null){
+                    interfaceMembers = getInterfaceMembers();
+                }
+            }
 		}
 		
 		OneOrMoreList<InstanceMemberLoaded> list = interfaceMembers.getMembersByName(name);
@@ -179,11 +198,16 @@ public class JInterfaceType implements ICompoundType {
 		return list != null ? list.getFirst().getMember() : null;
 	}
 	
+	// [LAZY LOADING]
 	@Override
 	public JClassMember[] getClassInstanceMembers(){
 		if (interfaceMembers == null) {
-			interfaceMembers = getInterfaceMembers();
-			interfaceMemberArray = interfaceMembers.getAllMembers();
+            synchronized(this){
+                if(interfaceMembers == null){
+                    interfaceMembers = getInterfaceMembers();
+                    interfaceMemberArray = interfaceMembers.getAllMembers();
+                }
+            }
 		}
 		
 		return interfaceMemberArray;
@@ -259,15 +283,20 @@ public class JInterfaceType implements ICompoundType {
 		return nsPool;
 	}
 	
+	// [LAZY LOADING]
 	@Override
 	public JInterfaceType[] getInterfaces(){
 		if(interfaces == null){
-			if (interfaceList != null){
-				interfaces = new JInterfaceType[interfaceList.size()];
-				interfaceList.toArray(interfaces);
-			} else {
-				interfaces = new JInterfaceType[0];
-			}
+		    synchronized(this){
+		        if(interfaces == null){
+		            if (interfaceList != null){
+		                interfaces = new JInterfaceType[interfaceList.size()];
+		                interfaceList.toArray(interfaces);
+		            } else {
+		                interfaces = new JInterfaceType[0];
+		            }
+		        }
+		    }
 		}
 		
 		return interfaces;
@@ -326,6 +355,7 @@ public class JInterfaceType implements ICompoundType {
 	
 	//-------------------- IAnnotated --------------------//
 	
+	// [LAZY LOADING]
 	@Override
 	public JAnnotation[] getAnnotations() {
 		if(annotationArray == null){

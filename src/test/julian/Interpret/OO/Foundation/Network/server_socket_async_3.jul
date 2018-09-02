@@ -1,0 +1,43 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+
+TestContext.set(_tskey, "port", ss.getLocalPort());
+Socket sock = ss.accept();
+
+AsyncStream stream = sock.getReadStream();
+
+byte[] buffer = new byte[128];
+// byte[] buffer, int offset
+Promise prom = stream.readAsync(buffer, 0)
+.then(
+	(count, handle) => {
+		string s = String.fromBytes(buffer, "ascii", 0, count);
+		return s;
+	}
+);
+
+var res1 = prom.getResult(true);
+//Console.println(res1);
+string stat1 = sock.getState().literal;
+
+TestContext.set(_tskey, "flag", true);
+
+prom = stream.readAsync(buffer, 0)
+.then(
+	(count, handle) => {
+		string s = String.fromBytes(buffer, "ascii", 0, count);
+		return s;
+	}
+);
+
+var res2 = prom.getResult(true);
+//Console.println(res2);
+string stat2 = sock.getState().literal;
+sock.close();
+string stat3 = sock.getState().literal;

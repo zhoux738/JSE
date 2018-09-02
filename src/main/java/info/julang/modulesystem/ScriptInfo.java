@@ -24,7 +24,13 @@ SOFTWARE.
 
 package info.julang.modulesystem;
 
+import info.julang.execution.threading.ThreadRuntime;
+import info.julang.execution.threading.ThreadRuntimeHelper;
+import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.JValue;
+import info.julang.memory.value.ObjectValue;
 import info.julang.parser.LazyAstInfo;
+import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptScript;
 
 import java.util.List;
 
@@ -63,5 +69,31 @@ public class ScriptInfo {
 	
 	void setRequirements(List<RequirementInfo> reqs) {
 		this.reqs = reqs;
+	}
+	
+	//--------------------- storage of System.Reflection.Script instance ---------------------//
+
+	private ObjectValue scriptObject;
+	
+	/**
+	 * Get <font color="green"><code>System.Reflection.Script</code></font> object for this type. 
+	 * This object will be created the first time this method is called.
+	 * 
+	 * @param runtime
+	 */
+	public ObjectValue getScriptScriptObject(ThreadRuntime runtime) {
+		if (scriptObject == null) {
+			synchronized(ScriptScript.class){
+				if (scriptObject == null) {
+					scriptObject = ThreadRuntimeHelper.instantiateSystemType(
+						runtime, ScriptScript.FQCLASSNAME, new JValue[0]);
+					HostedValue hv = (HostedValue)scriptObject;
+					ScriptScript ss = (ScriptScript)hv.getHostedObject();
+					ss.setScriptInfo(this);
+				}
+			}
+		}
+		
+		return scriptObject;
 	}
 }

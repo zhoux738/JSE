@@ -103,6 +103,7 @@ public class ScriptMethod {
 		}
 		
 	}
+	
 	private static class GetNameExecutor extends InstanceNativeExecutor<ScriptMethod> {
 		
 		@Override

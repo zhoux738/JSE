@@ -51,8 +51,8 @@ import info.julang.typesystem.jclass.builtin.JMethodType;
  * invoked. If it's not the original JSE-managed thread, one must specify <code>
  * useIndependentThreadRuntime = true</code>. Otherwise the thread runtime (<code>rt</code> in the 
  * {@link #JSEObjectWrapper(String, ThreadRuntime, ObjectValue, boolean) constructor}) object will 
- * be accessed from a different thread. This <code>rt</code> object, however, is completely thread-
- * unsafe and wide open to various race conditions. 
+ * be accessed from a different thread. This <code>rt</code> object, however, is completely 
+ * thread-unsafe and wide open to various race conditions. 
  * <p>
  * It's possible to generate Java API against a JSE class definition, built on top of this class.
  *   

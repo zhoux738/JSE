@@ -1,0 +1,19 @@
+module ModuleSys.ReflTest3;
+
+import System.Reflection;
+
+class ItemA {
+
+	Script getScript(){
+		return Environment.getScript();
+	}
+
+}
+
+class ItemB {
+
+	static Script getScript(){
+		return Environment.getScript();
+	}
+
+}

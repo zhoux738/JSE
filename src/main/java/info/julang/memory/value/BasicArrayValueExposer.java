@@ -44,7 +44,7 @@ public class BasicArrayValueExposer {
 		return za;
 	}
 
-	public byte[] getByetArray() {
+	public byte[] getByteArray() {
 		return ba;
 	}
 

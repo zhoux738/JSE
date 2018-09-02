@@ -63,8 +63,8 @@ public class PromiseHandleWrapper extends JSEObjectWrapper {
 		this.runMethod(Method_reject_ex, TempValueFactory.createTempRefValue(ov));
 	}
 	
-	public void resolve(int read){
-		this.runMethod(Method_resolve_var, TempValueFactory.createTempIntValue(read));
+	public void resolve(int count){
+		this.runMethod(Method_resolve_var, TempValueFactory.createTempIntValue(count));
 	}
 	
 }

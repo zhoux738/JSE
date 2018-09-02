@@ -47,9 +47,46 @@ public final class OSTool {
 	 * @return true if it is Windows, false others.
 	 */
 	public static boolean isWindows() {
-		String ver = System.getProperty("os.name");
-		boolean isWin = ver != null && ver.toLowerCase().contains("windows");
-		return isWin;
+		return is(OSType.WINDOWS);
 	}
 	
+	/**
+     * Check whether the OS is any of the specified OSes.
+     * 
+     * @return true if it is any of the specified OS.
+     */
+    public static boolean is(OSType... types) {
+        String[] typs = new String[types.length];
+        for(int i = 0; i < types.length; i++){
+            typs[i] = types[i].keyword;
+        }
+        
+        return isOS(typs);
+    }
+    
+    public static enum OSType {
+        WINDOWS("windows"),
+        MAC("mac"),
+        LINUX("linux");
+        
+        OSType(String keyword){
+            this.keyword = keyword;
+        }
+        
+        String keyword;
+    }
+	
+	private static boolean isOS(String... keywords){
+        String ver = System.getProperty("os.name");
+        if (ver != null){
+            String lver = ver.toLowerCase();
+            for (String kw : keywords) {
+                if (lver.contains(kw)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+	}
 }

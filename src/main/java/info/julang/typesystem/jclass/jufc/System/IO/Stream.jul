@@ -111,16 +111,22 @@ interface Stream {
 	
 	/*
 	 * Whether this stream supports reading. This method governs [read](#read), [skip](#skip).
+	 *
+	 * [return] True if this stream supports reading.
 	 */
 	bool canRead();
 	
 	/*
 	 * Whether this stream supports writing. This method governs [write](#write(byte)) and other write methods.
+	 *
+	 * [return] True if this stream supports writing.
 	 */
 	bool canWrite();
 	
 	/*
-	 * Whether this stream supports writing. This method governs [mark](#mark), [reset](#reset).
+	 * Whether this stream supports position-manipulating operations. This method governs [mark](#mark), [reset](#reset).
+	 *
+	 * [return] True if this stream supports position-manipulating operations.
 	 */
 	bool canMark();
 }
@@ -157,14 +163,11 @@ interface AsyncStream {
 	 * 
 	 * [param: buffer] The byte buffer to hold the data which is read off of the stream.
 	 * [param: offset] The offset on buffer to start filling the data in.
-	 * [param: callback] The function to be called upon successful reading. The type of this function
-	 * is [func: int, System.Concurrency.PromiseHandle], first parameter indicating the number of bytes 
-	 * successfully read. -1 if reaching the end.
-	 * [return] A promise that can be continued on. An on-success callback will take as argument the result 
-	 * returned from the [param: callback]; an on-erro callback will take as argument the exception faulting
-	 * the IO operation.
+	 * [return] A promise that can be continued on. An on-success callback will set the result to be the number 
+	 * of bytes successfully read. -1 if reaching the end, while buffer will contain no valid bytes; an on-error 
+	 * callback will take as argument the exception faulting the IO operation.
 	 */
-	Promise readAsync(byte[] buffer, int offset, Function callback);
+	Promise readAsync(byte[] buffer, int offset);
 	
 	/*
 	 * Read asynchronously from the stream to the buffer until the end of stream is hit, and invokes callback 
@@ -183,18 +186,48 @@ interface AsyncStream {
 	 * [param: buffer] The byte buffer to hold the data which is read off of the stream.
 	 * [param: callback] The function to be called upon successful reading. The type of this function 
 	 * is [func: int, System.Concurrency.PromiseHandle], first parameter indicating the number of bytes 
-	 * successfully read. -1 if reaching the end. Throughout the promise's life cycle this callback will be
-	 * invoked multiple times.
+	 * successfully read. -1 if reaching the end, while buffer will contain no valid bytes. Throughout the 
+	 * promise's life cycle this callback will be invoked multiple times.
 	 * [return] A promise that can be continued on. An on-success callback will take as argument the result 
-	 * returned from the [param: callback]; an on-erro callback will take as argument the exception faulting
+	 * returned from the [param: callback]; an on-error callback will take as argument the exception faulting
 	 * the IO operation.
 	 */
-	Promise readAllAsync(byte[] buffer, Function callback);
+	Promise readToEndAsync(byte[] buffer, Function callback);
+
+	/*
+	 * Write asynchronously from the buffer to the stream.
+	 *
+	 * This method tries to write all the bytes from the given buffer to the stream, starting 
+	 * from the [offset](param: offset) and not exceeding either [length](param: length) or 
+	 * the buffer's capacity. This will move forward the stream pointer by the number of bytes actually written.
+	 *
+	 * This method moves forward the stream pointer by the count equal to value used to settle the promise.
+	 * If [canWriteAsync()](#canWriteAsync) return false, this method will throw [IOException](System.IO.IOException).
+	 * 
+	 * [param: buffer] The byte buffer to hold the data which is to write to the stream.
+	 * [param: offset] The offset on buffer to start reading data from.
+	 * [param: length] The total count of bytes to read from the buffer, relative to the offset.
+	 * [return] A promise that can be continued on. An on-success callback will take as argument the total count 
+	 * of bytes that have been written; an on-error callback will take as argument the exception faulting
+	 * the IO operation.
+	 */	
+	Promise writeAsync(byte[] buffer, int offset, int length);
 	
 	/*
-	 * Whether this stream supports reading. This method governs [readAsync](#readAsync), [readAllAsync](#readAllAsync).
+	 * Whether this stream supports asynchronous reading. 
+	 * This method governs [readAsync](#readAsync), [readAllAsync](#readAllAsync).
+	 *
+	 * [return] True if this stream supports asynchronous reading.
 	 */
 	bool canReadAsync();
+	
+	/*
+	 * Whether this stream supports asynchronous writing. 
+	 * This method governs [writeAsync](#writeAsync).
+	 *
+	 * [return] True if this stream supports asynchronous writing.
+	 */
+	bool canWriteAsync();
 }
 
 /*

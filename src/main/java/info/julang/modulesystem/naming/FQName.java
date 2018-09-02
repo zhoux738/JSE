@@ -88,5 +88,21 @@ public class FQName extends QNameBase {
 		String otherName = obj.toString();
 		return thisName.equals(otherName);
 	}
+
+	/**
+	 * Get the module name ('A.B' of 'A.B.C').
+	 */
+    public String getModuleName() {
+        String fn = toString();
+        String sn = getSimpleName();
+        int flen = fn.length();
+        int slen = sn.length();
+        int mlen = flen - slen - 1;
+        if (mlen > 0) {
+            return fn.substring(0, mlen);
+        } else {
+            return null;
+        }
+    }
 	
 }

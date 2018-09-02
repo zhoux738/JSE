@@ -32,6 +32,7 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.modulesystem.ModuleManager;
+import info.julang.modulesystem.naming.FQName;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassType;
@@ -69,7 +70,7 @@ public final class JSExceptionUtility {
 		jse.setFileName(loInfo.getFileName());
 	}
 	
-	public static void loadSystemModule(JThread thread, IModuleManager mm){
+	public static void loadSystemModule(JThread thread, IModuleManager mm, String exFullName){
 		if(!mm.isLoaded("System")){
 			((ModuleManager)mm).loadModule(thread, "System");
 		}
@@ -78,6 +79,14 @@ public final class JSExceptionUtility {
 		}
 		if(!mm.isLoaded("System.IO")){
 			((ModuleManager)mm).loadModule(thread, "System.IO");
+		}
+		
+		if (exFullName != null && exFullName.startsWith("System.")) {
+	        FQName fqname = new FQName(exFullName);
+	        String modName = fqname.getModuleName();
+	        if(!mm.isLoaded(modName)){
+	            ((ModuleManager)mm).loadModule(thread, modName);
+	        }
 		}
 	}
 	
@@ -115,7 +124,7 @@ public final class JSExceptionUtility {
 	
 	private static JClassType getSysExceptType(Context context){
 		if(sysExceptType == null){
-			JSExceptionUtility.loadSystemModule(context.getJThread(), context.getModManager());
+			JSExceptionUtility.loadSystemModule(context.getJThread(), context.getModManager(), null);
 			sysExceptType = (JClassType) context.getTypTable().getType(JSExceptionUtility.SystemExceptionClass);
 		}
 		return sysExceptType;

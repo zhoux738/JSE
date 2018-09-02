@@ -9,6 +9,7 @@ try {
 	ast[0] = !fs.canWrite();
 	fs.write(97);
 } catch (IOException e) {
+	//Console.println("hit 0");
 	res[0] = true;
 } finally {
 	fs.close();
@@ -17,6 +18,7 @@ try {
 	try {
 		fs.read();
 	} catch (IOException e) {
+		//Console.println("hit 1");
 		res[1] = true;
 	}
 }
@@ -27,14 +29,16 @@ try {
 	ast[1] = !fs.canRead();
 	fs.read();
 } catch (IOException e) {
+	//Console.println("hit 2");
 	res[2] = true;
 } finally {
 	fs.close();
 	
-	// Once closed, no more operations
+	// Closing again doesn't have effect
 	try {
 		fs.close();
 	} catch (IOException e) {
+		//Console.println("hit 3");
 		res[3] = true;
 	}
 }
@@ -45,6 +49,7 @@ try {
 	ast[2] = !fs.canMark();
 	fs.reset();
 } catch (IOException e) {
+	//Console.println("hit 4");
 	res[4] = true;
 } finally {
 	fs.close();

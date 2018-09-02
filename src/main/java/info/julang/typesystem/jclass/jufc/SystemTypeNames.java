@@ -39,8 +39,8 @@ public class SystemTypeNames {
 	public static final String System_Util_IIterable = "System.Util.IIterable";
 	
 	public static final class MemberNames {
-		public static final String	AT = "at";
+		public static final String AT = "at";
 		public static final String SIZE = "size";
-		public static final String	GET_ITERATOR = "getIterator";
+		public static final String GET_ITERATOR = "getIterator";
 	}
 }

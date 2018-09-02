@@ -1,0 +1,8 @@
+int i1 = (int)"32";
+int i2 = (int)"35.1";
+bool b3 = false;
+try {
+	int i3 = (int)"35a";
+} catch (IllegalCastingException ex) {
+	b3 = true;
+}

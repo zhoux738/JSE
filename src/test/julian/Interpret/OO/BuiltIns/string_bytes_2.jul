@@ -1,0 +1,22 @@
+byte[] buffer = new byte[]{97, 98, 99};
+
+// Returns true if validation was successful
+bool invoke(byte[] buffer, string charset, int offset, int length, string error){
+	try {
+		String.fromBytes(buffer, charset, offset, length);
+	} catch (Exception ex) {
+		// Console.println(ex.getMessage());
+		if (error != null) {
+			return ex.getMessage().contains(error);
+		}
+	}
+	
+	return error == null;
+}
+
+
+bool b0 = invoke(buffer, "ascii", 0, 300, null);
+bool b1 = invoke(null, "ascii", 0, 3, "null");
+bool b2 = invoke(buffer, "nonexistentcharsetname371", 0, 3, "charset");
+bool b3 = invoke(buffer, "ascii", -1, 3, "offset");
+bool b4 = invoke(buffer, "ascii", 0, -1, "length");

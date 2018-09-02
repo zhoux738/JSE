@@ -6,9 +6,12 @@ AsyncStream astream = (AsyncStream)file.getReadStream();
 byte[] buffer = new byte[128];
 int i, j, k;
 
-Promise p = astream.readAsync(buffer, 0, (read, handle)=>{
+Promise p = astream.readAsync(buffer, 0)
+.then(read => {
 	i = read;
-}).then(read => {
+	return i;
+})
+.then(read => {
 	j = read;
 	return 100;
 });

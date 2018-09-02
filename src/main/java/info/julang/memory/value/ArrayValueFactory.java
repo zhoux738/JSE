@@ -39,7 +39,9 @@ import info.julang.typesystem.JTypeKind;
  */
 public final class ArrayValueFactory {
 
-	/**
+	public static final int UndefinedLength = -1;
+
+    /**
 	 * Create a one-dimensional array value with the given type and length.
 	 * 
 	 * @param memory

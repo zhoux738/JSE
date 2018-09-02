@@ -87,6 +87,7 @@ public class ScriptCtor {
 		}
 		
 	}
+	
 	private static class GetNameExecutor extends InstanceNativeExecutor<ScriptCtor> {
 		
 		@Override

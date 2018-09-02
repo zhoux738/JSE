@@ -24,9 +24,9 @@ SOFTWARE.
 
 package info.julang.interpretation.syntax;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import info.julang.typesystem.jclass.MemberType;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * Basic info about a class member.
@@ -38,6 +38,16 @@ public abstract class MemberDeclInfo extends DeclInfo {
 	public abstract MemberType getMemberType();
 	
 	private ParsedTypeName typeName;
+	
+//	private FQName containingTypeName;
+//	
+//	void setContainingTypeName(FQName fqname){
+//		this.containingTypeName = fqname;
+//	}
+//	
+//	public FQName getContainingTypeName(){
+//		return this.containingTypeName;
+//	}
 	
 	void setTypeName(ParsedTypeName name){
 		this.typeName = name;

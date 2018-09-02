@@ -137,12 +137,13 @@ public final class BuiltinTypeBootstrapper {
 		// Add array types
 		arrayType = suiteMap.get(BuiltinTypes.ARRAY).stub;
 		// Some primitive array types - add more if needed in future
-		addArrayType(suites, CharType.getInstance());
+		addArrayType(suites, BuiltinTypes.CHAR, CharType.getInstance());
+        addArrayType(suites, BuiltinTypes.BYTE, ByteType.getInstance());
 		for(BuiltinTypeBuilder entry : bootstrapperList){
 			TypeBootstrapper bs = entry.builder;
 			if (bs.initiateArrayType()) {
 				JType elementType = suiteMap.get(entry.type).stub;
-				addArrayType(suites, elementType);
+				addArrayType(suites, entry.type, elementType);
 			}
 		}
 		
@@ -158,10 +159,10 @@ public final class BuiltinTypeBootstrapper {
 		}
 	}
 	
-	private static void addArrayType(TypeFarm suites, JType eleType){
-		JArrayType jat = new JArrayType(CharType.getInstance(), arrayType);
-		suites.addArrayType(BuiltinTypes.CHAR, jat);
-		allTypes.put(jat.getName(), jat);
+	private static void addArrayType(TypeFarm suites, BuiltinTypes bt, JType eleType){
+		JArrayType jat1 = new JArrayType(eleType, arrayType);
+		suites.addArrayType(bt, jat1);
+        allTypes.put(jat1.getName(), jat1);
 	}
 	
 	private static Map<String, JClassType> allTypes;

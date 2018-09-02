@@ -24,10 +24,6 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc.System.Concurrency;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-
 import info.julang.execution.Argument;
 import info.julang.execution.threading.BadThreadStateException;
 import info.julang.execution.threading.JThread;
@@ -39,6 +35,10 @@ import info.julang.hosting.execution.InstanceNativeExecutor;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.VoidValue;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * The platform binding of <code><font color="green">System.Concurrency.Lock</font></code>.
@@ -131,9 +131,12 @@ public class ScriptLock {
 	
 	private ReentrantLock lock;
 	private Condition cond;
+	// private String lckName;
 	
 	private void init(){
 		lock = new ReentrantLock();
+		// To debug this, pass along hvalue to this ctor
+		// lckName = "System.Concurrency.Lock@" + hvalue.hashCode();
 	}
 
 	private void lock() {
@@ -148,6 +151,8 @@ public class ScriptLock {
 		}
 	}
 	
+	private static int SEQ = 0;
+	private int seq = SEQ++;
 	private boolean waitOnCond(ThreadRuntime rt) {
 		initCond();
 		JThread thread = rt.getJThread();
@@ -158,11 +163,14 @@ public class ScriptLock {
 				thread.checkInterruption(true);
 				return true;
 			}
-			
+
+//System.out.println("====> Waiting on " + lckName);
 			// Otherwise, starting waiting without setting flag
 			cond.await();
+//System.out.println("====> Reacquired " + lckName);
 		} catch (InterruptedException e) {
 			rt.getJThread().checkInterruption(true);
+//System.out.println("====> Interrupted " + lckName);
 			return true;
 		} catch (IllegalMonitorStateException e) {
 			// If awaiting was illegal, throw. Note that we didn't change interruption state.
@@ -213,6 +221,7 @@ public class ScriptLock {
 		try {
 			// Notify everyone
 			cond.signalAll();
+//System.out.println("====> Notified " + lckName);
 		} catch (IllegalMonitorStateException e) {
 			// If awaiting was illegal, throw. Note that we didn't change interruption state.
 			throw new BadThreadStateException("Cannot call notify() because the lock is not owned by the current thread.");

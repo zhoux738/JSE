@@ -7,7 +7,7 @@ import org.junit.Assert;
 
 public class IntRange {
 
-	private static Pattern pattern = Pattern.compile("([\\[|\\(])(\\d*),(\\d*)([\\]|\\)])");
+	private static Pattern pattern = Pattern.compile("([\\[|\\(])(\\d*),\\s*(\\d*)([\\]|\\)])");
 	
 	private boolean moreOrEqual;
 	private boolean lessOrEqual;

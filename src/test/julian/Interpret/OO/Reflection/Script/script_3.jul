@@ -1,0 +1,9 @@
+import ModuleSys.ReflTest3;
+import System.Reflection;
+
+ItemA ia = new ItemA();
+Script s0 = ia.getScript();
+
+Script s1 = ItemB.getScript();
+
+bool res = s0 == s1;

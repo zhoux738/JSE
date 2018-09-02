@@ -91,15 +91,29 @@ public class ObjectArrayValue extends ArrayValue {
 		
 		if(dIndex < lastDem){
 			// The element is array too. Initialize recursively.
+		    boolean done = false;
 			int nextIndex = dIndex + 1;
-			if (nextIndex == lastDem && elementType.isBasic()){
-				// If we are about to create the array at the last dimension, and the element type is basic,
-				// we must use appropriate basic value array.
-				for(int i=0; i<length; i++){
-					ArrayValue av = ArrayValueFactory.createArrayValue(memory, tt, elementType, dimensions[lastDem]);
-					arrVals[i] = new RefValue(memory, av);
-				}
-			} else {
+			if (nextIndex == lastDem){
+				// If we are about to create the array at the last dimension, must handle two special cases.
+			    
+			    if (dimensions[lastDem] == ArrayValueFactory.UndefinedLength) {
+			        JArrayType penultimateDimTyp = tt.getArrayType(elementType);
+	                // (1) If the last dimension is left undefined, initialize the current array with null.
+	                for(int i=0; i<length; i++){
+	                    arrVals[i] = RefValue.makeNullRefValue(memory, penultimateDimTyp);
+	                }
+	                done = true;
+			    } else if (elementType.isBasic()) {
+			        // (2) If the element type is basic, we must use appropriate basic value array.
+	                for(int i=0; i<length; i++){
+	                    ArrayValue av = ArrayValueFactory.createArrayValue(memory, tt, elementType, dimensions[lastDem]);
+	                    arrVals[i] = new RefValue(memory, av);
+	                }
+                    done = true;
+			    }
+			} 
+
+			if (!done) {
 				for(int i=0; i<length; i++){
 					JValue[] subArrVals = initializeArray(memory, tt, elementType, dimensions, nextIndex);
 					arrVals[i] = new RefValue(memory, new ObjectArrayValue(memory, tt, elementType, subArrVals));

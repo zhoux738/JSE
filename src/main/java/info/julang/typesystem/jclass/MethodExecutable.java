@@ -24,8 +24,6 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import info.julang.execution.Argument;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
@@ -40,7 +38,10 @@ import info.julang.interpretation.statement.StatementOption;
 import info.julang.memory.MemoryArea;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.parser.AstInfo;
+import info.julang.typesystem.JType;
 import info.julang.typesystem.loading.InternalTypeResolver;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * The executable for method invocation.
@@ -109,5 +110,12 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 		JThreadManager tm,
 		JThread jthread){
 		return new MethodContext(frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, jthread, containingType, isStatic);
+	}
+	
+	//---------------------------- IStackFrameInfo ----------------------------//
+
+	@Override
+	public JType getContainingType() {
+		return this.containingType;
 	}
 }

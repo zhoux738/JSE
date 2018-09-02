@@ -24,10 +24,11 @@ SOFTWARE.
 
 package info.julang.memory.simple;
 
+import info.julang.interpretation.IStackFrameInfo;
 import info.julang.memory.FrameMemoryArea;
+import info.julang.memory.IStored;
 import info.julang.memory.JSEOutOfMemoryException;
 import info.julang.memory.JSEStackOverflowException;
-import info.julang.memory.IStored;
 import info.julang.memory.MemoryOpreationException;
 import info.julang.memory.StackArea;
 
@@ -45,7 +46,17 @@ public class SimpleStackArea extends StackArea {
 
 	private class SimpleFrameArea extends FrameMemoryArea {
 		
+		private IStackFrameInfo info;
 		private boolean recycled;
+		
+		private SimpleFrameArea(IStackFrameInfo info){
+			this.info = info;
+		}
+		
+		@Override
+		public IStackFrameInfo getFrameInfo(){
+			return info;
+		}
 		
 		@Override
 		public boolean allocate(IStored value) {
@@ -134,7 +145,7 @@ public class SimpleStackArea extends StackArea {
 	}
 
 	@Override
-	public void pushFrame() throws JSEStackOverflowException {
+	public void pushFrame(IStackFrameInfo info) throws JSEStackOverflowException {
 		if (stack.size() > STACK_DEPTH_LIMIT) {
 			// When we hit this, the engine is not really recoverable. 
 			// So relax the cap to ensure that at least error handling can perform as expected.
@@ -142,7 +153,7 @@ public class SimpleStackArea extends StackArea {
 			throw new JSEStackOverflowException();
 		}
 		
-		stack.push(new SimpleFrameArea());
+		stack.push(new SimpleFrameArea(info));
 	}
 
 	@Override
@@ -161,6 +172,22 @@ public class SimpleStackArea extends StackArea {
 	@Override
 	public boolean isRecycled() {
 		return false;
+	}
+
+	@Override
+	public FrameMemoryArea getFrameFromTop(int index) {
+		int i = 0;
+		SimpleFrameArea sfa = null;
+		for(SimpleFrameArea frame : stack) {
+			if (i == index) {
+				sfa = frame;
+				break;
+			} else {
+				i++;
+			}
+		}
+		
+		return sfa;
 	}
 
 }

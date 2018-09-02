@@ -1,0 +1,26 @@
+module System;
+
+import System.Reflection;
+
+/*
+ * A helper class providing runtime information about the current environment.
+ */
+ [Bridged(apiset="System.Environment")]
+class Environment {
+	
+	/*
+	 * Get the script which is running at the line where this method is called.
+	 * 
+	 * A method call can only happen at exactly one physical place. If that place is a script file,
+	 * this method will return the script info for that file.
+	 *
+	 * This method is supposed to be called in the same script of which the information is intended. 
+	 * Of the most importance, do not wrap this method in another method, as that would always return 
+	 * the script file which contains the wrapper method.
+	 *
+	 * [return] A [Script](type: System.Reflection.Script) object containing the info about the currently running script.
+	 */
+	[Bridged(name="getScript")]
+	hosted static Script getScript();
+	
+}

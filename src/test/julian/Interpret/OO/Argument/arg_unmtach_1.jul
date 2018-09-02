@@ -1,0 +1,9 @@
+// Excessive args
+
+public class Item {
+	void fun(){
+	}
+}
+
+Item item = new Item();
+item.fun(2);

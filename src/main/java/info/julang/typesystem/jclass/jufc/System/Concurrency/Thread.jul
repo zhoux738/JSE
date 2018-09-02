@@ -1,5 +1,7 @@
 module System.Concurrency;
 
+import System.Collection;
+
 // Always change this along with info.julang.execution.threading.JThreadPriority.java
 /*
  * The priority of this thread. This setting is heavily dependent on the underlying implementation and thus
@@ -75,11 +77,17 @@ class Thread {
  	 */
 	Thread(Function fun, string name, ThreadPriority pri){
 		_fun = fun;
-		init(name, pri);
+		init(name, false, pri);
+	}
+	
+	// Create IO thread
+	internal Thread(Function fun){
+		_fun = fun;
+		init(null, true, ThreadPriority.LOW);
 	}
 
 	[Bridged(name="init")]
-	private hosted void init(string name, ThreadPriority pri);
+	private hosted void init(string name, bool isIOThread, ThreadPriority pri);
 
 	private void exeThread(){
 		_fun();
@@ -150,4 +158,74 @@ class Thread {
 	[Bridged(name="getState")]
 	hosted ThreadState getState();
 		
+}
+
+//--- IO-continuation threads ---//
+
+internal class IOThreadQueue {
+
+	private bool aborted;
+	internal BlockingQueue bq = new BlockingQueue();
+	
+	internal void run(){
+		while (true) {
+		    Function fun = bq.pull(1000, false); // 2nd arg: should throw if time out
+		    
+		    if (fun == IOThreadWrapper._end || aborted) {
+        		break;
+        	}
+        	
+        	if (fun == null) {
+        		continue;
+        	}
+        	
+        	try {
+        		fun();
+        	} catch (Exception ex) {
+        		// Ignore all exceptions. IO Thread will continue running no matter what.
+        	}
+		}
+	}
+	
+	internal void abort(){
+		aborted = true;
+	}
+
+}
+
+internal class IOThreadWrapper {
+
+	private Thread thread;
+	private BlockingQueue bq;
+	private IOThreadQueue ioq;
+	internal static Function _end = () => {};
+	
+	private IOThreadWrapper(IOThreadQueue queue) {
+		this.thread = new Thread(queue.run);
+		this.bq = queue.bq;
+		this.ioq = queue;
+	}
+	
+	// Called by internals
+	private static IOThreadWrapper _createIOThread(){
+		IOThreadQueue queue = new IOThreadQueue();	
+		return new IOThreadWrapper(queue);
+	}
+	
+	private void start() {
+		thread.start();
+	}
+	
+	private void post(Function fun) {
+		this.bq.enqueue(fun);
+	}
+	
+	private void complete() {
+		this.bq.enqueue(IOThreadWrapper._end);
+	}
+	
+	private void abort() {
+		ioq.abort();
+		this.thread.interrupt();
+	}
 }

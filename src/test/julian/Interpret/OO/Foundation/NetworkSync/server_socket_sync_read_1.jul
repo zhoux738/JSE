@@ -1,0 +1,24 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+
+TestContext.set(_tskey, "port", ss.getLocalPort());
+Socket sock = ss.accept();
+
+Stream stream = sock.getReadStream();
+
+byte[] buffer = new byte[5];
+int read = 0;
+string accStr = "";
+while((read = stream.read(buffer, 0, 5)) != -1) {
+	string s = String.fromBytes(buffer, "ascii", 0, read);
+	accStr += s;
+	//Console.println("[" + read + "] " + s);
+}
+
+sock.close();

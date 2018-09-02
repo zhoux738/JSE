@@ -63,12 +63,15 @@ public enum KnownJSException {
 	RuntimeCheck("System.Lang.RuntimeCheckException"),
 
 	IO("System.IO.IOException"),
+    
+    Socket("System.Network.SocketException"),
+    Network("System.Network.NetworkException"),
 	
 	ConcurrentModification("System.Collection.ConcurrentModificationException"),
 	
 	ReflectedInvocation("System.Reflection.ReflectedInvocationException"),
 	
-	UnrecognizedRegex("System.Util.UnrecognizedRegexException"),
+	UnrecognizedRegex("System.Util.UnrecognizedRegexException"), 
 	
 	;
 	

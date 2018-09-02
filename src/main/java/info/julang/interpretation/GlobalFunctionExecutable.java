@@ -59,4 +59,11 @@ public class GlobalFunctionExecutable extends InterpretedExecutable {
 		
 		runtime.getThreadStack().setNamespacePool(nsPool);
 	}
+	
+	//---------------------------- IStackFrameInfo ----------------------------//
+	
+	@Override
+	public boolean isFromLooseScript() {
+		return true;
+	}
 }

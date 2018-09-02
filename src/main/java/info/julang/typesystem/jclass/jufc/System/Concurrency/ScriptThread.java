@@ -107,9 +107,10 @@ public class ScriptThread {
 			FuncValue fv = (FuncValue) RefValue.dereference(hvalue.getMemberValue("exeThread"));
 			JFunctionType funTyp = (JFunctionType)fv.getType();
 			String name = getString(args, 0);
-			int pri = getEnumAsOrdinal(args, 1);			
+			boolean isIOThread = this.getBool(args, 1);
+			int pri = getEnumAsOrdinal(args, 2);			
 			
-			thread.init(rt, hvalue, funTyp, name, pri);
+			thread.init(rt, hvalue, funTyp, name, isIOThread, pri);
 			
 			setOverwrittenReturnValue(VoidValue.DEFAULT);
 		}
@@ -195,6 +196,10 @@ public class ScriptThread {
 		
 	}
 	
+	public JThread getThread(){
+		return thread;
+	}
+	
 	/**
 	 * Used only for non-user defined threads, such as main thread.
 	 * 
@@ -206,7 +211,7 @@ public class ScriptThread {
 		this.runnable = runnable;
 	}
 	
-	private void init(ThreadRuntime rt, HostedValue hvalue, JFunctionType funTyp, String name, int pri){
+	private void init(ThreadRuntime rt, HostedValue hvalue, JFunctionType funTyp, String name, boolean isIOThread, int pri){
 		Executable exec = funTyp.getExecutable();
 		NamespacePool np = funTyp.getNamespacePool();
 		
@@ -215,7 +220,7 @@ public class ScriptThread {
 		// ScriptThread object. ScriptThread (wrapped in Julian type "System.Concurrency.Thread") and 
 		// JThread are two objects referring to the same thread, with the former used in the script 
 		// and the latter in the engine internals.
-		thread =  rt.getThreadManager().createBackground(name, rt, exec, np, hvalue, priority);
+		thread = rt.getThreadManager().createBackground(name, rt, exec, np, hvalue, isIOThread, priority);
 	}
 	
 	private JValue getName(ThreadRuntime rt) {

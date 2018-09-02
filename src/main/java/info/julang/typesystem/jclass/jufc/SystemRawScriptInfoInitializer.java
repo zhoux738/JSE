@@ -22,12 +22,18 @@ public class SystemRawScriptInfoInitializer {
            info.julang.typesystem.jclass.jufc.System.IO.JFile.Factory,
            info.julang.typesystem.jclass.jufc.System.IO.JFileStream.Factory,
            info.julang.typesystem.jclass.jufc.System.JConsole.Factory,
+           info.julang.typesystem.jclass.jufc.System.JEnvironment.Factory,
            info.julang.typesystem.jclass.jufc.System.JProcess.Factory,
+           info.julang.typesystem.jclass.jufc.System.Network.JNetAddress.Factory,
+           info.julang.typesystem.jclass.jufc.System.Network.ScriptServerSocket.Factory,
+           info.julang.typesystem.jclass.jufc.System.Network.ScriptSocket.Factory,
+           info.julang.typesystem.jclass.jufc.System.Network.ScriptSocketStream.Factory,
            info.julang.typesystem.jclass.jufc.System.ProcessPipeStream.Factory,
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptCtor.Factory,
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptField.Factory,
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptMethod.Factory,
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptParam.Factory,
+           info.julang.typesystem.jclass.jufc.System.Reflection.ScriptScript.Factory,
            info.julang.typesystem.jclass.jufc.System.ScriptType.Factory,
            info.julang.typesystem.jclass.jufc.System.Util.JMath.Factory,
            info.julang.typesystem.jclass.jufc.System.Util.JRegex.Factory,
@@ -58,6 +64,7 @@ public class SystemRawScriptInfoInitializer {
 			"Member",
 			"Method",
 			"Parameter",
+			"Script",
 		});
 		map.put("System.Util", new String[]{
 			"Exception",
@@ -77,12 +84,21 @@ public class SystemRawScriptInfoInitializer {
 		map.put("System", new String[]{
 			"Annotation",
 			"Console",
+			"Environment",
 			"Exception",
 			"HOLI",
 			"PlatformObject",
 			"Process",
 			"Time",
 			"Type",
+		});
+		map.put("System.Network", new String[]{
+			"Address",
+			"Exception",
+			"ISocket",
+			"ServerSocket",
+			"Socket",
+			"SocketStream",
 		});
     }
     
@@ -128,6 +144,10 @@ public class SystemRawScriptInfoInitializer {
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Console>(
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Console.class));
         
+        map.put("System/Environment.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Environment>(
+            info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Environment.class));
+        
         map.put("System/Exception.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Exception>(
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Exception.class));
@@ -164,6 +184,30 @@ public class SystemRawScriptInfoInitializer {
             info.julang.typesystem.jclass.jufc.System.Lang.AOTRawScriptInfo$Exception>(
             info.julang.typesystem.jclass.jufc.System.Lang.AOTRawScriptInfo$Exception.class));
         
+        map.put("System/Network/Address.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$Address>(
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$Address.class));
+        
+        map.put("System/Network/Exception.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$Exception>(
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$Exception.class));
+        
+        map.put("System/Network/ISocket.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$ISocket>(
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$ISocket.class));
+        
+        map.put("System/Network/ServerSocket.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$ServerSocket>(
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$ServerSocket.class));
+        
+        map.put("System/Network/Socket.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$Socket>(
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$Socket.class));
+        
+        map.put("System/Network/SocketStream.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$SocketStream>(
+            info.julang.typesystem.jclass.jufc.System.Network.AOTRawScriptInfo$SocketStream.class));
+        
         map.put("System/PlatformObject.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$PlatformObject>(
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$PlatformObject.class));
@@ -195,6 +239,10 @@ public class SystemRawScriptInfoInitializer {
         map.put("System/Reflection/Parameter.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Parameter>(
             info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Parameter.class));
+        
+        map.put("System/Reflection/Script.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Script>(
+            info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Script.class));
         
         map.put("System/Time.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.AOTRawScriptInfo$Time>(

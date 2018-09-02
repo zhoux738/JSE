@@ -31,9 +31,12 @@ public class AOTRawScriptInfo$Thread extends RawScriptInfo {
         m_classes.add(new RawClassInfo("ThreadPriority", new AOTClassDeclInfo_ThreadPriority (this)));
         m_classes.add(new RawClassInfo("ThreadState", new AOTClassDeclInfo_ThreadState (this)));
         m_classes.add(new RawClassInfo("Thread", new AOTClassDeclInfo_Thread (this)));
+        m_classes.add(new RawClassInfo("IOThreadQueue", new AOTClassDeclInfo_IOThreadQueue (this)));
+        m_classes.add(new RawClassInfo("IOThreadWrapper", new AOTClassDeclInfo_IOThreadWrapper (this)));
 
         m_requirements = new ArrayList<RequirementInfo>();
         m_requirements.add(new RequirementInfo("System", null));
+        m_requirements.add(new RequirementInfo("System.Collection", null));
     }
 
     public String getModuleName() {
@@ -217,6 +220,120 @@ public class AOTRawScriptInfo$Thread extends RawScriptInfo {
 
         public Accessibility getAccessibility() {
             return Accessibility.PUBLIC;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_IOThreadQueue extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_IOThreadQueue(RawScriptInfo minfo) {
+            super(minfo);
+            
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.Concurrency.IOThreadQueue");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "IOThreadQueue";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.MODULE;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_IOThreadWrapper extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_IOThreadWrapper(RawScriptInfo minfo) {
+            super(minfo);
+            
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.Concurrency.IOThreadWrapper");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "IOThreadWrapper";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.MODULE;
         }
         
         public boolean isAccessibilitySet(){

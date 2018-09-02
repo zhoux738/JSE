@@ -32,3 +32,7 @@ string s4 = "xyz123456"; // assume this will not collide with "abcdef" with defa
 
 bool b5 = s.hashCode() == s3.hashCode();
 bool b6 = s.hashCode() != s4.hashCode();
+
+string s5 = "xabcyzabc".replace("abc", "-"); // x-yz-
+string s6 = "xabcyzabc".replace(" xa", "-"); // no change
+string s7 = "xabcyzabcx".replace("abc", "").replace('x', '0'); // 0yz0

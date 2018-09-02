@@ -1,0 +1,27 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+Socket sock = new Socket();
+//Console.println("port = " + port);
+sock.connect("127.0.0.1", port); // port is provided by test context
+
+string accStr = "";
+var rs = sock.getReadStream();
+byte[] buffer = new byte[30];
+Promise prom = rs.readToEndAsync(buffer, (count, handle) => {
+	if (count > 0) {
+		string s = String.fromBytes(buffer, "ascii", 0, count);
+		accStr += s;
+		if (accStr == "Hello World. This is Julian!") {
+			sock.close(); // Closing socket will shut down streams from this socket and settle the promise
+		}
+	}
+
+	if (count < 0) {
+		sock.close();
+	}
+});
+
+prom.getResult(true);
+accStr += "[DONE]"; 

@@ -29,6 +29,7 @@ import info.julang.execution.ArgumentUtil;
 import info.julang.execution.Result;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.hosting.HostedExecutable;
 import info.julang.interpretation.IllegalArgumentsException;
@@ -43,6 +44,7 @@ import info.julang.memory.value.CharValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.ValueUtilities;
@@ -53,6 +55,7 @@ import info.julang.typesystem.JArgumentException;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.VoidType;
 import info.julang.typesystem.basic.BoolType;
+import info.julang.typesystem.basic.ByteType;
 import info.julang.typesystem.basic.CharType;
 import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.conversion.Convertibility;
@@ -74,6 +77,9 @@ import info.julang.typesystem.jclass.builtin.doc.JulianFieldMemberDoc;
 import info.julang.typesystem.jclass.builtin.doc.JulianFieldMembersDoc;
 import info.julang.typesystem.jclass.jufc.SystemTypeNames;
 import info.julang.typesystem.loading.ITypeResolver;
+
+import java.io.UnsupportedEncodingException;
+import java.util.regex.Pattern;
 
 /**
  * The String type as in<br/>
@@ -229,7 +235,55 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 				    null));
 			
 			//-------------------- String --------------------//
-			
+	
+	         //fromBytes (static)
+            builder.addStaticMember(
+                new JClassMethodMember(
+                    builder.getStub(), 
+                    "fromBytes", Accessibility.PUBLIC, true, false,
+                    new JMethodType(
+                        "fromBytes",
+                        new JParameter[]{
+                            new JParameter("bytes", farm.getArrayType(BuiltinTypes.BYTE)),
+                            new JParameter("charset", stringType),
+                            new JParameter("offset", IntType.getInstance()),
+                            new JParameter("length", IntType.getInstance())
+                        }, 
+                        stringType,
+                        METHOD_fromBytes2,
+                        stringType),
+                    null));
+            
+            //fromBytes (static)
+            builder.addStaticMember(
+                new JClassMethodMember(
+                    builder.getStub(), 
+                    "fromBytes", Accessibility.PUBLIC, true, false,
+                    new JMethodType(
+                        "fromBytes",
+                        new JParameter[]{
+                            new JParameter("bytes", farm.getArrayType(BuiltinTypes.BYTE)),
+                        }, 
+                        stringType,
+                        METHOD_fromBytes,
+                        stringType),
+                    null));
+            
+            //toBytes
+            builder.addInstanceMember(
+                new JClassMethodMember(
+                    builder.getStub(), 
+                    "toBytes", Accessibility.PUBLIC, false, false,
+                    new JMethodType(
+                        "toBytes",
+                        new JParameter[]{
+                            new JParameter("this", stringType)
+                        }, 
+                        farm.getArrayType(BuiltinTypes.BYTE),
+                        METHOD_toBytes,
+                        stringType),
+                    null));
+            
 			//fromChars (static)
 			builder.addStaticMember(
 				new JClassMethodMember(
@@ -373,7 +427,24 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 					    METHOD_firstOf,
 					    stringType),
 				    null));
-			
+
+	        //replace
+            builder.addInstanceMember(
+                new JClassMethodMember(
+                    builder.getStub(), 
+                    "replace", Accessibility.PUBLIC, false, false,
+                    new JMethodType(
+                        "replace",
+                        new JParameter[]{
+                            new JParameter("this", stringType), 
+                            new JParameter("oldStr", stringType), 
+                            new JParameter("newStr", stringType), 
+                        }, 
+                        stringType, 
+                        METHOD_replace,
+                        stringType),
+                    null));
+            
 			//substring
 			builder.addInstanceMember(
 				new JClassMethodMember(
@@ -472,11 +543,109 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 			return true;
 		}
 	}
-	
+	   
+    // fromBytes
+    @JulianDoc(
+        summary =   "/*"
+                + "\n * Create a string from an array of [bytes](type: byte) in specified encoding."
+                + "\n */",
+        params = {"An array of bytes.",
+                  "The charset name. Charset names should have been registered by *RFC 2278: IANA Charset Registration Procedures*.",
+                  "The offset in the array to start converting.",
+                  "The total count of bytes to use."},
+        paramTypes = {"[byte]", "string", "int", "int"},
+        isStatic = true,
+        returns = "A string comprised of the given chars.",
+        exceptions = {"System.NullReferenceException: if the parameter is null."}
+    )
+    private static HostedExecutable METHOD_fromBytes2  = new HostedExecutable(FQNAME, "fromBytes") {
+        @Override
+        protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+            ArrayValue av = (ArrayValue)RefValue.dereference(args[0].getValue());
+            BasicArrayValueExposer exp = new BasicArrayValueExposer((BasicArrayValue)av);
+            StringValue sv = (StringValue)RefValue.dereference(args[1].getValue());
+            int offset = ((IntValue)args[2].getValue().deref()).getIntValue();
+            int length = ((IntValue)args[3].getValue().deref()).getIntValue();
+            
+            byte[] bytes = exp.getByteArray();
+            if (offset < 0 || offset >= bytes.length) {
+                throw new JArgumentException("offset");
+            }
+            if (length < 0) {
+                throw new JArgumentException("length");
+            } else if (length > bytes.length) {
+                length = bytes.length;
+            }
+
+            try {
+                String str = new String(bytes, offset, length, sv.getStringValue());
+                return new Result(TempValueFactory.createTempStringValue(str));
+            } catch (UnsupportedEncodingException e) {
+                throw new JArgumentException("charset");
+            }
+        }
+    };
+    
+    // fromBytes
+    @JulianDoc(
+        summary =   "/*"
+                + "\n * Create a string from an array of [bytes](type: byte) in ASCII encoding."
+                + "\n */",
+        params = {"An array of bytes."},
+        paramTypes = {"[byte]"},
+        isStatic = true,
+        returns = "A string comprised of the given chars decoded from the byte array.",
+        exceptions = {"System.NullReferenceException: if the parameter is null."}
+    )
+    private static HostedExecutable METHOD_fromBytes  = new HostedExecutable(FQNAME, "fromBytes") {
+        @Override
+        protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+            ArrayValue av = (ArrayValue)RefValue.dereference(args[0].getValue());
+            BasicArrayValueExposer exp = new BasicArrayValueExposer((BasicArrayValue)av);
+            byte[] bytes = exp.getByteArray();
+            try {
+                String str = new String(bytes, "ascii");
+                return new Result(TempValueFactory.createTempStringValue(str));
+            } catch (UnsupportedEncodingException e) {
+                throw new JSEError("The platform doesn't support ASCII encoding.");
+            }
+        }
+    };
+    
+    // toBytes
+    @JulianDoc(
+        summary =   "/*"
+                + "\n * Convert this string to an array of [bytes](type: byte) in ASCII encoding."
+                + "\n */",
+        params = { },
+        returns = "A byte array consisting of all the bytes in this string.",
+        exceptions = { }
+    )
+    private static HostedExecutable METHOD_toBytes  = new HostedExecutable(FQNAME, "toBytes") {
+        @Override
+        protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+            // Extract arguments
+            StringValue thisVal = ArgumentUtil.<StringValue>getThisValue(args);
+            String value = thisVal.getStringValue();
+            
+            byte[] barray = value.getBytes();
+            int len = barray.length;
+
+            BasicArrayValue bav = (BasicArrayValue)ArrayValueFactory.createArrayValue(
+                runtime.getStackMemory(), runtime.getTypeTable(), ByteType.getInstance(), len);
+            byte[] tarray = (byte[])bav.getPlatformArrayObject();
+                
+            System.arraycopy(barray, 0, tarray, 0, len);
+            
+            // Convert the result to Julian type
+            return new Result(bav);
+        }
+    };
+    
 	// fromChars
 	@JulianDoc(
 		summary =   "/*"
-				+ "\n * Create an array from an array of [chars](type: char)."
+				+ "\n * Create a string from an array of [chars](type: char)."
 				+ "\n */",
 		params = {"An array of chars."},
 		isStatic = true,
@@ -494,7 +663,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 			return new Result(TempValueFactory.createTempStringValue(str));
 		}
 	};
-	
+		
 	// toChars
 	@JulianDoc(
 		summary =   "/*"
@@ -712,7 +881,32 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 			return new Result(TempValueFactory.createTempIntValue(res));
 		}
 	};
-	
+
+	// replace
+    @JulianDoc(
+        summary =   "/*"
+                + "\n * Replace all occurences of a substring with another one."
+                + "\n */",
+        params = {"The string to replace.", "The string to replace with"},
+        returns = "A string with all occurences of the specified substring replaced with the new substring.",
+        exceptions = { }
+    )
+    private static HostedExecutable METHOD_replace = new HostedExecutable(FQNAME, "replace") {
+        @Override
+        protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+            // Extract arguments
+            StringValue thisVal = ArgumentUtil.<StringValue>getThisValue(args);
+            StringValue oldStr = JStringType.coerceStringValue(this.methodName, 1, args, runtime);
+            StringValue newStr = JStringType.coerceStringValue(this.methodName, 2, args, runtime);
+            
+            // Execute in Java
+            String res = thisVal.getStringValue().replace(oldStr.getStringValue(), newStr.getStringValue());
+            
+            // Convert the result to Julian type
+            return new Result(TempValueFactory.createTempStringValue(res));
+        }
+    };
+    
 	// substring
 	@JulianDoc(
 		summary =   "/*"
@@ -818,7 +1012,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 		summary =   "/*"
 				+ "\n * Split the string into multiple substrings at the specified boundary."
 				+ "\n */",
-		params = { "The boundary to split at, which is not included into the resultant substrings." },
+		params = { "The boundary char or string to split at, which is not included into the resultant substrings." },
 		returns = "An array of strings split out of this string.",
 		exceptions = { }
 	)
@@ -830,7 +1024,9 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 			CharValue splitterVal = JStringType.coerceCharValue(this.methodName, 1, args, runtime);
 			
 			// Execute in Java
-		    String[] res = thisVal.getStringValue().split(String.valueOf(splitterVal.getCharValue()));
+			// Java's string split targets regex. Julian the literal. So call Pattern.quote to escape the input.
+		    String[] res = thisVal.getStringValue().split(
+		    	Pattern.quote(String.valueOf(splitterVal.getCharValue())));
 			
 			// Convert the result to Julian type
 		    ArrayValue av = TempValueFactory.createTemp1DArrayValue(runtime.getTypeTable(), JStringType.getInstance(), res.length);

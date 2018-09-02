@@ -242,7 +242,9 @@ public class StringValue extends ObjectValue
 				result = FloatValue.fromString(memory, value);
 				break;
 			case INTEGER:
-				int i = Integer.valueOf(value);
+				int i = value.indexOf('.') >= 0 ? 
+				    ((int)FloatValue.fromString(memory, value).getFloatValue()) : 
+				    Integer.valueOf(value);
 				result = new IntValue(memory, i);
 				break;	
 			case BYTE:

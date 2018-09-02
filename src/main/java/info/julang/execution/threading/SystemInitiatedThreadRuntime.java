@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.execution.threading;
 
 import info.julang.execution.InContextTypeResolver;
+import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.interpretation.context.Context;
@@ -33,6 +34,9 @@ import info.julang.memory.StackArea;
 import info.julang.memory.simple.SimpleStackArea;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.typesystem.loading.InternalTypeResolver;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The thread runtime used in scenarios where the engine initiates the execution of
@@ -55,13 +59,7 @@ public class SystemInitiatedThreadRuntime implements ThreadRuntime {
 	
 	private ThreadStack tstack;
 	
-	/**
-	 * Create a new type loading thread runtime mainly using an interpretation context
-	 * for runtime resources.
-	 * 
-	 * @param context
-	 */
-	public SystemInitiatedThreadRuntime(Context context){
+	private SystemInitiatedThreadRuntime(Context context, boolean preserveNamepool){
 		this.context = context;
 		
 		tstack = new ThreadStack(
@@ -72,6 +70,26 @@ public class SystemInitiatedThreadRuntime implements ThreadRuntime {
 				}
 			}, 
 			context.getVarTable().getGlobal());
+		
+		tstack.setNamespacePool(preserveNamepool ? context.getNamespacePool() : new NamespacePool());
+	}
+
+	/**
+	 * Create a new thread runtime mainly based on an interpretation context. Disregard the namespace pool.
+	 * 
+	 * @param context
+	 */
+	public SystemInitiatedThreadRuntime(Context context){
+		this(context, false);
+	}
+	
+	/**
+	 * Create a new thread runtime based on another one. Preserve the namespace pool.
+	 * 
+	 * @param rt
+	 */
+	public SystemInitiatedThreadRuntime(ThreadRuntime rt){
+		this(Context.createSystemLoadingContext(rt), true);
 	}
 
 	@Override
@@ -118,4 +136,29 @@ public class SystemInitiatedThreadRuntime implements ThreadRuntime {
 	public JThreadManager getThreadManager() {
 		return context.getThreadManager();
 	}
+	
+    @Override
+    public synchronized Object putLocal(String key, IThreadLocalObjectFactory factory) {
+        if (tls == null){
+            tls = new HashMap<String, Object>();   
+        }
+        
+        if (!tls.containsKey(key)){
+            tls.put(key, factory.create());  
+        }
+        
+        return tls.get(key);
+    }
+
+    @Override
+    public synchronized Object getLocal(String key) {
+        if (tls != null){
+            return tls.get(key);
+        }
+        
+        return null;
+    }
+    
+    private Map<String, Object> tls;
+    
 }

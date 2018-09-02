@@ -214,11 +214,7 @@ public class JEnumType extends JDefinedClassType {
 	 * @return
 	 */
 	public static boolean isEnumType(JType typ){
-		if(typ instanceof JEnumType){
-			return true;
-		}
-		
-		return false;
+		return typ instanceof JEnumType;
 	}
 	
 	// enum field initializer

@@ -24,6 +24,8 @@ SOFTWARE.
 
 package info.julang.execution.threading;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import info.julang.execution.Argument;
@@ -201,6 +203,10 @@ public class JThread {
 		return props.getRunCount();
 	}
 	
+	public boolean isIOThread() {
+		return props.isIOThread();
+	}
+	
 	//----------------- Thread signaling -----------------//
 	
 	/**
@@ -254,20 +260,13 @@ public class JThread {
 	
 	/**
 	 * Set the System.Concurrency.Thread object representing this thread through Julian's concurrency API.
-	 * This method will fault if called with a hosted value that doesn't wrap object of expected type or
-	 * getting called more than once.
-	 * 
+	 * <p>
+	 * At the point this is called, the hosted object has not been set, so we cannot check if the object
+	 * contains the right platform object (ScriptThread.class). Use caution when calling this method.
 	 * @param threadObjectInJulian
 	 */
 	synchronized void setScriptThreadObject(HostedValue threadObjectInJulian){
 		if(this.threadObjectInJulian == null){
-			if (threadObjectInJulian.getHostedObject() instanceof ScriptThread){
-				throw new JSEError(
-					"Cannot bind a thread (" + 
-					name + 
-					") + with a Julian thread object that is not type of \"" + ScriptThread.FullTypeName + "\".");			
-			}
-			
 			this.threadObjectInJulian = threadObjectInJulian;
 		} else {
 			throw new JSEError(
@@ -404,5 +403,37 @@ public class JThread {
 		public JThreadManager getThreadManager() {
 			return engineRt.getThreadManager();
 		}
+
+        @Override
+        public Object putLocal(String key, IThreadLocalObjectFactory factory) {
+            if (tls == null || !tls.containsKey(key)) {
+                synchronized(JThread.this.lock){
+                    if (tls == null){
+                        tls = new HashMap<String, Object>();   
+                    }
+                    
+                    if (!tls.containsKey(key)){
+                        tls.put(key, factory.create());  
+                    }
+                }
+            }
+            
+            return tls.get(key);
+        }
+
+        @Override
+        public Object getLocal(String key) {
+            if (tls == null || !tls.containsKey(key)) {
+                synchronized(JThread.this.lock){
+                    if (tls != null){
+                        return tls.get(key);  
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        private Map<String, Object> tls;
 	}
 }

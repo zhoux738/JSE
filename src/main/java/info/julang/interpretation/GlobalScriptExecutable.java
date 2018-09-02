@@ -90,7 +90,7 @@ public class GlobalScriptExecutable extends InterpretedExecutable {
 		
 		// If it's interactive mode, do not enter into the first scope. we 
 		// trust that the upstream logic has already handled that.
-		stack.pushFrame(runtime.getGlobalVariableTable(), !interactiveMode); 
+		stack.pushFrame(runtime.getGlobalVariableTable(), this, !interactiveMode); 
 		
 		option.setAllowClassDef(true);
 		option.setAllowFunctionDef(true);
@@ -147,5 +147,17 @@ public class GlobalScriptExecutable extends InterpretedExecutable {
 		if (reenterable) {
 			runtime.getThreadStack().popFrame();
 		}
+	}
+	
+	//---------------------------- IStackFrameInfo ----------------------------//
+
+	@Override
+	public String getScriptPath() {
+		return lainfo != null ? lainfo.getFileName() : null;
+	}
+	
+	@Override
+	public boolean isFromLooseScript() {
+		return true;
 	}
 }

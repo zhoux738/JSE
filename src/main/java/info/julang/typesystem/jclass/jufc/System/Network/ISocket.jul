@@ -1,0 +1,243 @@
+module System.Network;
+
+import System;
+import System.IO;
+
+/*
+ * The state of a socket.
+ */
+enum SocketState {
+
+	/* The socket has not been bound to a local address yet. */
+	UNBOUND,
+	
+	/* The socket is bound to a local address, but is not connected to remote address. */
+ 	BOUND,
+ 	
+ 	/* The socket is connected to remote address. */
+ 	CONNECTED,
+ 	
+ 	/* The socket is closed for the previous connection, and not bound to a local address anymore. */
+ 	CLOSED
+}
+
+/*
+ * Option names for setting up TCP connection, based on BSD socket API. Use these enum values 
+ * alongside a value of appropriate type on [SocketConfig] object.
+ */
+enum TCPOption {
+
+	/* SO_REUSEADDR. A boolean value default to false. */
+	REUSEADDR,
+ 	
+ 	/* SO_KEEPALIVE. A boolean value default to false. */
+ 	KEEPALIVE,
+ 	
+ 	/* SO_OOBINLINE. A boolean value default to false. */
+ 	OOBINLINE,
+ 	
+ 	/* Nagle's algorithm. This is the negation of TCP_NODELAY. A boolean value default to true. */
+ 	NAGLE,
+ 	
+ 	/* 
+ 	 * SO_LINGER. An integer value default to OS setting. 
+ 	 * Default to -1, i.e. disabling lingering upon close operation. 
+ 	 */
+ 	LINGER,
+ 	
+ 	/* 
+ 	 * SO_TIMEOUT. An integer value default to OS setting. 
+ 	 * Default to 0, i.e. waiting indefinitely on read operation. 
+ 	 */
+ 	TIMEOUT,
+}
+
+/*
+ * Socket configuration used when creating new sockets.
+ */
+class SocketConfig {
+
+	private bool _reuseaddr;
+	private bool _keepalive;
+	private bool _oobinline;
+	private bool _nagle;
+	private int _linger;
+	private int _timeout;
+	
+	private string _localaddr;
+	private int _localport;
+
+	/*
+	 * Create a default socket configuration object.
+	 */
+	SocketConfig() {
+		_nagle = true;
+		_linger = -1;
+	}
+	
+	internal SocketConfig(SocketConfig config) {
+		_localaddr = config._localaddr; 
+		_localport = config._localport;
+		_reuseaddr = config._reuseaddr;
+		_keepalive = config._keepalive;
+		_oobinline = config._oobinline;
+		_nagle = config._nagle;
+		_linger = config._linger;
+		_timeout = config._timeout;
+	}
+	
+	internal SocketConfig replicate(){
+		SocketConfig _config = new SocketConfig();
+		
+		_config.setLocalAddress(this.getLocalAddress());
+		_config.setLocalPort(this.getLocalPort());
+		
+		_config.set(TCPOption.REUSEADDR, this.get(TCPOption.REUSEADDR));
+		_config.set(TCPOption.KEEPALIVE, this.get(TCPOption.KEEPALIVE));
+		_config.set(TCPOption.OOBINLINE, this.get(TCPOption.OOBINLINE));
+		_config.set(TCPOption.NAGLE, this.get(TCPOption.NAGLE));
+		_config.set(TCPOption.LINGER, this.get(TCPOption.LINGER));
+		_config.set(TCPOption.TIMEOUT, this.get(TCPOption.TIMEOUT));
+		
+		return _config;
+	}
+
+	/*
+	 * Set local address. No checking will be done until the setting is used.
+	 */
+	void setLocalAddress(string localaddr){
+		_localaddr = localaddr; 
+	}
+	
+	/*
+	 * Set local port. No checking will be done until the setting is used.
+	 */
+	void setLocalPort(int localport){
+		_localport = localport;
+	}
+	
+	/*
+	 * Set value for a TCP option.
+	 *
+	 * [param: opt] The TCP option name.
+	 * [param: value] The TCP option value. The type must be compliant with requirement for each option. See [TCPOption] for type requirements.
+	 * [throws: ArgumentException] If the argument has incompatible type for the specified option.
+	 */
+	void set(TCPOption opt, var value){
+		switch(opt){
+		case REUSEADDR:
+			checkBool(value);
+			_reuseaddr = value;
+			break;
+ 		case KEEPALIVE:
+			checkBool(value);
+			_keepalive = value;
+			break;
+ 		case OOBINLINE:
+			checkBool(value);
+			_oobinline = value;
+			break;
+ 		case NAGLE:
+			checkBool(value);
+			_nagle = value;
+			break;
+ 		case LINGER:
+ 			checkWholeNumber(value);
+			_linger = value;
+			break;
+ 		case TIMEOUT:
+ 			checkWholeNumber(value);
+			_timeout = value;
+			break;
+		}
+	}
+	
+	internal string getLocalAddress(){
+		return _localaddr; 
+	}
+	
+	internal int getLocalPort(){
+		return _localport;
+	}
+	
+	internal var get(TCPOption opt){
+		switch(opt){
+		case REUSEADDR:
+			return _reuseaddr;
+ 		case KEEPALIVE:
+			return _keepalive;
+ 		case OOBINLINE:
+			return _oobinline;
+ 		case NAGLE:
+			return _nagle;
+ 		case LINGER:
+ 			return _linger;
+ 		case TIMEOUT:
+ 			return _timeout;
+		}
+	}
+	
+	private void checkBool(var value){
+		if (!(value is bool)) { 
+			throw new ArgumentException("value"); 
+		}
+	}
+	
+	private void checkWholeNumber(var value){
+		if (!(value is int || value is byte)) { 
+			throw new ArgumentException("value"); 
+		}
+	}
+}
+
+/*
+ * An interface defining some common API for both client and server sockets. Although a couple of methods are shared, 
+ * it's rarely programmed against such interface in practice due to the fundamental behavioral difference between the
+ * two types of socket.
+ */
+interface ISocket {
+
+	/*
+	 * Bind this socket to a local address.
+	 *
+	 * [param: localHost] The local host, which can be an IP address or a domain name.
+	 * [param: localPort] The local port, a value between [0, 65535]. If 0, it means no particular binding with 
+	 * local port and the socket may pick an arbitrary (a.k.a. *ephemeral*) one for connection. 
+	 */
+	void bind(string localHost, int localPort);
+	
+	/*
+	 * Close this socket. Once the socket is closed, all the streams from this socket will be closed too.
+	 */
+	void close();
+	
+	/*
+	 * Get the local host. If the socket has not been bound, this returns null.
+	 *
+	 * [return] The local host this socket binds to. Null if the socket has not been bound to any. 
+	 */
+	string getLocalHost();
+	
+	/*
+	 * Get the local port. If the port has not been bound, this returns 0.
+	 *
+	 * [return] The local port (1-65535) this socket binds to. 0 if the socket has not been bound to any. 
+	 */
+	int getLocalPort();
+	
+	/*
+	 * Get the setting for a particular option. Not all options are valid for a concrete Socket type. The value
+	 * this returns for invalid options is undefined.
+	 *
+	 * [param: opt] The [BSD/TCP option](type: System.Network.TCPOption) to query.
+	 * [return] The value set for this option. 
+	 */
+	var getSetting(TCPOption opt);
+	
+	/*
+	 * Query the state of this socket.
+	 *
+	 * [return] The state of this socket. 
+	 */
+	SocketState getState();
+}

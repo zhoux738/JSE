@@ -201,7 +201,8 @@ public class FuncCallExecutor {
 		}
 
 		int startIndex = skipFirstValue ? 1 : 0;
-		if (!looseTyping && values.length - startIndex > args.length){
+		int valuesPassedIn = values.length - startIndex + start;
+		if (!looseTyping && valuesPassedIn > args.length){
 			// More arguments than params
 			throw new RuntimeCheckException("Wrong number of arguments when calling " + funcName + ".");
 		}

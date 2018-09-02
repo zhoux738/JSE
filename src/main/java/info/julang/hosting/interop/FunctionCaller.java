@@ -24,9 +24,7 @@ SOFTWARE.
 
 package info.julang.hosting.interop;
 
-import info.julang.execution.threading.SystemInitiatedThreadRuntime;
 import info.julang.execution.threading.ThreadRuntime;
-import info.julang.interpretation.context.Context;
 import info.julang.interpretation.internal.FuncCallExecutor;
 import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.IMethodValue;
@@ -45,22 +43,11 @@ import info.julang.memory.value.JValue;
  */
 public class FunctionCaller {
 
-	private ThreadRuntime rt;
 	private FuncValue fv;
 	private String funcName;
 	private JValue instance;
-	
-	public FunctionCaller(ThreadRuntime rt, FuncValue fv, boolean useIndependentThreadRuntime){
-		this(rt, fv, null, null, useIndependentThreadRuntime);
-	}
-	
-	public FunctionCaller(ThreadRuntime rt, FuncValue fv, String funcName, JValue instance, boolean useIndependentThreadRuntime){
-		if (useIndependentThreadRuntime) {
-			Context cntx = Context.createSystemLoadingContext(rt);
-			rt = new SystemInitiatedThreadRuntime(cntx);
-		}
-		
-		this.rt = rt;
+
+	public FunctionCaller(FuncValue fv, String funcName, JValue instance){
 		this.fv = fv;
 		
 		if (funcName == null){
@@ -78,7 +65,7 @@ public class FunctionCaller {
 		this.instance = instance;
 	}
 	
-	public JValue call(JValue[] args, boolean dynamic){
+	public JValue call(ThreadRuntime rt, JValue[] args, boolean dynamic){
 		FuncCallExecutor exec = new FuncCallExecutor(rt);
 		exec.setLooseTyping(dynamic);
 		JValue ret = exec.invokeFuncValueInternal(fv, funcName, args, instance);

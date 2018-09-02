@@ -1,0 +1,49 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+
+TestContext.set(_tskey, "port", ss.getLocalPort());
+//Console.println("binding " + ss.getLocalPort());
+
+Socket sock = ss.accept();
+
+AsyncStream stream = sock.getReadStream();
+
+byte[] buffer = new byte[_bsize];
+int total = 0;
+string accStr = "";
+string threadName = "";
+Promise prom = stream.readToEndAsync(buffer, (count, handle) => {
+	if (count > 0) {
+		string s = String.fromBytes(buffer, "ascii", 0, count);
+		//Console.println("read = " + s);
+		accStr += s;
+		total += count;
+		
+		if (total >= 20) {
+			threadName = Thread.getCurrent().getName();
+			sock.close(); // Closing socket will shut down streams from this socket and settle the prmises
+		}
+	}
+
+	if (count < 0) {
+		handle.resolve(total);
+	}
+});
+
+var promResult = prom.getResult(false);
+
+/*
+Console.println("======= RESULT =======");
+Console.println(accStr);
+Console.println(sock.getState());
+Console.println(promResult);
+*/
+
+string state = sock.getState().literal;
+sock.close();

@@ -58,7 +58,7 @@ import System;
  * input is through. In this approach, the [Match] object remains stateful and updates itself every time
  * [next()](Match#next) is called before the entire input has been matched.
  * [code]
- *    Match m = /ab+c/.matchAll("abbbbcacabc");
+ *    Match m = /ab+c/.matchNext("abbbbcacabc");
  *    while (m.isMatched()) {
  *      string text = m.getText(); // Get the matched text;
  *      Console.println(text);

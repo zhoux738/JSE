@@ -7,9 +7,10 @@ AsyncStream astream = (AsyncStream)sstream;
 sstream.close();
 
 byte[] buffer = new byte[32];
-Promise p = astream.readAsync(buffer, 0, (read, handle)=>{
-	handle.reject("failed!");
-}).then(read => {
+Promise p = astream.readAsync(buffer, 0)
+.then(read => {
+	throw new Exception("failed!");
+}).then(data => {
 	throw new Exception("this callback should never be called!");
 });
 

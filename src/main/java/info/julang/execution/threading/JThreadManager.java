@@ -24,6 +24,19 @@ SOFTWARE.
 
 package info.julang.execution.threading;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import info.julang.execution.Argument;
 import info.julang.execution.EngineRuntime;
 import info.julang.execution.Executable;
@@ -34,21 +47,8 @@ import info.julang.external.exceptions.JSEError;
 import info.julang.memory.StackArea;
 import info.julang.memory.simple.SimpleStackArea;
 import info.julang.memory.value.HostedValue;
+import info.julang.typesystem.jclass.jufc.System.Network.AsyncSocketSession;
 import info.julang.util.Pair;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A global thread manager that tracks all the threads running in the script engine.
@@ -77,42 +77,91 @@ import java.util.concurrent.atomic.AtomicInteger;
  *            ||      |             <-------[runBackground]----+  |
  *            ||      |             <-------[runBackground]-------+
  *            ==      +-------------+</pre>
- * The ultimate design goal is that all threads running within JSE should be managed 
- * by this class. This, however, is not the status quo as of 0.2.0, where threads may 
- * be initiated from JuFC platform end, such as a system hook invoked by asynchronous 
- * API. To ensure that such practice doesn't break the engine, always create a new 
- * thread runtime to be used in JSE-unmanaged threads.
+ * All threads running within JSE should be managed by this class. If a Java API
+ * calls back a method on a new JVM thread, such as the case with asynchronous IO, 
+ * we must not execute the logic, should it involve any Julian scripting, inline.
+ * Instead, create an IO thread from this manager and post work items to it. See 
+ * {@link #createIOContinuationThread(ThreadRuntime, boolean)} for more information.
  * <p> 
  * @author Ming Zhou
  */
+// IMPLEMENTATION NOTES
+//
+// This class is implemented on top of a ThreadPoolExecutor. Whether this is the 
+// right approach is up to debate. The ThreadPoolExecutor queues up incoming 
+// work items and only starts dispatching new thread beyond the core number when 
+// the queue is full. This means under certain circumstances the engine may not 
+// schedule a new thread requested by the user, and if all the running threads 
+// are long running instances, the new threads will never get chance to execution. 
+// For now, the core/max/queue-length are configured to reduce, but not completely
+// prevent, such possibility. 
 public class JThreadManager {
 
 	private final static String MAIN_THREAD_NAME = "<Julian-Main>";
 	private final static String BG_THREAD_PREFIX = "<Julian-Worker>-";
 	
-	private final DefaultStackFactory sfactory = new DefaultStackFactory();
-	
-	// The thread id generator
-	private final AtomicInteger idSequencer = new AtomicInteger(-1);
+	private final DefaultStackFactory sfactory;
+
+    private JThread main;
+    
+	// The thread id tracker
+	private final SequenceNumberTracker idSequencer;
 	
 	// A map used to store all the threads that have been run. We need this storage because
 	// ExecutorService doesn't expose one.
-	private final Map<Integer, Pair<JThread, JThreadRunnable>> threads = 
-		new ConcurrentHashMap<Integer, Pair<JThread, JThreadRunnable>>();
+	private final Map<Integer, Pair<JThread, JThreadRunnable>> threads;
 	
 	// A list storing all the faulted threads.
-	private List<FaultedThreadRecord> faulted = 
-		Collections.synchronizedList(new ArrayList<FaultedThreadRecord>());
-
-	private JThread main;
+	private final List<FaultedThreadRecord> faulted;
+	
+	// IO related
+	private final IOThreadPool iopool;
+    private AsyncSocketSession sockSession;
 	
 	// Internal states
 	private boolean running;
 	private boolean terminating;
-	private final AtomicInteger runCount = new AtomicInteger(0);
+	private final AtomicInteger runCount;
 	
 	// The following are for Julian's concurrency API, so only to be lazily initialized
-	private ExecutorService executor;
+	private JSEThreadPoolExecutor executor;
+	
+	public JThreadManager(){
+	    sfactory = new DefaultStackFactory();
+	    idSequencer = new SequenceNumberTracker();
+	    threads = new ConcurrentHashMap<Integer, Pair<JThread, JThreadRunnable>>();
+	    faulted = Collections.synchronizedList(new ArrayList<FaultedThreadRecord>());
+	    iopool = new IOThreadPool();
+	    runCount = new AtomicInteger(0);
+	}
+	
+	/**
+	 * Fetch an IO thread from the pool.
+	 * 
+	 * @param rt
+	 * @param pooled If false, will create a new IO thread.
+	 * @return A handle for IO thread. Always treat the thread as unpooled and send complete() after the use. A pooled thread will ignore the signal. 
+	 */
+    public IOThreadHandle fetchIOThread(ThreadRuntime rt, boolean pooled) {
+        return iopool.fetch(rt, !pooled);
+    }
+    
+    /**
+     * Get the globally shared async socket session. This session is used by all sockets to
+     * perform asynchronous operations driven by a single polling thread. The post-IO works
+     * will be posted to a limited IO thread pool. So the total thread usage is 1 + K (K is 
+     * a very small number, usually equal to the count of CPU cores)
+     * 
+     * @param rt
+     * @return
+     */
+    public synchronized AsyncSocketSession getAsyncSocketSession(ThreadRuntime rt) {
+    	if (sockSession == null) {
+    		sockSession = new AsyncSocketSession(rt);
+    	}
+    	
+    	return sockSession;
+    }
 	
 	/**
 	 * Create a background thread but not run it.
@@ -131,18 +180,17 @@ public class JThreadManager {
 		Executable exec, 
 		NamespacePool nsPool, 
 		HostedValue threadObjInJulian, 
+		boolean isIOThread,
 		JThreadPriority pri){
-		int id = idSequencer.incrementAndGet();
-		if (name == null || "".equals(name)){
-			synchronized (this) {
-				name = BG_THREAD_PREFIX + id;
-			}
-		}
+	    Pair<Integer, String> idName = getThreadIdName(name);
+		int id = idName.getFirst();
+        name = idName.getSecond();
 		
 		JThreadProperties props = new JThreadProperties();
 		props.setDaemon(true);
-		props.setPripority(pri);
+		props.setPriority(pri);
 		props.setRunCount(runCount.get());
+		props.setIOThread(isIOThread);
 		
 		JThread jt = JThread.createNewThread(
 			id, name, sfactory, engineRt, exec, nsPool, props);
@@ -176,11 +224,7 @@ public class JThreadManager {
 				initializeExecutorService();
 			}
 			
-			// Pass "this" along in order to call JThread.exeThread() properly.
-			HostedValue thisObj = thread.getScriptThreadObject();
-			JThreadRunnable runnable = thread.getRunnable(
-				this, new Argument[]{ new Argument("this", thisObj) });
-			executor.execute(runnable);
+			JThreadRunnable runnable = executor.execute(thread);
 
 			return runnable;
 		}
@@ -199,10 +243,15 @@ public class JThreadManager {
 
 			JThreadProperties props = new JThreadProperties();
 			props.setDaemon(false);
-			props.setPripority(JThreadPriority.NORMAL);
-			
+			props.setPriority(JThreadPriority.NORMAL);
+
+		    Pair<Integer, String> idName = getThreadIdName(MAIN_THREAD_NAME);
+		    int id = idName.getFirst();
+		    String name = idName.getSecond();
+		        
 			JThread t = JThread.createNewThread(
-				idSequencer.incrementAndGet(), MAIN_THREAD_NAME, sfactory, engineRt, exec, null, props);
+			    id, name, sfactory, engineRt, exec, null, props);
+			
 			main = t;
 		}
 	
@@ -250,6 +299,9 @@ public class JThreadManager {
 			
 			synchronized (this) {
 				if (executor != null){
+				    // Send complete signal to all IO-continuation threads.
+				    iopool.terminate();
+				    
 					for(Entry<Integer, Pair<JThread, JThreadRunnable>> entry : threads.entrySet()){
 						JThread t = entry.getValue().getFirst();
 						
@@ -304,6 +356,14 @@ public class JThreadManager {
 	}
 	
 	/**
+	 * Check if the managed threads are running. This method returns false if the engine has not started,
+	 * or true if the engine has started tearing down.
+	 */
+	public boolean isRunning(){
+		return running && !terminating;
+	}
+	
+	/**
 	 * Get a list of faulted threads in the last run.
 	 * 
 	 * @return
@@ -311,13 +371,24 @@ public class JThreadManager {
 	public List<FaultedThreadRecord> getFaultedThreads(){
 		return new ArrayList<FaultedThreadRecord>(faulted);
 	}
+    
+    private Pair<Integer, String> getThreadIdName(String name){
+        int id = idSequencer.obtain();
+        if (name == null || "".equals(name)){
+            name = BG_THREAD_PREFIX + id;
+        }
+        
+        return new Pair<>(id, name);
+    }
 	
 	// To reduce locking overhead, always call this with a check condition
 	private synchronized void initializeExecutorService(){
 		if (executor == null) {
+			// The length is set to 1, the minimal number possible. This is to let
+			// the executor to dispatch the new threads as soon as possible.
 			BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(1);
 			
-			int procNum = Math.max(Runtime.getRuntime().availableProcessors(), 1);
+			int procNum = Math.min(Math.max(Runtime.getRuntime().availableProcessors() * 128, 1), 2048);
 			executor = new JSEThreadPoolExecutor(procNum, queue);				
 		}
 	}
@@ -337,8 +408,8 @@ public class JThreadManager {
 	
 	//------------------ Customized ThreadPoolExecutor ------------------//
 	
-	private static class JSEThreadPoolExecutor extends ThreadPoolExecutor {
-
+	private class JSEThreadPoolExecutor extends ThreadPoolExecutor {
+		
 		private JSEThreadPoolExecutor(
 			int minThreads, BlockingQueue<Runnable> queue) {
 			super(
@@ -359,6 +430,24 @@ public class JThreadManager {
 				t.setName(jt.getName());
 				t.setPriority(jt.getPriority().toJavaThreadPriority());
 			}
+		}
+		
+		JThreadRunnable execute(JThread jthread) {
+			// Pass "this" along in order to call JThread.exeThread() properly.
+			HostedValue thisObj = jthread.getScriptThreadObject();
+			JThreadRunnable runnable = jthread.getRunnable(
+				JThreadManager.this, new Argument[]{ new Argument("this", thisObj) });
+			
+			if (jthread.isIOThread()) {
+				// If this is an IO thread, do not run it in the executor. 
+				// All the IO threads must be started immediately, but executor will not dispatch new threads before the queue is full.
+				Thread t = new Thread(runnable);
+				t.start();
+			} else {
+				this.execute(runnable);
+			}
+			
+			return runnable;
 		}
 	}
 	
@@ -390,8 +479,9 @@ public class JThreadManager {
 	 * 
 	 * @param threadId
 	 */
-	void removeThread(int threadId){
+	void removeThread(int threadId){		
 		threads.remove(threadId);
+		idSequencer.recycle(threadId);
 	}
 	
 	/**

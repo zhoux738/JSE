@@ -28,12 +28,17 @@ import java.util.List;
 
 import info.julang.interpretation.RuntimeCheckException;
 
+/**
+ * Cannot find a constructor to call for the given class type.
+ * 
+ * @author Ming Zhou
+ */
 public class ConstructorNotFoundException extends RuntimeCheckException {
 
 	private static final long serialVersionUID = -7113197855009671339L;
 
 	/**
-	 * Cannot find a constructor to call for the given class type.
+	 * Create a new instance of ConstructorNotFoundException.
 	 *  
 	 * @param classWithoutCtor
 	 * @param ctorCallChain can be null. If not null, this list contains the call chain of constructors up to <code>classWithoutCtor</code> 

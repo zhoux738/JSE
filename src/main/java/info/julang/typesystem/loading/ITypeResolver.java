@@ -47,7 +47,7 @@ public interface ITypeResolver {
 	 * 
 	 * @param typeName
 	 * @return the type object for the specified name, if successfully resolved.
-	 * @throws {@link info.julang.typesystem.UnknownTypeException UnknownTypeException}
+	 * @throws info.julang.typesystem.UnknownTypeException
 	 */
 	public JType resolveType(ParsedTypeName typeName);
 	
@@ -57,7 +57,7 @@ public interface ITypeResolver {
 	 * @param typeName
 	 * @param throwIfNotFound
 	 * @return the type object for the specified name, if successfully resolved. Otherwise null.
-	 * @throws {@link info.julang.typesystem.UnknownTypeException UnknownTypeException}, 
+	 * @throws info.julang.typesystem.UnknownTypeException
 	 * if <code>throwIfNotFound</code> is true.
 	 */
 	public JType resolveType(ParsedTypeName typeName, boolean throwIfNotFound);

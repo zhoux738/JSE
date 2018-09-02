@@ -1,0 +1,305 @@
+module System.Network;
+
+import System;
+import System.IO;
+import System.Concurrency;
+
+/*
+ * A stream backed by a TCP socket.
+ *
+ * While the socket stream supports both synchronous and asynchronous API, the latter is strongly recommended. In fact,
+ * the synchronous API is merely a wrapper on top of the asynchronous one.
+ *
+ * After obtaining a socket, call [Socket.getReadStream()](type: Socket#getReadStream) 
+ * or [Socket.getWriteStream()](type: Socket#getWriteStream) to get a stream for either input or output. To read data off
+ * of the input stream, call [readAsync()](type: #readAsync) against a user-provided buffer. This method returns 
+ * a [Promise](System.Concurrency.Promise) immediately, which will be settled at the earliest timing whenever some data of 
+ * arbitrary size arrives. The caller may chain this promise to another one in which he usually calls some async API again:
+ * [code]
+ *     string s = "";
+ *     byte[] buffer = new byte[128];
+ *     Promise prom = stream.readAsync(buffer, 0)
+ *       .then((count, handle) => {
+ *     	   s += String.fromBytes(buffer, "ascii", 0, count);
+ *     	   return stream.readAsync(buffer, 0); // read some more
+ *     	 });
+ *     // The promise will settle only after both readAsync calls are finished in the scripted order.
+ * [code: end]
+ * 
+ * However, since the size of data read from [readAsync()](type: #readAsync) is arbitrary, it would be difficult to write 
+ * any application simply by recalling this method. Putting the call in a ```for``` loop can work, but that would effectively
+ * serialize the dataflow and thus totally defeat the very purpose of using async API. The perfect solution to this dilemma 
+ * it to call [readToEndAsync()](type: #readToEndAsync) instead. This API allows user to call with a callback, which will be 
+ * invoked upon arrival of each chunk of data. The method returns a promise that will be settled only after the connection 
+ * is torn down:
+ * [code]
+ *     AsyncStream rs = sock.getReadStream();
+ *     AsyncStream ws = sock.getWriteStream();
+ *     byte[] rbuf = new byte[128], wbuf = new byte[128];
+ *     Promise prom = rs.readToEndAsync(rbuf, (count, handle) => {
+ *       if (count > 0) {
+ *         ... // do something with contents in buffer
+ *         if (...) {
+ *           // write some data back
+ *           ws.writeAsync(wbuf, 0, wbuf.length);
+ *         } else if (...) {
+ *           // tear down connection at application level
+ *           handle.resolve(total);
+ *         }
+ *       }
+ *     }); 
+ * [code: end]
+ *
+ * The synchronous API is built on top of asynchronous calls. While they may appear to be more straightforward to use, they 
+ * are in general not recommended for several reasons. In particular, do not mix sync and async calls together. The most 
+ * dangerous case arises when you call some sync method in an async call back:
+ * [code]
+ *     // HIGH POSSIBILITY OF DEADLOCKING 
+ *     AsyncStream rs = sock.getReadStream();
+ *     Promise prom = rs.readToEndAsync(rbuf, (count, handle) => { // async call
+ *       if (count > 0) {
+ *         rs.read(rbuf, offset, length); // sync call
+ *       }
+ *     }); 
+ * [code: end]
+ *
+ * The callback for async API is invoked on a special thread which is dedicated to post-IO operations. There are only
+ * a few such threads managed by the script engine. Since sync API is essentially also calling the async version, it's 
+ * likely the operation is queued on the very same thread where the current callback is running.
+ */
+[Bridged(apiset="System.Network.SocketStream")]
+class SocketStream : StreamBase, AsyncStream {
+
+	private bool isWritable; // if true, only writable; if false, only readable; cannot be both.
+	
+	[Bridged(name="ctor")]
+	private hosted void _init();
+	
+	// The sync API is built on top of async API. The platform doesn't support hybrid async/sync calls.
+	
+	/* [nodoc] */
+	protected void _write(byte data){
+		byte[] buffer = new byte[] { data };
+		_bufferedWrite(buffer, 0, 1);
+	}
+	
+	/* [nodoc] */
+	protected void _write(byte[] buffer, int offset, int count){
+		_bufferedWrite(buffer, 0, count);
+	}
+	
+	/* [nodoc] */
+	protected void _flush() {
+		sync(lock){
+			if (_wboffset > 0) {
+				Promise prom = this.writeAsync(_wbuf, 0, _wboffset);
+				prom.getResult(true);
+			}
+		}
+	}
+		
+	/* [nodoc] */
+	protected int _read(){
+		byte[] buffer = new byte[1];
+		return _bufferedRead(buffer, 0, 1);
+	}
+	
+	/* [nodoc] */
+	protected int _read(byte[] buffer, int offset, int count){
+		return _bufferedRead(buffer, offset, count);
+	}
+	
+	/* [nodoc] */		
+	protected int _skip(int count){
+		byte[] buffer = new byte[count];
+		return _bufferedRead(buffer, 0, count);
+	}
+	
+	/* [nodoc] */
+	[Bridged(name="close")]	
+	protected hosted void _close();
+	
+	private Lock lock = new Lock();
+	// write buffer - fixed size. using or not depends on the size of data to send out.
+	private byte[] _wbuf;
+	private int _wboffset;
+	private int _wcalls;
+	// read buffer - dynamically re-created every time we got excessive data in async read call.
+	private int _rblength;
+	private byte[] _rbuf;
+	private int _rboffset;
+					
+	private const int _bcap = 1024;
+	private DateTime _lastdt;
+		
+	private void _bufferedWrite(byte[] buffer, int offset, int count){
+		sync(lock){
+			if (_wbuf == null) {
+				_wbuf = new byte[_bcap];
+				_lastdt = DateTime.getNow();
+			}
+			
+			int remLen = buffer.length - offset;
+			if (count > remLen) {
+				count = remLen;
+			}
+			
+			DateTime currdt = DateTime.getNow();
+			int remCap = _bcap - _wboffset;
+			// buffer the request only if all the conditions are met: 
+			// (1) still have room in buffer, (2) less than 5 seconds since last write-through, (3) less than 10 buffering since last write-through
+			// NOTE: this doesn't guarantee an auto-flushing. If we write a small amount of data and don't follow with more write calls the data will
+			// be staying in the buffer forever.
+			bool shouldBuffer = count < remCap && currdt.diff(_lastdt) < 5000 && _wcalls < 10;
+			if (shouldBuffer) {
+				Array.copy(buffer, offset, _wbuf, _wboffset, count);
+				_wboffset += count;
+				_wcalls++;
+			} else {
+				// Send any buffered data and the current data. Wait on result.
+				Promise prom = _wboffset > 0 ? 
+					this.writeAsync(_wbuf, 0, _wboffset).then(()=>{
+						return this.writeAsync(buffer, offset, count);
+					}) :
+					this.writeAsync(buffer, offset, count);
+			
+				prom.getResult(true);
+				
+				_wboffset = 0;
+				_wcalls = 0;		
+				_lastdt = DateTime.getNow();
+			}
+		}
+	}
+	
+	private int _bufferedRead(byte[] buffer, int offset, int count){
+		sync(lock){
+			int remLen = count - offset;
+			if (count > remLen) {
+				count = remLen;
+			}
+			
+			if (_rbuf != null) {
+				// read from buffered input
+				int remInBuf = _rblength - _rboffset;
+				int lenFromBuf = count <= remInBuf ? count : remInBuf;
+				Array.copy(_rbuf, _rboffset, buffer, offset, lenFromBuf);
+				_rboffset += lenFromBuf;
+				if (lenFromBuf == remInBuf) {
+					// consumed all bytes from buffer. discard buffer
+					_rbuf = null;
+					count -= remInBuf;
+					if (count == 0) { // special case: count == remInBuf
+						// sufficiently fed by buffer, return now
+						return count;
+					}
+					offset += remInBuf;
+				} else {
+					// sufficiently fed by buffer, return now
+					return count;
+				}
+			}
+			
+			int total = 0;
+			int read = 0;
+			while (read >= 0) {
+				Promise prom = this.readSync(buffer, offset);
+				read = prom.getResult(true); // throw on IO error
+				if (read > count) {
+					// got more than asked. buffer the excessive bytes.
+					read = count;
+					_rblength = read - count;
+					_rbuf = new byte[_rblength];
+					Array.copy(buffer, offset + read, _rbuf, 0, _rblength);
+					_rboffset = 0;
+				}
+				
+				if (read > 0 && read <= count) {
+					offset += read;
+					total += read;
+					count -= read;
+				}
+				
+				if (count <= 0) {
+					break;
+				}
+			} 
+			
+			return total > 0 ? total : read;
+		}
+	}
+	
+	// To be called by system internals
+	private SocketStream(bool writable){
+		this.isWritable = writable;
+		_init();
+	}
+	
+	/*
+	 * [inherited]
+	 * [return] True if the stream was for reading from the socket.
+	 */
+	public bool canRead(){
+		return !isWritable;
+	}
+	
+	/*
+	 * [inherited]
+	 * [return] True if the stream was for writing to the socket.
+	 */
+	public bool canWrite(){
+		return isWritable;
+	}
+	
+	//--- AsyncStream ---//
+	
+	[Bridged(name="readAsync")]		
+	private hosted void _readAsync(byte[] buffer, int offset, PromiseHandle handle, bool forSync);
+	[Bridged(name="readAllAsync")]	
+	private hosted void _readToEndAsync(byte[] buffer, Function callback, PromiseHandle handle);
+	[Bridged(name="writeAsync")]		
+	private hosted void _writeAsync(byte[] buffer, int offset, int length, PromiseHandle handle);
+	
+	/* [inherited] */
+	public Promise readAsync(byte[] buffer, int offset){
+		DeferredPromise dp = Promise.defer();
+		_readAsync(buffer, offset, dp.getHandle(), false);
+		return dp;
+	}
+	
+	private Promise readSync(byte[] buffer, int offset){
+		DeferredPromise dp = Promise.defer();
+		_readAsync(buffer, offset, dp.getHandle(), true);
+		return dp;
+	}
+	
+	/* [inherited] */
+	public Promise readToEndAsync(byte[] buffer, Function callback){
+		DeferredPromise dp = Promise.defer();
+		_readToEndAsync(buffer, callback, dp.getHandle());
+		return dp;
+	}
+	
+	/*
+	 * [inherited]
+	 * [return] True if the stream was for reading from the socket.
+	 */
+	public bool canReadAsync(){
+		return canRead(); 
+	}
+	
+	/* [inherited] */
+	public Promise writeAsync(byte[] buffer, int offset, int length){
+		DeferredPromise dp = Promise.defer();
+		_writeAsync(buffer, offset, length, dp.getHandle());
+		return dp;
+	}
+	
+	/*
+	 * [inherited]
+	 * [return] True if the stream was for writing to the socket.
+	 */
+	public bool canWriteAsync(){
+		return canWrite();
+	}
+}

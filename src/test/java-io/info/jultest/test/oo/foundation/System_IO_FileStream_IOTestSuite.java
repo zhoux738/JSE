@@ -190,7 +190,7 @@ public class System_IO_FileStream_IOTestSuite {
 			engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "fs_err_1.jul"));
 			
 			// 4) validation
-			validateBoolArrayValue(gvt, "res", new boolean[]{true, true, true, true, true});
+			validateBoolArrayValue(gvt, "res", new boolean[]{true, true, true, false, true});
 			validateBoolArrayValue(gvt, "ast", new boolean[]{true, true, true});
 			
 			// (the following is to confirm that the script didn't change the contents of file)
@@ -202,8 +202,8 @@ public class System_IO_FileStream_IOTestSuite {
 			Assert.assertArrayEquals(new char[]{'x', 'a', 'b', 'c'}, buf);
 			Assert.assertEquals(-1, read);
 		} finally {
-			reader.close();
-			temp.delete();
+			if (reader != null) { reader.close(); }
+			if (temp != null) { temp.delete(); }
 		}
 	}
 	

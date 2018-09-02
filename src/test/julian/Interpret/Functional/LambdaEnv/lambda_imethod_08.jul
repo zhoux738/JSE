@@ -1,0 +1,21 @@
+//LambdaInClassTests
+
+class Item {
+
+	private int value;
+	
+	Item(int value){
+		this.value = value;
+	}
+	
+	Function getFunc(){
+		return (int times) => { 
+			return value * times;
+		};
+	}
+	
+}
+
+Item item = new Item(3);
+Function f = item.getFunc();
+int x = f(2);

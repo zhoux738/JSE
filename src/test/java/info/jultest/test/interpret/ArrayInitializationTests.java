@@ -4,6 +4,7 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateFloatValue;
+import static info.jultest.test.Commons.validateBoolValue;
 import static info.jultest.test.Commons.validateStringValue;
 import info.jultest.test.Commons;
 import info.julang.execution.simple.SimpleScriptEngine;
@@ -106,5 +107,17 @@ public class ArrayInitializationTests {
 		validateFloatValue(gvt, "f1", 0f);
 		validateFloatValue(gvt, "f2", 10.3f);
 	}
+	
+    @Test
+    public void initialize2DArrayWithUndefinedLengthTest() throws EngineInvocationError {
+        VariableTable gvt = new VariableTable(null);        
+        SimpleScriptEngine engine = makeSimpleEngine(gvt);
+        
+        engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "array_10.jul"));
+
+        validateBoolValue(gvt, "b0", true);
+        validateBoolValue(gvt, "b1", true);
+        validateIntValue(gvt, "total", 15);
+    }
 	
 }

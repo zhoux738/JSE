@@ -1,0 +1,8 @@
+import System.Network;
+
+Socket sock = new Socket();
+sock.bind(null, 0);
+var st = sock.getState();
+string st0 = (string)sock.getState();
+sock.close();
+string st1 = (string)sock.getState();

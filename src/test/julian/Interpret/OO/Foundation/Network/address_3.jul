@@ -1,0 +1,9 @@
+import System.Network;
+
+NetAddress addr = NetAddress.getLoopback();
+bool b0 = addr.isLoopback();
+//Console.println(b0);
+
+addr = NetAddress.resolve("127.1.23.199");
+bool b1 = addr.isLoopback();
+//Console.println(b0);

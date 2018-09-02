@@ -593,11 +593,11 @@ object_creation_expression
     ;
     
 // For array creation, either leave no length within brackets and use an initializer, 
-// or specify dimensions for all the dimensions. (Java would allow the rest of ranks 
-// unspecified; Julian doesn't.)
+// or specify dimensions for all the dimensions. For multi-dimensional array, the 
+// length at last dimension can be left undefined.
 array_creation_expression
     : LEFT_BRACKET RIGHT_BRACKET (LEFT_BRACKET RIGHT_BRACKET)* array_initializer
-    | LEFT_BRACKET expression RIGHT_BRACKET (LEFT_BRACKET expression RIGHT_BRACKET)*
+    | LEFT_BRACKET expression RIGHT_BRACKET (LEFT_BRACKET expression RIGHT_BRACKET)* (LEFT_BRACKET RIGHT_BRACKET)?
     ;
 
 array_initializer

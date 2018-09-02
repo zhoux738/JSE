@@ -79,22 +79,24 @@ class FileStream : StreamBase, AsyncStream {
 	
 	//--- AsyncStream ---//
 	
+	[Bridged(name="writeAsync")]		
+	private hosted void _writeAsync(byte[] buffer, int offset, PromiseHandle handle);
 	[Bridged(name="readAsync")]		
-	private hosted void _readAsync(byte[] buffer, int offset, Function callback, PromiseHandle handle);
+	private hosted void _readAsync(byte[] buffer, int offset, PromiseHandle handle);
 	[Bridged(name="readAllAsync")]	
-	private hosted void _readAllAsync(byte[] buffer, Function callback, PromiseHandle handle);
+	private hosted void _readToEndAsync(byte[] buffer, Function callback, PromiseHandle handle);
 	
 	/* [inherited] */
-	public Promise readAsync(byte[] buffer, int offset, Function callback){
+	public Promise readAsync(byte[] buffer, int offset){
 		DeferredPromise dp = Promise.defer();
-		_readAsync(buffer, offset, callback, dp.getHandle());
+		_readAsync(buffer, offset, dp.getHandle());
 		return dp;
 	}
 	
 	/* [inherited] */
-	public Promise readAllAsync(byte[] buffer, Function callback){
+	public Promise readToEndAsync(byte[] buffer, Function callback){
 		DeferredPromise dp = Promise.defer();
-		_readAllAsync(buffer, callback, dp.getHandle());
+		_readToEndAsync(buffer, callback, dp.getHandle());
 		return dp;
 	}
 	
@@ -104,5 +106,20 @@ class FileStream : StreamBase, AsyncStream {
 	 */
 	public bool canReadAsync(){
 		return canRead(); 
+	}
+	
+	/* [inherited] */
+	public Promise writeAsync(byte[] buffer, int offset, int length){
+		DeferredPromise dp = Promise.defer();
+		_writeAsync(buffer, offset, dp.getHandle());
+		return dp;
+	}
+	
+	/*
+	 * [inherited]
+	 * [return] True if the stream was open with [OPEN](FileMode#OPEN) or [APPEND](FileMode#APPEND).
+	 */
+	public bool canWriteAsync(){
+		return canWrite();
 	}
 }

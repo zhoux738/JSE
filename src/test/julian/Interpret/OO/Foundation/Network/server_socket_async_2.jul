@@ -1,0 +1,30 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+
+TestContext.set(_tskey, "port", ss.getLocalPort());
+//Console.println("binding " + ss.getLocalPort());
+
+Socket sock = ss.accept();
+
+AsyncStream stream = sock.getReadStream();
+
+byte[] buffer = new byte[128];
+int cnt = 0;
+Promise prom = stream.readToEndAsync(buffer, (count, handle) => {
+	// Console.println("count = " + count);
+	if (count == -1) {
+		cnt = count;
+	}
+});
+
+int total = prom.getResult(true);
+
+sock.close();
+
+bool flag = true;

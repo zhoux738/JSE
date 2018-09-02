@@ -1,0 +1,4 @@
+import System.Network;
+
+NetAddress addr = NetAddress.getLocal();
+string a1 = addr.getAddress();

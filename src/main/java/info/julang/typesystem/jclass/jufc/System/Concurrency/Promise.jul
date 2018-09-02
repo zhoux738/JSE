@@ -82,7 +82,9 @@ internal class PromiseQueue {
                 // Wait until we get completion notification
                 while (prev.state == PromiseState.PENDING) {
                     sync (prev.plck) {
-                        prev.plck.wait();
+                    	if (prev.state == PromiseState.PENDING) {
+                        	prev.plck.wait();
+                    	}
                     }
                 }
 
@@ -224,7 +226,7 @@ public class PromiseHandle {
     	if (prom.state == PromiseState.PENDING && state != PromiseState.PENDING) {
     		sync (prom.plck) {
     			if (owState || prom.state == PromiseState.PENDING) {
-    				prom.state = state;		
+    				prom.state = state;
 	    			if (owData) {
 	    				prom.result = result;
 	    				prom.ex = ex;
@@ -437,7 +439,9 @@ public class Promise {
         // Wait until we get completion notification
         while (state == PromiseState.PENDING) {
             sync (plck) {
-                plck.wait();
+	            if (state == PromiseState.PENDING) {
+	            	plck.wait();
+	            }
             }
         }
 

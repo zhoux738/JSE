@@ -27,12 +27,14 @@ package info.julang.execution.threading;
 import info.julang.execution.Argument;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.external.exceptions.JSEError;
+import info.julang.external.interfaces.JValueKind;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.internal.NewObjExecutor;
 import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.ArrayValueFactory;
+import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectArrayValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
@@ -77,6 +79,39 @@ public final class ThreadRuntimeHelper {
 	}
 	
 	/**
+	 * Create an instance of System type with specified arguments. Will try to find the first matching
+	 * constructor based on the arguments.
+	 * 
+	 * @param rt
+	 * @param name
+	 * @param args If null, call the first ctor without any arguments. This will only work if the class has a single
+	 * ctor which takes no parameters. A class without any explicit ctor applies to this case.
+	 * @return
+	 * @throws {@link info.julang.typesystem.jclass.ConstructorNotFoundException ConstructorNotFoundException}
+	 */
+	public static ObjectValue instantiateSystemType(ThreadRuntime rt, String name, JValue[] args){
+		JType typ = rt.getTypeTable().getType(name);
+		if (typ == null) {
+	        Context ctxt = Context.createSystemLoadingContext(rt);
+			typ = ctxt.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(name));
+		}
+		
+		ICompoundType ctyp = checkAndCast(typ);
+
+		ObjectValue val = null;
+		NewObjExecutor noe = new NewObjExecutor(rt);
+		if (args == null) {
+		    JClassType jct = (JClassType)ctyp;
+	        JClassConstructorMember ctor = jct.getClassConstructors()[0];
+	        val = noe.newObjectInternal(jct, ctor, new Argument[0]);
+		} else {
+		    val = noe.newObject(rt.getHeap(), ctyp, args);
+		}
+		
+		return val;
+	}
+	
+	/**
 	 * Get the script object of type <code><font color="green">System.Type</font></code>.
 	 * <p>
 	 * If the type has not been loaded, it will be loaded from a system context.
@@ -87,7 +122,7 @@ public final class ThreadRuntimeHelper {
 	
 	public static ArrayValue createAndPopulateObjectArrayValue(
 		ThreadRuntime rt, int len, JClassType eleTyp, JClassConstructorMember eleTypCtor, IObjectPopulater pop){
-		// 1) Create an array of System.Reflection.Constructor
+		// 1) Create an array
 		ITypeTable tt = rt.getTypeTable();
 		MemoryArea mem = rt.getHeap();
 		ObjectArrayValue array = (ObjectArrayValue)ArrayValueFactory.createArrayValue(mem, tt, eleTyp, len);
@@ -99,6 +134,27 @@ public final class ThreadRuntimeHelper {
 			pop.postCreation(i, val);
 			RefValue rv = new RefValue(mem, val);		
 			rv.assignTo(array.getValueAt(i));
+		}
+		
+		return array;
+	}
+	
+	public static ArrayValue createAndPopulateArrayValue(
+		ThreadRuntime rt, JClassType eleTyp, JValue[] values){
+		// 1) Create an array of same length as given values
+		ITypeTable tt = rt.getTypeTable();
+		MemoryArea mem = rt.getHeap();
+		int len = values.length;
+		ObjectArrayValue array = (ObjectArrayValue)ArrayValueFactory.createArrayValue(mem, tt, eleTyp, len);
+		
+		// 2) Populate the array with given values
+		for (int i = 0 ; i < len; i++) {
+			JValue val = values[i].deref();
+			if (val.getKind() == JValueKind.OBJECT) {
+				val = new RefValue(mem, (ObjectValue)val);	
+			}
+			
+			val.assignTo(array.getValueAt(i));
 		}
 		
 		return array;

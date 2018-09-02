@@ -170,6 +170,11 @@ public abstract class NativeExecutorBase implements INativeExecutor {
 		return (ObjectValue) val;
 	}
 	
+	protected JValue getValue(Argument[] args, int index){
+		JValue val = args[index].getValue().deref();
+		return val;
+	}
+	
 	protected FuncValue getFunction(Argument[] args, int index){
 		JValue val = args[index].getValue().deref();
 		return (FuncValue) val;

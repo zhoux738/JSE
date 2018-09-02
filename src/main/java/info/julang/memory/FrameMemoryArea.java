@@ -24,6 +24,8 @@ SOFTWARE.
 
 package info.julang.memory;
 
+import info.julang.interpretation.IStackFrameInfo;
+
 
 /**
  * The frame memory area stores data corresponding to a single frame in stack.
@@ -38,5 +40,9 @@ public abstract class FrameMemoryArea implements MemoryArea {
 	public MemoryAreaType getKind() {
 		return MemoryAreaType.STACK;
 	}
-	
+
+	/**
+	 * Get the info about this frame.
+	 */
+	public abstract IStackFrameInfo getFrameInfo();
 }

@@ -1,0 +1,27 @@
+import System.Network;
+import System.IO;
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+TestContext.set(_tskey, "port", ss.getLocalPort());
+
+Socket sock = ss.accept();
+
+sock.close();
+
+SocketStream ws = sock.getWriteStream();
+SocketStream rs = sock.getReadStream();
+byte[] buffer = "Hello".toBytes();
+
+int rd = rs.read(buffer, 0, 5);
+int rd2 = rs.read(buffer, 0, 5);
+
+ws.write(buffer, 0, buffer.length);	// doesn't trigger exception since it's not flushed yet. may change this in future.
+
+bool caught = false;
+try {
+	ws.flush();
+} catch (IOException e) {
+	caught = true;
+}

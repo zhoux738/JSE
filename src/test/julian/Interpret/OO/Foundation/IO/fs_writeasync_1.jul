@@ -1,0 +1,19 @@
+import System.IO;
+import System.Concurrency;
+
+File file = new File(path);
+AsyncStream astream = (AsyncStream)file.getWriteStream(false);
+byte[] buffer = "Hello".toBytes();
+Promise p = astream.writeAsync(buffer, 0, buffer.length)
+.then(()=>{
+	//Console.println("2nd write");
+	byte[] buffer = " world!".toBytes();
+	return astream.writeAsync(buffer, 0, buffer.length);
+})
+.then(()=>{
+	//Console.println("3rd write");
+	byte[] buffer = " This is Julian.".toBytes();
+	return astream.writeAsync(buffer, 0, buffer.length);
+});
+int finalWrite = p.getResult(true);
+//Console.println(k);

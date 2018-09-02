@@ -24,14 +24,16 @@ SOFTWARE.
 
 package info.julang.execution.threading;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.symboltable.VariableTable;
+import info.julang.interpretation.IStackFrameInfo;
+import info.julang.interpretation.UnknownStackFrameInfo;
 import info.julang.memory.FrameMemoryArea;
 import info.julang.memory.StackArea;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * Thread stack contains two essential pieces of data for a thread: the memory area 
@@ -73,10 +75,19 @@ public class ThreadStack {
 	}
 	
 	/**
-	 * Push in a new frame (entering a function call). A new variable table is generated for this frame.
+	 * Push in a new frame (entering a function call) without stack frame info. 
+	 * A new variable table is generated for this frame.
 	 */
 	public void pushFrame(){
-		pushFrame0(new VariableTable(globalVarTable), true);
+		pushFrame(UnknownStackFrameInfo.INSTANCE);
+	}
+	
+	/**
+	 * Push in a new frame (entering a function call) with stack frame info. 
+	 * A new variable table is generated for this frame.
+	 */
+	public void pushFrame(IStackFrameInfo frameInfo){
+		pushFrame0(new VariableTable(globalVarTable), frameInfo, true);
 	}
 	
 	/**
@@ -87,12 +98,12 @@ public class ThreadStack {
 	 * @param varTable
 	 * @param enterFirstScope if true, enter into the first scope automatically.
 	 */
-	public void pushFrame(IVariableTable varTable, boolean enterFirstScope){
-		pushFrame0(varTable, enterFirstScope);
+	public void pushFrame(IVariableTable varTable, IStackFrameInfo frameInfo, boolean enterFirstScope){
+		pushFrame0(varTable, frameInfo, enterFirstScope);
 	}
 	
-	private void pushFrame0(IVariableTable varTable, boolean enterFirstScope){
-		stack.pushFrame();
+	private void pushFrame0(IVariableTable varTable, IStackFrameInfo frameInfo, boolean enterFirstScope){
+		stack.pushFrame(frameInfo);
 		if (enterFirstScope) {
 			varTable.enterScope();
 		}
@@ -116,6 +127,29 @@ public class ThreadStack {
 		if(area != null){
 			return new ThreadFrame(area, varTableStack.peek());
 		}
+		return null;
+	}
+	
+	/**
+	 * Get the info for a frame at the given index. 0 is the current top. 
+	 * 
+	 * @param index the index of the target frame. 0 is the top, 1 the one frame below the top, and so on. 
+	 * Apparently the maximum index value = <code>{@link #getDepth()} - 1</code>.
+	 * @return null if the given index is beyond the range.
+	 */
+	public IStackFrameInfo getFrameInfoFromTop(int index) {
+		FrameMemoryArea area = null;
+		if (index == 0) {
+			area = stack.currentFrame();
+		} else if (index > 0 && index < getDepth()) {
+			area = stack.getFrameFromTop(index);
+		}
+		
+		if(area != null){
+			IStackFrameInfo info = area.getFrameInfo();
+			return info == null ? UnknownStackFrameInfo.INSTANCE : info;
+		}
+		
 		return null;
 	}
 	

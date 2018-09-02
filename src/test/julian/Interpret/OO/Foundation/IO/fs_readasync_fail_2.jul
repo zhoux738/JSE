@@ -4,9 +4,10 @@ import System.Concurrency;
 File file = new File(path);
 AsyncStream astream = (AsyncStream)file.getReadStream();
 byte[] buffer = new byte[32];
-Promise p = astream.readAsync(buffer, 0, (read, handle)=>{
+Promise p = astream.readAsync(buffer, 0)
+.then((read, handle) => {
 	handle.reject("failed!");
-}).then(read => {
+}).then(data => {
 	throw new Exception("this callback should never be called!");
 });
 

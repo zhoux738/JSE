@@ -1,0 +1,26 @@
+module System.Reflection;
+
+import System;
+import System.Concurrency;
+// import System.IO;
+
+/*
+ * The information about a script file.
+ */
+ [Bridged(apiset="System.Reflection.Script")]
+class Script {
+
+	/*
+	 * Get the absolute path to this script.
+	 *
+	 * [return] The absolute path to this script. Null if the script is not loaded from file system.
+	 */
+	[Bridged(name="getPath")] 
+	hosted string getPath();
+
+	//--- private members ---//
+	
+	[Bridged(name="ctor")]
+	private hosted Script();
+	
+}

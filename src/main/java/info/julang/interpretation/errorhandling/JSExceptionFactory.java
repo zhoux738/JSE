@@ -24,6 +24,9 @@ SOFTWARE.
 
 package info.julang.interpretation.errorhandling;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.syntax.ParsedTypeName;
@@ -36,10 +39,8 @@ import info.julang.langspec.ast.JulianParser.StatementContext;
 import info.julang.parser.ANTLRParser;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.UnknownTypeException;
 import info.julang.typesystem.jclass.JClassType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Provide API to create standard runtime exceptions.
@@ -116,10 +117,12 @@ public final class JSExceptionFactory {
 	}
 	
 	private static JulianScriptException createException(String efqn, Context context, JSECreator creator){
-		JSExceptionUtility.loadSystemModule(context.getJThread(), context.getModManager());
+		JSExceptionUtility.loadSystemModule(context.getJThread(), context.getModManager(), efqn);
 		
 		ParsedTypeName ptn = ParsedTypeName.makeFromFullName(efqn);
+		
 		JType typ = context.getTypeResolver().resolveType(ptn);
+		
 		JClassType etyp = (JClassType) typ;
 		
 		JulianScriptException jse = creator.create(etyp, context);

@@ -1,0 +1,41 @@
+module System.Network;
+
+import System;
+import System.IO;
+
+/*
+ * Any socket-related exception. Socket exception is a specialization of IO exception, but not necessarily
+ * the only kind of exception that can be thrown from operations on [Socket]. If thrown, make sure to inspect
+ * the inner cause as well.
+ */
+class SocketException : IOException {
+	
+	/*
+	 * Create an SocketException with specified message.
+	 *
+	 * [param: message] The message for this exception. 
+	 */ 
+	SocketException(string message) : super(message) {
+		
+	}
+
+}
+
+/*
+ * Any network-related exception. Unlike [SocketException], NetworkException is not specific to errors
+ * encountered at the transport layer, but can be attributable to arbitrary component or subsystem of 
+ * the network. Nontheless, network exceptions are still expected to be handled when using transport 
+ * layer API (for example, [Socket]).
+ */
+class NetworkException : IOException {
+	
+	/*
+	 * Create an SocketException with specified message.
+	 *
+	 * [param: message] The message for this exception. 
+	 */ 
+	NetworkException(string message) : super(message) {
+		
+	}
+
+}

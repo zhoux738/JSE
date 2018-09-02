@@ -55,6 +55,7 @@ import info.julang.memory.MemoryArea;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
+import info.julang.typesystem.JType;
 import info.julang.typesystem.loading.InternalTypeResolver;
 
 /**
@@ -66,7 +67,7 @@ import info.julang.typesystem.loading.InternalTypeResolver;
  * <br/>
  * @author Ming Zhou
  */
-public class LambdaExecutable extends InterpretedExecutable implements Cloneable {
+public class LambdaExecutable extends InterpretedExecutable {
 
 	private Display display;
 	
@@ -78,37 +79,6 @@ public class LambdaExecutable extends InterpretedExecutable implements Cloneable
 	
 	private ContextType definingContextType;
 	
-	@Override
-	public LambdaExecutable clone(){
-		LambdaExecutable me = new LambdaExecutable(null, display, ltyp);
-		me.copyFrom(this);
-		me.nsPool = this.nsPool;
-		me.containingType = me.containingType;
-		me.definingContextType = me.definingContextType;
-		return me;
-	}
-	
-	private LambdaExecutable(Context context, Display display, LambdaDeclInfo.LambdaType ltyp) {
-		super(null, false, true);
-		this.nsPool = context.getNamespacePool();
-		this.display = display;
-		this.ltyp = ltyp;
-		this.definingContextType = context.getContextType();
-		switch(definingContextType){
-		case SMETHOD:
-			MethodContext mc = (MethodContext) context;
-			containingType = mc.getContainingType();
-			break;
-		case LAMBDA:
-			LambdaContext lc = (LambdaContext) context;
-			containingType = lc.getContainingType();
-			this.definingContextType = lc.getDefiningContextType();
-			break;			
-		default:
-			break;
-		}
-	}
-	
 	// AST-based initialization
 	public LambdaExecutable(Context context, Display display, LambdaDeclInfo declInfo) {
 		super(null, false, true);
@@ -118,6 +88,7 @@ public class LambdaExecutable extends InterpretedExecutable implements Cloneable
 		this.definingContextType = context.getContextType();
 		switch(definingContextType){
 		case SMETHOD:
+        case IMETHOD:
 			MethodContext mc = (MethodContext) context;
 			containingType = mc.getContainingType();
 			break;
@@ -209,5 +180,17 @@ public class LambdaExecutable extends InterpretedExecutable implements Cloneable
 		return new LambdaContext(
 			frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, jthread,
 			display, definingContextType, containingType);
+	}
+	
+	//---------------------------- IStackFrameInfo ----------------------------//
+
+	@Override
+	public JType getContainingType() {
+		return this.containingType;
+	}
+	
+	@Override
+	public boolean isFromLooseScript() {
+		return this.containingType == null;
 	}
 }

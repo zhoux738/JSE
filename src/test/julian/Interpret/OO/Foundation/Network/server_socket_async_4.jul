@@ -1,0 +1,39 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+ss.bind("127.0.0.1", 0);
+
+TestContext.set(_tskey, "port", ss.getLocalPort());
+//Console.println("binding " + ss.getLocalPort());
+
+Socket sock = ss.accept();
+
+AsyncStream stream = sock.getReadStream();
+
+byte[] buffer = new byte[128];
+Promise prom = stream.readToEndAsync(buffer, (count, handle) => {
+	
+});
+
+bool flag = false;
+try {
+	var promResult = prom.getResult(true);
+} catch (Exception e) {
+	// The error message is dependent on the OS. One example is "Connection reset by peer".
+	if (e.getMessage().contains("close") || e.getMessage().contains("reset")) {
+		flag = true;
+	}
+}
+
+/* Closing from the other side won't clear this state
+string state1 = sock.getState().literal;
+Console.println(state1);
+*/
+
+sock.close();
+string stat2 = sock.getState().literal;
+//Console.println(state2);

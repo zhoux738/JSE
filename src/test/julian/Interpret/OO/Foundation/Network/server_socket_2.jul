@@ -1,0 +1,27 @@
+import System.Network;
+import ModuleSys.TestHelper;
+
+SocketConfig conf = new SocketConfig();
+conf.set(TCPOption.REUSEADDR, true);
+//conf.setLocalAddress("127.0.0.1");
+//conf.setLocalPort(49999);
+ServerSocket ss = new ServerSocket(conf);
+ss.bind("127.0.0.1", 0);
+
+//Console.println(ss.getLocalPort());
+TestContext.set(_tskey, "port", ss.getLocalPort());
+Socket sock = ss.accept();
+
+string s1 = sock.getLocalHost();
+//Console.println(s1);
+int p1 = sock.getLocalPort();
+//Console.println(p1);
+bool b1 = sock.getSetting(TCPOption.REUSEADDR);
+//Console.println(b1);
+bool b2 = ss.getSetting(TCPOption.REUSEADDR);
+//Console.println(b2);
+conf.set(TCPOption.REUSEADDR, false); // won't affect the original setting
+bool b3 = ss.getSetting(TCPOption.REUSEADDR);
+//Console.println(b3);
+
+sock.close();

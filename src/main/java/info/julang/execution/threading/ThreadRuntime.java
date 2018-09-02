@@ -41,7 +41,7 @@ import info.julang.memory.StackArea;
  * 
  * @author Ming Zhou
  */
-public interface ThreadRuntime extends EngineRuntime {
+public interface ThreadRuntime extends EngineRuntime, IThreadLocalStorage {
 
 	/**
 	 * Get stack memory area for this thread.

@@ -1,3 +1,9 @@
+### 2018/08 Version 0.1.24
+
+ * Network API
+ * Reflection API
+ * Regex API and language-level support
+ 
 ### 2018/04 Version 0.1.12
 
  * Fully documented API and tutorial

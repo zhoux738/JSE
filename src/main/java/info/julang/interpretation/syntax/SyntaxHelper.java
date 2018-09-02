@@ -443,6 +443,7 @@ public final class SyntaxHelper {
 		Constructor_declarationContext ctorDecl = ainfo.getAST();
 		CtorDeclInfo declInfo = new CtorDeclInfo();
 		declInfo.setLocationInfo(ainfo);
+		//declInfo.setContainingTypeName(className);
 		
 		// 1) Annotations
 		AnnotationsContext annos = ctorDecl.annotations();
@@ -507,6 +508,7 @@ public final class SyntaxHelper {
 		Method_declarationContext metDecl = ainfo.getAST();
 		MethodDeclInfo declInfo = new MethodDeclInfo();
 		declInfo.setLocationInfo(ainfo);
+		//declInfo.setContainingTypeName(className);
 		
 		// 1) Annotations
 		AnnotationsContext annos = metDecl.annotations();

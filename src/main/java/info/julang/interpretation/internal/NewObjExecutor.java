@@ -113,7 +113,8 @@ public class NewObjExecutor {
 	/**
 	 * Instantiate an object of given type using a list of argument ASTs which contains constructor argument list in Julian script.
 	 * <p>
-	 * Each argument AST contains an expression that should evaluate to a value.
+	 * Each argument AST contains an expression that should evaluate to a value. While this method is intended for script-initiated 
+	 * object creation, sometimes the engine may synthesize a script snippet and call this to get the object.
 	 * 
 	 * @param context
 	 * @param argAsts
@@ -121,45 +122,87 @@ public class NewObjExecutor {
 	 * @return the newly allocated and initialized object of the given type.
 	 */
 	public ObjectValue newObject(
-		Context context, List<ArgumentContext> argAsts, JType type, AstInfo<? extends ParserRuleContext> ainfo){
-		if(type.getKind() != JTypeKind.CLASS){
-			throw new JSEError("Cannot instantite a non-class type.");
-		}
-		
-		// Create new instance in heap memory
-		ObjectValue obj = allocateObject(context.getHeap(), type);
-		
-		JClassType jcType = (JClassType) type;
-		JClassConstructorMember[] jctors = jcType.getClassConstructors();
-			
-		// Evaluate arguments
-		List<JValue> argList = new ArrayList<JValue>();
-		argList.add(obj);
-		
-		for (ArgumentContext ac : argAsts) {
-			DelegatingExpression de = new DelegatingExpression(rt, ainfo.create(ac.expression()));
-			JValue val = de.getResult(context);
-			argList.add(val);
-		}
-		
-		// Find constructor
-		JValue[] argArray = argList.toArray(new JValue[0]);
-		JClassConstructorMember ctor = JClassTypeUtil.findConstructors(
-			jctors, argList != null ? argList.toArray(new JValue[0]) : new JValue[0], true);
-		if(ctor != null){
-			Argument[] args = prepareArguments(ctor, argArray);
-			try {
-				invokeConstructor(rt, jcType, ctor, args, obj, null);
-			} catch (EngineInvocationError e) {
-				throw new JSEError(
-					"An error occurs while invoking constructor of class " + type.getName());
+		final Context context, final List<ArgumentContext> argAsts, JType type, final AstInfo<? extends ParserRuleContext> ainfo){
+		IArgumentAdder adder = new IArgumentAdder(){
+
+			@Override
+			public void addMoreArgs(List<JValue> argList) {
+				for (ArgumentContext ac : argAsts) {
+					DelegatingExpression de = new DelegatingExpression(rt, ainfo.create(ac.expression()));
+					JValue val = de.getResult(context);
+					argList.add(val);
+				}
 			}
-		} else {
-			throw new ConstructorNotFoundException(jcType, null);
-		}
+			
+		};
 		
-		return obj;
+		return newObject(context.getHeap(), type, adder);
 	}
+	
+	/**
+	 * Instantiate an object of given type using a list of argument values.
+	 * <p>
+	 * This is mainly used by engine internals.
+	 * 
+	 * @param mem Where to allocate the memory for the new object
+	 * @param argAsts
+	 * @param args The argument values
+	 * @return the newly allocated and initialized object of the given type.
+	 */
+	public ObjectValue newObject(final MemoryArea mem, JType type, final JValue[] args){
+		IArgumentAdder adder = new IArgumentAdder(){
+
+			@Override
+			public void addMoreArgs(List<JValue> argList) {
+				for(JValue v : args) {
+					argList.add(v);
+				}
+			}
+			
+		};
+		
+		return newObject(mem, type, adder);
+	}
+	
+	private static interface IArgumentAdder {
+		void addMoreArgs(List<JValue> args);
+	}
+	
+	private ObjectValue newObject(MemoryArea mem, JType type, IArgumentAdder argAdder){
+			if(type.getKind() != JTypeKind.CLASS){
+				throw new JSEError("Cannot instantite a non-class type.");
+			}
+			
+			// Create new instance in heap memory
+			ObjectValue obj = allocateObject(mem, type);
+			
+			JClassType jcType = (JClassType) type;
+			JClassConstructorMember[] jctors = jcType.getClassConstructors();
+				
+			// Evaluate arguments
+			List<JValue> argList = new ArrayList<JValue>();
+			argList.add(obj);
+			
+			argAdder.addMoreArgs(argList);
+			
+			// Find constructor
+			JValue[] argArray = argList.toArray(new JValue[0]);
+			JClassConstructorMember ctor = JClassTypeUtil.findConstructors(
+				jctors, argList != null ? argList.toArray(new JValue[0]) : new JValue[0], true);
+			if(ctor != null){
+				Argument[] args = prepareArguments(ctor, argArray);
+				try {
+					invokeConstructor(rt, jcType, ctor, args, obj, null);
+				} catch (EngineInvocationError e) {
+					throw new JSEError(
+						"An error occurs while invoking constructor of class " + type.getName());
+				}
+			} else {
+				throw new ConstructorNotFoundException(jcType, null);
+			}
+			
+			return obj;
+		}
 	
 	/**
 	 * Instantiate a new object with specified constructor and argument list. 

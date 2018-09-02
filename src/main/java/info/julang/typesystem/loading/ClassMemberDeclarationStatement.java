@@ -898,6 +898,7 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		AstInfo<ProgramContext> ainfo, 
 		ICompoundTypeBuilder builder,
 		boolean isStatic) {
+		
 		AstInfo<Method_bodyContext> ast = ainfo.create((Method_bodyContext)methodDecl.getAST());	
 		MethodExecutable exec = new MethodExecutable(ast, builder.getStub(), isStatic);	
 		

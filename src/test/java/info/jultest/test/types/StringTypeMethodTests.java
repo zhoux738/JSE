@@ -134,14 +134,29 @@ public class StringTypeMethodTests {
 		validateStringValue(gvt, "us", "ABCDEF");
 	}
 	
-	// string[] strs0 = "ab".split(':');
-	// string[] strs1 = "ab:cd".split(':');
-	// string[] strs2 = "ab:cd:ef".split(':');
-	// string[] strs3 = ":ab:cd:ef:".split(':');
+	/**
+     * replace(string, string)
+     */
+    @Test
+    public void replace() throws EngineInvocationError {
+        throwIfFailed();
+        
+        validateStringValue(gvt, "s5", "x-yz-");
+        validateStringValue(gvt, "s6", "xabcyzabc");
+        validateStringValue(gvt, "s7", "0yz0");
+    }
+	
+    /**
+     * split(string)
+     */
 	@Test
 	public void splitTest() throws EngineInvocationError {
 		throwIfFailed();
-		
+	
+		// string[] strs0 = "ab".split(':');
+	    // string[] strs1 = "ab:cd".split(':');
+	    // string[] strs2 = "ab:cd:ef".split(':');
+	    // string[] strs3 = ":ab:cd:ef:".split(':');
 		validateStringArrayValue(gvt, "strs0", new String[]{"ab"});
 		validateStringArrayValue(gvt, "strs1", new String[]{"ab", "cd"});
 		validateStringArrayValue(gvt, "strs2", new String[]{"ab", "cd", "ef"});

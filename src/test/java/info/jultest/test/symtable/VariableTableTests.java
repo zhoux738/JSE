@@ -10,6 +10,7 @@ import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.StackAreaFactory;
 import info.julang.execution.threading.ThreadFrame;
 import info.julang.execution.threading.ThreadStack;
+import info.julang.interpretation.UnknownStackFrameInfo;
 import info.julang.memory.FrameMemoryArea;
 import info.julang.memory.StackArea;
 import info.julang.memory.simple.SimpleStackArea;
@@ -44,7 +45,7 @@ public class VariableTableTests {
 		}, gvt);
 		
 		// enter global scope
-		ts.pushFrame(gvt, true);
+		ts.pushFrame(gvt, UnknownStackFrameInfo.INSTANCE, true);
 		ThreadFrame frame = ts.currentFrame();
 		FrameMemoryArea frameMemory1 = frame.getMemory();
 		IVariableTable vt1 = frame.getVariableTable();

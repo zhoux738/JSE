@@ -24,6 +24,9 @@ SOFTWARE.
 
 package info.julang.memory;
 
+import info.julang.execution.threading.ThreadFrame;
+import info.julang.interpretation.IStackFrameInfo;
+
 
 /**
  * The stack area holds data of local variables whose life cycle is entirely determined by the function call.
@@ -47,7 +50,7 @@ public abstract class StackArea implements MemoryArea {
 	 * 
 	 * @throws JSEStackOverflowException if no more frame can be pushed into stack
 	 */
-	abstract public void pushFrame() throws JSEStackOverflowException;
+	abstract public void pushFrame(IStackFrameInfo info) throws JSEStackOverflowException;
 	
 	/**
 	 * Pop the topmost frame out of the stack. 
@@ -60,4 +63,13 @@ public abstract class StackArea implements MemoryArea {
 	 * Get the active frame (the frame that corresponds to the function being called).
 	 */
 	abstract public FrameMemoryArea currentFrame();
+
+	/**
+	 * Get the frame at the given index. 0 is the current top. 
+	 * 
+	 * @param index the index of the target frame. 0 is the top, 1 the one frame below the top, and so on. 
+	 * Apparently the maximum index value = <code>{@link #getDepth()} - 1</code>.
+	 * @return null if the given index is beyond the range.
+	 */
+	abstract public FrameMemoryArea getFrameFromTop(int index);
 }

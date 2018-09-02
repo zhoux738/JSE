@@ -1,0 +1,31 @@
+import System.Network;
+import System.IO;
+import System.Concurrency;
+
+import ModuleSys.TestHelper;
+
+ServerSocket ss = new ServerSocket();
+Console.println("binding...");
+ss.bind("127.0.0.1", 49999);
+
+Console.println("accepting...");
+Socket sock = ss.accept();
+
+AsyncStream stream = sock.getWriteStream();
+
+byte[][] buffers = new byte[3][];
+buffers[0] = "Hello ".toBytes();
+buffers[1] = "World! ".toBytes();
+buffers[2] = "This is Julian.".toBytes();
+Promise prom = stream
+	.writeAsync(buffers[0], 0, buffers[0].length)
+	.then(res => {
+		return stream.writeAsync(buffers[1], 0, buffers[1].length);
+	})
+	.then(res => {
+		return stream.writeAsync(buffers[2], 0, buffers[2].length);
+	});
+var res = prom.getResult(true);
+Console.println(res);
+
+sock.close();

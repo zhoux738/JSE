@@ -1,0 +1,4 @@
+module ModuleSys.TestHelper;
+
+[Mapped(className="info.jultest.test.TestContext")]
+class TestContext { }

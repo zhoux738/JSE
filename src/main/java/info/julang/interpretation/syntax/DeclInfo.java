@@ -24,12 +24,12 @@ SOFTWARE.
 
 package info.julang.interpretation.syntax;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import info.julang.interpretation.errorhandling.IHasLocationInfo;
 import info.julang.interpretation.errorhandling.ILocationInfoAware;
 import info.julang.typesystem.jclass.Accessibility;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class DeclInfo implements IHasLocationInfo, ILocationInfoAware {
 

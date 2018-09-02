@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 
 import info.julang.execution.EngineRuntime;
 import info.julang.execution.namespace.NamespacePool;
+import info.julang.execution.threading.IThreadLocalObjectFactory;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadManager;
 import info.julang.execution.threading.StackAreaFactory;
@@ -395,5 +396,17 @@ public class TypeTable implements ITypeTable {
 		public JThreadManager getThreadManager() {
 			return engineRt.getThreadManager();
 		}
+		
+        @Override
+        public Object putLocal(String key, IThreadLocalObjectFactory factory) {
+            // No support for local storage
+            return null;
+        }
+
+        @Override
+        public Object getLocal(String key) {
+            // No support for local storage
+            return null;
+        }
 	}
 }
