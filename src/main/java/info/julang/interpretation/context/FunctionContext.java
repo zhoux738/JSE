@@ -56,7 +56,8 @@ public class FunctionContext extends Context {
 			nsPool,
 			new GlobalFunctionNameResolver(varTable, typTable),
 			tm,
-			jthread
+			jthread,
+			ExecutionContextType.InMethodBody
 		);
 	}
 

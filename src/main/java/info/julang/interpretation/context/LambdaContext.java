@@ -63,7 +63,8 @@ public class LambdaContext extends Context {
 		JThread jthread,
 		Display display,
 		ContextType definingContextType,
-		ICompoundType containingType) {
+		ICompoundType containingType,
+		ExecutionContextType exeContextType) {
 		super(ContextType.LAMBDA,
 			frame, 
 			heap, 
@@ -74,7 +75,8 @@ public class LambdaContext extends Context {
 			nsPool,
 			new LambdaNameResolver(varTable, typTable, display, definingContextType, containingType),
 			tm,
-			jthread
+			jthread,
+			exeContextType
 		);
 		
 		this.containingType = containingType;

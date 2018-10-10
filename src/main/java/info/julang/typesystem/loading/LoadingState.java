@@ -51,8 +51,11 @@ public class LoadingState implements ILoadingState {
 	
 	private ICompoundType type;
 	
-	LoadingState(Thread owner, String typName, ClassSubtype subtype){
+	private LoadingInitiative initiative;
+	
+	LoadingState(Thread owner, String typName, ClassSubtype subtype, LoadingInitiative initiative){
 		this.owner = owner;
+		this.initiative = initiative;
 		switch(subtype){
 		case CLASS:
 			this.type = JDefinedClassType.startNewClass(typName);
@@ -69,6 +72,11 @@ public class LoadingState implements ILoadingState {
 		default:
 			throw new JSEError("Unsupported class subtype: " + subtype.name());
 		}
+	}
+	
+	@Override
+	public LoadingInitiative getInitiative(){
+		return initiative;
 	}
 	
 	@Override

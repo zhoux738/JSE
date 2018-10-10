@@ -108,5 +108,11 @@ public class ClassLoadingException extends JSERuntimeException {
 	protected String getScriptMessage(){
 		return msg;
 	}
-
+	
+	/**
+	 * Get the original JSE exception which caused the loading failure.
+	 */
+	public JSERuntimeException getJSECause(){
+		return jseCause;
+	}
 }

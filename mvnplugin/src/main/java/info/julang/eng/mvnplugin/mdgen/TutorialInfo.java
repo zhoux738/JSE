@@ -42,6 +42,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -161,6 +162,21 @@ public class TutorialInfo {
 							.setSize(3)
 							.inTag("<p style=\"margin-bottom: 0px\">"));
 						writer.nextLine(2, false);
+						
+						List<String> sectionNames = new ArrayList<String>();
+						if (list != null) {
+							for (IParsedDocSection section : list) {
+								if (section instanceof PlainSection) {
+									PlainSection ps = (PlainSection)section;
+									List<String> ssNames = ps.getSubSectionNames(3, true);
+									if (ssNames != null) {
+										sectionNames.addAll(ssNames);
+									}
+								}
+							}
+						}
+						
+						writer.addAttachment(MarkdownWriter.AttachementType.INDEX_TABLE_3, sectionNames);
 						writer.append(list);
 					}
 					

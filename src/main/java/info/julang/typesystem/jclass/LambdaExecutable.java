@@ -24,8 +24,6 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import info.julang.execution.Argument;
 import info.julang.execution.Result;
 import info.julang.execution.namespace.NamespacePool;
@@ -38,6 +36,7 @@ import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.context.ContextType;
+import info.julang.interpretation.context.ExecutionContextType;
 import info.julang.interpretation.context.LambdaContext;
 import info.julang.interpretation.context.MethodContext;
 import info.julang.interpretation.errorhandling.JSExceptionUtility;
@@ -57,6 +56,8 @@ import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.loading.InternalTypeResolver;
+
+import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * The executable for lambda invocation.
@@ -79,6 +80,8 @@ public class LambdaExecutable extends InterpretedExecutable {
 	
 	private ContextType definingContextType;
 	
+	private ExecutionContextType exeContextType;
+	
 	// AST-based initialization
 	public LambdaExecutable(Context context, Display display, LambdaDeclInfo declInfo) {
 		super(null, false, true);
@@ -86,6 +89,7 @@ public class LambdaExecutable extends InterpretedExecutable {
 		this.display = display;
 		this.ltyp = declInfo.getLambdaType();
 		this.definingContextType = context.getContextType();
+		this.exeContextType = context.getExecutionContextType();
 		switch(definingContextType){
 		case SMETHOD:
         case IMETHOD:
@@ -179,7 +183,7 @@ public class LambdaExecutable extends InterpretedExecutable {
 		JThread jthread){
 		return new LambdaContext(
 			frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, jthread,
-			display, definingContextType, containingType);
+			display, definingContextType, containingType, exeContextType);
 	}
 	
 	//---------------------------- IStackFrameInfo ----------------------------//

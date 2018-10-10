@@ -1,0 +1,8 @@
+import System.Reflection;
+
+Module m1 = typeof(int).getModule();
+Module m2 = typeof(Object).getModule();
+Module m3 = typeof(Type).getModule();
+bool b1 = m1 == null;
+bool b2 = m2 == null;
+bool b3 = m3.getName() == "System";

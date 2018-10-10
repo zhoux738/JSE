@@ -32,6 +32,7 @@ public class AOTRawScriptInfo$Field extends RawScriptInfo {
 
         m_requirements = new ArrayList<RequirementInfo>();
         m_requirements.add(new RequirementInfo("System", null));
+        m_requirements.add(new RequirementInfo("System.Concurrency", null));
     }
 
     public String getModuleName() {

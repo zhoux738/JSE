@@ -1,0 +1,19 @@
+import System.Reflection;
+import System.Collection;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.FIELD)] 
+attribute Injectable {
+	string[] sources;
+}
+
+class Component {
+
+	[Injectable(sources=new string[]{"ab", "cd", "xyz"})]
+	int value;
+}
+
+Type t = typeof(Component);
+Attribute[] attrs = t.getField("value").getAttributes();
+bool check = attrs.length == 1;
+Injectable inj = (Injectable)attrs[0];
+string[] sources = inj.sources;

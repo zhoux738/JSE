@@ -1,0 +1,37 @@
+import System.Reflection;
+import System.Collection;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.METHOD)] 
+attribute UnitTest {
+	string author;
+	bool enabled;
+}
+
+class MyTests {
+
+	[UnitTest(author="Allen", enabled=true)]
+	public void test1(){}
+	
+	[UnitTest(author="Kraun", enabled=false)]
+	public void test2(){}
+}
+
+Type t = typeof(MyTests);
+Method[] methods = t.getMethods();
+List list = new List();
+for(Method m : methods){
+	Attribute[] attrs = m.getAttributes();
+	for(Attribute a : attrs){
+		if (a is UnitTest) {
+			UnitTest ut = (UnitTest)a;
+			list.add(m.getName() + "_" + ut.author + "_" + ut.enabled);
+		}
+	}
+}
+
+list.sort(false);
+int size = list.size();
+string[] results = new string[size];
+for(int i = 0; i < size; i++){
+	results[i] = list[i];
+}

@@ -1,0 +1,9 @@
+import System.Reflection;
+import ModuleSys.FullMod;
+
+MyClass mc = new MyClass();
+Module mod = mc.getType().getModule();
+Module mod2 = Module.find("ModuleSys.FullMod", false);
+bool b = mod == mod2;
+string s = mod.getName();
+string s2 = mod.toString();

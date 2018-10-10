@@ -28,7 +28,6 @@ import info.julang.execution.namespace.NamespacePool;
 import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.errorhandling.IHasLocationInfo;
-import info.julang.typesystem.jclass.JClassMember.MemberKey;
 import info.julang.typesystem.jclass.annotation.JAnnotation;
 import info.julang.typesystem.jclass.builtin.IDeferredBuildable;
 import info.julang.typesystem.loading.ISemanticChecker;

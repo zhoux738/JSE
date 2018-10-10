@@ -1,0 +1,15 @@
+import System.Reflection;
+
+bool b0, b1, b2;
+Module mod = Module.find("System.Concurrency", false);
+TypeInfo[] types = mod.getTypes();
+for(TypeInfo ti : types){
+	string sn = ti.getSimpleName();
+	if (sn == "PromiseRejectedException") {
+		b0 = true; // exception
+	} else if (sn == "ThreadState") {
+		b1 = true; // enum
+	} else if (sn.startsWith("IOThread")) {
+		b2 = true; // internal types
+	}
+}

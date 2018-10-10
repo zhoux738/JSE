@@ -32,8 +32,10 @@ public class SystemRawScriptInfoInitializer {
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptCtor.Factory,
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptField.Factory,
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptMethod.Factory,
+           info.julang.typesystem.jclass.jufc.System.Reflection.ScriptModule.Factory,
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptParam.Factory,
            info.julang.typesystem.jclass.jufc.System.Reflection.ScriptScript.Factory,
+           info.julang.typesystem.jclass.jufc.System.Reflection.TypeInfo.Factory,
            info.julang.typesystem.jclass.jufc.System.ScriptType.Factory,
            info.julang.typesystem.jclass.jufc.System.Util.JMath.Factory,
            info.julang.typesystem.jclass.jufc.System.Util.JRegex.Factory,
@@ -63,6 +65,7 @@ public class SystemRawScriptInfoInitializer {
 			"Field",
 			"Member",
 			"Method",
+			"Module",
 			"Parameter",
 			"Script",
 		});
@@ -235,6 +238,10 @@ public class SystemRawScriptInfoInitializer {
         map.put("System/Reflection/Method.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Method>(
             info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Method.class));
+        
+        map.put("System/Reflection/Module.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Module>(
+            info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Module.class));
         
         map.put("System/Reflection/Parameter.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Parameter>(

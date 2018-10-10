@@ -26,6 +26,10 @@ import java.util.List;
 
 import org.junit.Test;
 
+/*
+ * Tests in this class use internal API to inspect the attributes on annotated classes.
+ * See tests in System_Reflection_Attribute_ReflTestSuite which use public Reflection API.
+ */
 public class AttributeTests extends AttributeTestsBase {
 	
 	@Test
@@ -230,8 +234,27 @@ public class AttributeTests extends AttributeTestsBase {
 		validateTypeValue(tt, null);
 	}
 	
-//	protected String getModName(){
-//		return "Test"; //ModuleInfo.DEFAULT_MODULE_NAME;
-//	}
+	@Test
+	public void illegalClassAttributeDeclarationTest() throws EngineInvocationError {
+ 		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.OO, FEATURE);
+		
+ 		runner.executeAndExpect(
+ 			"attr_illegal_1.jul", 
+ 			"System.ClassLoadingException", 
+ 			12,
+ 			"System.IllegalAttributeUsageException",
+ 			-1);
+	}
 	
+	@Test
+	public void illegalAttributeMemberInDeclarationTest() throws EngineInvocationError {
+ 		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.OO, FEATURE);
+		
+ 		runner.executeAndExpect(
+ 			"attr_illegal_2.jul", 
+ 			"System.ClassLoadingException", 
+ 			7,
+ 			"System.IllegalAttributeUsageException",
+ 			-1);
+	}
 }

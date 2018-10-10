@@ -1,0 +1,17 @@
+import System.Reflection;
+
+attribute Authorship {
+	string name;
+}
+
+[Authorship(
+	name="Lamar"
+)]
+class MyBook {
+
+}
+
+Type t = typeof(MyBook);
+Authorship auth = (Authorship) t.getAttributes()[0];
+string name = auth.name;
+auth.name = "Fred";

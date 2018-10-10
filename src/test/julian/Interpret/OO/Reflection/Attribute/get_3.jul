@@ -1,0 +1,40 @@
+import System.Reflection;
+import System.Collection;
+
+[AttributeType(allowMultiple=false, target=AttributeTarget.CONSTRUCTOR)] 
+attribute Initializer {
+	int value;
+}
+
+class Component {
+
+	[Initializer(value=25)]
+	public Component(){}
+	
+	[Initializer(value=37)]
+	public Component(bool flag){}
+}
+
+Type t = typeof(Component);
+bool failure = false;
+Constructor[] ctors = t.getConstructors();
+if (ctors.length != 2) {
+	failure = true;
+}
+int c0, c1;
+for(Constructor c : ctors){
+	Attribute[] attrs = c.getAttributes();
+	if (attrs.length != 1) {
+		failure = true;
+	}
+	for(Attribute a : attrs){
+		if (a is Initializer) {
+			Parameter[] pms = c.getParameters();
+			if (pms.length == 0) {
+				c0 = ((Initializer)a).value;
+			} else if (pms.length == 1 && pms[0].getType() == typeof(bool)) {
+				c1 = ((Initializer)a).value;
+			}
+		}
+	}
+}

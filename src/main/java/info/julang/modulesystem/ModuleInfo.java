@@ -29,9 +29,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import info.julang.execution.Argument;
+import info.julang.execution.threading.ThreadRuntime;
+import info.julang.interpretation.context.Context;
+import info.julang.interpretation.internal.NewObjExecutor;
+import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.TypeValue;
 import info.julang.modulesystem.prescanning.IRawScriptInfo;
 import info.julang.modulesystem.prescanning.RawClassInfo;
 import info.julang.parser.LazyAstInfo;
+import info.julang.typesystem.jclass.JClassConstructorMember;
+import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.jufc.System.ScriptType;
+import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptModule;
 
 /**
  * This class contains all the known info about a module, including its name, the script files belonging to
@@ -61,6 +73,10 @@ public class ModuleInfo {
 
 	public ScriptInfo getFirstScript() {
 		return scripts.get(0);
+	}
+	
+	public List<ScriptInfo> getScripts() {
+		return scripts;
 	}
 
 	public List<ClassInfo> getClasses() {
@@ -207,4 +223,41 @@ public class ModuleInfo {
 	public String toString(){
 		return name;
 	}
+    
+    private ObjectValue modObject;
+    
+    /**
+     * Get <font color="green"><code>System.Reflection.Module</code></font> object for this module. 
+     * This object will be created the first time this method is called.
+     * 
+     * @param runtime
+     */
+    public ObjectValue getOrCreateScriptObject(ThreadRuntime runtime) {
+        if (modObject == null) {
+            synchronized(TypeValue.class){
+                if (modObject == null) {
+                    JClassType modClassType = (JClassType) runtime.getTypeTable().getType(ScriptModule.FQCLASSNAME);
+                    if (modClassType == null) {
+                        Context context = Context.createSystemLoadingContext(runtime);
+                        runtime.getTypeResolver().resolveType(context, ParsedTypeName.makeFromFullName(ScriptModule.FQCLASSNAME), true);
+                        modClassType = (JClassType) runtime.getTypeTable().getType(ScriptModule.FQCLASSNAME);
+                    }
+                    
+                    JClassConstructorMember modClassCtor = modClassType.getClassConstructors()[0];
+                    
+                    NewObjExecutor noe = new NewObjExecutor(runtime);
+                    ObjectValue ov = noe.newObjectInternal(modClassType, modClassCtor, new Argument[0]);
+                    
+                    ScriptModule st = new ScriptModule();
+                    st.setModule(this);
+                    HostedValue hv = (HostedValue)ov;
+                    hv.setHostedObject(st);
+                    
+                    modObject = ov;
+                }
+            }
+        }
+        
+        return modObject;
+    }
 }

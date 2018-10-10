@@ -24,10 +24,6 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc.System;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.symboltable.ITypeTable;
@@ -79,6 +75,11 @@ import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptCtor;
 import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptField;
 import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptMethod;
+import info.julang.typesystem.loading.LoadingInitiative;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The native implementation of <code><font color="green">System.Type</font></code>.
@@ -107,7 +108,8 @@ public class ScriptType {
 				.add("getMethods", new GetMethodsExecutor())
 				.add("getFields", new GetFieldsExecutor())
 				.add("getParent", new GetParentExecutor())
-				.add("getInterfaces", new GetInterfacesExecutor());
+				.add("getInterfaces", new GetInterfacesExecutor())
+				.add("getAttributes", new GetAttributesExecutor());
 		}
 		
 	};
@@ -161,7 +163,7 @@ public class ScriptType {
 			}
 			
 			Context context = Context.createSystemLoadingContext(rt);
-			JType typ = rt.getTypeResolver().resolveType(context, ptn, true); // Will throw if not found
+			JType typ = rt.getTypeResolver().resolveType(context, ptn, true, LoadingInitiative.DYNAMIC); // Will throw if not found
 			
 			// 3) Get System.Type object for this type
 			ObjectValue ov = ThreadRuntimeHelper.getScriptTypeObject(rt, typ);
@@ -189,6 +191,16 @@ public class ScriptType {
 			ArrayValue av = st.getInterfaces(rt);
 			JValue res = TempValueFactory.createTempRefValue(av);
 			return res;
+		}
+		
+	}
+	
+	private static class GetAttributesExecutor extends InstanceNativeExecutor<ScriptType> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, ScriptType st, Argument[] args) throws Exception {
+			ArrayValue av = st.getAttributes(rt);
+			return av == null ? RefValue.NULL : av;
 		}
 		
 	}
@@ -566,6 +578,27 @@ public class ScriptType {
 			RefValue rv = new RefValue(mem, ov);		
 			rv.assignTo(array.getValueAt(i));
 		}
+		
+		return array;
+	}
+	
+	public ArrayValue getAttributes(ThreadRuntime rt) {
+		if (!(jtyp instanceof ICompoundType) ){
+			return null;
+		}
+
+		ICompoundType ict = (ICompoundType)jtyp;
+		TypeValue tv = rt.getTypeTable().getValue(ict.getName());
+		List<AttrValue> avs = tv.getClassAttrValues();
+		if (avs == null || avs.size() == 0){
+			return null;
+		}
+
+		JValue[] vals = new JValue[avs.size()];
+		avs.toArray(vals);
+
+		JClassType typ = (JClassType)ThreadRuntimeHelper.loadSystemType(rt, JAttributeBaseType.Name);
+		ArrayValue array = ThreadRuntimeHelper.createAndPopulateArrayValue(rt, typ, vals);
 		
 		return array;
 	}

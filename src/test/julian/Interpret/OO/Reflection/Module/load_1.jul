@@ -1,0 +1,6 @@
+import System.Reflection;
+
+Module mod = Module.find("ModuleSys.FullMod", false);
+TypeInfo ti = mod.getTypes()[0];
+Type t = ti.load();
+string s = t.getSimpleName();

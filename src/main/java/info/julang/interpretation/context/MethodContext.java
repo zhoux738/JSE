@@ -27,6 +27,7 @@ package info.julang.interpretation.context;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.execution.symboltable.RestrictedTypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadManager;
@@ -38,8 +39,6 @@ import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.loading.InternalTypeResolver;
 
 public class MethodContext extends Context {
-
-	private ExecutionContextType exeContextTyp;
 	
 	private ICompoundType containingType;
 
@@ -55,7 +54,8 @@ public class MethodContext extends Context {
 		JThreadManager tm,
 		JThread jthread,
 		ICompoundType containingType,
-		boolean isStatic) {
+		boolean isStatic,
+		ExecutionContextType exeContextTyp) {
 		super(
 			isStatic ? 
 				ContextType.SMETHOD : 
@@ -71,7 +71,8 @@ public class MethodContext extends Context {
 				new StaticMethodNameResolver(varTable, typTable, containingType) : 
 				new InstanceMethodNameResolver(varTable, typTable, containingType),
 			tm,
-			jthread
+			jthread,
+			exeContextTyp
 		);
 		
 		if (this.getResolver() instanceof IContextAware<?>){
@@ -79,7 +80,6 @@ public class MethodContext extends Context {
 		}
 		
 		this.containingType = containingType;
-		this.exeContextTyp = ExecutionContextType.InMethodBody;
 	}
 	
 	/**
@@ -104,19 +104,20 @@ public class MethodContext extends Context {
 		ICompoundType containingType, 
 		boolean isStatic,
 		ExecutionContextType exeContextType){
+		boolean restricted = exeContextType == ExecutionContextType.InAnnotation;
 		MethodContext newContext = new MethodContext(
 			frame,
 			context.getHeap(),
 			vt,
-			context.getTypTable(),
+			restricted ? new RestrictedTypeTable(context.getTypTable()) : context.getTypTable(),
 			context.getInternalTypeResolver(),
 			context.getModManager(),
 			nsPool,
 			tm,
 			context.getJThread(),
 			containingType,
-			isStatic);
-		newContext.exeContextTyp = exeContextType;
+			isStatic,
+			exeContextType);
 		return newContext;
 	}
 	
@@ -126,13 +127,6 @@ public class MethodContext extends Context {
 	@Override
 	public ICompoundType getContainingType() {
 		return containingType;
-	}
-	
-	/**
-	 * The current type of execution context.
-	 */
-	public ExecutionContextType getExecutionContextType(){
-		return exeContextTyp;
 	}
 
 }

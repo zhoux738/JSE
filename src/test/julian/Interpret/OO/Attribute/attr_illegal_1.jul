@@ -1,0 +1,12 @@
+import System.IO;
+
+attribute Version {
+	string value;
+}
+
+[Version(value = (new File("abc")).getName())]
+class MyClass1 {
+
+}
+
+MyClass1 mc1;

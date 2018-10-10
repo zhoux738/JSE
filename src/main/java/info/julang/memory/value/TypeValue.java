@@ -35,8 +35,8 @@ import info.julang.memory.MemoryArea;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.jclass.JClassConstructorMember;
-import info.julang.typesystem.jclass.JClassMember.MemberKey;
 import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.MemberKey;
 import info.julang.typesystem.jclass.builtin.JTypeStaticDataType;
 import info.julang.typesystem.jclass.jufc.System.ScriptType;
 

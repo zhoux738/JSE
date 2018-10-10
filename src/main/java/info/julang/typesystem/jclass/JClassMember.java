@@ -142,56 +142,6 @@ public abstract class JClassMember implements IAnnotated {
 	 * additional conditions as required by different member types.
 	 */
 	public MemberKey getKey(){
-		return new MemberKeyBase();
-	}
-
-	/**
-	 * A key-like object used to represent a class member in map structures. Since this is to be used only
-	 * purely within the same class, the containing class's equality is not considered (two members, both 
-	 * named "fun" and have same method signature, from two unrelated classes A and B, will be equated by 
-	 * this key).
-	 */
-	public interface MemberKey {
-		int hashCode();
-		boolean equals(Object obj);
-	}
-	
-	class MemberKeyBase implements MemberKey {
-		private String name;
-		private MemberType type;
-		
-		protected MemberKeyBase(){
-			JClassMember mem = JClassMember.this;
-			this.name = mem.getName();
-			this.type = mem.getMemberType();
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((name == null) ? 0 : name.hashCode());
-			result = prime * result + ((type == null) ? 0 : type.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			MemberKeyBase other = (MemberKeyBase) obj;
-			if (name == null) {
-				if (other.name != null)
-					return false;
-			} else if (!name.equals(other.name))
-				return false;
-			if (type != other.type)
-				return false;
-			return true;
-		}
+		return new MemberKeyBase(this);
 	}
 }

@@ -166,7 +166,23 @@ class Method : Member {
 	 */
 	[Bridged(name="getReturnType")]
 	hosted Type getReturnType();
-	
+
+	/* [inherited] */
+	Attribute[] getAttributes(){
+		if (attrs == null) {
+			sync(lock){
+				if (attrs == null) {
+					attrs = _getAttributes();
+					if (attrs == null) {
+						attrs = new Attribute[0];
+					}
+				}
+			}
+		}
+		
+		return attrs;
+	}
+		
 	/*
 	 * Get a string representation of this method member.
 	 *
@@ -197,4 +213,7 @@ class Method : Member {
 	private hosted Parameter[] _getParams();
 	private Parameter[] params;
 	
+	[Bridged(name="getAttributes")]
+	private hosted Attribute[] _getAttributes();
+	private Attribute[] attrs;
 }

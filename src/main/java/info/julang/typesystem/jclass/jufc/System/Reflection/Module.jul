@@ -1,0 +1,222 @@
+module System.Reflection;
+
+import System;
+import System.Concurrency;
+
+/*
+ * The information about a module.
+ *
+ * The module instance is always created by the system and can be retrieved either from a [Type](System.Type),
+ * or calling [find()](#find) method.
+ *
+ * A module instance holds only the meta-info about the types in this module. Of particular note, it doesn't
+ * contain [Type] instances for each type contained within. Therefore obtaining a module instance from [find()](#find)
+ * will not trigger the loading of any Types. A relatively light-weighted, and free of side-effect, scanning over
+ * all the module files will still be performed to extract the bare minimum meta-info about each type.
+ *
+ * To get the instance of a module's Type, one may call [load()](TypeInfo#load) on the meta-info object.
+ */
+ [Bridged(apiset="System.Reflection.Module")]
+class Module {
+
+	[Bridged(name="find")]
+	private static hosted Module _find(string name);
+
+	/*
+	 * Find the module with the specified name.
+	 *
+	 * [param: name] The full module name, which may contain multiple sections separated by dot (.)
+	 * [param: throwOnError] If true, will throw instead of returning null upon any error.
+	 * [return] A [Module] instance representing the found module; or null if the module couldn't be found. 
+	 * If ```throwOnError``` is false and the module couldn't be successfully scanned (typically due to
+	 * syntactic/semantic errors found on the definitions), this method also returns null.
+	 */	
+	static Module find(string name, bool throwOnError){
+		if (throwOnError) {
+			return _find(name);
+		} else {
+			try {
+				return _find(name);
+			} catch (Exception ex) {
+				return null;
+			}
+		}
+	}
+	
+	/*
+	 * Get the module's name.
+	 *
+	 * [return] The module's name.
+	 */
+	[Bridged(name="getName")]
+	hosted string getName();
+	
+	private TypeInfo[] types;
+
+	/*
+	 * Get the module's types in the form of [TypeInfo].
+	 *
+	 * The fact that a type appears in the resultant array doesn't guarantee a successful loading. The type info
+	 * is collected based on a minimal scanning of the type definition and will skip over many critical parts 
+	 * which may contain syntax or semantic errors. Those errors won't be detected until the type is to be fully
+	 * loaded.
+	 *
+	 * If the module is from the system (with name being "System" or starting with "System."), only public types
+	 * will be returned. If the module is defined by users, all types will be returned. However, not all of those 
+	 * types maybe ultimately usable via reflection. Should it be loaded, its constructors may very well be opted 
+	 * out of reflection-based invocation.
+	 *
+	 * [return] An array containing all the types under this module. If it is a system module, only public types will be returned.
+	 */	
+	TypeInfo[] getTypes(){
+		if (types == null) {
+			sync(lock){
+				if (types == null) {
+					types = _getTypes();
+				}
+			}
+		}
+		
+		return types;
+	}
+	
+	[Bridged(name="getTypes")]
+	private hosted TypeInfo[] _getTypes();
+	
+	private Script[] scripts;
+
+	/*
+	 * Get the module's constituent scripts.
+	 *
+	 * A module can contain one or more scripts, but a script can only belong to one module. The [Script] object
+	 * returned by this method has a [method](Script#getModule) to retrieve its [Module], which should be 
+	 * referentially equivalent to the current Module object.
+	 *
+	 * [return] An array containing all the scripts under this module. Note system modules are not loaded from 
+	 * local file system and therefore won't expose any paths on the resulting [Script] objects.
+	 */		
+	Script[] getScripts(){
+		if (scripts == null) {
+			sync(lock){
+				if (scripts == null) {
+					scripts = _getScripts();
+				}
+			}
+		}
+		
+		return scripts;	
+	}
+	
+	[Bridged(name="getScripts")]
+	private hosted Script[] _getScripts();
+
+	//--- private members ---//
+	
+	private Module(){
+		lock = new Lock();
+	}
+	
+	private Lock lock;
+	
+	/*
+	 * Get a string representation of this module.
+	 *
+	 * [return] A string in form of ```[MODULE|full-name]```. Example: ```[MODULE|MyNamespace.MyModule]```
+	 */	
+	public string toString(){
+		return "[MODULE|" + getName() + "]";
+	}
+}
+
+/*
+ * This class contains only the most basic information about a type found in a module or script file.
+ *
+ * This class is always instantiated by the system based on the scanning result of script files. The 
+ * fact that an instance of TypeInfo for certain type exists doesn't guarantee that the corresponding 
+ * [Type] would be successfully loaded should such attempt be made. This is because the scanning operation 
+ * to extract the basic information is only performing syntax check and very limited semantic check. 
+ * The user must proceed to call [load()](#load) to actually verify and load the type into the runtime.
+ */
+[Bridged(apiset="System.Reflection.TypeInfo")]
+class TypeInfo {
+
+	private string name;
+	private Lock lock = new Lock();
+
+	/*
+	 * Load this type into the runtime.
+	 *
+	 * [return] The [Type] instance for this type.
+	 */
+	Type load(){
+		return Type.load(_getFullName());
+	}
+	
+	[Bridged(name="getFullName")]
+	private hosted string _getFullName();
+	
+	/*
+	 * Get the fully qualified type name. This will always return canonical name, not language-level alias
+	 * for certain built-in types.
+	 *
+	 * [return] The fully qualified type name.
+	 */
+	string getFullName(){
+		if (name == null) {
+			sync(lock){
+				if (name == null) {
+					name = _getFullName();
+				}
+			}
+		}
+		
+		return name;
+	}
+	
+	/*
+	 * Get the simple name of this type, i.e. excluding the part for module. For a type with fully qualified 
+	 * name "A.B.C", this method will return "C". This will always return canonical name, not language-level 
+	 * alias for certain built-in types.
+	 *
+	 * [return] The simple type name. For some built-in types this name is same to full name returned by [getFullName()](#getFullName). 
+	 */
+	string getSimpleName(){
+		if (name == null) {
+			getFullName();
+		}
+		
+		int index = name.lastIndexOf('.', name.length - 1);
+		return index >= 0 ? name.substring(index + 1, name.length) : name;
+	}
+	
+	/*
+	 * Get the module name of this type, i.e. excluding the part for module. For a type with fully qualified 
+	 * name "A.B.C", this method will return "A.B".
+	 *
+	 * [return] The module name. For some built-in types which do not have a module this returns null. 
+	 */
+	string getModuleName(){
+		if (name == null) {
+			getFullName();
+		}
+		
+		int index = name.lastIndexOf('.', name.length - 1);
+		return index >= 0 ? name.substring(0, index) : null;	
+	}
+	
+	/*
+	 * Check whether the type is a class type. Interface types, primitive types, [Any] and Void type is not class type; all the other are. 
+	 *
+	 * [return] True if this type is a class type, inheriting, or exactly is, [Object].
+	 */
+	[Bridged(name="isClass")]
+	hosted bool isClass();
+	
+	/*
+	 * Check whether the type is an interface type.
+	 *
+	 * [return] True if this type is an interface type.
+	 */
+	[Bridged(name="isInterface")]
+	hosted bool isInterface();
+}

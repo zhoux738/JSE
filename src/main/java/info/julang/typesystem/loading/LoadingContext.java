@@ -27,6 +27,7 @@ package info.julang.typesystem.loading;
 import info.julang.execution.InContextTypeResolver;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
+import info.julang.execution.symboltable.RestrictedTypeTable;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.syntax.AttributeDeclInfo;
 import info.julang.interpretation.syntax.ClassDeclInfo;
@@ -133,5 +134,17 @@ public class LoadingContext {
 	
 	void addDependency(String typeName){
 		state.addDependency(typeName);
+	}
+
+	public void ApplyTypeUseRestriction() {
+		if (!(tt instanceof RestrictedTypeTable)) {
+			tt = new RestrictedTypeTable(tt);
+		}
+	}
+	
+	public void RevokeTypeUseRestriction() {
+		if (tt instanceof RestrictedTypeTable) {
+			tt = ((RestrictedTypeTable)tt).getUnderlyingTypeTable();
+		}
 	}
 }

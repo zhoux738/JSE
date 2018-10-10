@@ -26,6 +26,7 @@ package info.julang.eng.mvnplugin.mdgen;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import info.julang.eng.mvnplugin.GlobalLogger;
@@ -148,6 +149,14 @@ public class StylizedString {
 	public PreStylizedString merge(StylizedString... others) {
 		StringBuilder sb = new StringBuilder(this.toString());
 		for(StylizedString ss : others){
+			sb.append(ss.toString());
+		}
+		return new PreStylizedString(sb.toString());
+	}
+	
+	public static PreStylizedString mergeAll(StylizedString... sss) {
+		StringBuilder sb = new StringBuilder();
+		for(StylizedString ss : sss){
 			sb.append(ss.toString());
 		}
 		return new PreStylizedString(sb.toString());

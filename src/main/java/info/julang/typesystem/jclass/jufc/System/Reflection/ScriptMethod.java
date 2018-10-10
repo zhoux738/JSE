@@ -28,7 +28,6 @@ import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
-import info.julang.execution.threading.ThreadRuntimeHelper.IObjectPopulater;
 import info.julang.external.exceptions.JSEError;
 import info.julang.hosting.HostedMethodProviderFactory;
 import info.julang.hosting.SimpleHostedMethodProvider;
@@ -49,12 +48,11 @@ import info.julang.memory.value.TypeValue;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.ClassMemberLoaded;
 import info.julang.typesystem.jclass.ICompoundType;
-import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassMember;
-import info.julang.typesystem.jclass.JClassMember.MemberKey;
 import info.julang.typesystem.jclass.JClassMethodMember;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JParameter;
+import info.julang.typesystem.jclass.MemberKey;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.util.OneOrMoreList;
 
@@ -63,7 +61,7 @@ import info.julang.util.OneOrMoreList;
  * 
  * @author Ming Zhou
  */
-public class ScriptMethod {
+public class ScriptMethod extends ScriptMemberBase {
 		
 	public static final String FQCLASSNAME = "System.Reflection.Method";
 	
@@ -82,7 +80,8 @@ public class ScriptMethod {
 				.add("callExact", new CallExactExecutor())
 				.add("bind", new BindExecutor())
 				.add("getParams", new GetParamsExecutor())
-				.add("getReturnType", new GetReturnTypeExecutor());
+				.add("getReturnType", new GetReturnTypeExecutor())
+				.add("getAttributes", new GetAttributesExecutor());
 		}
 		
 	};
@@ -192,6 +191,16 @@ public class ScriptMethod {
 		
 	}
 	
+	private static class GetAttributesExecutor extends InstanceNativeExecutor<ScriptMethod> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, ScriptMethod inst, Argument[] args) throws Exception {
+			ArrayValue av = inst.getAttributes(rt);
+			return av == null ? RefValue.NULL : av;
+		}
+		
+	}
+	
 	//----------- implementation at native end -----------//
 
 	/**
@@ -243,6 +252,12 @@ public class ScriptMethod {
 		return val;
 	}
 	
+	public ArrayValue getAttributes(ThreadRuntime rt) {
+		ICompoundType deftyp = jmethod.getDefiningType();
+		ArrayValue array = super.getAttributes(rt, deftyp, jmethod.getKey());
+		return array;
+	}
+
 	private JValue bind(ThreadRuntime rt, JValue target) {
 		ICompoundType defType = jmethod.getDefiningType();
 		JMethodType mtyp = jmethod.getMethodType();
@@ -480,34 +495,8 @@ public class ScriptMethod {
 	}
 
 	public ArrayValue getParams(ThreadRuntime rt) {
-		// 1) Load System.Reflection.Parameter
-		JClassType sysReflParamTyp = (JClassType)ThreadRuntimeHelper.loadSystemType(rt, ScriptParam.FQCLASSNAME);
-		JClassConstructorMember sysReflParamTypCtor = sysReflParamTyp.getClassConstructors()[0];
-		
-		// 2) Get all params for this Type
 		final JParameter[] params = this.jmethod.getMethodType().getParams();
-		
-		final int offset = jmethod.isStatic() ? 0 : 1;
-		ArrayValue av = ThreadRuntimeHelper.createAndPopulateObjectArrayValue(
-			rt, params.length - offset, sysReflParamTyp, sysReflParamTypCtor, 
-			new IObjectPopulater(){
-
-				@Override
-				public Argument[] getArguments(int index) {
-					return new Argument[0];
-				}
-
-				@Override
-				public void postCreation(int index, ObjectValue ov) {
-					JParameter param = params[index + offset];
-					
-					HostedValue hv = (HostedValue)ov;
-					ScriptParam sc = (ScriptParam)hv.getHostedObject();
-					sc.setParam(param);
-				}
-			});
-		
-		return av;
+		return super.getParams(rt, params);
 	}
 
 	public String getName() {

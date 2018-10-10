@@ -1,0 +1,17 @@
+import System.Reflection;
+
+bool b0, b1, b2, b3;
+Module mod = Module.find("ModuleSys.Banking.Bank", false);
+Script[] ss = mod.getScripts();
+for(Script s : ss){
+	string p = s.getPath();
+	if (p.endsWith("Bank.jul")){
+		b0 = true;
+		Module mod2 = s.getModule();
+		b3 = mod == mod2;
+	} else if (p.endsWith("Services.jul")){
+		b1 = true;
+	} else {
+		b2 = true;
+	}
+}

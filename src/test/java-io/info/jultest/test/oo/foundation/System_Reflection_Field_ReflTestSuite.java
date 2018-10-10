@@ -70,6 +70,13 @@ public class System_Reflection_Field_ReflTestSuite extends ExceptionTestsBase {
 	}
 	
 	@Test
+	public void getTest3() throws EngineInvocationError, IOException {	
+		VariableTable gvt = runInline(FEATURE, "get_3.jul");
+
+		Commons.validateBoolValue(gvt, "checked", true);
+	}
+	
+	@Test
 	public void getTest2Fail() throws EngineInvocationError, IOException {
 		VariableTable gvt = runInline(FEATURE, "get_2_fail.jul");
 

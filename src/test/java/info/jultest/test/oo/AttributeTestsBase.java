@@ -10,8 +10,8 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.TypeValue;
 import info.julang.modulesystem.ModuleInfo;
 import info.julang.typesystem.JType;
-import info.julang.typesystem.jclass.JClassMember.MemberKey;
 import info.julang.typesystem.jclass.JDefinedClassType;
+import info.julang.typesystem.jclass.MemberKey;
 import info.julang.typesystem.jclass.annotation.IAnnotated;
 import info.julang.typesystem.jclass.annotation.JAnnotation;
 

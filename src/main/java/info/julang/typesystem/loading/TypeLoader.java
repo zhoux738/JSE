@@ -24,17 +24,11 @@ SOFTWARE.
 
 package info.julang.typesystem.loading;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.Result;
 import info.julang.execution.symboltable.ITypeTable;
+import info.julang.execution.symboltable.RestrictedTypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.SystemInitiatedThreadRuntime;
 import info.julang.execution.threading.ThreadRuntime;
@@ -64,6 +58,7 @@ import info.julang.langspec.ast.JulianParser.ExpressionContext;
 import info.julang.langspec.ast.JulianParser.ProgramContext;
 import info.julang.memory.value.AttrValue;
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.JValueBase;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.TypeValue;
 import info.julang.memory.value.VoidValue;
@@ -90,6 +85,13 @@ import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.util.Box;
 import info.julang.util.Pair;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The type loader which actually loads the type from modules.
@@ -134,11 +136,11 @@ public class TypeLoader {
 	 * true if used to load a dependent class by {@link TypeLoader}.
 	 * @return
 	 */
-	public synchronized JType loadType(Context context, String typeName, boolean reentry){
+	public synchronized JType loadType(Context context, String typeName, boolean reentry, LoadingInitiative initiative){
 		JType loaded = null;
 		ITypeTable tt = context.getTypTable();
 		boolean toDelegate = false;
-
+		
 		// First check if it is already loaded.
 		if((loaded = tt.getType(typeName)) != null){
 			return loaded;
@@ -154,7 +156,7 @@ public class TypeLoader {
 			toDelegate = parent != null && typeName.startsWith("System.");
 			if(!toDelegate){
 				ClassInfo cinfo = context.getModManager().getClassesByFQName(typeName);
-				incubator.addType(typeName, cinfo.getClassDeclInfo().getSubtype());
+				incubator.addType(typeName, cinfo.getClassDeclInfo().getSubtype(), initiative);
 			}
 			break;
 		}
@@ -163,7 +165,7 @@ public class TypeLoader {
 		try {
 			if(toDelegate){
 				// Delegate to parent loader
-				type = parent.loadType(context, typeName, reentry);
+				type = parent.loadType(context, typeName, reentry, initiative);
 			} else {
 				// Load by this loader itself
 				LoadingContext ctxt = new LoadingContext(
@@ -186,9 +188,15 @@ public class TypeLoader {
 			// If class is not located, we need clean up the incubator
 			if(!toDelegate){
 				incubator.sealType(typeName, e);
+			} else {
+				if (context.getExecutionContextType() == ExecutionContextType.InAnnotation && 
+					e instanceof ClassLoadingException){
+					ClassLoadingException cle = (ClassLoadingException)e;
+					throw cle.getJSECause();
+				}
 			}
 		}
-
+		
 		activate(context, tt, reentry, toDelegate);
 		
 		return type;
@@ -345,6 +353,15 @@ public class TypeLoader {
 		//    step the majority of methods on type builders become essentially useless.  
 		List<String> typeNames = new ArrayList<String>();
 		for(JType typ : types){
+			ILoadingState state = states.get(typ.getName());
+			if (state.getInitiative() == LoadingInitiative.ATTRIBUTE_MEMBER) {
+				// Only allow a subset of types
+				if (!RestrictedTypeTable.isAllowedInAttributContext(typ)){
+					throw new IllegalAttributeUsageException(
+						"Trying to load a type which is not allowed in Attribute initializer: " + typ.getName());
+				}
+			}
+			
 			String name = typ.getName();
 			tt.addType(name, typ, false);
 			typeNames.add(name);
@@ -615,12 +632,18 @@ public class TypeLoader {
 			String fname = init.IDENTIFIER().getText();
 			ExpressionContext exc = init.expression();
 			vt.enterScope();
+			JValue mVal = null;
 			try {
 				ExpressionStatement es = new ExpressionStatement(rt, ainfo.create(exc));
 				es.interpret(context);
-				JValue mVal = av.getMemberValue(fname);
+				mVal = av.getMemberValue(fname);
 				es.getResult().getReturnedValue(false).assignTo(mVal);
 			} finally {
+				// Seal the value
+				if (mVal instanceof JValueBase) {
+					((JValueBase)mVal).setConst(true);
+				}
+				
 				vt.exitScope();
 			}
 		}

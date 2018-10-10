@@ -1,6 +1,7 @@
 module System.Reflection;
 
 import System;
+import System.Concurrency;
 
 /*
  * A field member defined on a type.
@@ -102,8 +103,24 @@ class Field : Member {
 	 * [return] The field's type.
 	 */
 	[Bridged(name="getType")]
-	hosted Type geType();	
-	
+	hosted Type getType();	
+
+	/* [inherited] */
+	Attribute[] getAttributes(){
+		if (attrs == null) {
+			sync(lock){
+				if (attrs == null) {
+					attrs = _getAttributes();
+					if (attrs == null) {
+						attrs = new Attribute[0];
+					}
+				}
+			}
+		}
+		
+		return attrs;
+	}
+		
 	/*
 	 * Get a string representation of this field member.
 	 *
@@ -114,6 +131,8 @@ class Field : Member {
 	}
 
 	//--- private members ---//
+	
+	private Lock lock = new Lock();
 	
 	[Bridged(name="ctor")]
 	private hosted Field();
@@ -129,5 +148,9 @@ class Field : Member {
 	
 	[Bridged(name="toString")]
 	private hosted string _toString();
+	
+	[Bridged(name="getAttributes")]
+	private hosted Attribute[] _getAttributes();
+	private Attribute[] attrs;
 	
 }

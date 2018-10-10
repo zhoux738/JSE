@@ -51,7 +51,7 @@ import info.julang.typesystem.loading.InternalTypeResolver;
  *  
  * @author Ming Zhou
  */
-public class Context {
+public abstract class Context {
 
 	private ContextType cntxTyp;
 	
@@ -74,6 +74,8 @@ public class Context {
 	private JThreadManager tm;
 	
 	private JThread jthread;
+
+	private ExecutionContextType exeContextTyp;
 	
 	protected Context(
 		ContextType cntxTyp,
@@ -86,7 +88,8 @@ public class Context {
 		NamespacePool nsPool,
 		INameResolver nameResolver,
 		JThreadManager tm,
-		JThread jthread) {
+		JThread jthread,
+		ExecutionContextType exeContextTyp) {
 		this.cntxTyp = cntxTyp;
 		this.frame = frame;
 		this.varTable = varTable;
@@ -98,6 +101,7 @@ public class Context {
 		this.nr = nameResolver;
 		this.tm = tm;
 		this.jthread = jthread;
+		this.exeContextTyp = exeContextTyp;
 	}
 	
 	/**
@@ -181,6 +185,13 @@ public class Context {
 	 */
 	public ICompoundType getContainingType(){
 		return null;
+	}
+	
+	/**
+	 * The current type of execution context.
+	 */
+	public ExecutionContextType getExecutionContextType(){
+		return exeContextTyp;
 	}
 	
 	private static class SystemLoadingContext extends FunctionContext {

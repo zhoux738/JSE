@@ -35,11 +35,13 @@ import info.julang.hosting.execution.InstanceNativeExecutor;
 import info.julang.interpretation.ReflectedInvocationException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.errorhandling.JulianScriptException;
+import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.AttemptToChangeConstException;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectMember;
 import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.TypeValue;
 import info.julang.memory.value.ValueUtilities;
@@ -59,7 +61,7 @@ import info.julang.util.OneOrMoreList;
  * 
  * @author Ming Zhou
  */
-public class ScriptField {
+public class ScriptField extends ScriptMemberBase {
 		
 	public static final String FQCLASSNAME = "System.Reflection.Field";
 	
@@ -77,7 +79,8 @@ public class ScriptField {
 				.add("toString", new ToStringExecutor())
 				.add("get", new GetExecutor())
 				.add("set", new SetExecutor())
-				.add("getType", new GetTypeExecutor());
+				.add("getType", new GetTypeExecutor())
+				.add("getAttributes", new GetAttributesExecutor());
 		}
 		
 	};
@@ -176,6 +179,16 @@ public class ScriptField {
 		
 	}
 	
+	private static class GetAttributesExecutor extends InstanceNativeExecutor<ScriptField> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, ScriptField inst, Argument[] args) throws Exception {
+			ArrayValue av = inst.getAttributes(rt);
+			return av == null ? RefValue.NULL : av;
+		}
+		
+	}
+	
 	//----------- implementation at native end -----------//
 	
 	public void set(ThreadRuntime rt, ObjectValue inst, JValue value) {
@@ -245,6 +258,12 @@ public class ScriptField {
 		}
 	}
 	
+	public ArrayValue getAttributes(ThreadRuntime rt) {
+		ICompoundType deftyp = jfield.getDefiningType();
+		ArrayValue array = super.getAttributes(rt, deftyp, jfield.getKey());
+		return array;
+	}
+
 	private boolean setInstanceField(ThreadRuntime rt, ObjectValue inst, JValue value, String fname, JClassType searchStartType){
 		OneOrMoreList<ObjectMember> oms = inst.getMemberValueByClass(fname, searchStartType, true);
 		for(ObjectMember om : oms) {

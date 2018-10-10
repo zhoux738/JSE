@@ -59,6 +59,7 @@ public class InDocLink implements IParsedDocSection {
 	private static final String ReturnLink = "return";
 	private static final String TutorialLink = "tutorial:";
 	private static final String Version = "version:";
+	private static final String IndexTable = "index:";
 	private static final String VersionCurrent = "current";
 	private static final String TutorialIndexLink = "Julian Tutorial";
 	
@@ -71,6 +72,7 @@ public class InDocLink implements IParsedDocSection {
 	private DocModel.Member mem;
 	private String txt;
 	private String rawlnk;
+	private int indexLevel = -1;
 	
 	/**
 	 * Create a doc link in the given context as defined by type and member.
@@ -120,6 +122,10 @@ public class InDocLink implements IParsedDocSection {
 				String ver = txt.substring(Version.length()).trim();
 				txt = getVersionText(ver);
 				// (Intentionally leave rawlnk as null)
+			} else if (txt.startsWith(IndexTable)) {
+				// [index: 3] => generate an index table corresponding to lines started with ### 
+				indexLevel = Integer.parseInt(txt.substring(IndexTable.length()).trim());
+				// (Intentionally leave rawlnk as null)
 			} else {
 				// []
 				rawlnk = txt;
@@ -129,14 +135,31 @@ public class InDocLink implements IParsedDocSection {
 
 	@Override
 	public void appendTo(MarkdownWriter markdownWriter) throws IOException{
-		markdownWriter.add(StylizedString.create(getText(), false).toLink(getLink()));
+		if (this.indexLevel > 0) {
+			@SuppressWarnings("unchecked")
+			List<String> ssNames = (List<String>)markdownWriter.getAttachment(MarkdownWriter.AttachementType.INDEX_TABLE_3);
+			if (ssNames != null) {
+				StylizedString[] sss = new StylizedString[ssNames.size()];
+				int i = 0;
+				for(String str : ssNames) {
+					sss[i] = StylizedString.create(str,  false).toLink("#" + str.replaceAll(" ", "_")).inTag("<li>");
+					i++;
+				}
+
+				PreStylizedString pss = StylizedString.mergeAll(sss);
+				pss = new PreStylizedString("<ul style=\"list-style-type:disc\">" + pss + "</ul>");
+				markdownWriter.add(pss);
+			}
+		} else {
+			markdownWriter.add(StylizedString.create(getText(), false).toLink(getLink()));
+		}
 	}
 
 	private String getVersionText(String ver) {
 		String vertext = VersionCurrent.equals(ver.toLowerCase()) ?
 			mc.getMetatdata(ModuleContext.MD_VERSION) : ver;
 			
-		StylizedString ss =StylizedString.create(vertext).addColor(new Color(0, 191, 255, 255)); // "deep sky blue"	
+		StylizedString ss = StylizedString.create(vertext).addColor(new Color(0, 191, 255, 255)); // "deep sky blue"	
 		return ss.toString();
 	}
 	

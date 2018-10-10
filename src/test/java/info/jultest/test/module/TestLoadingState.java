@@ -3,6 +3,7 @@ package info.jultest.test.module;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.JDefinedClassType;
 import info.julang.typesystem.loading.ILoadingState;
+import info.julang.typesystem.loading.LoadingInitiative;
 
 import java.util.List;
 
@@ -62,5 +63,10 @@ public class TestLoadingState implements ILoadingState {
 	public Exception getException() { return null; }
 	
 	@Override
-	public JDefinedClassType getType() { return null; }	
+	public JDefinedClassType getType() { return null; }
+
+	@Override
+	public LoadingInitiative getInitiative() {
+		return LoadingInitiative.SOURCE;
+	}	
 }

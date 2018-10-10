@@ -154,6 +154,21 @@ class Type {
 	[Bridged(name="getParent")]
 	hosted Type getParent();
 	
+	/**
+	 * Get the module this type belongs to. Note primitive and some built-in types such as [Object] do not 
+	 * belong to any module.
+	 *
+	 * [return] The module this type belongs to. Null if the type doesn't belong to any module.
+	 */
+	Module getModule(){
+		string mn = getModuleName();
+		if (mn != null && mn != "") {
+			return Module.find(mn, true);
+		} else {
+			return null;
+		}
+	}
+	
 	/*
 	 * Get the constructors of this type in no particular order.
 	 *
@@ -275,6 +290,36 @@ class Type {
 	}
 
 	/*
+	 * Get all the attributes annotated on the type definition.
+	 * 
+	 * The result array contains each instance of [Attribute] placed at the type definition. For example:
+	 * [code]
+	 *   [Owner(name="Joshua", opened=2015)]
+	 *   [Protection(enabled=false)]
+	 *   class Account { }
+	 *
+	 *   Attribute[] attrs = typeof(Account).getAttributes(); // length = 2: Owner and Protection
+	 * [code: end]
+	 *
+	 * [return] The attributes annotated on this type. In case of types which do not have
+	 * attributes, including all non-class types, this returns a 0-sized Attribute array.
+	 */	
+	Attribute[] getAttributes(){
+		if (attrs == null) {
+			sync(lock){
+				if (attrs == null) {
+					attrs = _getAttributes();
+					if (attrs == null) {
+						attrs = new Attribute[0];
+					}
+				}
+			}
+		}
+		
+		return attrs;
+	}
+
+	/*
 	 * Get the fields of this type in no particular order.
 	 *
 	 * For system types, this will only return fields that are marked as visible to reflection. For
@@ -322,7 +367,7 @@ class Type {
 	/*
 	 * Get a string representation of this type.
 	 *
-	 * [return] A string in form of ```[Type|full-name]```. Example: ```[TYPE|MyModule.MyClass]```
+	 * [return] A string in form of ```[TYPE|full-name]```. Example: ```[TYPE|MyModule.MyClass]```
 	 */	
 	string toString(){
 		return "[TYPE|" + getFullName() + "]";
@@ -351,6 +396,10 @@ class Type {
 	[Bridged(name="getInterfaces")]
 	private hosted Type[] _getInterfaces();
 	private Type[] intfs;
+	
+	[Bridged(name="getAttributes")]
+	private hosted Attribute[] _getAttributes();
+	private Attribute[] attrs;
 		
 	[Bridged(name="getFields")]
 	private hosted Field[] _getFields();

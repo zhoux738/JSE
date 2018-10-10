@@ -26,6 +26,7 @@ package info.julang.eng.mvnplugin.mdgen;
 
 import info.julang.eng.mvnplugin.docgen.DocModel;
 import info.julang.eng.mvnplugin.docgen.ModuleContext;
+import info.julang.eng.mvnplugin.docgen.DocModel.TutorialPseudoType;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.util.Pair;
 
@@ -65,7 +66,7 @@ public class SummaryConvertor {
 	 */
 	public static List<IParsedDocSection> convert(
 		ModuleContext mc, TutorialInfo tut, NamespacePool np,
-		String summary, DocModel.Type typ, DocModel.Member mem){
+		String summary, DocModel.Type typ, DocModel.Member mem){		
 		Pattern pat = Pattern.compile("\\[[^\\]]+\\]");
 		Matcher matcher = pat.matcher(summary);
 		int plainStart = 0;

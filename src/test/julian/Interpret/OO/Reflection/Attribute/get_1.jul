@@ -1,0 +1,35 @@
+import System.Reflection;
+
+attribute Authorship {
+	string name;
+	int year;
+	int[] versions;
+}
+
+[Authorship(
+	name="Terry", 
+	year=1987, 
+	versions=new int[]{1, 2, 3}
+)]
+class MyBook {
+
+}
+
+class YourBook {
+
+}
+
+Type t = typeof(MyBook);
+Attribute[] attrs = t.getAttributes();
+Attribute attr = attrs[0];
+if (!(attr is Authorship)) {
+	return;
+}
+
+Authorship auth = (Authorship) attr;
+string name = auth.name;
+int year = auth.year;
+int[] versions = auth.versions;
+
+t = typeof(YourBook);
+bool b = t.getAttributes().length == 0;

@@ -203,6 +203,14 @@ public final class DocModel {
 			this.simpleName = ti.getSimpleName();
 			this.dimension = ti.getDimension();
 		}
+		
+		public TypeRef clone(){
+			TypeRef clone = new TypeRef();
+			clone.moduleName = this.moduleName;
+			clone.simpleName = this.simpleName;
+			clone.dimension = this.dimension;
+			return clone;
+		}
 
 		public static TypeRef makeFromFullName(String fname){
 			TypeRef ref = new TypeRef();
@@ -1184,7 +1192,7 @@ public final class DocModel {
 			for(int i = 0; i < size; i++){
 				TypeDescription td1 = params.get(i);
 				TypeDescription td2 = params2.get(i);
-				if (td1.equals(td2)){
+				if (!td1.equals(td2)){
 					return false;
 				}
 			}
@@ -1233,16 +1241,20 @@ public final class DocModel {
 		
 		@Override
 		public String getMemberType(boolean useSimpleTypeName, IMemberTypeDecorator decorator){
-			StringBuilder sb = new StringBuilder();
-			String tname = simplifyTypeName(this.returnType.type.simpleName); // Use simple name, in line with parameters.
-			if (decorator != null) {
-				sb.append(decorator.decMemberType(tname, this.returnType.type));
-			} else {
-				sb.append(tname);
-			}
-			sb.append(" ");
+			TypeRef tref = this.returnType.type;
+			String sname = tref.simpleName;
+			String tname = simplifyTypeName(sname); // Use simple name, in line with parameters.
 			
-			return sb.toString();
+			if (!tname.equals(sname)) {
+				tref = tref.clone();
+				tref.simpleName = tname;
+			}
+			
+			if (decorator != null) {
+				return decorator.decMemberType(tname, tref) + " ";
+			} else {
+				return tref.getFullName() + " ";
+			}
 		}
 	}
 	

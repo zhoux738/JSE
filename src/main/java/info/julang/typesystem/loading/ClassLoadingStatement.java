@@ -168,7 +168,7 @@ public abstract class ClassLoadingStatement {
 		type = context.getTypeTable().getType(tName);
 		if(type == null){
 			// 3) type not loaded
-			type = context.getTypeResolver().resolveType(context.getContext(), context.getNamespacePool(), typeName);
+			type = context.getTypeResolver().resolveType(context.getContext(), context.getNamespacePool(), typeName, LoadingInitiative.TYPE_REFERENCE);
 		}
 		
 		if(typeName.isArray()){

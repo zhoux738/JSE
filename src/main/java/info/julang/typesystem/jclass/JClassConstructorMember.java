@@ -113,4 +113,9 @@ public class JClassConstructorMember extends JClassMember {
 	public String toString(){
 		return ftype.toString();
 	}
+	
+	@Override
+	public MemberKey getKey(){
+		return new ExecutableMemberKey(this.getCtorType(), this);
+	}
 }

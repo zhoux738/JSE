@@ -102,53 +102,6 @@ public class JClassMethodMember extends JClassMember {
 	
 	@Override
 	public MemberKey getKey(){
-		return new MethodMemberKey();
-	}
-	
-	private class MethodMemberKey extends MemberKeyBase {
-
-		private String[] paramTypeNames;
-		
-		private MethodMemberKey(){
-			super();
-			
-			boolean isInstance = false;
-			JClassMethodMember mem = JClassMethodMember.this;
-			JParameter[] params = mem.getMethodType().getParams();
-			if(!mem.isStatic() && params.length > 0 && "this".equals(params[0].getName())){
-				paramTypeNames = new String[params.length - 1];
-				isInstance = true;
-			} else {
-				paramTypeNames = new String[params.length];
-			}
-			for(int i = 0; i < params.length; i++){
-				int j = isInstance ? i-1 : i;
-				if(j >= 0){
-					paramTypeNames[j] = params[i].getType().getName();
-				}
-			}
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = super.hashCode();
-			result = prime * result + Arrays.hashCode(paramTypeNames);
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (!super.equals(obj))
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			MethodMemberKey other = (MethodMemberKey) obj;
-			if (!Arrays.equals(paramTypeNames, other.paramTypeNames))
-				return false;
-			return true;
-		}
+		return new ExecutableMemberKey(this.getMethodType(), this);
 	}
 }

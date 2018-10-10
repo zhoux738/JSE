@@ -32,7 +32,9 @@ package info.julang.eng.mvnplugin.mdgen;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MarkdownWriter extends FileWriter {
 	
@@ -157,5 +159,32 @@ public class MarkdownWriter extends FileWriter {
 			this.nextLine(false);
 			linebreaks--;
 		}
+	}
+
+	//-------------- Attachments --------------//
+	
+	public Object getAttachment(AttachementType atype) {
+		if (attachments != null) {
+			return attachments.get(atype);
+		}
+		
+		return null;
+	}
+	
+	public void addAttachment(AttachementType atype, Object a){
+		if (attachments == null) {
+			attachments = new HashMap<AttachementType, Object>();
+		}
+		
+		attachments.put(atype, a);
+	}
+	
+	private Map<AttachementType, Object> attachments;
+	
+	public static enum AttachementType {
+		/**
+		 * A List of String containing all section names at level 3 (started by "###")
+		 */
+		INDEX_TABLE_3;
 	}
 }

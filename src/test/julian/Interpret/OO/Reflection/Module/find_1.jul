@@ -1,0 +1,6 @@
+import System.Reflection;
+
+Module mod = Module.find("System", false);
+Module mod2 = Module.find("System", false);
+bool b = mod == mod2;
+string s = mod.getName();

@@ -80,18 +80,33 @@ summary =
 + "\n * "
 + "\n * The usage of attributes, such as use-site and repeatability, can be controlled by [meta-attribute](System.AttributeType)."
 + "\n * "
-+ "\n * Julian doesn't enforce the types for fields of attribute, nor what an initializer may contain. When loading a type,"
-+ "\n * all the dependent Attribute types will be loaded ahead of non-Attribute types in a resolved order based their mutual"
-+ "\n * dependencies. This, however, is a best-effort by the engine, which doesn't guarantee the success with regards to that"
-+ "\n * loading order. In fact, due to the nature of attributes, it's possible to cause loading failure because of cross-dependency"
-+ "\n * among attributes and other types. The avoid such failures, it's recommended that only primitive types and system types"
-+ "\n * be used for both the field type and throughout the initializer."
++ "\n * Since attributes are initialized during type loading, only a small subset of types can be used, either as type of an "
++ "\n * attribute member, or referenced through an initializer. The allowed types include all primitive types, module-less Object"
++ "\n * types such as [Object] and [String], as well as all [Enum] types including those defined by users. Also, despite being "
++ "\n * not an Enum, [System.AttributeTarget] is also allowed. One-dimensional arrays of any of allowed scalar types are allowed too. " 
++ "\n * All the other types, whether from the system (```System.*```) or defined by a user, are denied access in an attribute "
++ "\n * source context, either at definition or in initializer. Attempts to use such types will result in exceptions faulting type "
++ "\n * loading."
++ "\n * [code]"
++ "\n * attribute MyAttribute {"
++ "\n *   string[] name; // OK: one-dimensional array of allowed scalar type is also allowed."
++ "\n *   Object[][] objs; // ERROR: multi-dimensional arrays are not allowed."
++ "\n * }"
 + "\n * "
-+ "\n * For more detailed description on Attribute, see [tutorial on Attribute](tutorial: attribute)."
++ "\n * [MyAttribute(name = (new NameBuilder()).getName())] // ERROR: attmpet to use disallowed types in initializer."
++ "\n * class MyObject {"
++ "\n * "
++ "\n * }"
++ "\n * [code: end]"
++ "\n * "
++ "\n * Attributes can be retrieved during runtime through reflection API. For more detailed description on Attribute, "
++ "\n * see [tutorial on Attribute](tutorial: attribute)."
 + "\n */",
 references = { "System.AttributeType" }
 )
 public class JAttributeBaseType extends JClassType {
+	
+	public static final String Name = "Attribute";
 	
 	private static JAttributeBaseType INSTANCE;
 
@@ -166,7 +181,7 @@ public class JAttributeBaseType extends JClassType {
 		
 		@Override
 		public String getTypeName() {
-			return "Attribute";
+			return Name;
 		}
 		
 		@Override

@@ -41,12 +41,14 @@ import info.julang.typesystem.loading.depresolving.IOrderResolvable;
  * @author Ming Zhou
  */
 public interface ILoadingState extends IOrderResolvable {
-
+	
 	/**
 	 * Get the type being loaded.
 	 * @return {@link JDefinedClassType}, {@link JDefinedInterfaceType}
 	 */
 	IDefinedType getType();
+	
+	LoadingInitiative getInitiative();
 	
 	boolean isSealed();
 	

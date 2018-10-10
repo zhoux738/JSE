@@ -27,8 +27,6 @@ package info.julang.typesystem.jclass.jufc.System.Reflection;
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.threading.ThreadRuntime;
-import info.julang.execution.threading.ThreadRuntimeHelper;
-import info.julang.execution.threading.ThreadRuntimeHelper.IObjectPopulater;
 import info.julang.hosting.HostedMethodProviderFactory;
 import info.julang.hosting.SimpleHostedMethodProvider;
 import info.julang.hosting.execution.CtorNativeExecutor;
@@ -41,7 +39,9 @@ import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JParameter;
@@ -51,7 +51,7 @@ import info.julang.typesystem.jclass.JParameter;
  * 
  * @author Ming Zhou
  */
-public class ScriptCtor {
+public class ScriptCtor extends ScriptMemberBase {
 		
 	public static final String FQCLASSNAME = "System.Reflection.Constructor";
 	
@@ -66,15 +66,16 @@ public class ScriptCtor {
 				.add("getName", new GetNameExecutor())
 				.add("toString", new ToStringExecutor())
 				.add("invoke", new InvokeExecutor())
-				.add("getParams", new GetParamsExecutor());
+				.add("getParams", new GetParamsExecutor())
+				.add("getAttributes", new GetAttributesExecutor());
 		}
 		
 	};
 	
-	private JClassConstructorMember jtyp;
+	private JClassConstructorMember ctor;
 	
 	public void setCtor(JClassConstructorMember jtyp){
-		this.jtyp = jtyp;
+		this.ctor = jtyp;
 	}
 	
 	//----------------- native executors -----------------//
@@ -132,16 +133,26 @@ public class ScriptCtor {
 		
 	}
 	
+	private static class GetAttributesExecutor extends InstanceNativeExecutor<ScriptCtor> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, ScriptCtor inst, Argument[] args) throws Exception {
+			ArrayValue av = inst.getAttributes(rt);
+			return av == null ? RefValue.NULL : av;
+		}
+		
+	}
+	
 	//----------- implementation at native end -----------//
 
 	public JValue invoke(ThreadRuntime rt, ArrayValue av) {
-		JParameter[] params = jtyp.getCtorType().getParams();
+		JParameter[] params = ctor.getCtorType().getParams();
 		
 		NewObjExecutor neo = new NewObjExecutor(rt);
 		int len = av.getLength();
 		if (len != params.length - 1){
 			throw new ReflectedInvocationException(
-				"Incorrect number of arguments to constructor: " + jtyp.getCtorType().getSignature());
+				"Incorrect number of arguments to constructor: " + ctor.getCtorType().getSignature());
 		}
 		Argument[] args = new Argument[len];
 		for(int i = 0; i < len; i++){
@@ -152,57 +163,38 @@ public class ScriptCtor {
 		ObjectValue ov = null;
 		try {
 			ov = neo.newObjectInternal(
-				(JClassType)jtyp.getDefiningType(), 
-				jtyp, 
+				(JClassType)ctor.getDefiningType(), 
+				ctor, 
 				args);
 		} catch (JSERuntimeException jrt) {
 			Context context = Context.createSystemLoadingContext(rt);
 			JulianScriptException jre = jrt.toJSE(rt, context);
 			throw new ReflectedInvocationException(
-				"Failed when invoking constructor through reflection: " + jtyp.getCtorType().getSignature(), jre);
+				"Failed when invoking constructor through reflection: " + ctor.getCtorType().getSignature(), jre);
 		} catch (JulianScriptException jre) {
 			throw new ReflectedInvocationException(
-				"Failed when invoking constructor through reflection: " + jtyp.getCtorType().getSignature(), jre);
+				"Failed when invoking constructor through reflection: " + ctor.getCtorType().getSignature(), jre);
 		}
 		
 		return ov;
 	}
 	
 	public ArrayValue getParams(ThreadRuntime rt) {
-		// 1) Load System.Reflection.Parameter
-		JClassType sysReflParamTyp = (JClassType)ThreadRuntimeHelper.loadSystemType(rt, ScriptParam.FQCLASSNAME);
-		JClassConstructorMember sysReflParamTypCtor = sysReflParamTyp.getClassConstructors()[0];
-		
-		// 2) Get all ctors for this Type
-		final JParameter[] params = this.jtyp.getCtorType().getParams();
-		
-		ArrayValue av = ThreadRuntimeHelper.createAndPopulateObjectArrayValue(
-			rt, params.length - 1, sysReflParamTyp, sysReflParamTypCtor, 
-			new IObjectPopulater(){
+		final JParameter[] params = this.ctor.getCtorType().getParams();
+		return super.getParams(rt, params);
+	}
 
-				@Override
-				public Argument[] getArguments(int index) {
-					return new Argument[0];
-				}
-
-				@Override
-				public void postCreation(int index, ObjectValue ov) {
-					JParameter param = params[index + 1];
-					
-					HostedValue hv = (HostedValue)ov;
-					ScriptParam sc = (ScriptParam)hv.getHostedObject();
-					sc.setParam(param);
-				}
-			});
-		
-		return av;
+	public ArrayValue getAttributes(ThreadRuntime rt) {
+		ICompoundType deftyp = ctor.getDefiningType();
+		ArrayValue array = super.getAttributes(rt, deftyp, ctor.getKey());
+		return array;
 	}
 
 	public String getName() {
-		return jtyp.getCtorType().getContainingType().getName();
+		return ctor.getCtorType().getContainingType().getName();
 	}
 
 	public String getSignature() {
-		return "[CTOR|" + jtyp.getCtorType().getSignature() + "]";
+		return "[CTOR|" + ctor.getCtorType().getSignature() + "]";
 	}
 }

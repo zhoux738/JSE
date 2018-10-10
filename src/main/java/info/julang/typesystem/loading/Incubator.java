@@ -73,11 +73,11 @@ public class Incubator {
 		farm = new HashMap<String, ILoadingState>();
 	}
 	
-	void addType(String typName, ClassSubtype subtype){
+	void addType(String typName, ClassSubtype subtype, LoadingInitiative initiative){
 		if(farm.containsKey(typName)){
 			throw new JSEError("Trying to load a type twice.", this.getClass());
 		}
-		farm.put(typName, new LoadingState(Thread.currentThread(), typName, subtype));
+		farm.put(typName, new LoadingState(Thread.currentThread(), typName, subtype, initiative));
 	}
 	
 	/**
@@ -172,6 +172,9 @@ public class Incubator {
 		return newTypes;
 	}
 	
+	/**
+	 * @return A map keyed by full type name
+	 */
 	Map<String, ILoadingState> getLoadingStates(){
 		HashMap<String, ILoadingState> farm2 = new HashMap<String, ILoadingState>();
 		farm2.putAll(farm);

@@ -70,8 +70,12 @@ public class InternalTypeResolver {
 	 * @return the loaded type for the given name.
 	 */
 	public JType resolveType(Context context, ParsedTypeName typeName, boolean throwIfNotFound){
+		return resolveType(context, typeName, throwIfNotFound, LoadingInitiative.SOURCE);
+	}
+	
+	public JType resolveType(Context context, ParsedTypeName typeName, boolean throwIfNotFound, LoadingInitiative initiative){
 		NamespacePool nsPool = context.getNamespacePool();
-		return resolveType(context, nsPool, typeName, false, throwIfNotFound);
+		return resolveType(context, nsPool, typeName, false, throwIfNotFound, initiative);
 	}
 	
 	/**
@@ -84,8 +88,8 @@ public class InternalTypeResolver {
 	 * @param typeName
 	 * @return
 	 */
-	JType resolveType(Context context, NamespacePool nsPool, ParsedTypeName typeName){
-		return resolveType(context, nsPool, typeName, true, true);
+	JType resolveType(Context context, NamespacePool nsPool, ParsedTypeName typeName, LoadingInitiative initiative){
+		return resolveType(context, nsPool, typeName, true, true, initiative);
 	}
 	
 	/**
@@ -100,12 +104,19 @@ public class InternalTypeResolver {
 	 * @param context
 	 * @param nsPool
 	 * @param typeName
-	 * @param reentry
+	 * @param reentry true if this is a re-entrance loading (load another while loading some type)
+	 * @param throwIfNotFound true to throw if the type is not found
+	 * @param initiative what causes this type to load
 	 * @throws UnknownTypeException
 	 * @return the loaded type for the given name.
 	 */
 	private JType resolveType(
-		Context context, NamespacePool nsPool, ParsedTypeName typeName, boolean reentry, boolean throwIfNotFound){
+		Context context, 
+		NamespacePool nsPool, 
+		ParsedTypeName typeName, 
+		boolean reentry, 
+		boolean throwIfNotFound, 
+		LoadingInitiative initiative){
 		ITypeTable tt = context.getTypTable();
 		JType basicTyp = typeName.getBasicType();
 		if(basicTyp != null){
@@ -127,7 +138,7 @@ public class InternalTypeResolver {
 					// already loaded.
 					return finishLoading(tt, typ, typeName);
 				}
-				typ = loadType(context, fname, true, reentry);
+				typ = loadType(context, fname, true, reentry, initiative);
 				return finishLoading(tt, typ, typeName);
 			}
 		} else {
@@ -154,7 +165,7 @@ public class InternalTypeResolver {
 			}
 			
 			if(nameToLoad != null){
-				JType typ = loadType(context, nameToLoad, true, reentry);
+				JType typ = loadType(context, nameToLoad, true, reentry, initiative);
 				if(typ != null){
 					// let's bind the name, so that the next reference by the same simple name can be resolved faster.
 					nsPool.addBinding(typeName.getFQName().toString(), nameToLoad);
@@ -170,9 +181,9 @@ public class InternalTypeResolver {
 		}
 	}
 
-	private JType loadType(Context context, String fname, boolean shouldThrow, boolean reentry) {
+	private JType loadType(Context context, String fname, boolean shouldThrow, boolean reentry, LoadingInitiative initiative) {
 		try {
-			JType type = loader.loadType(context, fname, reentry);
+			JType type = loader.loadType(context, fname, reentry, initiative);
 			return type;
 		} catch (UnknownTypeException e) {
 			if(!shouldThrow){

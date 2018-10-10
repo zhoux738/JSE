@@ -70,4 +70,14 @@ interface Member {
 	 * [return] True if the member is static; false instance-scoped.
 	 */
 	bool isStatic();
+	
+    /*
+	 * Get all the attributes annotated on the member definition.
+	 * 
+	 * The result array contains each instance of [Attribute] placed at the type definition.
+	 *
+	 * [return] The attributes annotated on this member. In case of members which do not have
+	 * attributes, this returns a 0-sized Attribute array.
+	 */	
+	Attribute[] getAttributes();
 }

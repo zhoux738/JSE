@@ -1,0 +1,18 @@
+// check field's type
+import System.Reflection;
+import System.Collection;
+
+class MyClass {
+	string[] arr;
+	int val;
+}
+
+Map m = new Map();
+m["arr"] = typeof(string[]);
+m["val"] = typeof(int);
+
+bool checked = true;
+Field[] fs = typeof(MyClass).getFields();
+for(Field f : fs) {
+	checked = checked && (m[f.getName()] == f.getType());
+}

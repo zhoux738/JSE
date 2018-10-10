@@ -33,6 +33,7 @@ import info.julang.execution.threading.JThreadManager;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.context.Context;
+import info.julang.interpretation.context.ExecutionContextType;
 import info.julang.interpretation.context.MethodContext;
 import info.julang.interpretation.statement.StatementOption;
 import info.julang.memory.MemoryArea;
@@ -109,7 +110,13 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 		NamespacePool namespaces,
 		JThreadManager tm,
 		JThread jthread){
-		return new MethodContext(frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, jthread, containingType, isStatic);
+		return new MethodContext(
+			frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, jthread, 
+			containingType, isStatic, ExecutionContextType.InMethodBody); 
+			// Technically setting exe-context type to InMethodBody is not correct. We should
+			// deduce this value from the context/runtime. But it's fine so far because 
+			// calling a method on any un-vetted types within an annotation expression (the 
+			// other exe-context type) would be forbidden in the first place. 
 	}
 	
 	//---------------------------- IStackFrameInfo ----------------------------//

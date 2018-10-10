@@ -81,6 +81,22 @@ class Constructor : Member {
 		return params;
 	}
 
+	/* [inherited] */
+	Attribute[] getAttributes(){
+		if (attrs == null) {
+			sync(lock){
+				if (attrs == null) {
+					attrs = _getAttributes();
+					if (attrs == null) {
+						attrs = new Attribute[0];
+					}
+				}
+			}
+		}
+		
+		return attrs;
+	}
+	
 	/*
 	 * Get a string representation of this constructor member.
 	 *
@@ -106,5 +122,9 @@ class Constructor : Member {
 		
 	[Bridged(name="getParams")]
 	private hosted Parameter[] _getParams();
-	private Parameter[] params;	
+	private Parameter[] params;
+	
+	[Bridged(name="getAttributes")]
+	private hosted Attribute[] _getAttributes();
+	private Attribute[] attrs;
 }

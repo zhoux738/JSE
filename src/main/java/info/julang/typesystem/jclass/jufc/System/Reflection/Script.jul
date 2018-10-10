@@ -2,7 +2,6 @@ module System.Reflection;
 
 import System;
 import System.Concurrency;
-// import System.IO;
 
 /*
  * The information about a script file.
@@ -17,10 +16,18 @@ class Script {
 	 */
 	[Bridged(name="getPath")] 
 	hosted string getPath();
+	
+	/*
+	 * Get the module this script belongs to. Note a module consists one or more scripts, but a script 
+	 * can only be part of a single module.
+	 *
+	 * [return] The [module](Module) this script belongs to.
+	 */
+	[Bridged(name="getModule")] 
+	hosted Module getModule();
 
 	//--- private members ---//
 	
 	[Bridged(name="ctor")]
 	private hosted Script();
-	
 }

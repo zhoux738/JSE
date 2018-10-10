@@ -24,6 +24,7 @@ SOFTWARE.
 
 package info.julang.modulesystem;
 
+import info.julang.execution.threading.JThread;
 import info.julang.external.interfaces.IExtModuleManager;
 import info.julang.hosting.HostedMethodManager;
 
@@ -53,5 +54,15 @@ public interface IModuleManager extends IExtModuleManager {
 	 * @return
 	 */
 	public HostedMethodManager getHostedMethodManager();
+	
+
+	/**
+	 * Load a module of specified name.
+	 * 
+	 * @param thread
+	 * @param moduleName
+	 * @return
+	 */
+    public ModuleInfo loadModule(JThread thread, String moduleName);
 	
 }

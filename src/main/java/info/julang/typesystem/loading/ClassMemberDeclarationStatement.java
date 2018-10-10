@@ -166,7 +166,7 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		for (MemberDeclInfo decl : mems){
 			switch(decl.getMemberType()){
 			case FIELD:
-				JClassMember member = parseField(decl, ainfo, context, builder);
+				JClassMember member = parseField(decl, ainfo, context, builder, false);
 				addMember(builder, member, decl);
 				break;
 			case METHOD:
@@ -366,15 +366,20 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		}
 		
 		List<MemberDeclInfo> mems = SyntaxHelper.parseClassMemberDeclarations(memList, ainfo, fullName, false);
-		for (MemberDeclInfo decl : mems){
-			switch(decl.getMemberType()){
-			case FIELD:
-				JClassMember fmember = parseField(decl, ainfo, context, builder);
-				addMember(builder, fmember, decl);
-				break;
-			default:
-				throw new IllegalClassDefinitionException(context, "Cannot contain non-field member in an attribute declaration.", declInfo);
-			}
+		try {
+			context.ApplyTypeUseRestriction();
+			for (MemberDeclInfo decl : mems){
+				switch(decl.getMemberType()){
+				case FIELD:
+					JClassMember fmember = parseField(decl, ainfo, context, builder, true);
+					addMember(builder, fmember, decl);
+					break;
+				default:
+					throw new IllegalClassDefinitionException(context, "Cannot contain non-field member in an attribute declaration.", declInfo);
+				}
+			}		
+		} finally {
+			context.RevokeTypeUseRestriction();
 		}
 		
 		createDefaultConstructor(builder, ainfo, fullName);
@@ -384,7 +389,8 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		MemberDeclInfo decl, 
 		AstInfo<ProgramContext> ainfo, 
 		LoadingContext context, 
-		JClassTypeBuilder builder){
+		JClassTypeBuilder builder,
+		boolean fromAttribute){
 		FieldDeclInfo fieldDecl = (FieldDeclInfo) decl;
 		boolean sta = fieldDecl.isStatic();
 		if(fieldDecl.hasInitializer()){
@@ -417,7 +423,7 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		ParsedTypeName typeName = fieldDecl.getTypeName();
 		JType type = null;
 		if(typeName != ParsedTypeName.ANY){
-			type = loadMemberType(context, typeName);
+			type = loadMemberType(context, typeName, fromAttribute ? LoadingInitiative.ATTRIBUTE_MEMBER : LoadingInitiative.TYPE_REFERENCE);
 			if (type.isObject()){
 				Accessibility.checkTypeVisibility((ICompoundType)type, builder.getStub(), true);
 			} else if (type == VoidType.getInstance()) {
@@ -547,7 +553,7 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		if(retTypeName == ParsedTypeName.ANY){
 			untyped = true;
 		} else {
-			retType = loadMemberType(context, retTypeName);
+			retType = loadMemberType(context, retTypeName, LoadingInitiative.TYPE_REFERENCE);
 			if (retType.isObject()){
 				Accessibility.checkTypeVisibility((ICompoundType)retType, builder.getStub(), true);
 			}
@@ -814,7 +820,7 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 				JType ptyp = null;
 				JParameter jpm = ptn == ParsedTypeName.ANY ?
 					new JParameter(tan.getParamName()):
-					new JParameter(tan.getParamName(), ptyp = loadMemberType(context, tan.getTypeName()));
+					new JParameter(tan.getParamName(), ptyp = loadMemberType(context, tan.getTypeName(), LoadingInitiative.TYPE_REFERENCE));
 					
 				if (ptyp != null && ptyp.isObject()){
 					Accessibility.checkTypeVisibility((ICompoundType)ptyp, builder.getStub(), true);
@@ -862,7 +868,7 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 	}
 
 	// This is different from the one in ClassLoadingStatement which doesn't permit array-type loading.
-	private JType loadMemberType(LoadingContext context, ParsedTypeName typeName) {
+	private JType loadMemberType(LoadingContext context, ParsedTypeName typeName, LoadingInitiative initiative) {
 		ITypeTable tt = context.getTypeTable();
 		JType type = typeName.getBasicType();
 		
@@ -873,14 +879,14 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		
 		// 2) type loaded already?
 		String tName = typeName.getFQName().toString();
-		type = context.getTypeTable().getType(tName);
+		type = tt.getType(tName);
 		if(type != null){
 			return loadScalarOrArrayType(tt, type, typeName);
 		}
 		
 		// 3) type not loaded
 		// Note TypeResolver will load it as array type if necessary, so we don't call loadScalarOrArrayType here.
-		type = context.getTypeResolver().resolveType(context.getContext(), context.getNamespacePool(), typeName);
+		type = context.getTypeResolver().resolveType(context.getContext(), context.getNamespacePool(), typeName, initiative);
 		
 		return type;
 	}

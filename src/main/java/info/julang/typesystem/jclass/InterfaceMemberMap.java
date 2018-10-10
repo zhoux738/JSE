@@ -24,7 +24,6 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
-import info.julang.typesystem.jclass.JClassMember.MemberKey;
 import info.julang.util.OneOrMoreList;
 
 import java.util.ArrayList;

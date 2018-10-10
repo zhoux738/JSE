@@ -54,7 +54,8 @@ public class ScriptScript {
 		protected void implementProvider(SimpleHostedMethodProvider provider) {
 			provider
 				.add("ctor", new InitExecutor())
-				.add("getPath", new GetPathExecutor());
+				.add("getPath", new GetPathExecutor())
+				.add("getModule", new GetModuleExecutor());
 		}
 		
 	};
@@ -95,8 +96,22 @@ public class ScriptScript {
 		}
 		
 	}
+	
+	private static class GetModuleExecutor extends InstanceNativeExecutor<ScriptScript> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, ScriptScript ss, Argument[] args) throws Exception {
+			JValue res = ss.getModule(rt);
+			return res;
+		}
+		
+	}
 
 	public String getPath() {
 		return si.getFullPath();
+	}
+
+	public JValue getModule(ThreadRuntime rt) {
+		return si.getModuleInfo().getOrCreateScriptObject(rt);
 	}
 }
