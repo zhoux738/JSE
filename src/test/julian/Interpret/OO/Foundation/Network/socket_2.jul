@@ -6,13 +6,13 @@ Socket sock = new Socket();
 //Console.println("port = " + port);
 sock.connect("127.0.0.1", port); // port is provided by test context
 var ws = sock.getWriteStream();
-string[] strs = new string[] { "Hello", " World.", " This is", " Julian!" };
+string[] strs = new string[] { "Hello", " World.", " This is", " Julian!", "[DONE]" };
+Promise prom = Promise.start();
 for(var str : strs){
 	byte[] buffer = str.toBytes();
-	ws.writeAsync(buffer, 0, buffer.length);
+	prom = prom.then(s => ws.writeAsync(buffer, 0, buffer.length));
 }
 
-byte[] buffer = "[DONE]".toBytes();
-ws.writeAsync(buffer, 0, buffer.length).getResult(true);
+prom.getResult(true);
 //Console.println("all sent");
 sock.close();

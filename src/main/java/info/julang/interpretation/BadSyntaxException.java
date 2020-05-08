@@ -28,6 +28,7 @@ import org.antlr.v4.runtime.Token;
 
 import info.julang.JSERuntimeException;
 import info.julang.interpretation.errorhandling.IHasLocationInfo;
+import info.julang.interpretation.errorhandling.IHasLocationInfoEx;
 import info.julang.interpretation.errorhandling.KnownJSException;
 
 /**
@@ -37,12 +38,15 @@ import info.julang.interpretation.errorhandling.KnownJSException;
  * 
  * @author Ming Zhou
  */
-public class BadSyntaxException extends JSERuntimeException implements IHasLocationInfo {
+public class BadSyntaxException extends JSERuntimeException implements IHasLocationInfoEx {
 	
 	private static final long serialVersionUID = 3053670970808771430L;
 	
 	private String fileName = "";
 	private int lineNo = -1;
+	private int length = 0;
+	private int columnNo = -1;
+	private int offset = -1;
 	
 	public BadSyntaxException(String msg) {
 		super(msg);
@@ -50,14 +54,34 @@ public class BadSyntaxException extends JSERuntimeException implements IHasLocat
 	
 	public BadSyntaxException(String msg, String fileName, Token atok) {
 		super(msg);
-		this.lineNo = atok.getLine();
-		this.fileName = fileName;
+		if (atok != null) {
+			this.lineNo = atok.getLine();
+			this.columnNo = atok.getCharPositionInLine() + 1;
+			this.fileName = fileName;
+			int end = atok.getStopIndex();
+			int start = atok.getStartIndex();
+			if (end != -1 && start != -1) {
+				length = end - start + 1;
+			}
+			
+			offset = atok.getStartIndex();
+		}
 	}
 	
+	public BadSyntaxException(String msg, IHasLocationInfoEx linfo) {
+		super(msg);
+		this.fileName = linfo.getFileName();
+		this.lineNo = linfo.getLineNumber();
+		this.length = linfo.getLength();
+		this.columnNo = linfo.getColumnNumber();
+	}
+	
+	// The ultimate goal is to remove this ctor.
 	public BadSyntaxException(String msg, IHasLocationInfo linfo) {
 		super(msg);
 		this.fileName = linfo.getFileName();
 		this.lineNo = linfo.getLineNumber();
+		this.length = 1;
 	}
 	
 	@Override
@@ -65,7 +89,7 @@ public class BadSyntaxException extends JSERuntimeException implements IHasLocat
 		return KnownJSException.BadSyntax;
 	}
 	
-	//--------------- IHasLocationInfo ---------------//
+	//--------------- IHasLocationInfoEx ---------------//
 
 	@Override
 	public String getFileName() {
@@ -75,5 +99,20 @@ public class BadSyntaxException extends JSERuntimeException implements IHasLocat
 	@Override
 	public int getLineNumber() {
 		return lineNo;
+	}
+	
+	@Override
+	public int getLength() {
+		return length;
+	}
+	
+	@Override
+	public int getColumnNumber() {
+		return columnNo;
+	}
+
+	@Override
+	public int getOffset() {
+		return offset;
 	}
 }

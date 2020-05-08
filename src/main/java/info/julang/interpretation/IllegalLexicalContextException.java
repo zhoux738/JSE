@@ -24,7 +24,7 @@ SOFTWARE.
 
 package info.julang.interpretation;
 
-import info.julang.interpretation.errorhandling.IHasLocationInfo;
+import info.julang.interpretation.errorhandling.IHasLocationInfoEx;
 
 /**
  * A statement of some particular type is detected, yet it is not allowed to occur at where it is detected.
@@ -41,7 +41,7 @@ public class IllegalLexicalContextException extends BadSyntaxException {
 	/**
 	 * @param statement the statement. Such as "Continue statement". 
 	 */
-	public IllegalLexicalContextException(String statement, IHasLocationInfo linfo) {
+	public IllegalLexicalContextException(String statement, IHasLocationInfoEx linfo) {
 		super(makeMessgae(statement), linfo);
 	}
 	

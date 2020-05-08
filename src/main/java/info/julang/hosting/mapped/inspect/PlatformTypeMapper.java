@@ -24,6 +24,12 @@ SOFTWARE.
 
 package info.julang.hosting.mapped.inspect;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+
 import info.julang.dev.GlobalSetting;
 import info.julang.hosting.PlatformExceptionInfo;
 import info.julang.hosting.mapped.IllegalTypeMappingException;
@@ -36,13 +42,6 @@ import info.julang.typesystem.basic.CharType;
 import info.julang.typesystem.basic.FloatType;
 import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.jclass.builtin.JStringType;
-import info.julang.typesystem.loading.ClassLoadingException;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 
 /**
  * The platform type mapper maps certain members of a platform (Java) class to a set of JSE members.

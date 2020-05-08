@@ -39,7 +39,6 @@ import info.julang.langspec.ast.JulianParser.StatementContext;
 import info.julang.parser.ANTLRParser;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
-import info.julang.typesystem.UnknownTypeException;
 import info.julang.typesystem.jclass.JClassType;
 
 /**

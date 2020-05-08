@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.clapp.repl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -120,9 +121,14 @@ public class MetaCommandProcessor {
 	private MetaCommand initCommand(String cmd) throws REPLParsingException {
 		try {
 			Class<? extends MetaCommand> clazz = getMCClass(cmd);
-			MetaCommand mc = clazz.newInstance();
-			return mc;
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+			return clazz.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException 
+			| IllegalAccessException 
+			| ClassNotFoundException 
+			| IllegalArgumentException 
+			| InvocationTargetException 
+			| NoSuchMethodException
+			| SecurityException e) {
 			throw new JSEError("Meta-command \"" + cmd + "\" cannot be initialized. Error: " + e.getMessage());
 		}
 	}

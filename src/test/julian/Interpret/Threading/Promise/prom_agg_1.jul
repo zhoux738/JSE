@@ -1,0 +1,16 @@
+import System.Concurrency;
+
+var acc = 0;
+
+Promise p1 = Promise.start(()=> {
+	return 1;
+});
+
+Promise p2 = Promise.start(()=> {
+	return 2;
+});
+
+var res = Promise.whenAll(new Promise[]{p1, p2}).getResult(true);
+for(var r : res){
+	acc += r;
+}

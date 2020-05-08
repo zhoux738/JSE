@@ -172,7 +172,7 @@ interface IIterable {
 interface IIterator {
 
 	/*
-	 * Check if the iteration is reaching the end. If this returns true, the caller may process 
+	 * Check if the iteration is reaching the end. If this returns true, the caller may proceed 
 	 * to make at least one more call of [next()](#next). 
 	 *
 	 * [return] true if there are more items to return. 
@@ -180,9 +180,9 @@ interface IIterator {
 	bool hasNext();
 	
 	/*
-	 * Get the next item. This method is usually called after [hasNext](#hasNext) return ```true```, 
+	 * Get the next item. This method is usually called after [hasNext](#hasNext) returns ```true```, 
 	 * but in a multi-threaded context there is no guarantee on what this would actually return, 
-	 * regardless of the result by hasNext().
+	 * regardless of the result by ```hasNext()```.
 	 *
 	 * [return] The next item. 
 	 */

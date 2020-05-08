@@ -24,12 +24,14 @@ SOFTWARE.
 
 package info.julang.hosting.mapped.exec;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 import info.julang.execution.Argument;
 import info.julang.execution.Result;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.ThreadRuntime;
-import info.julang.external.exceptions.JSEError;
 import info.julang.hosting.HostedMethodManager;
 import info.julang.hosting.HostingPlatformException;
 import info.julang.hosting.PlatformExceptionInfo;
@@ -37,16 +39,9 @@ import info.julang.hosting.mapped.MappedTypeConversionException;
 import info.julang.hosting.mapped.PlatformConversionUtil;
 import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.interpretation.context.Context;
-import info.julang.interpretation.statement.StatementOption;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.JValue;
-import info.julang.parser.AstInfo;
 import info.julang.typesystem.jclass.ICompoundType;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
-import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * An executable for running mapped constructor. This is effectively a hosted executable.

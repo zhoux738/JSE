@@ -86,8 +86,23 @@ class List : Container, IIndexable, IIterable {
 	/*
 	 * [return] The size of list.
 	 */
-	int size(){
+	int size() {
 		return _size();
+	}
+	
+	/*
+	 * Convert to an array of [Any].
+	 
+	 * [return] A list of [Any].
+	 */	
+	var[] toArray() {
+		int size = _size();
+		var[] arr = new var[size];
+		for (int i = 0; i < size; i++) {
+			arr[i] = get(i);
+		}
+		
+		return arr;
 	}
 		
 	[Bridged(name="size")]

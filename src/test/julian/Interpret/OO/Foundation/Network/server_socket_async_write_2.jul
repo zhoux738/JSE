@@ -21,12 +21,12 @@ buffers[2] = "This is ".toBytes();
 buffers[3] = "Julian, ".toBytes();
 buffers[4] = "a scripting language.".toBytes();
 
-stream.writeAsync(buffers[0], 0, buffers[0].length);
-stream.writeAsync(buffers[1], 0, buffers[1].length);
-stream.writeAsync(buffers[2], 0, buffers[2].length);
-stream.writeAsync(buffers[3], 0, buffers[3].length);
-Promise prom = stream.writeAsync(buffers[4], 0, buffers[4].length);
+Promise p1 = stream.writeAsync(buffers[0], 0, buffers[0].length);
+Promise p2 = stream.writeAsync(buffers[1], 0, buffers[1].length);
+Promise p3 = stream.writeAsync(buffers[2], 0, buffers[2].length);
+Promise p4 = stream.writeAsync(buffers[3], 0, buffers[3].length);
+Promise p5 = stream.writeAsync(buffers[4], 0, buffers[4].length);
 //Console.println("all sent");
 
-var res = prom.getResult(true);
+var res = Promise.whenAll(new Promise[]{p1, p2, p3, p4, p5}).getResult(true);
 sock.close();

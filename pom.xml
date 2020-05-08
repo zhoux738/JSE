@@ -11,8 +11,8 @@
   <version>${jse.version}</version><!-- Putting a variable here is causing an error when executing lifecycle mapping plugin inside Eclipse ${jse.version} -->
 
   <name>JSE</name>
-  <url>http://info.julang</url>
-  <description>Julian Scripting Engine</description>
+  <url>http://julang.info</url>
+  <description>Julian Script Engine</description>
 
   <dependencies>
     <dependency>
@@ -119,13 +119,15 @@
           </execution>
         </executions>
       </plugin>
+      
+      <!-- [4] Compile the main source. -->  
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.8.1</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
         <executions>
             <execution>
@@ -134,21 +136,24 @@
         </executions>
       </plugin>
       
-      <!-- [4] Unit Tests (use -D skip.surefire.tests=true to skip) -->
+      <!-- [5] Unit Tests (use -D skip.surefire.tests=true to skip) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.4</version>
+        <version>3.0.0-M4</version>
         <configuration>
           <includes>
             <include>**/*Test.java</include>
             <include>**/*Tests.java</include>
           </includes>
-	      <skipTests>${skip.surefire.tests}</skipTests>
+	      <skipTests>${skip.surefire.tests}</skipTests>  
+	      <argLine>
+	         --illegal-access=permit --add-opens java.base/java.lang.invoke=ALL-UNNAMED
+	      </argLine>
         </configuration>
       </plugin>
       
-      <!-- [5] IO Tests -->
+      <!-- [6] IO Tests -->
       <!-- We use Maven's failsafe plugin to run IO-dependent tests. The real purpose of this plugin is to run 
            integration tests, but we defer such tests to our containerized harness. The tests here are configured 
            such that we can either run them individually/collectively from Eclipse, or run them as part of Maven 
@@ -181,10 +186,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.8.1</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
         <executions>
             <execution>
@@ -205,7 +210,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.20.1</version>
+        <version>3.0.0-M4</version>
         <executions>
             <execution>
 	            <id>run-io-tests</id>
@@ -227,10 +232,13 @@
             <includes>
                 <include>**/*TestSuite.*</include>
             </includes>
+          	<argLine>
+	          --illegal-access=permit --add-opens java.base/java.lang.invoke=ALL-UNNAMED
+	        </argLine>
         </configuration>
       </plugin>
       
-      <!-- [6] Assembling artifacts -->
+      <!-- [7] Assembling artifacts -->
       <!-- We generate two jars. JSE.jar for main delivery; CI.jar for continuous testing. -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>

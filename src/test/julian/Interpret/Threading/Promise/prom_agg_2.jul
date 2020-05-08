@@ -1,0 +1,11 @@
+import System.Concurrency;
+
+Promise p1 = Promise.start(()=> {
+	return 3;
+});
+
+Promise p2 = Promise.start(()=> {
+	return 3;
+});
+
+var acc = Promise.whenAny(new Promise[]{null, p1, p2}).getResult(true);

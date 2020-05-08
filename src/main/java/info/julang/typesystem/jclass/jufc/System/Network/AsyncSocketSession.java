@@ -270,7 +270,7 @@ public class AsyncSocketSession {
 	        AsyncSocketSession.cancel(key, closeChannel);
 	        if (sock != null) {
 	            synchronized(AsyncSocketSession.this){
-	                AsyncSocketSession.this.wsocks.remove(key);
+	                AsyncSocketSession.this.wsocks.remove(sock);
 	            }
 	        }
 	    }

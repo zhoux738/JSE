@@ -24,7 +24,6 @@ SOFTWARE.
 
 package info.julang.memory;
 
-import info.julang.execution.threading.ThreadFrame;
 import info.julang.interpretation.IStackFrameInfo;
 
 

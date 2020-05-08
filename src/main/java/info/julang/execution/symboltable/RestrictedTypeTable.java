@@ -24,16 +24,14 @@ SOFTWARE.
 
 package info.julang.execution.symboltable;
 
+import java.util.List;
+
 import info.julang.external.interfaces.IExtEngineRuntime;
 import info.julang.memory.value.TypeValue;
 import info.julang.typesystem.JType;
-import info.julang.typesystem.basic.BasicType;
-import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.annotation.IllegalAttributeUsageException;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.jclass.builtin.JEnumType;
-
-import java.util.List;
 
 /**
  * A type table that only allows access to certain built-in types. Used for expressions to initialize attributes.

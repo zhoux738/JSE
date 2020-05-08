@@ -63,9 +63,9 @@ class Map : Container, IIndexable, IIterable {
 	[Bridged(name="size")]
 	private hosted int _size();
 	[Bridged(name="getEntries")]
-	hosted var[] _getEntries();
+	private hosted var[] _getEntries();
 	[Bridged(name="getKeys")]
-	hosted var[] _getKeys();
+	private hosted var[] _getKeys();
 	
 	/*
 	 * Put a key/value pair into the map. The key's hashCode() is to calculate the storage

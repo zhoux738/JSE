@@ -27,7 +27,7 @@ package info.julang.parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import info.julang.interpretation.BadSyntaxException;
-import info.julang.interpretation.errorhandling.IHasLocationInfo;
+import info.julang.interpretation.errorhandling.IHasLocationInfoEx;
 
 /**
  * A container object used to carry AST node along with associated information. Essentially a very narrow 
@@ -35,7 +35,7 @@ import info.julang.interpretation.errorhandling.IHasLocationInfo;
  * 
  * @author Ming Zhou
  */
-public class AstInfo<T extends ParserRuleContext> implements IHasLocationInfo {
+public class AstInfo<T extends ParserRuleContext> implements IHasLocationInfoEx {
 
 	protected T ast;
 	protected BadSyntaxException bse;
@@ -105,6 +105,46 @@ public class AstInfo<T extends ParserRuleContext> implements IHasLocationInfo {
 			return bse.getLineNumber();
 		} else if (ast != null) {
 			return ast.start.getLine();
+		} else {
+			return -1;
+		}
+	}
+
+	@Override
+	public int getLength() {
+		if (bse != null) {
+			return bse.getLength();
+		} else if (ast != null) {
+			int start = ast.start != null ? ast.start.getStartIndex() : -1;
+			
+			if (start >= 0) {
+				int end = ast.stop != null ? ast.stop.getStopIndex() : ast.start.getStopIndex();
+				if (end >= start) {
+					return end - start + 1;
+				}
+			}
+		}
+		
+		return 0;
+	}
+
+	@Override
+	public int getColumnNumber() {
+		if (bse != null) {
+			return bse.getColumnNumber();
+		} else if (ast != null) {
+			return ast.start.getCharPositionInLine() + 1;
+		} else {
+			return -1;
+		}
+	}
+
+	@Override
+	public int getOffset() {
+		if (bse != null) {
+			return bse.getOffset();
+		} else if (ast != null) {
+			return ast.start.getStartIndex();
 		} else {
 			return -1;
 		}

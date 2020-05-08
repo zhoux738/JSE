@@ -31,7 +31,6 @@ import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.builtin.JConstructorType;
-import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.util.OneOrMoreList;
 

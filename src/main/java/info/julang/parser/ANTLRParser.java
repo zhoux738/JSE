@@ -24,15 +24,6 @@ SOFTWARE.
 
 package info.julang.parser;
 
-import info.julang.dev.GlobalSetting;
-import info.julang.external.exceptions.JSEError;
-import info.julang.interpretation.BadSyntaxException;
-import info.julang.interpretation.errorhandling.IHasLocationInfo;
-import info.julang.langspec.ast.JulianLexer;
-import info.julang.langspec.ast.JulianParser;
-import info.julang.langspec.ast.JulianParser.ProgramContext;
-import info.julang.util.OSTool;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +37,15 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenSource;
 import org.antlr.v4.runtime.atn.PredictionMode;
+
+import info.julang.dev.GlobalSetting;
+import info.julang.external.exceptions.JSEError;
+import info.julang.interpretation.BadSyntaxException;
+import info.julang.interpretation.errorhandling.IHasLocationInfoEx;
+import info.julang.langspec.ast.JulianLexer;
+import info.julang.langspec.ast.JulianParser;
+import info.julang.langspec.ast.JulianParser.ProgramContext;
+import info.julang.util.OSTool;
 
 /**
  * The class to parse Julian script. The input must be a syntactically complete unit that 
@@ -72,6 +72,7 @@ public class ANTLRParser {
 	 * 
 	 * @param fileName
 	 * @param stream the input to parse.
+	 * @param shouldCanonicalize true to canonicalize the file path (making the separator consistent with the OS).
 	 */
 	public ANTLRParser(String fileName, InputStream stream, boolean shouldCanonicalize){
 		this.fileName = shouldCanonicalize ? OSTool.canonicalizePath(fileName) : fileName;
@@ -220,7 +221,8 @@ public class ANTLRParser {
 		} catch (IOException e) {
 			throw new JSEError(e);
 		} catch (RecognitionException e) {
-			throw new BadSyntaxException("Parser encountered a syntax error: " + e.getMessage());
+			throw new BadSyntaxException(
+				"Parser encountered a syntax error: " + e.getMessage(), this.fileName, e.getOffendingToken());
 		}
 	}
 	
@@ -278,36 +280,58 @@ public class ANTLRParser {
 					faultingTok = (org.antlr.v4.runtime.Token)tok;
 					ANTLRParser.this.bse = new BadSyntaxException(
 						"Encountered a syntax error during parsing.", fileName, faultingTok);
-				} else if (lineNo >= 1) {
-					ANTLRParser.this.bse = new BadSyntaxException(
-						"Encountered a syntax error during parsing.", new IHasLocationInfo(){
-							@Override
-							public String getFileName() {
-								return fileName;
-							}
-							@Override
-							public int getLineNumber() {
-								return lineNo;
-							}
-						});
-				} else {
-					ANTLRParser.this.bse = new BadSyntaxException(
-						"Encountered a syntax error during parsing.", fileName, UnknowToken.INSTANCE);
+				} else if (ex != null) {
+					faultingTok = ex.getOffendingToken();
+					if (faultingTok != null) {
+						ANTLRParser.this.bse = new BadSyntaxException(
+							"Encountered a syntax error during parsing.", fileName, faultingTok);
+					}
+				}
+				
+				if (ANTLRParser.this.bse == null){
+					if (lineNo >= 1) {
+						ANTLRParser.this.bse = new BadSyntaxException(
+							"Encountered a syntax error during parsing.", new IHasLocationInfoEx(){
+								@Override
+								public String getFileName() {
+									return fileName;
+								}
+								@Override
+								public int getLineNumber() {
+									return lineNo;
+								}
+								@Override
+								public int getLength() {
+									return 1; // This is the best we can do
+								}
+								@Override
+								public int getColumnNumber() {
+									return columnNo;
+								}
+								@Override
+								public int getOffset() {
+									return -1;
+								}
+							});
+					} else {
+						ANTLRParser.this.bse = new BadSyntaxException(
+							"Encountered a syntax error during parsing.", fileName, UnknownToken.INSTANCE);
+					}
 				}
 			}
 		}
 	}
 	
-	private static class UnknowToken implements org.antlr.v4.runtime.Token {
-		private static final UnknowToken INSTANCE = new UnknowToken();
-		private UnknowToken(){}
+	private static class UnknownToken implements org.antlr.v4.runtime.Token {
+		private static final UnknownToken INSTANCE = new UnknownToken();
+		private UnknownToken(){}
 		public String getText() { return ""; }
 		public int getType() { return 0; }
 		public int getLine() { return 0; }
 		public int getCharPositionInLine() { return 0; }
 		public int getChannel() { return 0; }
 		public int getTokenIndex() { return 0; }
-		public int getStartIndex() { return 0; }
+		public int getStartIndex() { return -1; }
 		public int getStopIndex() { return 0;}
 		public TokenSource getTokenSource() { return null; }
 		public CharStream getInputStream() { return null; }

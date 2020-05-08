@@ -31,6 +31,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import info.julang.JSERuntimeException;
 import info.julang.dev.GlobalSetting;
 import info.julang.execution.Result;
+import info.julang.execution.threading.JThread;
+import info.julang.execution.threading.JThreadAbortedException;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.BadSyntaxException;
 import info.julang.interpretation.ExitCause;
@@ -254,6 +256,13 @@ class StatementsExecutor implements IHasResult, IHasExitCause {
 		ParserRuleContext prt0 = (ParserRuleContext) prt.children.get(0);
 		switch(prt0.getRuleIndex()){
 		case JulianParser.RULE_empty_statement:
+			if (++totalEmptyStmt > 0b1111111111){ // Check this for every 1K statements.
+				JThread thread = runtime.getJThread();
+				if(thread.checkTermination()){
+					throw new JThreadAbortedException(thread);
+				}
+				totalEmptyStmt = 1;
+			}
 			break;
 		case JulianParser.RULE_expression_statement:
 			ExpressionContext ec0 = ((Expression_statementContext)prt0).expression();
@@ -381,5 +390,9 @@ class StatementsExecutor implements IHasResult, IHasExitCause {
 		} else {
 			throw new BadSyntaxException("Illegal place to use " + statementName + ".");
 		}
-	}	
+	}
+	
+	// The access to totalEmptyStmt is not thread safe, but that should be OK, as we only rely on 
+	// the fact that the count is increasing, while the accuracy is less important.
+	private static int totalEmptyStmt = 1;
 }

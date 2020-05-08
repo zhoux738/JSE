@@ -151,8 +151,8 @@ public class ScriptLock {
 		}
 	}
 	
-	private static int SEQ = 0;
-	private int seq = SEQ++;
+//	private static int SEQ = 0;
+//	private int seq = SEQ++;
 	private boolean waitOnCond(ThreadRuntime rt) {
 		initCond();
 		JThread thread = rt.getJThread();

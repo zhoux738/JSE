@@ -25,9 +25,9 @@ SOFTWARE.
 package info.julang.interpretation.errorhandling;
 
 /**
- * Whether an exception object has information about the location where the exception was originally created.
+ * Whether an object has information about the location within the source code. Used for error reporting, definition metadata, etc.
  * 
- * @author mizho
+ * @author Ming Zhou
  */
 public interface IHasLocationInfo {
 
@@ -37,7 +37,7 @@ public interface IHasLocationInfo {
 	String getFileName();
 	
 	/**
-	 * The line number from the script file.
+	 * The line number from the script file. 1-based.
 	 */
 	int getLineNumber();
 	

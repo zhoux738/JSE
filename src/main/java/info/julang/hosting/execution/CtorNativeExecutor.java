@@ -50,7 +50,7 @@ public abstract class CtorNativeExecutor<T> extends NativeExecutorBase {
 	
 	@Override
 	public JValue execute(ThreadRuntime rt, HostedValue hvalue, Argument[] args) throws Exception {
-		T platformObj = (T) clazz.newInstance();
+		T platformObj = (T) clazz.getDeclaredConstructor().newInstance();
 		
 		initialize(rt, hvalue, platformObj, args);
 		

@@ -26,15 +26,14 @@ package info.julang;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 public class VersionUtility {
 	public static String getVersion() {
-		URLClassLoader cl = (URLClassLoader) VersionUtility.class.getClassLoader();
+		ClassLoader cl = VersionUtility.class.getClassLoader();
 		try {
-			URL url = cl.findResource("META-INF/MANIFEST.MF");
+			URL url = cl.getResource("META-INF/MANIFEST.MF");
 			Manifest manifest = new Manifest(url.openStream());
 			Attributes attributes = manifest.getMainAttributes();
 			return attributes.getValue("JSE-Version");

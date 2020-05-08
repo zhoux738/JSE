@@ -24,6 +24,8 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc;
 
+import java.lang.reflect.InvocationTargetException;
+
 import info.julang.external.exceptions.JSEError;
 import info.julang.modulesystem.prescanning.RawScriptInfo;
 
@@ -46,8 +48,13 @@ class SystemRawScriptInfoFactory<T extends RawScriptInfo> {
 			synchronized(this){
 				if (rsi == null){
 					try {
-						rsi = clazz.newInstance();
-					} catch (InstantiationException | IllegalAccessException e) {
+						rsi = clazz.getDeclaredConstructor().newInstance();
+					} catch (InstantiationException
+						| IllegalAccessException 
+						| IllegalArgumentException
+						| InvocationTargetException 
+						| NoSuchMethodException 
+						| SecurityException e) {
 						throw new JSEError("Cannot create " + clazz.getName());
 					}
 				}

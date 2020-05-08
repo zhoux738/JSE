@@ -214,7 +214,7 @@ public class EngineFactory {
 			Class<T> clazz = (Class<T>)loader.loadClass(fullClassName);
 			T result;
 			if (params == null || params.length == 0){
-				result = clazz.newInstance();
+				result = clazz.getDeclaredConstructor().newInstance();
 			} else {
 				try {
 					int len = params.length;
@@ -238,7 +238,12 @@ public class EngineFactory {
 			return result;
 		} catch (ClassNotFoundException e) {
 			throw new JSEError("Cannot load " + shortName + " class", e);
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (InstantiationException | 
+				IllegalArgumentException | 
+				IllegalAccessException | 
+				NoSuchMethodException | 
+				SecurityException | 
+				InvocationTargetException e) {
 			throw new JSEError("Cannot instantiate " + shortName + " class", e);
 		}
 	}

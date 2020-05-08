@@ -42,7 +42,6 @@ import info.julang.modulesystem.prescanning.RawClassInfo;
 import info.julang.parser.LazyAstInfo;
 import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassType;
-import info.julang.typesystem.jclass.jufc.System.ScriptType;
 import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptModule;
 
 /**

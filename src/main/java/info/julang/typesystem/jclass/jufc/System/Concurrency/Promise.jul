@@ -225,9 +225,10 @@ public class PromiseHandle {
     	var result, Exception ex, bool owData){
     	if (prom.state == PromiseState.PENDING && state != PromiseState.PENDING) {
     		sync (prom.plck) {
-    			if (owState || prom.state == PromiseState.PENDING) {
+    			bool isPending = prom.state == PromiseState.PENDING;
+    			if (owState || isPending) {
     				prom.state = state;
-	    			if (owData) {
+	    			if (owData || (isPending && prom.result == null && prom.ex == null)) {
 	    				prom.result = result;
 	    				prom.ex = ex;
 	    			}
@@ -353,6 +354,15 @@ public class Promise {
     // Public API
 
 	/*
+	 * A factory method to start a promise that immediately resolves with null.
+	 *
+	 * [return] A resolved promise whose result is null.
+	 */
+    public static Promise start() {
+        return new Promise(()=>{});
+    }
+    
+	/*
 	 * A factory method to start a promise with a specified function.
 	 *
      * [param: f] A function to call with this promise.
@@ -372,6 +382,93 @@ public class Promise {
 	public static DeferredPromise defer() {
 		return new DeferredPromise();
 	}
+
+    /*
+     * Wait until all of the [Promise]s are settled, either in success or failure.
+     *
+     * [param: proms] The promises to wait for.
+     * [return] A promise that will be settled when all the promises get settled, with their result or 
+     * exception carried over in an [array](Array) of [Any]. Note the result at a certain index can be
+     * null if the corresponding Promise in the given array is null or is resolved with null.
+     */
+    public static Promise whenAll(Promise[] proms) {
+        DeferredPromise next = Promise.defer();
+        PromiseHandle handle = next.getHandle();
+        Object nullObj = new Object();
+        
+        var[] results = new var[proms.length];
+        
+        // Iterate over all the promises to create a continuation for each.
+        for (int i = 0; i < results.length; i++) {
+            int j = i;
+            Promise prom = proms[j];
+            if (prom != null) {
+                prom.then(
+                    s => {
+                    	if (s == null) {
+                    		s = nullObj;
+                    	}
+                        trySettle(handle, s, null, nullObj, results, j);
+                    },
+                    e => {
+                        trySettle(handle, null, e, nullObj, results, j);
+                    }
+                );
+            } else {
+                trySettle(handle, null, null, nullObj, results, j);
+            }
+        }
+        
+        return next;
+    }
+    
+    private static void trySettle(PromiseHandle handle, var s, Exception e, Object nullObj, var[] results, int index) {
+        if (s == null && e == null) {
+            results[index] = nullObj;
+        } else {
+            results[index] = e != null ? e : s;
+        }
+        
+        for (var v : results) {
+            if (v == null) {
+                return;
+            }
+        }
+        
+        // All are settled. Restore null before resolving.
+        for (int i = 0; i < results.length; i++) {
+            if (results[i] == nullObj) {
+                results[i] = null;
+            }
+        }
+        
+        handle.setState(PromiseState.RESOLVED, false, results, null, false);
+    }
+ 
+    /*
+     * Wait until any of the [Promise]s is settled, either in success or failure.
+     *
+     * [param: proms] The promises to wait for.
+     * [return] A promise that will be settled when the first promise gets settled, 
+     * with the latter's result or exception carried over. 
+     */   
+    public static Promise whenAny(Promise[] proms) {
+        DeferredPromise next = Promise.defer();
+        PromiseHandle handle = next.getHandle();
+        
+        for (int i = 0; i < proms.length; i++) {
+            Promise prom = proms[i];
+            if (prom != null) {
+                prom.then(
+                    s => handle.setState(PromiseState.RESOLVED, false, s, null, false),
+                    e => handle.setState(PromiseState.REJECTED, false, null, e, false)
+                );
+            }
+        }
+        
+        return next;
+    }
+
     
     /*
      * Continue this promise with one of two function, one for resolution, the other rejection.

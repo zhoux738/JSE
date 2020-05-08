@@ -91,7 +91,16 @@ public class System_Network_ServerSocket_IOTestSuite {
             socket.close();
         }
         
-        Assert.assertEquals("Hello World! This is Julian, a scripting language.", sb.toString());
+        // Since we are not enforcing the order in the script, only check if all the parts in received.
+        String[] strs = new String[] { "Hello ", "World! ", "This is ","Julian, ", "a scripting language."};
+        String result = sb.toString();
+        for(String str : strs) {
+        	int ind = result.indexOf(str);
+        	Assert.assertTrue("Missing " + str, ind >= 0);
+        	result = result.substring(0, ind) + result.substring(ind + str.length());
+        }
+        
+        Assert.assertEquals("", result);
     }
     
 	// - Accept multiple connections

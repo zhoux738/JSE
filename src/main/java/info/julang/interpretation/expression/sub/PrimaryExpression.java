@@ -24,6 +24,8 @@ SOFTWARE.
 
 package info.julang.interpretation.expression.sub;
 
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.RuntimeCheckException;
@@ -43,9 +45,6 @@ import info.julang.memory.value.ObjectValue;
 import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.jclass.jufc.System.Util.JRegex;
-import info.julang.typesystem.jclass.jufc.System.Util.RegexSanitizer;
-
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  * The lowest level of expression tree where token sequences are converted to operands.

@@ -27,8 +27,6 @@ package info.julang.typesystem.jclass;
 import info.julang.typesystem.jclass.annotation.JAnnotation;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 
-import java.util.Arrays;
-
 /**
  * A method member in a class.
  * 

@@ -37,4 +37,24 @@ public class PromiseAdvancedTests extends ThreadingTestBase {
 		validateIntValueEx(gvt, "r1", 7);
 		validateBoolValueEx(gvt, "r2", true);
 	}
+	
+	@Test
+	public void promAggTest1() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.THREADING, FEATURE, "prom_agg_1.jul"));
+		
+		validateIntValueEx(gvt, "acc", 3);
+	}
+	
+	@Test
+	public void promAggTest2() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.THREADING, FEATURE, "prom_agg_2.jul"));
+		
+		validateIntValueEx(gvt, "acc", 3);
+	}
 }
