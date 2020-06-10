@@ -231,7 +231,7 @@ public class JThreadManager {
 	}
 	
 	/**
-	 * Create and set main thread with name = "<Julian-Main>". Cannot be called if the engine is running.
+	 * Create and set main thread with name = "&lt;Julian-Main&gt;". Cannot be called if the engine is running.
 	 * 
 	 * @param engineRt
 	 * @param exec

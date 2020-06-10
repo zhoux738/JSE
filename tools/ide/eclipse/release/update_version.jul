@@ -1,0 +1,107 @@
+import System.IO;
+
+// Set this to true when debugging. The target file won't be replaced at the end.
+bool g_dryRun = false;
+
+Console.println("Updating IDE to version " + jse_version);
+
+string g_suffix = DateTime.getNow().format("yyMMddHHmmssSSS");
+int g_index = 0;
+string g_version = jse_version;
+
+// From the given file dir/fileName, create new temp file alongside and copy the contents over 
+// line by line, except for the line containing the keyword, which will be processed by a 
+// function (lineReplacer) to produce a new line. At the end, delete dir/fileName and rename
+// the temp file to fileName.
+void replaceFile(string keyword, Directory dir, string fileName, Function lineReplacer) {
+	File current = null, next = null;
+	try {
+		// 1. Create the handle of the source and target file
+		g_index++;
+		current = dir.subFile(fileName);
+		Console.println(g_index + ") Updating file " + current.getPath());
+		next = dir.subFile(fileName + "." + g_suffix + ".tmp");
+		Console.println(" - Replicating to new file " + next.getPath());
+		next.create();
+		
+		// 2. Copy from source to target, invoking special processing for hinted line 
+		TextReader reader = new TextReader(current.getReadStream());
+		TextWriter writer = new TextWriter(next.getWriteStream(false));
+		string line = null;
+		while((line = reader.readln()) != null) {
+			// Console.println(line);
+			if (line.contains(keyword)) {
+				line = lineReplacer(line, g_version);
+			}
+			
+			writer.writeln(line);
+		}
+		
+		writer.close();
+		
+		// 3. Replace the old file with the new file
+		Console.println(" - Replacing the existing file");
+	} catch (Exception ex) {
+		// Clean up
+		if (!g_dryRun) {
+			if (next != null && next.exists()){
+				next.delete();
+			}
+		}
+		
+		throw ex;
+	}
+	
+	if (!g_dryRun) {
+		current.delete();
+		next.rename(fileName);
+	}
+}
+
+// Find <version>...</version> and replace the version inside
+string processXmlVersionElement(string ln, string ver) {
+	int startindex = ln.indexOf("<version>", 0);
+	startindex += "<version>".length;
+	
+	int endindex = ln.indexOf("</version>", startindex);
+	
+	string line = ln.substring(0, startindex);
+	line += ver;
+	line += ln.substring(endindex, ln.length);
+	
+	return line;
+}
+
+// Find version="..." and replace the version inside
+string processXmlVersionAttribute(string ln, string ver) {
+	int startindex = ln.indexOf("version=\"", 0);
+	startindex += "version=\"".length;
+	
+	int endindex = ln.indexOf("\"", startindex);
+	
+	string line = ln.substring(0, startindex);
+	line += ver;
+	line += ln.substring(endindex, ln.length);
+	
+	return line;
+}
+
+// JDE_ROOT/pom.xml
+Directory jdeSrRoot = new Directory(
+	script_path + Environment.separator + ".." + Environment.separator + "..");
+replaceFile("VERSION_ELEMENT", jdeSrRoot, "pom.xml", processXmlVersionElement);
+
+// JDE_ROOT/plugin/META-INF/MANIFEST.MF
+Directory metaDir = jdeSrRoot.subDirectory("plugin/META-INF");
+replaceFile("Bundle-Version:", metaDir, "MANIFEST.MF", (ln, ver) => {
+	int startindex = ln.indexOf("Bundle-Version:", 0);
+	string line = ln.substring(0, startindex + "Bundle-Version:".length);
+	line += " ";
+	line += ver;
+	return line;
+});
+
+// JDE_ROOT/feature-repository/category.xml, feature.xml
+Directory frDir = jdeSrRoot.subDirectory("feature-repository");
+replaceFile("VERSION_ATTRIBUTE", frDir, "category.xml", processXmlVersionAttribute);
+replaceFile("VERSION_ATTRIBUTE", frDir, "feature.xml", processXmlVersionAttribute);

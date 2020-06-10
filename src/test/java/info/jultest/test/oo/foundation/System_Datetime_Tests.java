@@ -4,6 +4,7 @@ import static info.jultest.test.Commons.getIntValue;
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
+import static info.jultest.test.Commons.validateStringValue;
 import info.jultest.test.Commons;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
@@ -70,5 +71,17 @@ public class System_Datetime_Tests {
 		validateIntValue(gvt.getVariable("minute"), 59);
 		validateIntValue(gvt.getVariable("second"), 59);
 		validateIntValue(gvt.getVariable("milli"), 999);
+	}
+	
+	@Test
+	public void datetimeFormatTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "datetime_3.jul"));
+		
+		validateStringValue(gvt.getVariable("str1"), "2014/03/25-08:30:05.026");
+		validateStringValue(gvt.getVariable("str2"), "14/3/25-8:30:5.26");
+		validateStringValue(gvt.getVariable("str3"), "8:0:5.6");
 	}
 }

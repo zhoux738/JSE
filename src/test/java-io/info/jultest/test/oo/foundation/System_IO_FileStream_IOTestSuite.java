@@ -7,6 +7,7 @@ import static info.jultest.test.Commons.validateByteArrayValue;
 import static info.jultest.test.Commons.validateCharValue;
 import static info.jultest.test.Commons.validateIntValue;
 import info.jultest.test.Commons;
+import info.jultest.test.FileSysHelper;
 import info.jultest.test.oo.ExceptionTestRunner;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.TypeTable;
@@ -42,8 +43,7 @@ public class System_IO_FileStream_IOTestSuite {
 		InputStreamReader reader = null;
 		try {
 			// 1) create an empty temp file		
-			temp = File.createTempFile("__jse_test_", ".tmp"); 
-			temp.deleteOnExit();
+			temp = FileSysHelper.createTempFile();
 			
 			// 2) create a global var "path" and set temp file's full path to it	
 			tt.initialize(engine.getRuntime());
@@ -88,8 +88,7 @@ public class System_IO_FileStream_IOTestSuite {
 		InputStreamReader reader = null;
 		try {
 			// 1) create a temp file, write something		
-			temp = File.createTempFile("__jse_test_", ".tmp"); 
-			temp.deleteOnExit();
+			temp = FileSysHelper.createTempFile();
 			String contents = "xa";
 		    try (FileWriter writer = new FileWriter(temp)) {
 		    	writer.append(contents);
@@ -129,8 +128,7 @@ public class System_IO_FileStream_IOTestSuite {
 		InputStreamReader reader = null;
 		try {
 			// 1) create a temp file, write something		
-			temp = File.createTempFile("__jse_test_", ".tmp"); 
-			temp.deleteOnExit();
+			temp = FileSysHelper.createTempFile();
 			String contents = "xabc";
 		    try (FileWriter writer = new FileWriter(temp)) {
 		    	writer.append(contents);
@@ -175,8 +173,7 @@ public class System_IO_FileStream_IOTestSuite {
 		InputStreamReader reader = null;
 		try {
 			// 1) create a temp file, write something		
-			temp = File.createTempFile("__jse_test_", ".tmp"); 
-			temp.deleteOnExit();
+			temp = FileSysHelper.createTempFile();
 			String contents = "xabc";
 		    try (FileWriter writer = new FileWriter(temp)) {
 		    	writer.append(contents);

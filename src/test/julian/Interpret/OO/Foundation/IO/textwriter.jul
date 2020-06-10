@@ -1,0 +1,12 @@
+import System.IO;
+import System.Collection;
+
+FileStream fs = new FileStream(path, FileMode.CREATE);
+TextWriter writer = new TextWriter(fs, null, bufferSize, autoFlush);
+
+for(string str : strarr){
+	// Console.println(str);
+	writer.writeln(str);
+}
+
+writer.close();

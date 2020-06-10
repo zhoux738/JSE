@@ -1,19 +1,21 @@
 package info.jultest.test.parser;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.List;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.junit.Test;
+
+import info.julang.langspec.ast.JulianLexer;
 import info.julang.langspec.ast.JulianParser.Class_definitionContext;
 import info.julang.langspec.ast.JulianParser.DeclarationsContext;
 import info.julang.langspec.ast.JulianParser.Interface_definitionContext;
 import info.julang.langspec.ast.JulianParser.Type_declarationContext;
 import info.julang.parser.ANTLRParser;
 import info.jultest.test.Commons;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
 import junit.framework.Assert;
-
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.junit.Test;
 
 public class JulianDocTests {
 	
@@ -49,6 +51,17 @@ public class JulianDocTests {
 		assertDoc(parser, decl, "interface type doc");
 		Interface_definitionContext idecl = decl.interface_definition();
 		assertDoc(parser, idecl.interface_body().interface_member_declaration(0), "interface method doc");
+	}
+	
+	@Test
+	public void allTokensTest() {
+		String text = "int /*type*/ a = 5;";
+		ANTLRParser parser = ANTLRParser.createMemoryParser(text);
+		List<Token> tokens = parser.getAllTokens();
+
+		Assert.assertEquals(11, tokens.size()); // Including EOF
+		Assert.assertEquals(JulianLexer.SKIPPED, tokens.get(1).getChannel());
+		Assert.assertEquals(JulianLexer.JULDOC, tokens.get(2).getChannel());
 	}
 	
 	public ANTLRParser invokeParser(String fileName) throws FileNotFoundException {

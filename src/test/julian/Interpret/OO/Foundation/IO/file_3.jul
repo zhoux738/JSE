@@ -1,0 +1,68 @@
+import System.IO;
+import ModuleSys.Assertion;
+
+// all path... variables are set in the unit test upfront.
+Directory dira = new Directory(pathDirA);
+Directory dirb = new Directory(pathDirB);
+
+Assert.areEqual(true, dira.exists(), "pathDirA doesn't exist.");
+Assert.areEqual(true, dirb.exists(), "pathDirB doesn't exist.");
+
+// create file1 under A
+File fa1 = dira.subFile("f1");
+Assert.areEqual(false, fa1.exists(), "file1 already exists.");
+fa1.create();
+Assert.areEqual(true, fa1.exists(), "file1 doesn't exist after creation.");
+
+// refer to the same directory of A using a non-canonical path
+Directory diraAlias = new Directory(fa1.getPath() + Environment.separator + "..");
+var allUnderDiraAlias = diraAlias.listAll();
+Assert.areEqual(1, allUnderDiraAlias.length, "pathDirA' should contain only one file.");
+Assert.areEqual(fa1.getName(), allUnderDiraAlias[0].getName(), "file1's name is inconsistent with what listAll() shows.");
+
+// create file1 under B
+File fb1 = dirb.subFile("f1");
+fb1.create();
+string fb1Path = fb1.getPath();
+
+// move file1 to B - fail due to conflict
+bool res1 = fa1.move(dirb);
+Assert.areEqual(false, res1, "file1 shouldn't be moved to pathDirB because there is a file of the same name.");
+
+// move file1 to A - succ due to no-op
+bool res2 = fa1.move(dira);
+Assert.areEqual(true, res2, "file1 should be able to move to its own directory.");
+
+// move file1 to B after cleanup - succ
+fb1.delete();
+bool res3 = fa1.move(dirb);
+Assert.areEqual(true, res3, "file1 should be able to move to pathDirB which is empty.");
+
+string fa1Path = fa1.getPath();
+Assert.areEqual(fb1Path, fa1Path, "file1 should now have a path same to fileB.");
+
+// validate directories
+Assert.areEqual(0, dira.listAll().length, "pathDirA should be empty.");
+var dirbList = dirb.listAll();
+Assert.areEqual(1, dirbList.length, "pathDirB should contain only one file.");
+Assert.areEqual(fa1Path, dirbList[0].getPath(), "file1's path is inconsistent with what listAll() shows.");
+
+// move the file back
+Directory parentDir = dira.getParent();
+Assert.areEqual(true, parentDir.exists(), "file1's parent dir should exist.");
+
+string name = "nonexist" + DateTime.getNow().getMilli();
+Directory dirNe = parentDir.subDirectory(name);
+Assert.areEqual(false, dirNe.exists(), "Directory " + dirNe.getPath() + " shouldn't exist.");
+
+bool res4 = fa1.move(dirNe);
+Assert.areEqual(false, res4, "file1 cannot be moved to a non-existing directory.");
+
+string n2 = "f2";
+bool res5 = fa1.relocate(dira, n2);
+Assert.areEqual(true, res5, "file1 should be moved and renamed.");
+
+var newDir = fa1.getParent();
+var newName = fa1.getName();
+Assert.areEqual(dira.getPath(), newDir.getPath(), "file1 should be moved and renamed.");
+Assert.areEqual(n2, newName, "file1 should be moved and renamed.");

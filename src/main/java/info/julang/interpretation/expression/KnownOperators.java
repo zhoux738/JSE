@@ -35,7 +35,6 @@ import info.julang.interpretation.expression.operator.LogicalOp;
 import info.julang.interpretation.expression.operator.MultiplyOp;
 import info.julang.interpretation.expression.operator.OnSelf1Op;
 import info.julang.interpretation.expression.operator.OnSelf2Op;
-import info.julang.interpretation.expression.operator.SelectOp;
 import info.julang.interpretation.expression.operator.SubOp;
 
 public class KnownOperators {
@@ -87,7 +86,6 @@ public class KnownOperators {
 	public static final LogicalOp NOT = new LogicalOp.NegateOp();
 	
 	public static final CondOp    COND = new CondOp();
-	public static final SelectOp  SELECT = new SelectOp();
 	
 	public static final Operator  EVAL = new EvalOp();	
 	

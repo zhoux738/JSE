@@ -43,6 +43,13 @@ public class ArgumentsTests {
 		validateScriptFile(env, "filea.jul");
 	}
 	
+	@Test
+	public void parserTest5() throws CLParsingException {
+		CLEnvironment env = parse("filea.jul ab cd");
+		validateArguments(env, new String[]{"ab", "cd"});
+		validateScriptFile(env, "filea.jul");
+	}
+	
 	@Test(expected=CLParsingException.class)
 	public void parserFailTest2() throws CLParsingException {
 		parse("--mp f:/a/b filea.jul");
@@ -52,6 +59,12 @@ public class ArgumentsTests {
 		String[] strs = env.getModulePaths();
 		Assert.assertNotNull(strs);
 		Assert.assertArrayEquals(expectedModulePaths, strs);
+	}
+
+	private void validateArguments(CLEnvironment env, String[] arguments){
+		String[] strs = env.getArguments();
+		Assert.assertNotNull(strs);
+		Assert.assertArrayEquals(arguments, strs);
 	}
 	
 	private void validateScriptFile(CLEnvironment env, String scriptFile){

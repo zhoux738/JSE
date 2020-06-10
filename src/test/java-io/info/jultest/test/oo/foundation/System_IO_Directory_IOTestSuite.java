@@ -41,14 +41,14 @@ public class System_IO_Directory_IOTestSuite {
 	    
 		// 2) create a global var "path" and set temp directory's full path to it
 	    tt.initialize(engine.getRuntime());		
-	    gvt.addVariable("path", new StringValue(heap, dir.getAbsolutePath()));
+	    gvt.addVariable("path", new StringValue(heap, dir.getCanonicalPath()));
 		
 		// 3) in dir_1.jul, new up a direcotry using "path", and run various methods
 		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "dir_1.jul"));
 		
 		// 4) validate
 		validateStringValue(gvt, "fname", dir.getName());
-		validateStringValue(gvt, "p", dir.getAbsolutePath());
+		validateStringValue(gvt, "p", dir.getCanonicalPath());
 		validateBoolValue(gvt, "e", true);
 		
 		// 5) delete the temp directory
@@ -69,17 +69,17 @@ public class System_IO_Directory_IOTestSuite {
 		File dir = temp.toFile();
 		dir.deleteOnExit();
 		
-		String file1path = dir.getAbsolutePath() + File.separator + "file1";
+		String file1path = dir.getCanonicalPath() + File.separator + "file1";
 		File file1 = new File(file1path);
 		file1.createNewFile();
 		file1.deleteOnExit();
 		
-		String file2path = dir.getAbsolutePath() + File.separator + "file2";
+		String file2path = dir.getCanonicalPath() + File.separator + "file2";
 		File file2 = new File(file2path);
 		file2.createNewFile();
 		file2.deleteOnExit();
 		
-		String dir1path = dir.getAbsolutePath() + File.separator + "dir1";
+		String dir1path = dir.getCanonicalPath() + File.separator + "dir1";
 		Path p = Files.createDirectory(Paths.get(dir1path));
 		File dir1 = p.toFile();
 		dir1.deleteOnExit();
@@ -87,19 +87,19 @@ public class System_IO_Directory_IOTestSuite {
 		try {
 //			File[] files = dir.listFiles();
 //			for(File file : files){
-//				System.out.println(file.getAbsolutePath() + ", " + (file.isDirectory() ? "D" : "F"));
+//				System.out.println(file.getCanonicalPath() + ", " + (file.isDirectory() ? "D" : "F"));
 //			}
 			
 			// 2) create a global var "path" and set temp directory's full path to it	
 		    tt.initialize(engine.getRuntime());	
-		    gvt.addVariable("path", new StringValue(heap, dir.getAbsolutePath()));
+		    gvt.addVariable("path", new StringValue(heap, dir.getCanonicalPath()));
 			
 			// 3) in dir_2.jul, new up a direcotry using "path", and run various methods
 			engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "dir_2.jul"));
 			
 //			// 4) validate
 //			validateStringValue(gvt, "fname", dir.getName());
-//			validateStringValue(gvt, "p", dir.getAbsolutePath());
+//			validateStringValue(gvt, "p", dir.getCanonicalPath());
 //			validateBoolValue(gvt, "e", true);
 			
 			validateStringValue(gvt, "file1", "file1");

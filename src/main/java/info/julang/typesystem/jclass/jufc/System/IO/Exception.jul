@@ -17,4 +17,12 @@ class IOException : Exception {
 		
 	}
 
+	/*
+	 * Create an IOException with specified message and cause.
+	 *
+	 * [param: message] The message for this exception. 
+	 */ 
+	IOException(string message, Exception cause) : super(message, cause) {
+		
+	}
 }

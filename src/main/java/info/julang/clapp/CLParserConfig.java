@@ -104,11 +104,10 @@ public class CLParserConfig {
 		
 		if(restParam != null){
 			String restFmtArg = String.format(
-				"%2$s%1$s%3$s%4$s ",
+				"%2$s%1$s%3$s [argument]*",
 				restParam.getLongName(),
 				restParam.isRequired() ? "" : "[",
-				restParam.isRequired() ? "" : "]",
-				restParam.allowMultiple() ? "*" : ""
+				restParam.isRequired() ? "" : "]"
 			);
 			appCmdAllInOne.append(restFmtArg);
 			parser.setRestParam(restParam);
@@ -238,13 +237,28 @@ public class CLParserConfig {
 	// Set the rest parameter here. 
 	private RestParameter getRestParam() {
 		// This will not overwrite the script file set by -f option
-		return new RestParameter("script-file", false, false){
+		return new RestParameter("script-file", false, true){
 			@Override
-			public void process(CLEnvironment env, List<String> values) throws CLParsingException{
-				if(env.getScriptFile() == null){
+			public void process(CLEnvironment env, List<String> values) throws CLParsingException {
+				int size = values.size();
+				int offset = 0;
+				// If script file is not set and no snippet is provided, treat the first arg as the script file's path.
+				// Otherwise, treat everything remaining as arguments.
+				if (env.getScriptFile() == null 
+					&& env.getScript() == null 
+					&& size >= 1) {
 					String filePath = values.get(0);
-					env.setScriptFile(filePath);			
+					env.setScriptFile(filePath);	
+					offset++;
+					size--;	
 				}
+				
+				String[] args = new String[size];
+				for (int i = 0; i < size; i++) {
+					args[i] = values.get(i + offset);
+				}
+				
+				env.setArguments(args);
 			}
 		};
 	}

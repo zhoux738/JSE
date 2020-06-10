@@ -1,0 +1,138 @@
+module System.IO;
+
+import System;
+
+/*
+ * A text writer that writes text to a stream.
+ *
+ * This class is not thread-safe and must be protected by lock when used in a multi-threaded context.
+ */
+class TextWriter {
+	
+	private Stream stream;
+	private string charsetName;
+	private bool autoFlush;
+	
+	private int index;
+	private byte[] buffer;
+	private int bufferSize;
+	
+	private static const int MAX_BUFFERSIZE = 1024 * 1024 * 2; // 2 MB. The final buffer may not be larger than twice this size (4 MB).
+	
+	/*
+	 * Create a TextWriter to write text to the specified stream.
+	 * Use default buffer size (8K) and default chatset (ASCII). Also set ```autoFlush``` to true.
+	 *
+	 * [param: stream] A stream to write the text to. Must be writable.
+	 * [throws: IOException] If the stream is not writable.
+	 */ 
+	TextWriter(Stream stream) : this(stream, null, 8192, true) { }
+	
+	/*
+	 * Create a TextWriter to write text to the specified stream.
+	 *
+	 * [param: stream] A stream to write the text to. Must be writable.
+	 * [param: charset] The charset to use when converting the read bytes to string.
+	 * Charset names should have been registered by RFC 2278: IANA Charset Registration Procedures.
+	 * [param: bufferSize] The initial buffer size. Will be set to 1 if it's less than 1. 
+	 * The caller may use a bigger value if the intention is to write large chunks of text. If the 
+	 * argument passed in is less than 2 MB, the TextWriter instance may dynamically expand the 
+	 * size as it sees fit, without going beyond an upper limit of 4 MB. 
+	 * [param: autoFlush] True to flush everytime any of write methods is called; false to only 
+	 * flush when the buffer is full or the writer is to be closed.
+	 * [throws: IOException] If the stream is not writable.
+	 */ 
+	TextWriter(Stream stream, string charset, int bufferSize, bool autoFlush) {
+		if (!stream.canWrite()) {
+			throw new IOException("Cannot instantiate a TextWriter with an non-writable stream.");
+		}
+		this.stream = stream;
+		if (bufferSize < 1) {
+			bufferSize = 1;
+		}
+		this.bufferSize = bufferSize;
+		this.index = 0;
+		this.charsetName = String.isEmpty(charset) ? "ascii" : charset;
+		this.autoFlush = autoFlush;
+		this.buffer = new byte[bufferSize];
+	}
+
+	/*
+	 * Write the text, followed by an OS-specific line separator, to the stream.
+	 *
+	 * [param: text] The text to write.
+	 */ 
+	public void writeln(string text) {
+		_write(text);
+		_write(Environment.lineSeparator);
+	}
+	
+	/*
+	 * Write the text to the stream.
+	 *
+	 * [param: text] The text to write.
+	 */ 
+	public void write(string text) {
+		_write(text);
+	}
+	
+	/*
+	 * Set whether to automatically flush everytime any of write methods is called.
+	 *
+	 * [param: autoFlush] True to flush everytime any of write methods is called; false to only 
+	 * flush when the buffer is full or the writer is to be closed.
+	 */ 
+	public void setAutoFlush(bool autoFlush) {
+		if (autoFlush && !this.autoFlush) {
+			flush(); // Flush immediately since we won't use buffer again.
+		}
+		
+		this.autoFlush = autoFlush;
+	}
+	
+	/*
+	 * Flush the writer by writing all bytes which are so far buffered into the target stream.
+	 */ 
+	public void flush() {
+		stream.write(buffer, 0, index);
+		index = 0;
+	}
+
+	/*
+	 * Flush the buffer and close the underlying stream.
+	 */ 
+	public void close() {
+		flush();
+		stream.close();
+	}
+	
+	private void _write(string text) {
+		byte[] newBytes = text.toBytes(this.charsetName);
+		int newLen = newBytes.length;
+		
+		if (autoFlush) {
+			stream.write(newBytes, 0, newLen);
+			return;
+		}
+		
+		int bufLen = buffer.length;
+		int newIndex = newLen + index;
+		if (newIndex >= buffer.length) {
+			// The buffer can't hold. Send all of them out.
+			flush();
+			stream.write(newBytes, 0, newLen);
+			
+			// Expand the buffer if the new text is overly long.
+			if (bufLen < TextWriter.MAX_BUFFERSIZE) {
+				int newSize = bufLen << 1;
+				if (newLen >= newSize) {
+					buffer = new byte[newSize];
+				}
+			}
+		} else {
+			// The buffer still has room. Copy over.
+			Array.copy(newBytes, 0, buffer, index, bufLen);
+			index += newLen;
+		}
+	}
+}

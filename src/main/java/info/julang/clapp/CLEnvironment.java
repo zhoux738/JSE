@@ -104,10 +104,20 @@ public class CLEnvironment {
 	void setSupportForANSIEscaping(boolean value) {
 		this.ansiEscaping = value;
 	}
+	
+	public String[] getArguments() {
+		return this.arguments == null ? new String[0] : this.arguments;
+	}
+
+	void setArguments(String[] arguments) {
+		this.arguments = arguments;
+	}
 
 	private ArrayList<NamedBinding> bnds;
 	
 	private List<String> modulePaths;
+	
+	private String[] arguments;
 	
 	private String scriptFile;
 	
@@ -121,6 +131,6 @@ public class CLEnvironment {
 	
 	private boolean ansiEscaping;
 	
-	private static final int CONTINUE_EXEC = -1; 
+	private static final int CONTINUE_EXEC = -1;
 	
 }

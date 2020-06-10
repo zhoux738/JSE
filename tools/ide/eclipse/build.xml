@@ -1,0 +1,41 @@
+<project name="Release" default="deploy-local" basedir="." xmlns:if="ant:if" xmlns:unless="ant:unless">
+
+  <description>
+    Build Eclipse IDE plugin.
+  </description>
+
+  <import file="../../../build/shared.xml"/>
+  <property name="jsebin" value="JSE-${jse.version}"/>
+
+  <target name="build-eclipse" description="Build JDE feature.">
+    <!-- Update version -->
+    <julian srcFile="./release/update_version.jul" />
+      
+    <!-- Copy JSE binaries -->
+    <copy file="${basedir}/../../../target/${jsebin}.jar" 
+          tofile="${basedir}/plugin/lib/JSE.jar" 
+          overwrite="true">
+    </copy>
+      
+    <!-- Build -->
+    <maven basedir="${basedir}"
+           options=""
+           goal="clean verify"
+           resultproperty="maven.build.result"/>
+  </target>
+
+  <target name="deploy-local" depends="build-eclipse" description="Deploy JDE repository to local website.">
+  	<property name="ide.dst.dir" location="${basedir}/../../../release/update-server/releases/ide"/>
+  	<property name="ide.src.dir" location="${basedir}/feature-repository/target"/>
+  	
+  	<!-- Clean up -->
+  	<delete dir="${ide.dst.dir}/eclipse"/>
+  	<mkdir dir="${ide.dst.dir}/eclipse"/>
+  	
+  	<!-- Copy -->
+    <copy todir="${ide.dst.dir}/eclipse" overwrite="false">
+		<fileset dir="${ide.src.dir}"/>
+    </copy>
+  </target>
+
+</project>

@@ -29,9 +29,11 @@ import java.util.List;
 import info.julang.external.interfaces.IExtEngineRuntime;
 import info.julang.memory.value.TypeValue;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.UnknownTypeException;
 import info.julang.typesystem.jclass.annotation.IllegalAttributeUsageException;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.jclass.builtin.JEnumType;
+import info.julang.typesystem.loading.ClassLoadingException;
 
 /**
  * A type table that only allows access to certain built-in types. Used for expressions to initialize attributes.
@@ -66,11 +68,12 @@ public class RestrictedTypeTable implements ITypeTable {
 
 	@Override
 	public JType getType(String fqname, boolean requireFinalized) {
-		JType typ = this.tt.getType(fqname, requireFinalized);
+		JType typ = this.tt.getType(fqname, requireFinalized);		
 		if (typ != null && !isAllowedInAttributContext(typ)) {
 			throw new IllegalAttributeUsageException(
 				"Trying to use a type which is not allowed in Attribute initializer: " + typ.getName());
 		}
+		
 		return typ;
 	}
 

@@ -1,0 +1,10 @@
+import System;
+
+DateTime dt = new DateTime(2014, 3, 25, 8, 30, 5, 26);
+
+string str1 = dt.format("yyyy/MM/dd-HH:mm:ss.SSS");
+//Console.println(str1);
+string str2 = dt.format("yy/M/dd-H:mm:s.SS");
+//Console.println(str2);
+string str3 = dt.format("H:m:s.S");
+//Console.println(str3);

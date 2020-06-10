@@ -358,7 +358,7 @@ public abstract class CompareOp extends Operator {
 			JValueKind lkind = lval.getKind();
 			JValueKind rkind = rval.getKind();
 			if(lkind == JValueKind.BOOLEAN && rkind == JValueKind.BOOLEAN){
-				return ((BoolValue) lval).getBoolValue() == ((BoolValue) lval).getBoolValue();
+				return ((BoolValue) lval).getBoolValue() == ((BoolValue) rval).getBoolValue();
 			}
 			
 			return super.compareSpecialTypes(lval, rval);

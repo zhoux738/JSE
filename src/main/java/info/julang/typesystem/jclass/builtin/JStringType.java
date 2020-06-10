@@ -24,6 +24,15 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.builtin;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
+import java.util.regex.Pattern;
+
 import info.julang.execution.Argument;
 import info.julang.execution.ArgumentUtil;
 import info.julang.execution.Result;
@@ -33,6 +42,7 @@ import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.hosting.HostedExecutable;
 import info.julang.interpretation.IllegalArgumentsException;
+import info.julang.interpretation.JIllegalStateException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.internal.NewObjExecutor;
 import info.julang.interpretation.syntax.ParsedTypeName;
@@ -78,9 +88,6 @@ import info.julang.typesystem.jclass.builtin.doc.JulianFieldMembersDoc;
 import info.julang.typesystem.jclass.jufc.SystemTypeNames;
 import info.julang.typesystem.loading.ITypeResolver;
 
-import java.io.UnsupportedEncodingException;
-import java.util.regex.Pattern;
-
 /**
  * The String type as in<br/>
  * <code>
@@ -102,19 +109,19 @@ summary =
 + "\n * "
 + "\n * String is immutable. The methods exposed by this class are for reading its contents in various ways, and if any "
 + "\n * manipulating is implied (such as [trim](#trim)), it always mean to create a new string as the result of "
-+ "\n * manipulation. The original string instance always remain unchanged."
++ "\n * manipulation. The original string instance always remains unchanged."
 + "\n * "
-+ "\n * String is iteratible. This means one can use foreach grammar on a string, or get a character out of string directly:"
++ "\n * String is iterable. This means one can use foreach grammar on a string, or get a character out of string directly:"
 + "\n * [code]"
-+ "\n * for(char c : str) {"
++ "\n * for (char c : str) {"
 + "\n *   ..."
 + "\n * }"
 + "\n * char c0 = str[0];"
 + "\n * str[0] = 'a'; // This will not cause a runtime error, but won't have any effect either."
 + "\n * [code: end]"
 + "\n * "
-+ "\n * String supports concatenaton operation by '+', which can also be used along with values of other types, as long as at"
-+ "\n * least one operand is string."
++ "\n * String supports concatenation operation by '```+```', which can also be used along with values of other types, as long as"
++ "\n * at least one operand is string."
 + "\n */",
 interfaces = { "System.Util.IComparable", "System.Util.IIndexable", "System.Util.IIterable" }
 )
@@ -268,6 +275,22 @@ public class JStringType extends JClassType implements IDeferredBuildable {
                         METHOD_fromBytes,
                         stringType),
                     null));
+    
+            //toBytes
+            builder.addInstanceMember(
+                new JClassMethodMember(
+                    builder.getStub(), 
+                    "toBytes", Accessibility.PUBLIC, false, false,
+                    new JMethodType(
+                        "toBytes",
+                        new JParameter[]{
+                            new JParameter("this", stringType),
+                            new JParameter("charset", stringType)
+                        }, 
+                        farm.getArrayType(BuiltinTypes.BYTE),
+                        METHOD_toBytes2,
+                        stringType),
+                    null));
             
             //toBytes
             builder.addInstanceMember(
@@ -311,6 +334,21 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 						}, 
 						farm.getArrayType(BuiltinTypes.CHAR),
 					    METHOD_toChars,
+					    stringType),
+				    null));
+			
+			//isEmpty (static)
+			builder.addStaticMember(
+				new JClassMethodMember(
+					builder.getStub(), 
+					"isEmpty", Accessibility.PUBLIC, true, false,
+					new JMethodType(
+						"isEmpty",
+						new JParameter[]{
+							new JParameter("str", stringType)
+						}, 
+					    BoolType.getInstance(), 
+					    METHOD_isEmpty, 
 					    stringType),
 				    null));
 			
@@ -556,7 +594,10 @@ public class JStringType extends JClassType implements IDeferredBuildable {
         paramTypes = {"[byte]", "string", "int", "int"},
         isStatic = true,
         returns = "A string comprised of the given chars.",
-        exceptions = {"System.NullReferenceException: if the parameter is null."}
+        exceptions = {
+        	"System.NullReferenceException: if the parameter is null.",
+        	"System.ArgumentException: if charset is not recognized/supported."
+        }
     )
     private static HostedExecutable METHOD_fromBytes2  = new HostedExecutable(FQNAME, "fromBytes") {
         @Override
@@ -641,6 +682,56 @@ public class JStringType extends JClassType implements IDeferredBuildable {
             return new Result(bav);
         }
     };
+  
+    // toBytes
+    @JulianDoc(
+        summary =   "/*"
+                + "\n * Convert this string to an array of [bytes](type: byte) using specified charset."
+                + "\n */",
+        params = { "string" },
+        returns = "A byte array consisting of all the bytes in this string, encoded with the specified charset.",
+        exceptions = {
+            	"System.ArgumentException: if charset is not recognized/supported.",
+        		"System.Lang.RuntimeCheckException: if string cannot be converted using the charset."
+        	}
+    )
+    private static HostedExecutable METHOD_toBytes2  = new HostedExecutable(FQNAME, "toBytes") {
+        @Override
+        protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+            // Extract arguments
+            StringValue thisVal = ArgumentUtil.<StringValue>getThisValue(args);
+            String value = thisVal.getStringValue();
+            
+            StringValue sv = (StringValue)RefValue.dereference(args[1].getValue());
+            String charsetName = sv.toString();
+            
+            byte[] barray = null;
+            
+            try {
+                CharsetEncoder encoder = Charset.forName(charsetName).newEncoder()
+                	.onMalformedInput(CodingErrorAction.REPORT)
+                	.onUnmappableCharacter(CodingErrorAction.REPORT);
+                CharBuffer buffer = CharBuffer.wrap(value);
+                ByteBuffer bb = encoder.encode(buffer);
+                barray = bb.array();
+            } catch (UnsupportedOperationException e) { 
+        		throw new JArgumentException("charset");
+            } catch (CharacterCodingException e) {
+        		throw new JIllegalStateException("Unable to convert this string to a byte array with charset '" + charsetName + "'.");
+            }
+            
+            int len = barray.length;
+
+            BasicArrayValue bav = (BasicArrayValue)ArrayValueFactory.createArrayValue(
+                runtime.getStackMemory(), runtime.getTypeTable(), ByteType.getInstance(), len);
+            byte[] tarray = (byte[])bav.getPlatformArrayObject();
+                
+            System.arraycopy(barray, 0, tarray, 0, len);
+            
+            // Convert the result to Julian type
+            return new Result(bav);
+        }
+    };
     
 	// fromChars
 	@JulianDoc(
@@ -689,6 +780,33 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 			
 			// Convert the result to Julian type
 			return new Result(bav);
+		}
+	};
+	
+	// isEmpty
+	@JulianDoc(
+		summary =   "/*"
+				+ "\n * Check if the string is null or empty (containing no characters)."
+				+ "\n */",
+		params = {"The string to check."},
+		returns = "true if the checked string is null or empty.",
+		exceptions = { }
+	)
+	private static HostedExecutable METHOD_isEmpty  = new HostedExecutable(FQNAME, "isEmpty") {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract arguments
+			JValue ret = args[0].getValue().deref();
+			if (ret.isNull()) {
+				return new Result(TempValueFactory.createTempBoolValue(true));
+			} else {
+				String str = ((StringValue)ret).getStringValue();
+				if ("".equals(str)) {
+					return new Result(TempValueFactory.createTempBoolValue(true));
+				}
+			}
+
+			return new Result(TempValueFactory.createTempBoolValue(false));
 		}
 	};
 	
@@ -1085,9 +1203,9 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 				+ "\n * "
 				+ "\n * This is the implementation of getter method on [System.Util.IIndexble]."
 				+ "\n */",
-		params = {"An index at which the character is to be retrieved."},
+		params = {"An index at which the character is to be retrieved." },
 		paramTypes = {"Any"},
-		exceptions = { "System.ArrayOutOfRangeException: When the index is out of range."},
+		exceptions = { "System.ArrayOutOfRangeException: When the index is out of range." },
 		returns = "The value retrieved."
 	)
 	private static HostedExecutable METHOD_get = new HostedExecutable(FQNAME, SystemTypeNames.MemberNames.AT) {

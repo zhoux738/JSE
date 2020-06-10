@@ -1,0 +1,10 @@
+import System.Concurrency;
+
+int x = 0;
+for(int i = 0; i < 10000; i++){
+	for(int j = 0; j < 9999; j++){
+		Thread.sleep(100);
+		x = i * 10000 + j;
+		// Console.println("[SCRIPT] " + x);
+	}
+}

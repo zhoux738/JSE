@@ -36,12 +36,19 @@ public class UnknownTypeException extends JSERuntimeException {
 
 	private static final long serialVersionUID = -9215015084210877754L;
 
-	public UnknownTypeException(String name) {
-		super(createMsg(name));
+	private String typeName;
+	
+	public UnknownTypeException(String typeName) {
+		super(createMsg(typeName));
+		this.typeName = typeName;
 	}
 
-	private static String createMsg(String name) {
-		return "Type " + name + " is not defined.";
+	private static String createMsg(String typeName) {
+		return "Type " + typeName + " is not defined.";
+	}
+	
+	public String getTypeName() {
+		return typeName;
 	}
 
 	@Override

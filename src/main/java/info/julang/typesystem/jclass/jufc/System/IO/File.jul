@@ -55,7 +55,7 @@ class File : Item {
 	 * but won't scale well if the file is too large and the operation is too frequent. When dealing 
 	 * with reading large files at high frequency, always consider using an [asynchronous stream](#getReadStream) first.
 	 *
-	 * [return] The contains from this file, in the format of plain ASCII text. 
+	 * [return] The contents from this file, in the format of plain ASCII text. 
 	 */
 	[Bridged(name="readAllText")]
 	hosted string readAllText();
@@ -97,6 +97,136 @@ class File : Item {
 	
 	[Bridged(name="delete")]
 	private hosted bool _delete();
+	
+	/*
+	 * Get the directory this file resides in.
+	 *
+	 * [throws: System.IO.IOException] An error occurred when trying to get the parent directory.
+	 * [return] The parent directory. Or null if the path doesn't exist.
+	 */	
+	public Directory getParent(){
+		string pp = _getParentPath();
+		if (pp != null) {
+			return new Directory(pp);
+		} else {
+			return null;
+		} 
+	}
+	
+	[Bridged(name="getParentPath")]
+	private hosted string _getParentPath();
+	
+	/*
+	 * Rename this file while remaining in the same directory.
+	 *
+	 * Unlike a few file systems where the move command/API serves dual purpose, Julian splits the semantics between move and 
+	 * rename. [Move operation](#move) may only be used to move a file from one directory to another without changing its name,
+	 * while this method is only for renaming without relocating the file. The obvious implication of this division is that for
+	 * the rename operation, the new name must not contain file system separator, and there must be no item within the same 
+	 * directory that is already possessing the same name. In any of these cases this method returns false.
+	 *
+	 * To move a file and change its name, use [relocate()](#relocate).
+	 *
+	 * [param: newName] The new file name. Must not contain FS separator.
+	 * [throws: System.IO.IOException] An error occurred during file renaming operation.
+	 * [return] True if the file was successfully renamed; false if the file couldn't be.
+	 */
+	public bool rename(string newName){
+		if (newName.contains(Environment.separator)) {
+			return false;
+		}
+		
+		return _rename(newName);
+	}
+	
+	[Bridged(name="rename")]
+	private hosted bool _rename(string newName);
+	
+	/*
+	 * Move this file to another directory.
+	 *
+	 * Unlike a few file systems where the move command/API serves dual purpose, Julian splits the semantics between move and 
+	 * rename. [Rename operation](#rename) is only for renaming without relocating the file, while this method may only be used 
+	 * to move a file from one directory to another without changing its name. The obvious implication of this division is that for
+	 * the move operation, the destination must be a valid directory, and there must be no item in that directory that is already
+	 * possessing the same name. In any of these cases this method returns false. Moving to the same directory is allowed and 
+	 * implemented trivially by returning true directly.
+	 *
+	 * To move a file and change its name, use [relocate()](#relocate).
+	 *
+	 * [param: newDir] The new directory.
+	 * [throws: System.IO.IOException] An error occurred during file renaming operation.
+	 * [return] True if the file was successfully renamed; false if the file couldn't be.
+	 */
+	public bool move(Directory newDir){
+		return _move(newDir);
+	}
+	
+	[Bridged(name="move")]
+	private hosted bool _move(Directory newDir);
+	
+	/*
+	 * Move this file to another directory and rename it.
+	 *
+	 * This is a convenient method that wraps the functionality of [move()](#move) and [rename()](#rename) together. It is not
+	 * a trasactional operation. It may fail halfway leaving a moved file yet to be renamed, although it will try its best to 
+	 * restore to the previous status.
+	 *
+	 * [param: newName] The new file name. Must not contain FS separator.
+	 * [param: newDir] The new directory.
+	 * [throws: System.IO.IOException] An error occurred during the underlying file system operation. In particular, this exception
+	 * is thrown when we moved the file but failed to rename it, and a restoration (move-back) attempt was also foiled.
+	 * [return] True if the file was successfully moved and renamed; false if the file couldn't be and no change has occurred.
+	 */
+	public bool relocate(Directory newDir, string newName){
+		if (!newDir.exists()) {
+			return false;
+		}
+		
+		// TODO: Check name conflict in the dest dir
+	
+		bool succ1 = false;
+		bool succ2 = false;
+		Exception ex = null;
+		try {
+			if (succ1 = move(newDir)) {
+				if (newName != null) {
+					succ2 = rename(newName);
+				} else {
+					succ2 = true;
+				}
+			}
+		} catch (Exception e) {
+			ex = e;
+		}
+		
+		// Moved and renamed
+		if (succ2) {
+			return true;		
+		}
+		
+		// Moved but not renamed
+		if (succ1) {
+			// Try to move back
+			succ2 = move(parent);
+			if (succ2) {
+				if (ex != null) {
+					throw ex;
+				} else {
+					return false;
+				}
+			} else {
+				throw new IOException("Failed to relocate completely. Moved to " + newDir.getPath() + " but not renamed to " + newName, ex);
+			}
+		}
+		
+		// Not even moved
+		if (ex != null) {
+			throw ex;
+		} else {
+			return false;
+		}
+	}
 	
 	/*
 	 * Get a stream to read from this file. 

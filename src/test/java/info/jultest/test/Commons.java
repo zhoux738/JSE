@@ -1,13 +1,10 @@
 package info.jultest.test;
 
-import static info.jultest.test.Commons.getScriptFile;
-import static info.jultest.test.Commons.makeSimpleEngine;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.util.List;
 
 import org.junit.Assert;
@@ -76,7 +73,7 @@ public final class Commons {
 	
 	public static TypeTable DummyTypeTable = new TypeTable(null);
 	
-	static String makeScriptPath(String group, String feature, String scriptName){
+	public static String makeScriptPath(String group, String feature, String scriptName){
 		if(feature == null){
 			feature = ".";
 		}
@@ -93,6 +90,14 @@ public final class Commons {
 		EngineRuntime rt = new SimpleEngineRuntime(new SimpleHeapArea(), gvt, mm);
 		SimpleScriptEngine engine = new SimpleScriptEngine(rt, new EngineInitializationOption(reentry, true, false));
 		return engine;
+	}
+	
+	public static SimpleScriptEngine makeSimpleEngine(VariableTable gvt, boolean reentry){
+		return makeSimpleEngine(gvt, new ModuleManager(), reentry);
+	}
+	
+	public static SimpleScriptEngine makeSimpleEngine(VariableTable gvt){
+		return makeSimpleEngine(gvt, false);
 	}
 	
 	/**
@@ -124,12 +129,21 @@ public final class Commons {
 		return engine;
 	}
 	
-	public static SimpleScriptEngine makeSimpleEngine(VariableTable gvt){
-		return makeSimpleEngine(gvt, false);
+	/**
+	 * Make an engine that can use ModuleSys.Assert API.
+	 */
+	public static SimpleScriptEngine makeAssertableEngine(HeapArea heap, VariableTable gvt, TypeTable tt){
+		SimpleScriptEngine engine = makeSimpleEngine(heap, gvt, tt, null);
+		installAssertApi(engine);
+		return engine;
 	}
 	
-	public static SimpleScriptEngine makeSimpleEngine(VariableTable gvt, boolean reentry){
-		return makeSimpleEngine(gvt, new ModuleManager(), reentry);
+	/**
+	 * Enable ModuleSys.Assert API for the script.
+	 */
+	public static void installAssertApi(SimpleScriptEngine engine) {
+        engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
+		engine.setExceptionHandler(new AssertableExceptionHandler());
 	}
 	
 	public static EngineComponentSet buildSimpleEngine(){

@@ -86,6 +86,53 @@ class Directory : Item {
 	private hosted bool _delete();
 	
 	/*
+	 * Get the directory this file resides in.
+	 *
+	 * [throws: System.IO.IOException] An error occurred when trying to get the parent directory.
+	 * [return] The parent directory. Or null if the path doesn't exist.
+	 */	
+	public Directory getParent(){
+		string pp = _getParentPath();
+		if (pp != null) {
+			return new Directory(pp);
+		} else {
+			return null;
+		} 
+	}
+	
+	[Bridged(name="getParentPath")]
+	private hosted string _getParentPath();
+	
+	/*
+	 * Get the immediate child with the specified name.
+	 *
+	 * [param: name] The name of the child item.
+	 * [throws: System.IO.IOException] If the name contains separator. This method cannot be used to get a non-immediate child.
+	 * [return] An [item](System.IO.Item) which can be either [File](System.IO.File) or [Directory](System.IO.Directory); 
+	 * or null if the child doesn't exist.
+	 */	
+	public Item getChild(string name){
+		if (name.contains(Environment.separator)){
+			throw new IOException("Cannot get a child item with name including separator.");
+		}
+		
+		bool[] info = _getChildInfo(name);
+		
+		if (info[0]) { // Exists, and ...
+			if (info[1]) { // is a file
+				return new subFile(name);
+			} else {
+				return new subDirectory(name);
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	[Bridged(name="getChildInfo")]
+	private hosted bool[] _getChildInfo(string name);
+	
+	/*
 	 * List all items directly under this directory.
 	 *
 	 * [return] An array of items directly under this directory, including files and sub-directories. With this method, 
@@ -108,4 +155,29 @@ class Directory : Item {
 	[Bridged(name="listAll")]
 	private hosted string[][] _listAll();
 	
+	/*
+	 * Create a [File](System.IO.File) instance representing the child item with the specified path. 
+	 *
+	 * The resultant item is merely a handle and may not exist.
+	 *
+	 * [param: path] The path relative to this directory.
+	 * [throws: System.IO.IOException] If the combined name already exists and is a directory.
+	 * [return] A [File](System.IO.File) representing the child item
+	 */	
+	public File subFile(string path){
+		return new File(getPath() + Environment.separator + path);
+	}
+	
+	/*
+	 * Create a [Directory](System.IO.Directory) instance representing the child item with the specified path. 
+	 *
+	 * The resultant item is merely a handle and may not exist.
+	 *
+	 * [param: path] The path relative to this directory.
+	 * [throws: System.IO.IOException] If the combined name already exists and is a file.
+	 * [return] A [Directory](System.IO.Directory) representing the child item
+	 */	
+	public Directory subDirectory(string path){
+		return new Directory(getPath() + Environment.separator + path);
+	}
 }

@@ -210,6 +210,7 @@ public class CLParser {
 		if(restArgs == null){
 			restArgs = new ArrayList<String>();
 		}
+		
 		restArgs.add(raw);
 	}
 	

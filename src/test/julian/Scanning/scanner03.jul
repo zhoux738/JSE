@@ -1,5 +1,0 @@
-int foo(int a, string s){
-  int result = bar(a, s);
-  print("done: " + result);
-}
-

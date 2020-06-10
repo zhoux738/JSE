@@ -80,8 +80,10 @@ public class SystemRawScriptInfoInitializer {
 			"FileStream",
 			"File",
 			"Stream",
+			"TextWriter",
 			"Item",
 			"Directory",
+			"TextReader",
 			"Exception",
 		});
 		map.put("System", new String[]{
@@ -195,6 +197,10 @@ public class SystemRawScriptInfoInitializer {
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$Stream>(
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$Stream.class));
         
+        map.put("System/IO/TextWriter.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$TextWriter>(
+            info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$TextWriter.class));
+        
         map.put("System/IO/Item.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$Item>(
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$Item.class));
@@ -202,6 +208,10 @@ public class SystemRawScriptInfoInitializer {
         map.put("System/IO/Directory.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$Directory>(
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$Directory.class));
+        
+        map.put("System/IO/TextReader.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$TextReader>(
+            info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$TextReader.class));
         
         map.put("System/IO/Exception.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$Exception>(

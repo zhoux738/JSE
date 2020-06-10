@@ -12,35 +12,7 @@
     To run all the tests, call "ant test". This will launch a containerized test suite to validate JSR-223 compatibility.
   </description>
 
-  <property environment="env"/>
-  <property name="maven.home" value="${env.MAVEN_HOME}"/>
-    
-  <!-- A macro to call Maven from Ant. Originally from http://maven.apache.org/ant-tasks/examples/mvn.html -->
-  <macrodef name="maven">
-    <attribute name="options" default="" />
-    <attribute name="goal" />
-    <attribute name="basedir" />
-    <attribute name="resultproperty" default="maven.result" />
-    <element name="args" implicit="true" optional="true" />
-    <sequential>
-      <java classname="org.codehaus.classworlds.Launcher" fork="true"
-            dir="@{basedir}" resultproperty="@{resultproperty}">
-        <jvmarg value="-Xmx512m" />
-        <jvmarg value="-Dmaven.multiModuleProjectDirectory" />
-        <classpath>
-          <fileset dir="${maven.home}/boot">
-            <include name="*.jar" />
-          </fileset>
-          <fileset dir="${maven.home}/lib">
-            <include name="*.jar" />
-          </fileset>
-        </classpath>
-        <sysproperty key="classworlds.conf" value="${maven.home}/bin/m2.conf" />
-        <sysproperty key="maven.home" value="${maven.home}" />
-        <arg line="--batch-mode @{options} @{goal}" />
-      </java>
-    </sequential>
-  </macrodef>
+  <import file="./build/shared.xml"/>
   
   <!-- I: Developer-friendly goal aliases -->
   <!-- In Ant, tasks with description are considered public tasks and can be seen from "ant -projecthelp" -->
@@ -93,7 +65,25 @@
     <ant antfile="build.xml" dir="release" target="clean" />
     <ant antfile="build.xml" dir="release" target="create-release-package" />
   </target>
-  
+	
+  <target name="gen" description="(Special) Generate source files for system types">
+    <!-- mvn generate-sources -->
+    <echo message="Run 'mvn generate-sources'"/>
+    <maven basedir="${basedir}"
+           options=""
+           resultproperty="maven.build.result"
+           goal="generate-sources"/>
+  </target>
+
+  <target name="html" description="(Special) Generate HTML files for the website">
+    <!-- mvn generate-sources -->
+    <echo message="Run 'mvn generate-resources'"/>
+    <maven basedir="${basedir}"
+           options="-Djuleng.codegen.disable=true -Djuleng.docgen.enable=true -Djuleng.docgen.clean=false -Djuleng.docgen.format=html -Djuleng.docgen.pattern=*"
+           resultproperty="maven.build.result"
+           goal="generate-resources"/>
+  </target>
+
   <!-- II: The multi-task dispatcher -->
   
   <!-- Load default phases -->

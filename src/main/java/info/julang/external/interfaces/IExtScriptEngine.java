@@ -62,4 +62,12 @@ public interface IExtScriptEngine {
 	 * @return null if it failed last time or not invoked once.
 	 */
 	IExtResult getResult();
+	
+	/**
+	 * Abort the current running. Have no effect if the engine is not running.
+	 * 
+	 * @return true if a termination signal was successfully sent to the running engine.
+	 * In other words if the engine is running this method will return false.
+	 */
+	boolean abort();
 }

@@ -1,0 +1,185 @@
+module System.IO;
+
+import System;
+
+/*
+ * A text reader that reads text by lines, with '\n' invariably treated as the line separator, regardless of the OS.
+ *
+ * On Microsoft Windows the line separator is "\r\n". Since it contains '\n', this reader will still be able to recognize
+ * a line break. It will also strip of the penultimate character (\r) when returning the line in text. If the use case
+ * requires that the reader, when running on Windows, disregard '\n' that doesn't trail '\r', this class cannot be used.
+ *
+ * This class is not thread-safe and must be protected by lock when used in a multi-threaded context.
+ */
+class TextReader {
+	
+	private Stream stream;
+	private string charsetName;
+	private bool autoClose;
+	
+	private int index; // The index within the current buffer representing the char to be checked for LBS.
+	private int startIndex; // The index within the current buffer from which the next string will be generated.
+	private int max; // The max value the index can be incremented to. Usually the end of the buffer, except for the last load off of the stream.
+	private byte[] buffer;
+	private int bufferSize; // Double itself whenever LBS is not found within the current buffer.
+	
+	private static const int s_reread = -2;
+	
+	/*
+	 * Create a TextReader to read text from the specified stream.
+	 * Use default buffer size (8K) and default chatset (ASCII); 
+	 * also close the stream after end-of-file is confirmed by the caller.
+	 *
+	 * [param: stream] A stream to read test from. Must be readable.
+	 * [throws: IOException] If the stream is not readable.
+	 */ 
+	TextReader(Stream stream) : this(stream, null, 8192, true) { }
+	
+	/*
+	 * Create a TextReader to read text from the specified stream.
+	 *
+	 * [param: stream] A stream to read the text from. Must be readable.
+	 * [param: charset] The charset to use when converting the read bytes to string.
+	 * Charset names should have been registered by RFC 2278: IANA Charset Registration Procedures.
+	 * [param: bufferSize] The initial buffer size. Will be set to 1 if it's less than 1. 
+	 * The caller may use a bigger value if most of the lines are known to be long. the TextReader 
+	 * instance may dynamically expand the size as it sees fit.
+	 * [param: autoClose] Close the stream as soon as the end is reached.
+	 * [throws: IOException] If the stream is not readable.
+	 */ 
+	TextReader(Stream stream, string charset, int bufferSize, bool autoClose) {
+		if (!stream.canRead()) {
+			throw new IOException("Cannot instantiate a TextReader with an non-readable stream.");
+		}
+		this.stream = stream;
+		if (bufferSize < 1) {
+			bufferSize = 1;
+		}
+		this.bufferSize = bufferSize;
+		this.index = bufferSize;
+		this.autoClose = autoClose;
+		this.charsetName = String.isEmpty(charset) ? "ascii" : charset;
+		this.startIndex = 0;
+	}
+
+	/*
+	 * Read the next line off of the stream.
+	 *
+	 * [return] Null if reaching the end of the stream; otherwise the line in string, excluding the trailing characters marking the end of line.
+	 */ 
+	public string readln() {
+		if (index < 0) {
+			if (autoClose) {
+				autoClose = false;
+				try {
+					stream.close();
+				} catch (IOException ex) {
+					// Don't care.
+				}
+			}
+			
+			return null;
+		}
+		
+		if (this.index >= bufferSize) {
+			// End of buffer, re-populate the buffer.
+			if (buffer == null) {
+				buffer = new byte[bufferSize];
+			}
+			
+			int newlyRead = readMore(0);
+			if (newlyRead < 0) {
+				// End of stream
+				this.index = -1;
+				return readln();
+			} else {
+				index = 0;
+				startIndex = 0;
+			}
+		}
+		
+		// Try to locate the LBS (line-breaking sequence) from the current buffer.
+		int end = locateLBS();
+		if (end >= 0) {
+			// Found
+			String str = toString(end);
+			index++;
+			return str;
+		} else if (end == TextReader.s_reread) {
+			// Expanded buffer
+			return readln();
+		} else {
+			// EOF
+			if (startIndex < max) {
+				String str = toString(max);
+				index = -1;
+				return str;
+			} else {
+				index = -1;
+				return readln();
+			}
+		}
+	}
+	
+	private int readMore(int inBufOffset) {
+		int count = stream.read(buffer, inBufOffset, bufferSize);
+		// Console.println("readMore => " + count);
+		if (count > 0) {
+			max = inBufOffset + count - 1;
+		}
+		
+		return count;
+	}
+	
+	private int locateLBS() {
+		while (index <= max) {
+			if (((char)buffer[index]) != '\n') {
+				index++;
+			} else {
+				// Console.println("locateLBS found => " + index);
+				return index;
+			}
+		}
+		
+		// Reach the end of buffer but still no LBS. Expand the buffer and try again.
+		int mark25p = (max >>= 4);
+		int oldBufferSize = bufferSize;
+		
+		if (startIndex <= mark25p) {
+			// If 75% or more from the current buffer is on hold for the next LBS, just double the size and copy over
+			bufferSize *= 2;
+		} else if (startIndex < max - mark25p) {
+			// If between 25% and 75% from the current buffer is on hold for the next LBS, create a new buffer with 1.5 times of size
+			bufferSize = bufferSize * 1.5 + 1;
+		} // Otherwise, do not change buffer size
+	
+		byte[] tmpBuffer = buffer;
+		buffer = new byte[bufferSize];
+		
+		// Console.println("max=" + max + "; index=" + index + "; startIndex=" + startIndex + "; expand buffer size to " + bufferSize);
+		int diff = index - startIndex;
+		Array.copy(tmpBuffer, startIndex, buffer, 0, oldBufferSize - startIndex);
+		startIndex = 0;
+		index = diff;
+		
+		int newlyRead = readMore(index);
+		if (newlyRead >= 0) {
+			return TextReader.s_reread;
+		} else {
+			max = -1;
+			return -1;
+		}
+	}
+	
+	private String toString(int endIndex){
+		int newStart = endIndex + 1;
+		if (endIndex > 0 && buffer[endIndex - 1] == '\r') {
+			endIndex--;
+		}
+		
+		String str = String.fromBytes(buffer, "ascii", startIndex, endIndex - startIndex);
+		// Console.println("toString => " + str + " | " + startIndex + " ~ " + endIndex);
+		startIndex = newStart;
+		return str;
+	}
+}

@@ -93,7 +93,7 @@ public class ANTLRParser {
 	}
 
 	/**
-	 * Scan the given text to create a token stream.
+	 * Scan to create a lazy AST, which can be materialized into a actual tree on demand.
 	 * 
 	 * @param throwNow
 	 * @return an AST info from which an AST can be demanded further.
@@ -103,6 +103,17 @@ public class ANTLRParser {
 		
 		LazyAstInfo ainfo = new LazyAstInfo(this, fileName, bse);
 		return ainfo;
+	}
+	
+	/**
+	 * Scan to get the entire token list.
+	 * 
+	 * @return all the tokens, including those in the hidden channel.
+	 */
+	public List<Token> getAllTokens() {
+		FilterableTokenStream stream = this.getTokenStream();
+		stream.fill();
+		return stream.getTokens();
 	}
 	
 	/**
@@ -271,7 +282,7 @@ public class ANTLRParser {
 	private class JSEParsingHandler extends JSEParsingHandlerBase {
 		@Override
 		public void syntaxError(
-			Recognizer<?, ?> arg0, Object tok, final int lineNo, int columnNo, String msg, RecognitionException ex) {
+			Recognizer<?, ?> arg0, Object tok, final int lineNo, final int columnNo, String msg, RecognitionException ex) {
 			// Remember the first offending token. A parsing error is fatal and not recoverable, 
 			// so it is pointless to keep track of other issues.
 			if (ANTLRParser.this.bse == null){

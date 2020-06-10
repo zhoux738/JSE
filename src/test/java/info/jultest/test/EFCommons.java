@@ -63,6 +63,23 @@ public final class EFCommons {
 		return pair.getSecond();
 	}
 	
+	/**
+	 * Prepare an engine and its runtime.
+	 * 
+	 * @param modPath
+	 * @return
+	 * @throws EngineInvocationError
+	 */
+	public static EngineParamPair prepareViaFactory(String modPath) throws EngineInvocationError {
+		EngineFactory fact = new TestCaseEngineFactory();
+		EngineParamPair pair = fact.createEngineAndRuntime();
+		if (modPath != null) {
+			pair.getFirst().getContext().addModulePath(modPath);
+		}
+		
+		return pair;
+	}
+	
 	//-------------------------------------- Retrieval methods ---------------------------------------//
 	
 	public static IExtValue.IIntVal getIntValue(IExtVariableTable vt, String varName){

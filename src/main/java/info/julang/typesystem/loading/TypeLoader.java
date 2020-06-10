@@ -66,6 +66,7 @@ import info.julang.modulesystem.ClassInfo;
 import info.julang.modulesystem.ModuleManager;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.UnknownTypeException;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassFieldMember;
@@ -229,6 +230,9 @@ public class TypeLoader {
 		if(!reentry){
 			// Save a shallow copy of loading states
 			Map<String, ILoadingState> states = incubator.getLoadingStates();
+			if (states.size() == 0) {
+				return;
+			}
 			
 			// Add all the types into type table with finalized = false, so that TypeResolver won't be 
 			// able to see them yet.
@@ -638,6 +642,9 @@ public class TypeLoader {
 				es.interpret(context);
 				mVal = av.getMemberValue(fname);
 				es.getResult().getReturnedValue(false).assignTo(mVal);
+			} catch (UnknownTypeException utx) {
+				throw new IllegalAttributeUsageException(
+					"Trying to use a type which is not allowed in Attribute initializer: " + utx.getTypeName());
 			} finally {
 				// Seal the value
 				if (mVal instanceof JValueBase) {

@@ -1,0 +1,9 @@
+module ModuleSys.Assertion;
+
+// There is special handling for ModuleSys.Assertion.AssertionException in TestExceptionHandler
+class AssertionException : Exception {
+	
+	AssertionException(string msg, string extra) 
+		: super(String.isEmpty(extra) ? msg : (msg + " Error: " + extra)) { }
+	
+}

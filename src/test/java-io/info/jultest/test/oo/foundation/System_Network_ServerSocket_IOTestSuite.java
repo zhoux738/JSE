@@ -96,7 +96,7 @@ public class System_Network_ServerSocket_IOTestSuite {
         String result = sb.toString();
         for(String str : strs) {
         	int ind = result.indexOf(str);
-        	Assert.assertTrue("Missing " + str, ind >= 0);
+        	Assert.assertTrue("Missing '" + str + "'. The whole message received: " + result, ind >= 0);
         	result = result.substring(0, ind) + result.substring(ind + str.length());
         }
         

@@ -1,0 +1,12 @@
+import System.IO;
+
+// all path... variables are set in the unit test upfront.
+Directory dira = new Directory(pathDirA);
+Directory dirb = new Directory(pathDirB);
+File file1 = new File(pathFile1);
+
+file1.rename("file2.txt");
+
+file1.move(dirb);
+
+string contents = file1.readAllText();

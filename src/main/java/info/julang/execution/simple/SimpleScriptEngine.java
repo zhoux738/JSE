@@ -93,6 +93,8 @@ public class SimpleScriptEngine implements IScriptEngine {
 	
 	private boolean interactiveMode;
 	
+	private JThread mainThread;
+	
 	/**
 	 * [CFOW] Create a new SimpleScriptEngine.
 	 * 
@@ -111,6 +113,22 @@ public class SimpleScriptEngine implements IScriptEngine {
 		if(option.useExceptionDefaultHandler()){
 			handler = new DefaultExceptionHandler(true);
 		}
+	}
+	
+	/**
+	 * [CFOW]
+	 */
+	public boolean abort() {
+		JThread tmp = mainThread;
+		if (tmp != null) {
+			// Terminate the main thread. The entire engine will abort in the wake of main thread.
+			tmp.signalTermination();
+			// Ensure that a sleeping thread gets the signal too.
+			tmp.signalInterruption();
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -162,10 +180,10 @@ public class SimpleScriptEngine implements IScriptEngine {
 			state = State.RUNNING;
 			
 			JThreadManager tm = runtime.getThreadManager();
-			JThread thread = tm.createMain(runtime, exec);
+			mainThread = tm.createMain(runtime, exec);
 			
 			if(instru != null){
-				instru.setThreadRuntime(thread.getThreadRuntime());
+				instru.setThreadRuntime(mainThread.getThreadRuntime());
 			}
 			
 			IVariableTable gvt = runtime.getGlobalVariableTable();
@@ -213,7 +231,7 @@ public class SimpleScriptEngine implements IScriptEngine {
 				}
 			}
 			
-			state = thread.isFaulted() ? State.FAULTED : State.SUCCESS;
+			state = mainThread.isFaulted() ? State.FAULTED : State.SUCCESS;
 		} catch (JulianScriptException jse) {
 			state = State.FAULTED;
 			context.exception = jse;
@@ -235,7 +253,9 @@ public class SimpleScriptEngine implements IScriptEngine {
 			state = State.FAULTED;
 			throw new EngineInvocationError(
 				"A fatal error occurs when invoking script engine and is not handled. This is a bug. Exception: " + err.getMessage(), err);
-		} finally {				
+		} finally {
+			mainThread = null;
+			
 			// Clean up if we are to call this engine again.
 			if(allowReentry){
 				context.reset();
@@ -289,6 +309,7 @@ public class SimpleScriptEngine implements IScriptEngine {
 	@Override
 	public void reset() {
 		runtime = null;
+		mainThread = null;
 		runtime = getRuntime();
 		state = State.NOT_STARTED;
 	}

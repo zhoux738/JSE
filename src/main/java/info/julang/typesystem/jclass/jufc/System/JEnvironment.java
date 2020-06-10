@@ -24,6 +24,8 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc.System;
 
+import java.io.File;
+
 import info.julang.execution.Argument;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
@@ -33,6 +35,7 @@ import info.julang.hosting.execution.StaticNativeExecutor;
 import info.julang.interpretation.IStackFrameInfo;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.TempValueFactory;
 import info.julang.modulesystem.ClassInfo;
 import info.julang.modulesystem.ModuleInfo;
 import info.julang.modulesystem.ModuleManager;
@@ -56,7 +59,10 @@ public class JEnvironment {
 		@Override
 		protected void implementProvider(SimpleHostedMethodProvider provider) {
 			provider
-				.add("getScript", new GetScriptExecutor());
+				.add("getScript", new GetScriptExecutor())
+				.add("getLBS", new GetLBSExecutor())
+				.add("getPS", new GetPSExecutor())
+				.add("getS", new GetSExecutor());
 		}
 		
 	};
@@ -69,6 +75,30 @@ public class JEnvironment {
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
 			ObjectValue ov = getScript(rt);
 			return ov;
+		}
+	}
+	
+	private static class GetLBSExecutor extends StaticNativeExecutor<JEnvironment> {
+
+		@Override
+		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
+			return TempValueFactory.createTempStringValue(System.lineSeparator());
+		}
+	}
+	
+	private static class GetPSExecutor extends StaticNativeExecutor<JEnvironment> {
+
+		@Override
+		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
+			return TempValueFactory.createTempStringValue(File.pathSeparator);
+		}
+	}
+	
+	private static class GetSExecutor extends StaticNativeExecutor<JEnvironment> {
+
+		@Override
+		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
+			return TempValueFactory.createTempStringValue(File.separator);
 		}
 	}
 

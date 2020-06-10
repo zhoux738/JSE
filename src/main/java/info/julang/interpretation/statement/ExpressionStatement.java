@@ -42,8 +42,8 @@ import info.julang.typesystem.basic.BoolType;
  * A statement corresponding to an expression. 
  * <p>
  * Expression statement is a checkpoint for engine termination. For roughly every 8K expressions that have 
- * been executed in the engine across all threads, a termination check is performed to ensure the thread
- * honors KILL signal sent by the engine.
+ * been executed in the engine across all threads, or 0.5 second that has passed, a termination check 
+ * is performed to ensure the thread honors KILL signal sent by the engine.
  * 
  * @author Ming Zhou
  */
@@ -52,9 +52,12 @@ public class ExpressionStatement extends StatementBase implements IHasResult {
 	private AstInfo<ExpressionContext> ainfo;
 	protected Result result;
 
-	// The access to total is not thread safe, but that should be OK, as we only rely on 
+	// Counters used to check termination
+	// The access to these counters is not thread safe, but that should be OK, as we only rely on 
 	// the fact that the count is increasing, while the accuracy is less important.
-	private static int total = 1;
+	private static int s_total = 1;
+	private static int s_batchTotal = 0;
+	private static long s_timeMark = 0;
 	
 	/**
 	 * Create a new ExpressionStatement that corresponds to a script expression.
@@ -67,12 +70,33 @@ public class ExpressionStatement extends StatementBase implements IHasResult {
 		super(runtime);
 		this.ainfo = ainfo;
 		
-		if (++total > 0b1111111111111){ // Check this for every 8K expressions.
-			JThread thread = runtime.getJThread();
-			if(thread.checkTermination()){
-				throw new JThreadAbortedException(thread);
+		s_batchTotal++;
+		if (s_batchTotal >= 0b1111111) {
+			// Accumulate the counter
+			s_total += s_batchTotal;
+			s_batchTotal = 0;
+			
+			// For every 128 expressions, check time once
+			long newMark = System.currentTimeMillis();
+			if (newMark - s_timeMark >= 500) {
+				// Check every 0.5 second
+				JThread thread = runtime.getJThread();
+				if(thread != null && thread.checkTermination()){
+					throw new JThreadAbortedException(thread);
+				}
+			} else if (s_total > 0b1111111111111) {
+				// Also check every 8K expressions
+				JThread thread = runtime.getJThread();
+				if(thread.checkTermination()){
+					throw new JThreadAbortedException(thread);
+				}
+				
+				// Reset the counter
+				s_total = 1;
 			}
-			total = 1;
+			
+			// Reset the timer
+			s_timeMark = newMark;
 		}
 	}
 	

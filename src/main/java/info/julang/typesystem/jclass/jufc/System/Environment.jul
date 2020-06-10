@@ -23,4 +23,29 @@ class Environment {
 	[Bridged(name="getScript")]
 	hosted static Script getScript();
 	
+	/*
+	 * The line separator. "\r\n" on Microsoft Windows; "\n" on Unix, Linux, macOS and other Unix-like systems.
+	 */
+	static const string lineSeparator = _getLBS();
+	
+	[Bridged(name="getLBS")]
+	private hosted static string _getLBS();
+	
+	/*
+	 * The separator required by the operating system to enumerate multiple paths. This string always contains a single character: 
+	 * ";" on Microsoft Windows; ":" on Unix, Linux, macOS and other Unix-like systems.
+	 */
+	static const string pathSeparator = _getPS();
+	
+	[Bridged(name="getPS")]
+	private hosted static string _getPS();
+
+	/*
+	 * The separator used by the file system to represent a path. This string always contains a single character: 
+	 * "\\" on Microsoft Windows; "/" on Unix, Linux, macOS and other Unix-like systems.
+	 */
+	static const string separator = _getS();
+	
+	[Bridged(name="getS")]
+	private hosted static string _getS();	
 }

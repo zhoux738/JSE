@@ -95,7 +95,7 @@ public final class ArgumentUtil {
 	@SuppressWarnings("unchecked")
 	public static <T extends JValue> T getArgumentValue(int index, Argument[] args){
 		if(index >= 0 && index < args.length){
-			return (T) args[index].getValue();
+			return (T) args[index].getValue().deref();
 		} else {
 			return null;
 		}

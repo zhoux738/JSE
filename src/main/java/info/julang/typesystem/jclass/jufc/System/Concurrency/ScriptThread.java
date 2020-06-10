@@ -29,6 +29,7 @@ import info.julang.execution.Executable;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.threading.BadThreadStateException;
 import info.julang.execution.threading.JThread;
+import info.julang.execution.threading.JThreadAbortedException;
 import info.julang.execution.threading.JThreadPriority;
 import info.julang.execution.threading.JThreadRunnable;
 import info.julang.execution.threading.ThreadRuntime;
@@ -262,17 +263,26 @@ public class ScriptThread {
 	private static boolean sleep(ThreadRuntime rt, int totalMillis) {		
 		try {
 			// If we are already interrupted, do not bother.
-			if(rt.getJThread().checkInterruption(true)){
+			if(checkState(rt)){
 				return true;
 			}
 			
 			Thread.sleep(totalMillis);
 		} catch (InterruptedException e) {
-			rt.getJThread().checkInterruption(true);
+			checkState(rt);
 			return true;
 		}
 		
 		return false;
+	}
+
+	private static boolean checkState(ThreadRuntime rt) {
+		JThread jthread = rt.getJThread();
+		if (jthread.checkTermination()) {
+			throw new JThreadAbortedException(jthread);
+		}
+		
+		return jthread.checkInterruption(true);
 	}
 	
 	private ScriptThreadState getState() {

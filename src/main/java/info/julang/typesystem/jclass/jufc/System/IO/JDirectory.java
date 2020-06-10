@@ -25,8 +25,11 @@ SOFTWARE.
 package info.julang.typesystem.jclass.jufc.System.IO;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 
 import info.julang.execution.Argument;
+import info.julang.execution.ArgumentUtil;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.HostedMethodProviderFactory;
 import info.julang.hosting.SimpleHostedMethodProvider;
@@ -39,6 +42,7 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
@@ -63,6 +67,8 @@ public class JDirectory {
 				.add("exists", new ExistExecutor())
 				.add("getName", new GetNameExecutor())
 				.add("getPath", new GetPathExecutor())
+				.add("getParentPath", new GetParentPathExecutor())
+				.add("getChildInfo", new GetChildInfoExecutor())
 				.add("listAll", new ListAllExecutor());
 		}
 		
@@ -100,6 +106,16 @@ public class JDirectory {
 		
 	}
 	
+	private static class GetParentPathExecutor extends InstanceNativeExecutor<JDirectory> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
+			String pp = jdir.getParentPath();
+			return pp != null ? TempValueFactory.createTempStringValue(pp) : RefValue.NULL;
+		}
+		
+	}
+	
 	private static class ExistExecutor extends InstanceNativeExecutor<JDirectory> {
 		
 		@Override
@@ -130,6 +146,24 @@ public class JDirectory {
 		
 	}
 	
+	private static class GetChildInfoExecutor extends InstanceNativeExecutor<JDirectory> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
+			StringValue sv = ArgumentUtil.<StringValue>getArgumentValue(0, args);
+			
+			boolean[] res = jdir.getChildInfo(sv.getStringValue());
+			
+			ArrayValue av = TempValueFactory.createTemp1DArrayValue(rt.getTypeTable(), BoolType.getInstance(), 2);
+			for(int i=0; i<res.length; i++){
+				TempValueFactory.createTempBoolValue(res[i]).assignTo(av.getValueAt(i));
+			}
+			
+			return av;
+		}
+		
+	}
+	
 	private static class ListAllExecutor extends InstanceNativeExecutor<JDirectory> {
 		
 		@Override
@@ -154,18 +188,23 @@ public class JDirectory {
 	}
 
 	//----------------- implementation at native end -----------------//
-	
-	private String path;
-	
+
 	private File dir;
 	
-	public void init(String path){
-		this.path = path;
-		this.dir = new File(path);
+	public void init(String path) throws IOException {
+		String cpath = Paths.get(path).toFile().getCanonicalPath();
+		this.dir = new File(cpath);
+		if (dir.exists() && dir.isFile()) {
+			throw new JSEIOException("Cannot create a directory with a path to a file.");
+		}
 	}
 	
-	public String getPath(){
-		return path;
+	public String getPath() throws IOException {
+		return dir.getCanonicalPath();
+	}
+	
+	public String getParentPath(){
+		return dir.getParent();
 	}
 	
 	public String getName(){
@@ -182,6 +221,15 @@ public class JDirectory {
 	
 	public boolean delete() {
 		return dir.delete();
+	}
+	
+	public boolean[] getChildInfo(String name) {
+		File ch = new File(dir, name);
+		boolean[] res = new boolean[] {
+			ch.exists(),
+			ch.isFile()	
+		};
+		return res;
 	}
 	
 	public File[] listAll() {

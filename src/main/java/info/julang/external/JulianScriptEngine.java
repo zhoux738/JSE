@@ -267,6 +267,19 @@ public class JulianScriptEngine {
 		return runInternal(script, arguments, false);
 	}
 	
+	/**
+	 * Stop the current running.
+	 * 
+	 * Note this method can only be practically useful if the running was launched in a separate thread.
+	 * Since methods such as {@link #runFile(String)} will be blocking, a caller won't get chance to 
+	 * stop it.
+	 * 
+	 * @return true if the engine is to be stopped; false if the engine is not running at all.
+	 */
+	public boolean stopRunning() {
+		return engine.abort();
+	}
+	
 	//-------------------------------- Invocation: internals ----------------------------------//
 	
 	private Object runInternal(String script, String[] args, boolean isFileOrSnippet) throws JSEException {

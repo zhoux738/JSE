@@ -1,0 +1,19 @@
+<project>
+ <modelVersion>4.0.0</modelVersion>
+ <groupId>info.julang.ide</groupId>
+ <artifactId>root</artifactId>
+ <version>0.1.27</version><!-- VERSION_ELEMENT -->
+ <packaging>pom</packaging>
+ 
+ <parent>
+   <groupId>info.julang.ide</groupId>
+   <artifactId>release</artifactId>
+   <version>0.0.3</version>
+   <relativePath>./release</relativePath>
+ </parent>
+
+ <modules>
+   <module>plugin</module>
+   <module>feature-repository</module>
+ </modules>
+</project>

@@ -1,0 +1,26 @@
+import System.IO;
+import System.Collection;
+
+FileStream fs = new FileStream(path, FileMode.OPEN);
+
+TextReader reader = new TextReader(fs, null, bufferSize, true);
+
+List list = new List();
+String line = null;
+while(true){
+	line = reader.readln();
+	if (line != null) {
+		//Console.println("READ: " + line);
+		list.add(line);
+	} else {
+		//Console.println("READ: <EOF>");
+		break;
+	}
+}
+
+fs.close();
+
+String[] strarr = new String[list.size()];
+for (int i = 0; i < strarr.length; i++) {
+	strarr[i] = list[i];
+}

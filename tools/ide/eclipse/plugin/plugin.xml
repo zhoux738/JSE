@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <!-- 1. Nature -->
+   <extension
+         id="julianNature"
+         name="Julian Project Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="info.julang.ide.nature.JulianNature">
+         </run>
+      </runtime>
+      <builder
+            id="info.julang.ide.julianBuilder">
+      </builder>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="julianNatureCommandCategory"
+            name="Julian Project Nature commands">
+      </category>
+      <command
+            categoryId="julianNatureCommandCategory"
+            defaultHandler="info.julang.ide.nature.ToggleJulianNatureHandler"
+            id="toggleJulianNatureCommand"
+            name="Add/Remove Julian Project Nature">
+      </command>
+   </extension>
+   <!-- Add a menu item into JDT's Package Explorer's popup menu -->
+   <extension 
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer?after=additions">
+         <command
+               label="Disable Julian Support"
+               icon="icons/mascot_jul_disable.png"
+               commandId="toggleJulianNatureCommand"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <test
+                          property="org.eclipse.core.resources.projectNature"
+                          value="info.julang.ide.julianNature">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               label="Enable Julian Support"
+               icon="icons/mascot_jul.png"
+               commandId="toggleJulianNatureCommand"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <not>
+                           <test
+                             property="org.eclipse.core.resources.projectNature"
+                             value="info.julang.ide.julianNature">
+                           </test>
+                        </not>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+   <!-- Add the same menu item into Project Explorer's popup menu -->
+   <extension 
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+         <command
+               label="Disable Julian Support"
+               icon="icons/mascot_jul_disable.png"
+               commandId="toggleJulianNatureCommand"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <test
+                          property="org.eclipse.core.resources.projectNature"
+                          value="info.julang.ide.julianNature">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               label="Enable Julian Support"
+               icon="icons/mascot_jul.png"
+               commandId="toggleJulianNatureCommand"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IProject">
+                        <not>
+                           <test
+                             property="org.eclipse.core.resources.projectNature"
+                             value="info.julang.ide.julianNature">
+                           </test>
+                        </not>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+
+   <!-- 2. Builder -->
+   <extension
+         id="julianBuilder"
+         name="Julian Project Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true">
+         <run
+               class="info.julang.ide.builder.JulianBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="julianProblem"
+         name="Julian Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   
+   <!-- 3. Properties -->
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <!-- For script file -->
+      <page
+            id="info.julang.ide.properties.julianPropertyPage"
+            name="Julian Script"
+            class="info.julang.ide.properties.JulianPropertyPage"
+            nameFilter="*.jul">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IFile">
+              <test
+                property="org.eclipse.core.resources.projectNature"
+                value="info.julang.ide.julianNature">
+              </test>
+            </adapt>
+         </enabledWhen>
+      </page>
+      <!-- For Julian project -->
+      <page
+            id="info.julang.ide.properties.julianProjectPropertyPage"
+            name="Julian"
+            class="info.julang.ide.properties.JulianProjectPropertyPage">
+         <enabledWhen>
+           <adapt type="org.eclipse.core.resources.IProject">
+              <test
+                property="org.eclipse.core.resources.projectNature"
+                value="info.julang.ide.julianNature">
+              </test>
+            </adapt>
+         </enabledWhen>
+      </page>
+      <page
+            id="info.julang.ide.properties.julianProjectPropertyModulePathsPage"
+            name="Module Paths"
+            category="info.julang.ide.properties.julianProjectPropertyPage"
+            class="info.julang.ide.properties.JulianProjectPropertyModulePathsPage">
+         <enabledWhen>
+           <adapt type="org.eclipse.core.resources.IProject">
+              <test
+                property="org.eclipse.core.resources.projectNature"
+                value="info.julang.ide.julianNature">
+              </test>
+            </adapt>
+         </enabledWhen>
+      </page>
+   </extension>
+   
+   <!-- 4. Editor -->
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            id="info.julang.ide.editors.JulianEditor"
+            name="Julian Script Editor"
+            icon="icons/mascot.png"
+            extensions="jul"
+            class="info.julang.ide.editors.JulianEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor">
+      </editor>
+   </extension>
+   
+   <!-- 5. Launcher -->
+   <extension point="org.eclipse.core.expressions.propertyTesters">
+	  <propertyTester
+	     namespace="info.julang.ide"
+	     id="julianScriptErrorFreeTester"
+	     properties="hasLegalSyntax"
+	     type="org.eclipse.core.resources.IFile"
+	     class="info.julang.ide.launcher.JulianScriptFileTester">
+	  </propertyTester>
+   </extension>
+     
+   <!-- (1) Launch by "Run Configuration" -->
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            id="julianLaunchConfigurationType"
+            name="Julian Script"
+        	modes="run"   
+            delegate="info.julang.ide.launcher.JulianLaunchConfigurationDelegate">
+      </launchConfigurationType>
+   </extension>
+   <extension 
+   	     point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            icon="icons/mascot.png"
+            id="julianLaunchConfigurationTypeImage"
+            configTypeID="julianLaunchConfigurationType"> <!-- configTypeID = launchConfigurationType.id -->
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            id="julianLaunchConfigurationTabGroup"
+        	class="info.julang.ide.launcher.ui.JulianLaunchConfigTabGroup"
+        	type="julianLaunchConfigurationType">
+      </launchConfigurationTabGroup>
+   </extension>
+   
+   <!-- (2) Launch by "Run As" -->
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="info.julang.ide.launcher.JulianLaunchShortcut"
+            icon="icons/mascot.png"
+            id="julianRunAsShortcut"
+            label="Julian Script"
+            modes="run">
+         <contextualLaunch> <!-- Only visible on objects that provide an org.eclipse.debug.ui.actions.ILaunchable adapter -->
+	         <contextLabel mode="run" label="Run Julian Script" />
+	         <enablement>
+	           <with variable="selection">
+	           	   <count value="1"/>
+		           <iterate>
+		              <adapt type="org.eclipse.core.resources.IFile">
+		              	 <!-- This check is not needed since the custom tester checks that already.
+		                 <and>
+		                    <test property="org.eclipse.core.resources.name" value="*.jul"/>
+		                 </and>
+		                 -->
+   						 <test property="info.julang.ide.hasLegalSyntax"/>
+		              </adapt>
+		           </iterate>
+	           </with>
+	        </enablement>
+	     </contextualLaunch>
+      </shortcut>
+   </extension>
+   
+   <!-- Console -->   
+   <extension
+         point="org.eclipse.ui.console.consolePageParticipants">
+      <consolePageParticipant
+            class="info.julang.ide.launcher.console.JulianConsolePageParticipant"
+            id="info.julang.ide.launcher.console.JulianConsolePageParticipant">
+         <enablement>
+            <instanceof value="info.julang.ide.launcher.console.JulianConsole"/>
+         </enablement>
+      </consolePageParticipant>
+   </extension>
+   
+   <!-- 6. Wizards -->
+   <!-- The wizard by default will only appear in File => New => Others. Therefore we add a command to open it programmatically and
+        introduce two menu locations to invoke the commands: one from the top menu, the other the context of the navigator view. -->
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="info.julang.ide.wizcat"
+            name="Julian">
+      </category>
+      <wizard
+            category="info.julang.ide.wizcat"
+            class="info.julang.ide.wizards.NewJulianScriptWizard"
+            icon="icons/mascot_jul.png"
+            id="info.julang.ide.newJulianScriptWizard"
+            name="Julian Script">
+      </wizard>
+   </extension>
+   
+   <!-- Commands to be called when opening from menus -->
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="julianWizardCommandCategory"
+            name="Julian Project Wizard commands">
+      </category>
+      <command
+            categoryId="julianWizardCommandCategory"
+            defaultHandler="info.julang.ide.wizards.OpenNewJulianScriptWizardHandler"
+            id="openNewJulianScriptWizardCommand"
+            name="New Julian Script File">
+      </command>
+   </extension>
+   
+   <!-- Open from menus -->
+   <extension 
+         point="org.eclipse.ui.menus">
+      <!-- Add to context menu: New from Project Explorer -->
+      <menuContribution
+            locationURI="popup:common.new.menu?after=new">
+         <command
+               label="Julian Script"
+               icon="icons/mascot_jul.png"
+               commandId="openNewJulianScriptWizardCommand"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                  	<or>
+	                     <adapt type="org.eclipse.core.resources.IContainer">
+	                        <test
+	                          property="org.eclipse.core.resources.projectNature"
+	                          value="info.julang.ide.julianNature">
+	                        </test>
+	                     </adapt>
+	                     <adapt type="org.eclipse.core.resources.IProject">
+	                        <test
+	                          property="org.eclipse.core.resources.projectNature"
+	                          value="info.julang.ide.julianNature">
+	                        </test>
+	                     </adapt>
+                     </or>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <!-- Add to context menu: New from JDT's Package Explorer -->
+      <menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer?endof=group.new">
+      <!-- This location is likely the best we can do for JDT's package explorer. Ideally we would like to put it inside the New subgroup, but 
+           unfortunately that group is not created with an id and therefore not referenceable. See
+             https://github.com/eclipse/eclipse.jdt.ui/blob/master/org.eclipse.jdt.ui/ui/org/eclipse/jdt/internal/ui/actions/NewWizardsActionGroup.java
+           Note that at line 80 or so:
+             fNewWizardMenu= new NewWizardMenu(fSite.getWorkbenchWindow());
+           NewWizardMenu has another ctor which takes a 2nd arg that is the id. This one, however, simply defaults to null.
+        -->
+         <command
+               label="New Julian Script"
+               icon="icons/mascot_jul.png"
+               commandId="openNewJulianScriptWizardCommand"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                  	<or>
+	                     <adapt type="org.eclipse.core.resources.IContainer">
+	                        <test
+	                          property="org.eclipse.core.resources.projectNature"
+	                          value="info.julang.ide.julianNature">
+	                        </test>
+	                     </adapt>
+	                     <adapt type="org.eclipse.core.resources.IProject">
+	                        <test
+	                          property="org.eclipse.core.resources.projectNature"
+	                          value="info.julang.ide.julianNature">
+	                        </test>
+	                     </adapt>
+                     </or>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <!-- Add to top menu => File => New, regardless of the perspective -->
+      <menuContribution locationURI="menu:new?after=additions">
+       <command
+           label="Julian Script"
+           icon="icons/mascot_jul.png"
+           commandId="openNewJulianScriptWizardCommand"
+           style="push">
+       </command>
+      </menuContribution>
+   </extension>
+   
+   <!-- 7. Themes -->
+   <!-- This is the legacy color/font extension. -->
+   <extension point="org.eclipse.ui.themes">
+      <themeElementCategory
+         id="info.julang.ide.themeCategory"
+         label="Julian IDE Theme Category"/>
+      <colorDefinition 
+          id="julian.editor.keyword_color"
+          categoryId="info.julang.ide.themeCategory"
+          label="Font color for keywords"
+          value="153,51,102">
+      </colorDefinition>
+      <colorDefinition 
+          id="julian.editor.comment_color"
+          categoryId="info.julang.ide.themeCategory"
+          label="Font color for comments"
+          value="102,153,102">
+      </colorDefinition>
+      <colorDefinition 
+          id="julian.editor.literal_color"
+          categoryId="info.julang.ide.themeCategory"
+          label="Font color for literal"
+          value="51,0,255">
+      </colorDefinition>
+      <colorDefinition 
+          id="julian.editor.regex_color"
+          categoryId="info.julang.ide.themeCategory"
+          label="Regex color for regex"
+          value="0,206,209">
+      </colorDefinition>
+      <theme
+          id="julian.theme.dark">
+	 	  <colorOverride
+        	 id="julian.editor.keyword_color"
+        	 value="204,108,29"/>
+	 	  <colorOverride
+        	 id="julian.editor.comment_color"
+        	 value="128,128,128"/>
+	 	  <colorOverride
+        	 id="julian.editor.literal_color"
+        	 value="23,198,163"/>
+	 	  <colorOverride
+        	 id="julian.editor.regex_color"
+        	 value="0,206,209"/>
+      </theme>
+      <theme
+          id="julian.theme.regular">
+	 	  <colorOverride
+        	 id="julian.editor.keyword_color"
+        	 value="153,51,102"/>
+	 	  <colorOverride
+        	 id="julian.editor.comment_color"
+        	 value="102,153,102"/>
+	 	  <colorOverride
+        	 id="julian.editor.literal_color"
+        	 value="51,0,255"/>
+	 	  <colorOverride
+        	 id="julian.editor.regex_color"
+        	 value="0,206,209"/>
+      </theme>
+      <theme
+          id="julian.theme.regular">
+      </theme>
+   </extension>
+   <!-- This associates the legacy schemes with e4's them concept. -->
+   <extension
+         point="org.eclipse.e4.ui.css.swt.theme">
+      <themeAssociation
+	 	themeId="org.eclipse.e4.ui.css.theme.e4_dark"
+	 	colorAndFontId="julian.theme.dark">
+	  </themeAssociation>
+      <themeAssociation
+	 	themeId="org.eclipse.e4.ui.css.theme.e4_classic"
+	 	colorAndFontId="julian.theme.regular">
+	  </themeAssociation>
+      <themeAssociation
+	 	themeId="org.eclipse.e4.ui.css.theme.e4_default"
+	 	colorAndFontId="julian.theme.regular">
+	  </themeAssociation>
+   </extension>
+</plugin>

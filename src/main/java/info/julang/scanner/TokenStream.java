@@ -36,7 +36,7 @@ import info.julang.parser.FilterableTokenStream;
  * <p>
  * The derived classes should call either {@link #setScanner(TokenScanner)} to set a
  * scanner as the source of tokens.
- * <p/>
+ * <p>
  * This class is not thread safe.
  * 
  * @see {@link ITokenStream}

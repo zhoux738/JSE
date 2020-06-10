@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description name="Official Eclipse Julian Plugin Update Website" url="http://julang.info/releases/ide/eclipse">
+      The latest plugins supporting Julian development experience in Eclipse.
+   </description>
+   <feature url="features/info.julang.ide.feature_0.0.3.jar" id="info.julang.ide.feature" version="0.0.3">
+      <category name="info.julian.ide.category"/>
+   </feature>
+   <category-def name="info.julian.ide.category" label="Julian Development Tools"/>
+</site>

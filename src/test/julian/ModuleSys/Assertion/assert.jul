@@ -1,0 +1,22 @@
+module ModuleSys.Assertion;
+
+class Assert {
+
+	static void areEqual(bool expected, bool actual, string msg){
+		if (expected != actual) {
+			throw new AssertionException("Assertion failed. Expected: " + expected + "; Actual: " + actual + ".", msg);
+		}
+	}
+
+	static void areEqual(int expected, int actual, string msg){
+		if (expected != actual) {
+			throw new AssertionException("Assertion failed. Expected: " + expected + "; Actual: " + actual + ".", msg);
+		}
+	}
+	
+	static void areEqual(string expected, string actual, string msg){
+		if (expected != actual) {
+			throw new AssertionException("Assertion failed. Expected: " + expected + "; Actual: " + actual + ".", msg);
+		}
+	}
+}

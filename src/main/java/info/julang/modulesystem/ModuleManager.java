@@ -422,31 +422,60 @@ public class ModuleManager implements IModuleManager {
 	 * @param isEmbedded
 	 * @return
 	 */
-	private MutableModuleInfo makeModuleInfo(
+	private static MutableModuleInfo makeModuleInfo(
 		String modName, List<String> scriptPaths, boolean isEmbedded) 
 		throws FileNotFoundException {
 		ModuleInfo.Builder builder = new ModuleInfo.Builder(modName);
 		//RawScriptInfo info = new RawScriptInfo(modName, isEmbedded);
 		
 		for(String path : scriptPaths){
-			RawScriptInfo info = null;
-			if (isEmbedded) {
-				info = SystemRawScriptInfoLoader.INSTANCE.getRawScriptInfo(path);
-			}
-			
-			if (info == null){
-				info = new RawScriptInfo(modName, isEmbedded);
-				info.initialize(path);
-				
-				CollectScriptInfoStatement csis = new CollectScriptInfoStatement(false); // Do not load AST yet.
-				csis.prescan(info);
-			}
+			RawScriptInfo info = loadModuleInfo(modName, path, isEmbedded, false);
 			
 			// Add script info
 			builder.addScript(info);
 		}
 		
 		return builder.build();
+	}
+	
+	private static RawScriptInfo loadModuleInfo(
+		String modName, String path, boolean isEmbedded, boolean analyticalLoad) 
+		throws FileNotFoundException {
+		
+		RawScriptInfo info = null;
+		if (isEmbedded) {
+			info = SystemRawScriptInfoLoader.INSTANCE.getRawScriptInfo(path);
+		} else {
+			info = new RawScriptInfo(modName, isEmbedded);
+			info.initialize(path);
+			
+			if (analyticalLoad) {
+				RawScriptInfo.Option opt = info.getOption();
+				opt.setAllowNameInconsistency(true);
+				opt.setAllowNoModule(true);
+			}
+			
+			CollectScriptInfoStatement csis = new CollectScriptInfoStatement(analyticalLoad);
+			csis.prescan(info);
+		}
+		
+		return info;
+	}
+	
+	/**
+	 * Try to load script info from the specified path. This will cause some generation of AST for each type.
+	 * <p>
+	 * This method is completely stateless. It won't cause any change to the global environment and it doesn't use any contextual object either.
+	 * 
+	 * @param modName The module's name. The file at the specified path is expected to start with 
+	 * "<code>import {modName};</code>", otherwise this method will throw.
+	 * @param path The path to the script to load.
+	 * @return The {@link RawScriptInfo} object describing the script file at the specified path.
+	 * @throws FileNotFoundException
+	 */
+	public static RawScriptInfo loadScriptInfoFromPath(String modName, String path) 
+		throws FileNotFoundException {
+		return loadModuleInfo(modName, path, false, true);
 	}
 
 	/**

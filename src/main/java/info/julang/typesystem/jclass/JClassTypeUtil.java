@@ -91,8 +91,8 @@ public final class JClassTypeUtil {
 					continue;
 				} else if (pTyp.getKind() == JTypeKind.CLASS) {
 					if(vTyp.getKind() == JTypeKind.CLASS){
-						JClassType cpTyp = (JClassType) pTyp;
-						JClassType cvTyp = (JClassType) vTyp;
+						ICompoundType cpTyp = (ICompoundType) pTyp;
+						ICompoundType cvTyp = (ICompoundType) vTyp;
 						if(cvTyp.isDerivedFrom(cpTyp, true)){
 							continue;
 						}

@@ -1,0 +1,109 @@
+<project name="shared" basedir="." xmlns:if="ant:if" xmlns:unless="ant:unless">
+  <!--
+    This project is not to be used on its own. Instead it should be imported by other projects using a relative path.
+    
+    Example - import from src/tools/ide/eclipse/build.xml
+      <import file="../../../build/shared.xml"/>
+      
+    This project,
+    (1) loads build.properties from source root;
+    (2) defines a few macros:
+        - maven: Calls Maven with arbitrary arguments.
+        - julian: Invokes JSE against a script file or snippet with a set of bound variables.
+                  Requires a last-known-good (LKG) version of JSE.
+  -->	
+	
+  <!-- The property 'ant.file.{project.name}' refers to the file the named project resides in -->
+  <dirname property="imported.basedir" file="${ant.file.shared}"/>
+  <loadproperties srcFile="${imported.basedir}/../build.properties"/>
+  <property environment="env"/>
+  <property name="maven.home" value="${env.MAVEN_HOME}"/>
+
+  <!-- Check if we have an LKG jar already -->
+  <pathconvert property="lkgJarPath" setonempty="false" pathsep=" ">
+    <path>
+      <fileset dir="${imported.basedir}/../build/lkg" includes="JSE-*.jar" />
+    </path>
+  </pathconvert>
+  <condition property="lkgJarPathExists">
+    <resourcecount when="greater" count="0">
+      <fileset file="${lkgJarPath}"/>
+    </resourcecount>
+  </condition>
+   
+  <!-- Check if we have built locally -->
+  <property name="builtjar" location="${imported.basedir}/../target/JSE-${jse.version}.jar" relative="false"/>
+  <available file="${builtjar}" property="builtJarPathExists"/>
+  <condition property="bothJarPathsMissing">
+	<and>
+      <not><isset property="lkgJarPathExists"/></not>
+      <not><isset property="builtJarPathExists"/></not>
+	</and>
+  </condition>
+  	
+  <!-- If LKG doesn't exist and we havn't built locally, abort -->
+  <fail if="bothJarPathsMissing" message="Cannot invoke JSE from Ant. Must obtain a working copy first. Try run 'mvn package' from the source root."/>
+
+  <!-- If LKG doesn't exist but a local copy exists, copy it over -->
+  <copy file="${builtjar}" todir="${imported.basedir}/../build/lkg" unless:set="lkgJarPathExists"/>
+	
+  <!-- Call Maven from Ant. Originally from http://maven.apache.org/ant-tasks/examples/mvn.html -->
+  <macrodef name="maven">
+    <attribute name="options" default="" />
+    <attribute name="goal" />
+    <attribute name="basedir" />
+    <attribute name="resultproperty" default="maven.result" />
+    <element name="args" implicit="true" optional="true" />
+    <sequential>
+      <java classname="org.codehaus.classworlds.Launcher" fork="true"
+            dir="@{basedir}" resultproperty="@{resultproperty}">
+        <jvmarg value="-Xmx512m" />
+        <jvmarg value="-Dmaven.multiModuleProjectDirectory" />
+        <classpath>
+          <fileset dir="${maven.home}/boot">
+            <include name="*.jar" />
+          </fileset>
+          <fileset dir="${maven.home}/lib">
+            <include name="*.jar" />
+          </fileset>
+        </classpath>
+        <sysproperty key="classworlds.conf" value="${maven.home}/bin/m2.conf" />
+        <sysproperty key="maven.home" value="${maven.home}" />
+        <arg line="--batch-mode @{options} @{goal}" />
+      </java>
+    </sequential>
+  </macrodef>
+	
+  <!-- Execute a Julian script file and/or inlined script code (enclose with CDATA) -->
+  <!-- The script may refer to the following variables:
+       jse_version: The version of JSE 
+       script_dir: The full path of directory the script belongs to
+       script_path: The full path of the script file
+  -->
+  <macrodef name="julian">
+    <attribute name="srcFile" default="" />
+    <text name="srcText" optional="true"/>
+    <sequential>
+      <dirname property="script_dir" file="@{srcFile}"/>
+      <property name="script_path" location="@{srcFile}"/>
+      <property name="jse_version" value="${jse.version}"/>
+      <property name="jse.src.snippet" value="@{srcText}"/>
+      <condition property="jse.src.file">
+      	<not><equals arg1="" arg2="@{srcFile}"/></not>
+      </condition>
+      <!-- 1. Execute from source file -->
+      <script manager="javax" language="julian" src="@{srcFile}" if:set="jse.src.file">
+	    <classpath>
+	    	<fileset dir="${imported.basedir}/../build/lkg" includes="*.jar"/>
+	    </classpath>
+      </script>
+      <!-- 2. Execute the inline code -->
+      <script manager="javax" language="julian" if:set="jse.src.snippet">
+  	    <classpath>
+  	    	<fileset dir="${imported.basedir}/../build/lkg" includes="*.jar"/>
+  	    </classpath>
+        @{srcText}
+      </script>
+    </sequential>
+  </macrodef>
+</project> 

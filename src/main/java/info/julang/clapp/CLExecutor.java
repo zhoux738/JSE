@@ -120,7 +120,7 @@ public class CLExecutor {
 		
 		try {
 			args.setScriptPath(scFile);
-			args.setArguments(new String[0]);
+			args.setArguments(env.getArguments());
 			Object result = helper.invokeEngine(jse, args);
 			if(result != null){
 				if (!env.isQuietMode()){

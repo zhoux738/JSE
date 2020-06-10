@@ -28,8 +28,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import info.julang.execution.Argument;
+import info.julang.execution.ArgumentUtil;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.HostedMethodProviderFactory;
 import info.julang.hosting.SimpleHostedMethodProvider;
@@ -38,6 +44,7 @@ import info.julang.hosting.execution.InstanceNativeExecutor;
 import info.julang.memory.value.BoolValue;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
 
@@ -61,8 +68,11 @@ public class JFile {
 				.add("create", new CreateExecutor())
 				.add("delete", new DeleteExecutor())
 				.add("exists", new ExistExecutor())
+				.add("move", new MoveExecutor())
+				.add("rename", new RenameExecutor())
 				.add("getName", new GetNameExecutor())
 				.add("getPath", new GetPathExecutor())
+				.add("getParentPath", new GetParentPathExecutor())
 				.add("readAllText", new ReadAllTextExecutor());
 		}
 		
@@ -100,6 +110,16 @@ public class JFile {
 		
 	}
 	
+	private static class GetParentPathExecutor extends InstanceNativeExecutor<JFile> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
+			String pp = jfile.getParentPath();
+			return pp != null ? TempValueFactory.createTempStringValue(pp) : RefValue.NULL;
+		}
+		
+	}
+	
 	private static class ExistExecutor extends InstanceNativeExecutor<JFile> {
 		
 		@Override
@@ -130,6 +150,29 @@ public class JFile {
 		
 	}
 	
+	private static class MoveExecutor extends IOInstanceNativeExecutor<JFile> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
+			HostedValue hv = ArgumentUtil.<HostedValue>getArgumentValue(0, args);
+			JDirectory dir = (JDirectory)hv.getHostedObject();
+			BoolValue sv = TempValueFactory.createTempBoolValue(jfile.move(dir));
+			return sv;
+		}
+		
+	}
+	
+	private static class RenameExecutor extends IOInstanceNativeExecutor<JFile> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
+			StringValue sv = ArgumentUtil.<StringValue>getArgumentValue(0, args);
+			BoolValue bv = TempValueFactory.createTempBoolValue(jfile.rename(sv.getStringValue()));
+			return bv;
+		}
+		
+	}
+	
 	private static class ReadAllTextExecutor extends IOInstanceNativeExecutor<JFile> {
 		
 		@Override
@@ -142,17 +185,22 @@ public class JFile {
 
 	//----------------- implementation at native end -----------------//
 	
-	//private String path;
-	
 	private File file;
 	
-	public void init(String path){
-		//this.path = path;
-		this.file = new File(path);
+	public void init(String path) throws IOException {
+		String cpath = Paths.get(path).toFile().getCanonicalPath();
+		this.file = new File(cpath);
+		if (file.exists() && file.isDirectory()) {
+			throw new JSEIOException("Cannot create a file with a path to a directory.");
+		}
 	}
 	
-	public String getPath(){
-		return file.getAbsolutePath();
+	public String getPath() throws IOException {
+		return file.getCanonicalPath();
+	}
+	
+	public String getParentPath(){
+		return file.getParent();
 	}
 	
 	public String getName(){
@@ -171,6 +219,31 @@ public class JFile {
 		return file.delete();
 	}
 	
+	public boolean move(JDirectory dir) throws IOException {
+        return moveTo(Paths.get(dir.getPath(), file.getName()));
+	}
+	
+	public boolean rename(String name) throws IOException {
+		Path newName = Paths.get(file.getParent(), name);
+        return moveTo(newName);
+	}
+	
+	private boolean moveTo(Path path) throws IOException {
+        Path dstFile = null;
+        try {
+			dstFile = Files.move(this.file.toPath(), path);
+		} catch (FileAlreadyExistsException | NoSuchFileException e) {
+        	return false;
+		}
+        
+        if (dstFile != null) {
+			this.file = dstFile.toFile();
+        	return true;
+        } else {
+            return false;
+        }
+	}
+
 	public String readAll() throws FileNotFoundException, IOException {
 		int length = (int) file.length();
 		FileInputStream fos = new FileInputStream(file);

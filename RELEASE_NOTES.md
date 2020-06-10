@@ -1,3 +1,7 @@
+### 2020/06 Version 0.1.27
+
+ * JDE: an Eclipse-based development environment (IDE)
+ 
 ### 2018/08 Version 0.1.24
 
  * Network API

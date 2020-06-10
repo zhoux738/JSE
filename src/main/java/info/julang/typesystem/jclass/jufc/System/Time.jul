@@ -106,4 +106,185 @@ class DateTime {
 	[Bridged] hosted int getSecond();
 	/* Get millisecond. */
 	[Bridged] hosted int getMilli();
+	
+	/*
+	 * Convert the DateTime to a string with a format string, which may use the following 
+	 * characters as a placeholder for the corresponding data time part:
+	 *   y: (up to 4 digits) Year
+	 *   M: (up to 2 digits) Month in year (1 - 12)
+	 *   d: (up to 2 digits) Day in month (1 - 31)
+	 *   H: (up to 2 digits) Hour in day (0 - 23)
+	 *   m: (up to 2 digits) Minute in hour (0 - 59)
+	 *   s: (up to 2 digits) Second in minute (0 - 59)
+	 *   S: (up to 3 digits) Millisecond in second (000 - 999)
+	 *
+	 * Other characters are rendered literally.
+	 *
+	 * [param: fmt] The format to use.
+	 * [return] A date-time string formatted accordingly.
+	 * */
+	public string format(string fmt) {
+		char[] chars = fmt.toChars();
+		int partLen = 0;
+		string result = "";
+		DateTimePart part = DateTimePart.YEAR;
+		for (int i = 0; i < chars.length; i++) {
+			bool restart = true;
+			char c = chars[i];
+			switch(c){
+			case 'y':
+				if (partLen > 0) {
+					if (part != DateTimePart.YEAR) {
+						// finish the previous part
+						result += convertPart(part, partLen);
+						part = DateTimePart.YEAR;
+						partLen = 1;
+					} else {
+						// keep adding to the previous part
+						partLen++;
+					}
+				} else {
+					// first time
+					part = DateTimePart.YEAR;
+					partLen = 1;
+				}
+				break;
+			case 'M':
+				if (partLen > 0) {
+					if (part != DateTimePart.MONTH) {
+						result += convertPart(part, partLen);
+						part = DateTimePart.MONTH;
+						partLen = 1;
+					} else {
+						partLen++;
+					}
+				} else {
+					part = DateTimePart.MONTH;
+					partLen = 1;
+				}
+				break;			
+			case 'd':
+				if (partLen > 0) {
+					if (part != DateTimePart.DAY) {
+						result += convertPart(part, partLen);
+						part = DateTimePart.DAY;
+						partLen = 1;
+					} else {
+						partLen++;
+					}
+				} else {
+					part = DateTimePart.DAY;
+					partLen = 1;
+				}
+				break;	
+			case 'H':
+				if (partLen > 0) {
+					if (part != DateTimePart.HOUR) {
+						result += convertPart(part, partLen);
+						part = DateTimePart.HOUR;
+						partLen = 1;
+					} else {
+						partLen++;
+					}
+				} else {
+					part = DateTimePart.HOUR;
+					partLen = 1;
+				}
+				break;	
+			case 'm':
+				if (partLen > 0) {
+					if (part != DateTimePart.MINUTE) {
+						result += convertPart(part, partLen);
+						part = DateTimePart.MINUTE;
+						partLen = 1;
+					} else {
+						partLen++;
+					}
+				} else {
+					part = DateTimePart.MINUTE;
+					partLen = 1;
+				}
+				break;	
+			case 's':
+				if (partLen > 0) {
+					if (part != DateTimePart.SECOND) {
+						result += convertPart(part, partLen);
+						part = DateTimePart.SECOND;
+						partLen = 1;
+					} else {
+						partLen++;
+					}
+				} else {
+					part = DateTimePart.SECOND;
+					partLen = 1;
+				}
+				break;
+			case 'S':
+				if (partLen > 0) {
+					if (part != DateTimePart.MILLISECOND) {
+						result += convertPart(part, partLen);
+						part = DateTimePart.MILLISECOND;
+						partLen = 1;
+					} else {
+						partLen++;
+					}
+				} else {
+					part = DateTimePart.MILLISECOND;
+					partLen = 1;
+				}
+				break;
+			default:
+				if (partLen > 0) {
+					// finish the previous part
+					result += convertPart(part, partLen);
+					partLen = 0;
+				}
+
+				// add directly into the result
+				result += c;
+				break;				
+			}
+		}
+		
+		if (partLen > 0) {
+			// finish the remainint part
+			result += convertPart(part, partLen);
+		}
+		
+		return result;
+	}
+	
+	private string convertPart(DateTimePart part, int partLen) {
+		string raw = null;
+		int max = 2;
+		switch(part){
+			case YEAR:   raw = (string)getYear(); max = 4; break;
+			case MONTH:  raw = (string)getMonth(); break;
+			case DAY:    raw = (string)getDay(); break;
+			case HOUR:   raw = (string)getHour(); break;
+			case MINUTE: raw = (string)getMinute(); break;
+			case SECOND: raw = (string)getSecond(); break;
+			case MILLISECOND: raw = (string)getMilli(); max = 3; break;
+			default: break;
+		}
+		
+		if (raw == null) {
+			return "";
+		}
+		
+		int end = raw.length;
+		int start = end - partLen;
+		if (start < 0) {
+			start = 0;
+		}
+		
+		string truncated = raw.substring(start, end);
+		int paddings = partLen - (end - start);
+		while (paddings > 0) {
+			truncated = "0" + truncated;
+			paddings--;
+		}
+		
+		return truncated;
+	}
 }
