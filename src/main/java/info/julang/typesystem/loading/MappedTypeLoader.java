@@ -126,7 +126,7 @@ public class MappedTypeLoader {
 						
 						JClassConstructorMember ctor = ((JClassTypeBuilder)cbuilder).getDefaultInstanceConstructor();
 						if (ctor == null) {
-							// If we don't have a default ctor, it means we have some explicitly defined ctors. This is not allowed as of 0.2.0
+							// If we don't have a default ctor, it means we have some explicitly defined ctors.
 							throw new MappedTypeConversionException(
 								"A mapped class must not contain user-defined constructors.", builder.getLocationInfo());
 						}

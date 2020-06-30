@@ -24,6 +24,8 @@ SOFTWARE.
 
 package info.julang.typesystem.loading;
 
+import java.util.List;
+
 import info.julang.JSERuntimeException;
 import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.errorhandling.IHasLocationInfo;
@@ -35,13 +37,12 @@ import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.ICompoundTypeBuilder;
+import info.julang.typesystem.jclass.JClassProperties;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.JInterfaceType;
 import info.julang.typesystem.jclass.annotation.JAnnotation;
 import info.julang.typesystem.jclass.builtin.JObjectType;
-
-import java.util.List;
 
 /**
  * The statement for declaring (and defining) a class.
@@ -95,6 +96,7 @@ public class ClassDeclarationStatement extends ClassLoadingStatement {
 		Accessibility acc = declInfo.getAccessibility();
 		boolean abs = declInfo.isAbstract();
 		boolean fin = declInfo.isFinal();
+		boolean sta = declInfo.isStatic();
 		
 		if(abs && fin){
 			throw new IllegalClassDefinitionException(
@@ -109,6 +111,7 @@ public class ClassDeclarationStatement extends ClassLoadingStatement {
 		JClassTypeBuilder builder = (JClassTypeBuilder) ctb;
 		builder.setAbstract(abs);
 		builder.setFinal(fin);
+		builder.setStatic(sta);
 		
 		if(acc == null){
 			acc = Accessibility.PUBLIC;
@@ -131,24 +134,36 @@ public class ClassDeclarationStatement extends ClassLoadingStatement {
 				
 				ICompoundType type = (ICompoundType)pt;
 				if (type.isClassType()){
-					// Parent class. Only one is allowed.
-					if (alreadyDefinedParentClass) {
-						throw new IllegalClassDefinitionException(
-							context, 
-							"Type " + declInfo.getFQName() + 
-							" has a parent class defined already (" + builder.getStub().getParent().getName() + 
-							"). Cannot add another one (" + type.getName() + ").", declInfo);
+					JClassProperties pps = type.getClassProperties();
+					if (pps.isStatic() && !sta) {
+						// Extension type
+						builder.addExtension((JClassType)type);
 					} else {
-						alreadyDefinedParentClass = true;
-						if(type.getClassProperties().isFinal()){
+						// Parent class. Only one is allowed.
+						if (alreadyDefinedParentClass) {
 							throw new IllegalClassDefinitionException(
-								context, "Type " + declInfo.getFQName() + 
-								" cannot inherit from a final type: " + type.getName() + ".", declInfo);
+								context, 
+								"Type " + declInfo.getFQName() + 
+								" has a parent class defined already (" + builder.getStub().getParent().getName() + 
+								"). Cannot add another one (" + type.getName() + ").", declInfo);
+						} else {
+							alreadyDefinedParentClass = true;
+							if(pps.isFinal()){
+								throw new IllegalClassDefinitionException(
+									context, "Type " + declInfo.getFQName() + 
+									" cannot inherit from a final type: " + type.getName() + ".", declInfo);
+							}
+
+							if(!pps.isStatic() && sta) {
+								throw new IllegalClassDefinitionException(
+									context, "Type " + declInfo.getFQName() + 
+									" is a static class. It cannot inherit from any type other than Object: " + type.getName() + ".", declInfo);
+							}
+							
+							Accessibility.checkTypeVisibility(type, ctb.getStub(), true);
+							
+							builder.setParent((JClassType)type);
 						}
-						
-						Accessibility.checkTypeVisibility(type, ctb.getStub(), true);
-						
-						builder.setParent((JClassType)type);
 					}
 				} else {
 					// Interfaces to implement.

@@ -26,12 +26,14 @@ package info.julang.typesystem.jclass;
 
 import org.antlr.v4.runtime.Token;
 
+import info.julang.execution.symboltable.TypeTable;
 import info.julang.interpretation.BadSyntaxException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.context.ContextType;
 import info.julang.interpretation.context.ExecutionContextType;
 import info.julang.interpretation.context.MethodContext;
 import info.julang.langspec.ast.JulianLexer;
+import info.julang.memory.value.ObjectMember;
 import info.julang.parser.ANTLRHelper;
 import info.julang.typesystem.IllegalMemberAccessException;
 import info.julang.typesystem.IllegalTypeAccessException;
@@ -210,12 +212,12 @@ public enum Accessibility {
 	 * @param context
 	 * @param contextType
 	 * @param isStatic
-	 * @param throwIfNotFound
+	 * @param throwIfNotFound If specified, throw {@link UnknownMemberException} when the member doesn't exist.
 	 * 
-	 * @throws UnknownMemberException if member doesn't exist.
+	 * @throws UnknownMemberException if member doesn't exist. Only if <code>throwIfNotFound == true</code>
 	 * @throws IllegalMemberAccessException if the member is invisible.
 	 * 
-	 * @return the actual type on which this member is to be accessed.
+	 * @return the actual type on which this member is to be accessed, or null if the member doesn't exist anywhere.
 	 */
 	public static ICompoundType checkMemberAccess(
 		ICompoundType declaredType, 
@@ -225,7 +227,38 @@ public enum Accessibility {
 		ContextType contextType, 
 		boolean isStatic, 
 		boolean throwIfNotFound){
+		ICompoundType ret = checkMemberAccess0(
+			declaredType, memberName, containingType, context, contextType, isStatic);
+		
+		if (ret != null) {
+			return ret;
+		}
+		
+		if (!isStatic && context != null) {
+			// If it's an instance method, check if there is any extension methods installed.
+			OneOrMoreList<ObjectMember> extensions = 
+				((TypeTable)context.getTypTable()).getExtensionMethodsByClass(memberName, declaredType);
+			
+			if (extensions.size() > 0) {
+				return declaredType; // FIXME - return the type onto which the extension method is installed directly.
+			}
+		}
 
+		if(throwIfNotFound){
+			throw new UnknownMemberException(declaredType, memberName, isStatic);		
+		} else {
+			return null;
+		}
+	}
+	
+	private static ICompoundType checkMemberAccess0(
+		ICompoundType declaredType, 
+		String memberName, 
+		ICompoundType containingType, 
+		Context context, 
+		ContextType contextType, 
+		boolean isStatic) {
+		
 		ClassMemberMap cmm = null;
 		ClassMemberLoaded cml = null;
 		
@@ -245,11 +278,7 @@ public enum Accessibility {
 				// If this member is not found, abort now. If we want a parent class's method to access a subclass's member, this member
 				// must be defined already in the parent class and is overridden in the subclass.
 				if(cml == null){
-					if(throwIfNotFound){
-						throw new UnknownMemberException(declaredType, memberName, isStatic);		
-					} else {
-						return null;
-					}
+					return null;
 				}
 				
 				// If this member is private, return now.
@@ -266,11 +295,7 @@ public enum Accessibility {
 			OneOrMoreList<ClassMemberLoaded> all = cmm.getLoadedMemberByName(memberName);
 			cml = all.getFirst();
 			if(cml == null){
-				if(throwIfNotFound){
-					throw new UnknownMemberException(declaredType, memberName, isStatic);		
-				} else {
-					return null;
-				}
+				return null;
 			}
 			
 			JClassType definingType = cmm.getContributingTypes()[cml.getRank()];
@@ -299,8 +324,8 @@ public enum Accessibility {
 			return definingType;
 		} else { // Interface - we check existence only, since all interface members are public.
 			JClassMember mem = declaredType.getInstanceMemberByName(memberName);
-			if(mem == null && throwIfNotFound){
-				throw new UnknownMemberException(declaredType, memberName, isStatic);		
+			if(mem == null){
+				return null;
 			}
 			
 			return declaredType;

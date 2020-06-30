@@ -1,0 +1,13 @@
+// If the method name is resolved inherently, do not query extension method.
+class C1 : Ext {
+
+	int fun(){
+		return 5;
+	}
+}
+
+static class Ext {
+	static bool fun(C1 this){ return 7; }
+}
+
+int r5 = new C1().fun();

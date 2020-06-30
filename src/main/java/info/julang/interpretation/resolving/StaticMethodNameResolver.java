@@ -26,11 +26,14 @@ package info.julang.interpretation.resolving;
 
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.interpretation.RuntimeCheckException;
+import info.julang.langspec.Keywords;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.MethodGroupValue;
 import info.julang.memory.value.MethodValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.TypeValue;
+import info.julang.memory.value.VoidValue;
 import info.julang.typesystem.jclass.ICompoundType;
 
 /**
@@ -48,10 +51,13 @@ public class StaticMethodNameResolver implements INameResolver {
 	
 	private TypeValue tvalue;
 	
-	public StaticMethodNameResolver(IVariableTable vt, ITypeTable tt, ICompoundType type){
+	private IMemberNameResolver memResolver;
+	
+	public StaticMethodNameResolver(IVariableTable vt, ITypeTable tt, ICompoundType type, IMemberNameResolver memResolver){
 		this.vt = vt;
 		this.tt = tt;
 		this.type = type;
+		this.memResolver = memResolver != null ? memResolver : NoCacheMemberNameResolver.INSTANCE;
 	}
 	
 	@Override
@@ -60,10 +66,21 @@ public class StaticMethodNameResolver implements INameResolver {
 		JValue v = vt.getVariable(id, false);
 		if(v != null){
 			return v;
+		} else if (Keywords.THIS.equals(id)) {
+			throw new RuntimeCheckException("'this' cannot be used in non-extension static method, which must name the first parameter as 'this'.");
 		}
 		
 		// 2) static member?
-		v = getMember(id);
+		v = memResolver.resolve(id);
+		if (v == null) {
+			// Havn't resolved this id before
+			v = getMember(id);
+			memResolver.save(id, v);
+		} else if (v == VoidValue.DEFAULT) {
+			// It has been resolved to null
+			v = null;
+		}
+
 		if(v != null){
 			return v;
 		}

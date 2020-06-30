@@ -48,6 +48,11 @@ import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.builtin.JStringType;
 
+/**
+ * A fast parser that linearly (instead of tree-based) parses a script off of a stream.
+ * 
+ * @author Ming Zhou
+ */
 public final class StreamBasedSyntaxHelper {
 
 	/**
@@ -83,6 +88,13 @@ public final class StreamBasedSyntaxHelper {
 					return null;
 				}
 				declInfo.setFinal();
+				break;
+			case JulianLexer.STATIC:
+				if(declInfo.isStatic()){
+					resetAndThrow(stream, "Duplicated modifiers: static.", declInfo);
+					return null;
+				}
+				declInfo.setStatic();
 				break;
 			case JulianLexer.PUBLIC:
 			case JulianLexer.PROTECTED:

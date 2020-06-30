@@ -31,6 +31,7 @@ import info.julang.execution.symboltable.RestrictedTypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadManager;
+import info.julang.interpretation.resolving.IMemberNameResolver;
 import info.julang.interpretation.resolving.InstanceMethodNameResolver;
 import info.julang.interpretation.resolving.StaticMethodNameResolver;
 import info.julang.memory.MemoryArea;
@@ -55,7 +56,8 @@ public class MethodContext extends Context {
 		JThread jthread,
 		ICompoundType containingType,
 		boolean isStatic,
-		ExecutionContextType exeContextTyp) {
+		ExecutionContextType exeContextTyp,
+		IMemberNameResolver memResolver) {
 		super(
 			isStatic ? 
 				ContextType.SMETHOD : 
@@ -68,8 +70,8 @@ public class MethodContext extends Context {
 			mm, 
 			nsPool, 
 			isStatic ? 
-				new StaticMethodNameResolver(varTable, typTable, containingType) : 
-				new InstanceMethodNameResolver(varTable, typTable, containingType),
+				new StaticMethodNameResolver(varTable, typTable, containingType, memResolver) : 
+				new InstanceMethodNameResolver(varTable, typTable, containingType, memResolver),
 			tm,
 			jthread,
 			exeContextTyp
@@ -117,7 +119,8 @@ public class MethodContext extends Context {
 			context.getJThread(),
 			containingType,
 			isStatic,
-			exeContextType);
+			exeContextType,
+			null);
 		return newContext;
 	}
 	

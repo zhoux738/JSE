@@ -50,7 +50,7 @@ import info.julang.typesystem.jclass.builtin.JStringType;
  * 
  * @author Ming Zhou
  */
-public class JDirectory {
+public class JDirectory extends JItem {
 	
 	private static final String FullTypeName = "System.IO.Directory";
 	
@@ -65,6 +65,8 @@ public class JDirectory {
 				.add("create", new CreateExecutor())
 				.add("delete", new DeleteExecutor())
 				.add("exists", new ExistExecutor())
+				.add("move", new MoveExecutor())
+				.add("rename", new RenameExecutor())
 				.add("getName", new GetNameExecutor())
 				.add("getPath", new GetPathExecutor())
 				.add("getParentPath", new GetParentPathExecutor())
@@ -145,7 +147,29 @@ public class JDirectory {
 		}
 		
 	}
+
+	private static class MoveExecutor extends IOInstanceNativeExecutor<JDirectory> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
+			HostedValue hv = ArgumentUtil.<HostedValue>getArgumentValue(0, args);
+			JDirectory dir = (JDirectory)hv.getHostedObject();
+			BoolValue sv = TempValueFactory.createTempBoolValue(jdir.move(dir));
+			return sv;
+		}
+		
+	}
 	
+	private static class RenameExecutor extends IOInstanceNativeExecutor<JDirectory> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
+			StringValue sv = ArgumentUtil.<StringValue>getArgumentValue(0, args);
+			BoolValue bv = TempValueFactory.createTempBoolValue(jdir.rename(sv.getStringValue()));
+			return bv;
+		}
+		
+	}
 	private static class GetChildInfoExecutor extends InstanceNativeExecutor<JDirectory> {
 		
 		@Override
@@ -189,42 +213,17 @@ public class JDirectory {
 
 	//----------------- implementation at native end -----------------//
 
-	private File dir;
-	
+	@Override
 	public void init(String path) throws IOException {
 		String cpath = Paths.get(path).toFile().getCanonicalPath();
-		this.dir = new File(cpath);
-		if (dir.exists() && dir.isFile()) {
+		this.item = new File(cpath);
+		if (item.exists() && item.isFile()) {
 			throw new JSEIOException("Cannot create a directory with a path to a file.");
 		}
 	}
 	
-	public String getPath() throws IOException {
-		return dir.getCanonicalPath();
-	}
-	
-	public String getParentPath(){
-		return dir.getParent();
-	}
-	
-	public String getName(){
-		return dir.getName();
-	}
-	
-	public boolean exists(){
-		return dir.exists();
-	}
-	
-	public boolean create() {
-		return dir.mkdir();
-	}
-	
-	public boolean delete() {
-		return dir.delete();
-	}
-	
 	public boolean[] getChildInfo(String name) {
-		File ch = new File(dir, name);
+		File ch = new File(item, name);
 		boolean[] res = new boolean[] {
 			ch.exists(),
 			ch.isFile()	
@@ -233,7 +232,7 @@ public class JDirectory {
 	}
 	
 	public File[] listAll() {
-		File[] files = dir.listFiles();
+		File[] files = item.listFiles();
 		if(files == null){
 			return new File[0];
 		}

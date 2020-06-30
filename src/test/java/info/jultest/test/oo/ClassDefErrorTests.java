@@ -6,12 +6,12 @@ import static info.jultest.test.Commons.makeSimpleEngine;
 import org.junit.Assume;
 import org.junit.Test;
 
-import info.jultest.test.Commons;
-import info.jultest.test.TestExceptionHandler;
 import info.julang.dev.GlobalSetting;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
+import info.jultest.test.Commons;
+import info.jultest.test.TestExceptionHandler;
 
 // As of 0.1.0, all the exceptions are System.ClassLoadingException
 public class ClassDefErrorTests extends ExceptionTestsBase {
@@ -101,6 +101,36 @@ public class ClassDefErrorTests extends ExceptionTestsBase {
 	@Test
 	public void illelgalParentTypeTest() throws EngineInvocationError {
 		validateClassLoadingException("inherit_5.jul");
+	}
+	
+	@Test
+	public void illelgalStaticClassWithInstanceMembersTest() throws EngineInvocationError {
+		validateClassLoadingException("env_1.jul");
+	}
+	
+	@Test
+	public void illelgalStaticClassWithCtorTest() throws EngineInvocationError {
+		validateClassLoadingException("env_2.jul");
+	}
+	
+	@Test
+	public void illelgalStaticClassImplementsInterfaceTest() throws EngineInvocationError {
+		validateClassLoadingException("env_3.jul");
+	}
+	
+	@Test
+	public void illelgalStaticClassInheritsClassTest() throws EngineInvocationError {
+		validateClassLoadingException("env_4.jul");
+	}
+	
+	@Test
+	public void illelgalStaticClassOverridesObjectMethodTest() throws EngineInvocationError {
+		validateClassLoadingException("env_5.jul");
+	}
+	
+	@Test
+	public void illelgalStaticClassInheritsNonStaticClassTest() throws EngineInvocationError {
+		validateClassLoadingException("env_6.jul");
 	}
 	
 	private void validateClassLoadingException(String script) throws EngineInvocationError {

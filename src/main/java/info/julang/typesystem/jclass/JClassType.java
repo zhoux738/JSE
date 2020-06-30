@@ -126,9 +126,11 @@ public class JClassType extends JInterfaceType implements IMapped {
 	
 	/**
 	 * Get class constructors.
-	 * <p/>
+	 * <p>
 	 * This includes all constructors defined explicitly or implicitly by this class, 
 	 * regardless of its accessibility.
+	 *
+	 * @return never null
 	 */
 	public JClassConstructorMember[] getClassConstructors(){
 		// Note:

@@ -1,10 +1,6 @@
 package info.jultest.test.external;
 
 import static info.jultest.test.Commons.getScriptFile;
-import info.jultest.test.Commons;
-import info.jultest.test.EFCommons;
-import info.julang.execution.FileScriptProvider;
-import info.julang.jsr223.JulianScriptingEngine;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -18,6 +14,11 @@ import javax.script.ScriptException;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import info.julang.execution.FileScriptProvider;
+import info.julang.jsr223.JulianScriptingEngine;
+import info.jultest.test.Commons;
+import info.jultest.test.EFCommons;
 
 public class JSR223AdvancedTestSuite {
 	
@@ -49,6 +50,17 @@ public class JSR223AdvancedTestSuite {
 		jse.put("c", 'c');
 		Object o = jse.eval("return s + b + f + c;");
 		Assert.assertEquals(o, "stringtrue1.2c");
+	}
+	
+	@Test
+	public void advTest1() throws ScriptException, FileNotFoundException {
+		ScriptEngine jse = new JulianScriptingEngine();
+		jse.put("val", "abc");
+		FileScriptProvider provider = FileScriptProvider.create(getPath("jsr223_1.jul"));
+		FileReader reader = new FileReader(provider.getFilePathName(false));
+		Object o = jse.eval(reader);
+		Assert.assertEquals("def", jse.get("val"));
+		Assert.assertEquals("xyz", o);
 	}
 	
 	@Test
@@ -183,4 +195,8 @@ public class JSR223AdvancedTestSuite {
 		assertIntBinding(jse.getBindings(ScriptContext.ENGINE_SCOPE), name, value);
 	}
 
+	
+	private String getPath(String relativePath){
+		return Commons.SRC_REPO_ROOT + "ExternalAPI/" + relativePath;
+	}
 }

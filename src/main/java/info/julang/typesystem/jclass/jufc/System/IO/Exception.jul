@@ -3,7 +3,7 @@ module System.IO;
 import System;
 
 /*
- * Any IO-related exception. Such errors typically involves access to disk, network adaptor, or other peripherals, 
+ * Any IO-related exception. Such errors typically involve access to disk, network adaptor, or other peripherals, 
  * but can also be thrown by an abstract layer which may not necessarily deal with real IO devices.
  */
 class IOException : Exception {

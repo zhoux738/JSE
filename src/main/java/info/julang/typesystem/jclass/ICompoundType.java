@@ -38,6 +38,12 @@ import info.julang.util.OneOrMoreList;
 public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 	
 	/**
+	 * An incremental value that changes everytime the type got updated during the runtime.
+	 * @return
+	 */
+	int getStamp();
+	
+	/**
 	 * Get class/interface properties.
 	 */
 	JClassProperties getClassProperties();
@@ -121,6 +127,20 @@ public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 	 * @return never null
 	 */
 	JInterfaceType[] getInterfaces();
+	
+	/**
+	 * Get extension classes which are directly installed to this type.
+	 * @return never null
+	 */
+	OneOrMoreList<JClassType> getExtensionClasses();
+	
+	/**
+	 * Get all extension classes which are installed to this type and its parent type.
+	 * 
+	 * @return An array of this type's extension types installed to itself and all of its ancestor types, 
+	 * deduplicated and ordered based on proximity and text order. Never null, but can be empty.
+	 */
+	public JClassType[] getAllExtensionClasses();
 	
 	/**
 	 * Determine if this type derives from another one.

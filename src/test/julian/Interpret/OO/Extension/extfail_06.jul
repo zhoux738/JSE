@@ -1,0 +1,52 @@
+// If the method name is resolved inherently, do not query extension method.
+class MyClass 
+: Ext 
+{
+
+	protected int fun1(){
+		return 5;
+	}
+	
+	private int fun2(){
+		return 5;
+	}
+	
+	int fun3 = 3;
+	
+	private int fun4 = 4;
+}
+
+static class Ext {
+	static bool fun1(MyClass this){ return 17; }
+	static bool fun2(MyClass this){ return 17; }
+	static bool fun3(MyClass this){ return 17; }
+	static bool fun4(MyClass this){ return 17; }
+}
+
+bool b1,b2,b3,b4;
+
+MyClass ms = new MyClass();
+
+try { 
+	ms.fun1(); // System.IllegalMemberAccessException (invisible)
+} catch (System.IllegalMemberAccessException se) {
+	b1 = se.getMessage().contains("invisible");
+}
+
+try {
+	ms.fun2(); // System.IllegalMemberAccessException (invisible)
+} catch (System.IllegalMemberAccessException se) {
+	b2 = se.getMessage().contains("invisible");
+}
+
+try {
+	ms.fun3(); // System.Lang.RuntimeCheckException (cannot be invoked)
+} catch (System.Lang.RuntimeCheckException se) {
+	b3 = se.getMessage().contains("invoked");
+}
+
+try {
+	ms.fun4(); // System.IllegalMemberAccessException (invisible)
+} catch (System.IllegalMemberAccessException se) {
+	b4 = se.getMessage().contains("invisible");
+}

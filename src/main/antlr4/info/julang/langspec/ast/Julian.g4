@@ -673,8 +673,6 @@ variable_declaration // used by for loop
     : type variable_declarators
     ;
 
-// For function declaration when encountered in script, we do not parse the function body.
-// Instead, just make sure it is properly enclosed. A parsing will be performed on demand.
 function_declarator
     : function_signature LEFT_CURLY executable? RIGHT_CURLY
     ;
@@ -690,17 +688,16 @@ function_parameter_list
 function_parameter // Note this is different form lambda parameter in that the type is required.
     : type IDENTIFIER
     ;
-//function_body    // We do not care about the contents of body, but we must make sure it is enclosed properly.
-//    : ( function_body_unenclosed | function_body_enclosed ) +
-//    ;
-//function_body_unenclosed
-//    : ~(LEFT_CURLY | RIGHT_CURLY) 
-//    ;
-//function_body_enclosed
-//    : LEFT_CURLY function_body RIGHT_CURLY 
-//    | LEFT_CURLY RIGHT_CURLY 
-//    ;
-
+method_signature_main // (int i, string s, ...); Extension method: (MyClass this, char c, ...)
+    : LEFT_PAREN method_parameter_list? RIGHT_PAREN
+    ;
+method_parameter_list
+    : method_parameter ( COMMA method_parameter )*
+    ;
+method_parameter
+    : type IDENTIFIER
+    | type THIS
+    ;
 // 4.2. Expression
 expression_statement
     : expression SEMICOLON
@@ -831,8 +828,7 @@ class_extension_definition
     ;
     
 class_extension_list
-    : composite_id
-    | class_extension_list ',' composite_id
+    : composite_id ( ',' composite_id )*
     ;
 
 class_body
@@ -856,7 +852,7 @@ constructor_forward_call
     ;
     
 method_declaration
-    : annotations? modifiers? type IDENTIFIER function_signature_main ( method_body | ';' ) 
+    : annotations? modifiers? type IDENTIFIER method_signature_main ( method_body | ';' ) 
     // abstract/hosted method doesn't have method body
     ;
 

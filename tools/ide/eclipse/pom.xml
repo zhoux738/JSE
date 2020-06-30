@@ -2,7 +2,7 @@
  <modelVersion>4.0.0</modelVersion>
  <groupId>info.julang.ide</groupId>
  <artifactId>root</artifactId>
- <version>0.1.27</version><!-- VERSION_ELEMENT -->
+ <version>0.1.28</version><!-- VERSION_ELEMENT -->
  <packaging>pom</packaging>
  
  <parent>

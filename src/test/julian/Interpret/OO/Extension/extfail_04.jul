@@ -1,0 +1,25 @@
+// Inside instance method, must refer to another extension method by dot op. Call with id alone won't resolve.
+class C : Ext {
+
+	bool value1(){
+		return this.exfun();
+	}
+	
+	bool value2(){
+		return exfun();
+	}
+}
+
+static class Ext {
+	static bool exfun(C this){ return true; }
+}
+
+C c = new C();
+bool succ = c.value1();
+
+bool failed = false;
+try {
+	bool succ2 = c.value2();
+} catch (System.Lang.UndefinedSymbolException ex) {
+	failed = true;
+}

@@ -24,21 +24,23 @@ SOFTWARE.
 
 package info.julang.typesystem.loading;
 
+import java.util.List;
+
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.syntax.ClassSubtype;
 import info.julang.langspec.ast.JulianParser.Class_definitionContext;
 import info.julang.langspec.ast.JulianParser.ProgramContext;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.parser.AstInfo;
+import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassMethodMember;
+import info.julang.typesystem.jclass.JClassProperties;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.JInterfaceType;
 import info.julang.typesystem.jclass.JInterfaceTypeBuilder;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.builtin.JObjectType;
-
-import java.util.List;
 
 /**
  * Perform semantic checking on a particular aspect of type definition.
@@ -82,6 +84,56 @@ class MappedTypeParentsChecker implements ISemanticChecker {
 }
 
 /**
+ * A static class should only contain static members.
+ * 
+ * @author Ming Zhou
+ */
+class StaticClassChecker implements ISemanticChecker {
+	
+	private JClassTypeBuilder builder;
+	private AstInfo<ProgramContext> ainfo;
+	
+	public StaticClassChecker(
+		JClassTypeBuilder builder, AstInfo<ProgramContext> ainfo) {
+		this.builder = builder;
+		this.ainfo = ainfo;
+	}
+
+	@Override
+	public void check() {
+		JClassType stub = builder.getStub();
+		if(!stub.isClassType() || !stub.getClassProperties().isStatic()){
+			return;
+		}
+		
+		// A static class must not
+		//   - inherit any class, other than Object, that is not static (the inheritance is purely for code reuse, not polymorphism)
+		//   - implement any interface
+		//   - contain any non-static members other than those inherited from Object. 
+		//     (However, for the perf reason, the check for non-ctor members is done at an earlier point.)
+		
+		JClassType parentTyp = stub.getParent();
+		if (parentTyp != JObjectType.getInstance()
+			&& !parentTyp.getClassProperties().isStatic()) {
+			throw new IllegalClassDefinitionException(
+				stub.getName(), ClassSubtype.CLASS, "A static class cannot inherit from non-static class.", ainfo);
+		}
+		
+		JInterfaceType[] infs = stub.getInterfaces();
+		if (infs.length > 0) {
+			throw new IllegalClassDefinitionException(
+				stub.getName(), ClassSubtype.CLASS, "A static class cannot implement interfaces.", ainfo);
+		}
+		
+		JClassConstructorMember[] ctors = stub.getClassConstructors();
+		if (ctors.length > 0) {
+			throw new IllegalClassDefinitionException(
+				stub.getName(), ClassSubtype.CLASS, "A static class cannot define constructors.", ainfo);
+		}
+	}
+}
+
+/**
  * A non-abstract class should not contain any abstract methods.
  * 
  * @author Ming Zhou
@@ -114,7 +166,8 @@ class AbstractMethodChecker implements ISemanticChecker {
 			return;
 		}
 		
-		if(!stub.getParent().getClassProperties().isAbstract() && stub.getInterfaces().length == 0){
+		JClassProperties pprops = stub.getParent().getClassProperties();		
+		if(!pprops.isAbstract() && stub.getInterfaces().length == 0){
 			return;
 		}
 		

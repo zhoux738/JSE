@@ -135,7 +135,48 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		AssertHelper.validateStringOccurences(strace, texts);
 	}
 	
+	/**
+	 * Check the name of exception and direct cause, as well as the line number for each.
+	 */
 	public void executeAndExpect(
+		String fileName,
+		String exceptionName,
+		int exceptionLine,
+		String causeName,
+		int causeLine) 
+		throws EngineInvocationError {
+		try {
+			engine.run(getScriptFile(group, feature, fileName));	
+			
+			validateException(
+				teh, 
+				exceptionName,
+				null,
+				null,
+				null,
+				exceptionLine);
+			
+			if (causeName != null){
+				validateCause(
+					teh,
+					causeName,
+					null,
+					null,
+					null,
+					causeLine);				
+			}
+		
+			return;
+		} catch (JulianScriptException jse) {
+			// 2) If the exception is thrown as is, check the Java exception.
+			assertEquals(exceptionName, jse.getExceptionType().getName());
+			assertEquals(causeName, jse.getJSECause().getType().getName());
+		} 
+		
+		fail("Expected an exception of type \"" + exceptionName + "\", but ended successfully .");
+	}
+	
+	private void executeAndExpect(
 		String fileName,
 		KnownJSException kjs,
 		String platformExceptionName,
@@ -194,43 +235,4 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 				kjs.getFullName() + "\", but ended successfully .");
 		}
 	}
-	
-	public void executeAndExpect(
-		String fileName,
-		String exceptionName,
-		int exceptionLine,
-		String causeName,
-		int causeLine) 
-		throws EngineInvocationError {
-		try {
-			engine.run(getScriptFile(group, feature, fileName));	
-			
-			validateException(
-				teh, 
-				exceptionName,
-				null,
-				null,
-				null,
-				exceptionLine);
-			
-			if (causeName != null){
-				validateCause(
-					teh,
-					causeName,
-					null,
-					null,
-					null,
-					causeLine);				
-			}
-		
-			return;
-		} catch (JulianScriptException jse) {
-			// 2) If the exception is thrown as is, check the Java exception.
-			assertEquals(exceptionName, jse.getExceptionType().getName());
-			assertEquals(causeName, jse.getJSECause().getType().getName());
-		} 
-		
-		fail("Expected an exception of type \"" + exceptionName + "\", but ended successfully .");
-	}
-	
 }

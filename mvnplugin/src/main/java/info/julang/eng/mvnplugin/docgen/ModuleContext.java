@@ -24,6 +24,12 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.docgen;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
+
 import info.julang.eng.mvnplugin.ScriptInfoBag;
 import info.julang.eng.mvnplugin.docgen.DocModel.PrimitiveType;
 import info.julang.eng.mvnplugin.docgen.DocModel.Type;
@@ -35,12 +41,6 @@ import info.julang.modulesystem.prescanning.RawScriptInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.builtin.JStringType;
 import info.julang.util.OneOrMoreList;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 /**
  * An environmental object that contains information about all the System modules, types contained within, etc.
@@ -184,7 +184,7 @@ public class ModuleContext {
 		case "bool": 
 		case "char": 
 		case "void":
-			return new TypeInfo("", simpleName, dimension, null, builtInTyps.get(simpleName));
+			return new TypeInfo("", simpleName, dimension, null, builtInTyps.get(simpleName), null);
 		case "Function": 
 		case "Object":
 		case "Array": 
@@ -192,7 +192,7 @@ public class ModuleContext {
 		case "Attribute":
 		case "Any":
 		case "string": 
-			return new TypeInfo("", simpleName, dimension, ClassSubtype.CLASS, builtInTyps.get(simpleName.toLowerCase()));
+			return new TypeInfo("", simpleName, dimension, ClassSubtype.CLASS, builtInTyps.get(simpleName.toLowerCase()), null);
 		case "String":
 		case "Byte":
 		case "Float":
@@ -207,14 +207,20 @@ public class ModuleContext {
 		}
 		
 		// 2) check defined
-		OneOrMoreList<String> names = ns.getAllPossibleFullNames(ParsedTypeName.makeFromFullName(simpleName));
+		OneOrMoreList<String> names;
+		if (ns == null) {
+			names = new OneOrMoreList<String>(simpleName);
+		} else {
+			names = ns.getAllPossibleFullNames(ParsedTypeName.makeFromFullName(simpleName));
+		}
+		
 		for(String name : names){
 			DocumentedClassInfo rci = typesByFN.get(name);
 			if(rci != null){
 				ClassSubtype subt = rci.getDeclInfo().getSubtype();
 				int index = name.lastIndexOf('.');
 				String modName = name.substring(0, index);
-				return new TypeInfo(modName, simpleName, dimension, subt, rci.getDoc());
+				return new TypeInfo(modName, simpleName, dimension, subt, rci.getDoc(), rci.getDeclInfo());
 			}
 		}
 		

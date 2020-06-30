@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.eng.mvnplugin.docgen;
 
 import info.julang.interpretation.syntax.ClassSubtype;
+import info.julang.interpretation.syntax.DeclInfo;
 
 /**
  * A static alternative to JType.
@@ -38,13 +39,15 @@ public class TypeInfo {
 	private int dim;
 	private ClassSubtype subtyp;
 	private DocModel.Type doc;
+	private DeclInfo declInfo;
 	
-	public TypeInfo(String moduleName, String simpleName, int dim, ClassSubtype subtyp, DocModel.Type doc) {
+	public TypeInfo(String moduleName, String simpleName, int dim, ClassSubtype subtyp, DocModel.Type doc, DeclInfo declInfo) {
 		this.moduleName = moduleName;
 		this.simpleName = simpleName;
 		this.dim = dim;
 		this.subtyp = subtyp;
 		this.doc = doc;
+		this.declInfo = declInfo;
 	}
 	
 	public String getModuleName(){
@@ -65,6 +68,10 @@ public class TypeInfo {
 	
 	public DocModel.Type getTypeDoc(){
 		return doc;
+	}
+	
+	public boolean isStatic() {
+		return declInfo != null ? declInfo.isStatic() : false;
 	}
 	
 	//------------ Helper Methods ------------//

@@ -78,6 +78,15 @@ public class System_Reflection_Constructor_ReflTestSuite extends ExceptionTestsB
 		EFCommons.validateStringValue(gvt, "s0", "(none)-10");
 		EFCommons.validateStringValue(gvt, "s1", "ABC-20");
 	}
+
+	// Static class has no ctors
+	@Test
+	public void getCtorTest4() throws EngineInvocationError, IOException {		
+		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "get_ctor_4.jul", Commons.SRC_REPO_ROOT);
+		IExtVariableTable gvt = rt.getGlobalVariableTable();
+
+		EFCommons.validateIntValue(gvt, "count", 0);
+	}
 	
 	@Test
 	public void getJuFCCtorTest1() throws EngineInvocationError, IOException {

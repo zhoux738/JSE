@@ -24,6 +24,10 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import info.julang.execution.Argument;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
@@ -35,14 +39,19 @@ import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.context.ExecutionContextType;
 import info.julang.interpretation.context.MethodContext;
+import info.julang.interpretation.resolving.IMemberNameResolver;
 import info.julang.interpretation.statement.StatementOption;
+import info.julang.langspec.Keywords;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.JValue;
+import info.julang.memory.value.JValueBase;
+import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
+import info.julang.memory.value.VoidValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.loading.InternalTypeResolver;
-
-import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * The executable for method invocation.
@@ -55,6 +64,36 @@ import org.antlr.v4.runtime.ParserRuleContext;
  * @author Ming Zhou
  */
 public class MethodExecutable extends InterpretedExecutable implements Cloneable {
+	
+	private static class MethodMemberNameResolver implements IMemberNameResolver {
+		
+		private ConcurrentHashMap<String, JValue> resolved; 
+
+		@Override
+		public JValue resolve(String id) {
+			if (resolved == null) {
+				initialize();
+			}
+			
+			return resolved.get(id);
+		}
+
+		@Override
+		public void save(String id, JValue val) {
+			if (resolved == null) {
+				initialize();
+			}
+			
+			resolved.put(id, val == null ? VoidValue.DEFAULT : val);
+		}
+		
+		private synchronized void initialize() {
+			if (resolved == null) {
+				resolved = new ConcurrentHashMap<String, JValue>();
+			}
+		}
+		
+	}
 
 	private NamespacePool nsPool;
 	
@@ -62,12 +101,15 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 	
 	private boolean isStatic;
 	
+	private MethodMemberNameResolver staticResolver;
+	
 	private void copyFrom(MethodExecutable ie){
 		super.copyFrom(ie);
 		this.nsPool = ie.nsPool;
 		this.containingType = ie.containingType;
 		this.isStatic = ie.isStatic;
 		this.ast = ie.ast;
+		this.staticResolver = ie.staticResolver;
 	}
 	
 	@Override
@@ -87,6 +129,9 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 		// Load shared namespace
 		nsPool = containingType.getNamespacePool();
 		this.isStatic = isStatic;
+		if (isStatic) {
+			this.staticResolver = new MethodMemberNameResolver();
+		}
 	}
 	
 	public boolean isStatic(){
@@ -110,13 +155,54 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 		NamespacePool namespaces,
 		JThreadManager tm,
 		JThread jthread){
+		// If it's a static method, we can reuse the resolver. For instance method, must create a new resolver for each call, 
+		// because the instance members are held in distinct storage.
+		MethodMemberNameResolver mres = isStatic ? this.staticResolver : new MethodMemberNameResolver();
 		return new MethodContext(
 			frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, jthread, 
-			containingType, isStatic, ExecutionContextType.InMethodBody); 
+			containingType, isStatic, ExecutionContextType.InMethodBody, mres); 
 			// Technically setting exe-context type to InMethodBody is not correct. We should
 			// deduce this value from the context/runtime. But it's fine so far because 
 			// calling a method on any un-vetted types within an annotation expression (the 
 			// other exe-context type) would be forbidden in the first place. 
+	}
+	
+	@Override
+	protected void prepareArguments(Argument[] args, Context ctxt) {
+		IVariableTable varTable = ctxt.getVarTable();
+		
+		// Add the first argument
+		if (args.length > 0) {
+			Argument firstArg = args[0];
+			String firstName = firstArg.getName();
+			JValue firstVal = firstArg.getValue();
+			
+			if (Keywords.THIS.equals(firstName) && this.isStatic) { // TODO: Consider always creating reference wrapping this value.
+				// Special treatment for 'this' arg
+				// (1) Wrap it in a ref value stored in the current frame
+				JValue firstValDeref = firstVal.deref();
+				JValueBase val = new RefValue(
+					ctxt.getFrame(),
+					(ObjectValue)firstValDeref.deref(),
+					(ICompoundType)firstValDeref.getType());
+				
+				// TODO: Consider always creating reference wrapping this value.
+//				// (2) Set to const unless it's a static method.
+//				if (!this.isStatic) {
+//					val.setConst(true);
+//				}
+				
+				firstVal = val;
+			}
+			
+			varTable.addVariable(firstName, firstVal);
+		}
+		
+		// Add the rest arguments
+		for(int i = 1; i < args.length; i++){
+			Argument arg = args[i];
+			varTable.addVariable(arg.getName(), arg.getValue());
+		}
 	}
 	
 	//---------------------------- IStackFrameInfo ----------------------------//

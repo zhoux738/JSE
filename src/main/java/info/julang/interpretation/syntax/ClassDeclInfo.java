@@ -114,7 +114,7 @@ public class ClassDeclInfo extends DeclInfo {
 			case PROTECTED: return false;
 			case PRIVATE:   return false;
 			case INTERNAL:  return true;
-			case STATIC:    return false;
+			case STATIC:    return true;
 			case HOSTED:    return false;
 			case FINAL:     return true;
 			case CONST:     return false;

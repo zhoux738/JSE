@@ -24,16 +24,15 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.mdgen;
 
-import info.julang.eng.mvnplugin.docgen.DocModel;
-import info.julang.eng.mvnplugin.docgen.ModuleContext;
-import info.julang.eng.mvnplugin.docgen.DocModel.TutorialPseudoType;
-import info.julang.execution.namespace.NamespacePool;
-import info.julang.util.Pair;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import info.julang.eng.mvnplugin.docgen.DocModel;
+import info.julang.eng.mvnplugin.docgen.ModuleContext;
+import info.julang.execution.namespace.NamespacePool;
+import info.julang.util.Pair;
 
 /**
  * Convert a Julian Doc summary into multiple {@link IParsedDocSection parsed sections}.

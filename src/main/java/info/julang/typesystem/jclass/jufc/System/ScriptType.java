@@ -24,6 +24,10 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc.System;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.symboltable.ITypeTable;
@@ -76,10 +80,7 @@ import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptCtor;
 import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptField;
 import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptMethod;
 import info.julang.typesystem.loading.LoadingInitiative;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import info.julang.util.OneOrMoreList;
 
 /**
  * The native implementation of <code><font color="green">System.Type</font></code>.
@@ -109,6 +110,7 @@ public class ScriptType {
 				.add("getFields", new GetFieldsExecutor())
 				.add("getParent", new GetParentExecutor())
 				.add("getInterfaces", new GetInterfacesExecutor())
+				.add("getExtensions", new GetExtensionsExecutor())
 				.add("getAttributes", new GetAttributesExecutor());
 		}
 		
@@ -189,6 +191,17 @@ public class ScriptType {
 		@Override
 		protected JValue apply(ThreadRuntime rt, ScriptType st, Argument[] args) throws Exception {
 			ArrayValue av = st.getInterfaces(rt);
+			JValue res = TempValueFactory.createTempRefValue(av);
+			return res;
+		}
+		
+	}
+	
+	private static class GetExtensionsExecutor extends InstanceNativeExecutor<ScriptType> {
+		
+		@Override
+		protected JValue apply(ThreadRuntime rt, ScriptType st, Argument[] args) throws Exception {
+			ArrayValue av = st.getExtensions(rt);
 			JValue res = TempValueFactory.createTempRefValue(av);
 			return res;
 		}
@@ -577,6 +590,34 @@ public class ScriptType {
 			ObjectValue ov = tv.getScriptTypeObject(rt);
 			RefValue rv = new RefValue(mem, ov);		
 			rv.assignTo(array.getValueAt(i));
+		}
+		
+		return array;
+	}
+	
+	public ArrayValue getExtensions(ThreadRuntime rt) {
+		// 1) Get all extension types
+		OneOrMoreList<JClassType> exts = null;
+		if (jtyp.isObject()){
+			ICompoundType ict = (ICompoundType)jtyp;
+			exts = ict.getExtensionClasses();
+		}
+
+		// 2) Create a type array to return
+        ITypeTable tt = rt.getTypeTable();
+        MemoryArea mem = rt.getHeap();
+        int len = exts.size();
+        JClassType sysTypTyp = (JClassType)tt.getType(FQCLASSNAME);
+        ObjectArrayValue array = (ObjectArrayValue)ArrayValueFactory.createArrayValue(mem, tt, sysTypTyp, len);
+		
+		// 3) Populate the array with Type instances for each extension type
+        int i = 0;
+		for (JClassType jct : exts) {
+			TypeValue tv = tt.getValue(jct.getName());
+			ObjectValue ov = tv.getScriptTypeObject(rt);
+			RefValue rv = new RefValue(mem, ov);		
+			rv.assignTo(array.getValueAt(i));
+			i++;
 		}
 		
 		return array;

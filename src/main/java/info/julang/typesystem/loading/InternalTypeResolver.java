@@ -116,7 +116,7 @@ public class InternalTypeResolver {
 		ParsedTypeName typeName, 
 		boolean reentry, 
 		boolean throwIfNotFound, 
-		LoadingInitiative initiative){
+		LoadingInitiative initiative) {
 		ITypeTable tt = context.getTypTable();
 		JType basicTyp = typeName.getBasicType();
 		if(basicTyp != null){

@@ -81,6 +81,7 @@ public class SystemRawScriptInfoInitializer {
 			"File",
 			"Stream",
 			"TextWriter",
+			"ItemExtension",
 			"Item",
 			"Directory",
 			"TextReader",
@@ -200,6 +201,10 @@ public class SystemRawScriptInfoInitializer {
         map.put("System/IO/TextWriter.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$TextWriter>(
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$TextWriter.class));
+        
+        map.put("System/IO/ItemExtension.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$ItemExtension>(
+            info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$ItemExtension.class));
         
         map.put("System/IO/Item.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.IO.AOTRawScriptInfo$Item>(

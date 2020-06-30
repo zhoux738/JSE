@@ -159,6 +159,8 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		FQName fullName = context.getClassDeclInfo().getFQName();
 		boolean hasCtor = false;
 		
+		boolean isSta = declInfo.isStatic();
+		
 		Class_definitionContext ast = (Class_definitionContext)declInfo.getAST();
 		List<Class_member_declarationContext> memList = ast.class_body().class_member_declaration();
 		
@@ -167,11 +169,22 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 			switch(decl.getMemberType()){
 			case FIELD:
 				JClassMember member = parseField(decl, ainfo, context, builder, false);
+				if (isSta && !member.isStatic()) {
+					throw new IllegalClassDefinitionException(
+						context, "A static class cannot have non-static fields.", declInfo);
+				}
+				
 				addMember(builder, member, decl);
 				break;
 			case METHOD:
 				member = parseMethod(decl, ainfo, context, builder, fullName, false);
 				addMember(builder, member, decl);
+
+				if (isSta && !member.isStatic()) {
+					throw new IllegalClassDefinitionException(
+						context, "A static class cannot have non-static methods.", declInfo);
+				}
+				
 				break;
 			case CONSTRUCTOR:
 				JClassConstructorMember cmember = parseCtor(decl, ainfo, context, builder, fullName);
@@ -186,12 +199,15 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 			}
 		}
 		
-		if(!hasCtor){
+		if(!hasCtor && !isSta){
 			createDefaultConstructor(builder, ainfo, fullName);
 		}
 		
-		// Defer the check
-		// checkAbstractMethods(builder, fullName, ainfo, ast);
+		// Defer other semantic checks
+		if (isSta) {
+			builder.addSemanticChecker(new StaticClassChecker(builder, ainfo));
+		}
+		
 		builder.addSemanticChecker(new AbstractMethodChecker(builder, fullName, ainfo, ast));
 	}
 	

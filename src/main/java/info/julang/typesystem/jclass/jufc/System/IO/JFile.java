@@ -28,10 +28,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import info.julang.execution.Argument;
@@ -53,7 +49,7 @@ import info.julang.memory.value.TempValueFactory;
  * 
  * @author Ming Zhou
  */
-public class JFile {
+public class JFile extends JItem {
 	
 	private static final String FullTypeName = "System.IO.File";
 	
@@ -184,69 +180,19 @@ public class JFile {
 	}
 
 	//----------------- implementation at native end -----------------//
-	
-	private File file;
-	
+
+	@Override
 	public void init(String path) throws IOException {
 		String cpath = Paths.get(path).toFile().getCanonicalPath();
-		this.file = new File(cpath);
-		if (file.exists() && file.isDirectory()) {
+		this.item = new File(cpath);
+		if (item.exists() && item.isDirectory()) {
 			throw new JSEIOException("Cannot create a file with a path to a directory.");
 		}
 	}
-	
-	public String getPath() throws IOException {
-		return file.getCanonicalPath();
-	}
-	
-	public String getParentPath(){
-		return file.getParent();
-	}
-	
-	public String getName(){
-		return file.getName();
-	}
-	
-	public boolean exists(){
-		return file.exists();
-	}
-	
-	public boolean create() throws IOException {
-		return file.createNewFile();
-	}
-	
-	public boolean delete() {
-		return file.delete();
-	}
-	
-	public boolean move(JDirectory dir) throws IOException {
-        return moveTo(Paths.get(dir.getPath(), file.getName()));
-	}
-	
-	public boolean rename(String name) throws IOException {
-		Path newName = Paths.get(file.getParent(), name);
-        return moveTo(newName);
-	}
-	
-	private boolean moveTo(Path path) throws IOException {
-        Path dstFile = null;
-        try {
-			dstFile = Files.move(this.file.toPath(), path);
-		} catch (FileAlreadyExistsException | NoSuchFileException e) {
-        	return false;
-		}
-        
-        if (dstFile != null) {
-			this.file = dstFile.toFile();
-        	return true;
-        } else {
-            return false;
-        }
-	}
 
 	public String readAll() throws FileNotFoundException, IOException {
-		int length = (int) file.length();
-		FileInputStream fos = new FileInputStream(file);
+		int length = (int) item.length();
+		FileInputStream fos = new FileInputStream(item);
 		byte[] bytes = new byte[length];
 		try {
 			fos.read(bytes, 0, length);

@@ -25,6 +25,8 @@ SOFTWARE.
 package info.julang.interpretation.expression.operator;
 
 import static info.julang.langspec.Operators.DOT;
+
+import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
@@ -141,7 +143,8 @@ public class DotOp extends Operator {
 		
 		if(lval != null){
 			lval = UntypedValue.unwrap(lval);
-			ICompoundType leftDeclaredType = null;
+			ICompoundType leftDeclaredType = null,
+			              superType = null; // To be populated only if this is a call to super method.
 			if(rop.getKind() == OperandKind.NAME){
 				if(lval.getKind() == JValueKind.REFERENCE){
 					try {
@@ -154,24 +157,38 @@ public class DotOp extends Operator {
 						throw jse;
 					}
 				}
+				
 				if(lval.getKind() == JValueKind.OBJECT){
 					String memberName = ((NameOperand)rop).getName();
 					ObjectValue lov = (ObjectValue) lval;
-					JValue mvalue = null;
+					JValue mvalue = null; // Method value to be resolved
+					MethodGroupValue evalues = null; // Extension method values to be resolved
 					
 					if(NameOperand.SUPER == lop){
+						// SPECIAL: super.fun()
+						
 						if(context.getContextType() == ContextType.IMETHOD){
 							MethodContext mc = (MethodContext)context;
 							ICompoundType thisType = mc.getContainingType();
 							if(thisType != null){
-								ICompoundType superType = thisType.getParent();
+								superType = thisType.getParent();
 								if(superType != null){
 									checkAccessibility(superType, memberName, context, false);
 									OneOrMoreList<ObjectMember> mvs = lov.getMemberValueByClass(memberName, superType, true);
-									if(mvs.size() == 0){
-										throw new UnknownMemberException(superType, memberName, false);
-									} else {
+									if(mvs.size() > 0){
 										mvalue = mvs.getFirst().getValue();
+									} else {
+										// Only query extension methods if there is no inherent members found.
+										//
+										// DESIGN NOTE: Extension methods do not participate in regular overloading resolution. If a member 
+										// of the same name is already defined, either directly or by inheritance, on the object's type, no 
+										// extension methods will be tried. 
+										OneOrMoreList<ObjectMember> extensions = 
+											((TypeTable)context.getTypTable()).getExtensionMethodsByClass(memberName, superType);
+										int exSize = extensions != null ? extensions.size() : 0;
+										if (exSize > 0) {
+											evalues = TempValueFactory.createTempMethodGroupValue(extensions);
+										}
 									}
 								} else if (thisType == JObjectType.getInstance()){
 									throw new RuntimeCheckException(
@@ -186,10 +203,14 @@ public class DotOp extends Operator {
 							throw new RuntimeCheckException(
 								"Can only use super keyword in an instance method.");		
 						}
+						// [END] SPECIAL: super.fun()
 					} else {
+						// REGULAR: id.fun()
+						
 						if(leftDeclaredType == null){
 							leftDeclaredType = lov.getClassType();
 						}
+						
 						checkAccessibility(leftDeclaredType, memberName, context, false);
 
 						// Special. If we are accessing a member of method group, 
@@ -218,7 +239,7 @@ public class DotOp extends Operator {
 							}
 						} 
 						
-						if (mvalue == null){
+						if (mvalue == null) {
 							ICompoundType thisType = null;
 							if(context.getContextType() == ContextType.IMETHOD && lop.getKind() == OperandKind.NAME){
 								NameOperand nameOd = (NameOperand) operands[0];
@@ -229,20 +250,40 @@ public class DotOp extends Operator {
 							}
 							
 							OneOrMoreList<ObjectMember> overloads = lov.getMemberValueByClass(memberName, thisType, false);
-							if(overloads != null){
-								if (overloads.size() == 1){
-									mvalue = overloads.getFirst().getValue();
-								} else {
-									mvalue = TempValueFactory.createTempMethodGroupValue(overloads);
+							int olSize = overloads != null ? overloads.size() : 0;
+							if (olSize == 1) {
+								mvalue = overloads.getFirst().getValue();
+							} else if (olSize > 1) {
+								mvalue = TempValueFactory.createTempMethodGroupValue(overloads);
+							}
+
+							// DESIGN NOTE: Extension methods do not participate in regular overloading resolution. If a member 
+							// of the same name is already defined, either directly or by inheritance, on the object's type, no 
+							// extension methods will be tried. 
+							if (mvalue == null) {
+								OneOrMoreList<ObjectMember> extensions = 
+									((TypeTable)context.getTypTable()).getExtensionMethodsByClass(memberName, leftDeclaredType);
+								int exSize = extensions != null ? extensions.size() : 0;
+								if (exSize > 0) {
+									evalues = TempValueFactory.createTempMethodGroupValue(extensions);
 								}
 							}
 						}
+						
+						// [END] REGULAR: id.fun()
 					}
 					
-					if(mvalue == null){
-						throw new UnknownMemberException(lval.getType(), memberName, false);
+					if(mvalue == null && evalues == null){
+						throw new UnknownMemberException(
+							superType != null ? superType : lval.getType(), memberName, false);
 					}
-					return new InstMemberOperand(mvalue, lov, memberName);
+					
+					return new InstMemberOperand(
+						mvalue,
+						superType != null ? superType :leftDeclaredType,
+						evalues,
+						lov,
+						memberName);
 				} else if (lval.getKind() == JValueKind.TYPE){
 					ICompoundType typ = null;
 					

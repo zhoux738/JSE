@@ -1,0 +1,31 @@
+// If the method name is resolved inherently, do not query extension method.
+
+interface Inf : Ext {
+
+}
+
+class C0 : Inf {
+
+	int fun(){
+		return 10;
+	}
+}
+
+class C1 : C0 {
+
+	int bun(){
+		return 20;
+	}
+	
+}
+
+static class Ext {
+	static bool fun(Inf this){ return 17; }
+	static bool bun(Inf this){ return 27; }
+}
+
+C1 mc = new C1();
+int r10 = mc.fun(); // invoke C0.fun()
+int r20 = mc.bun(); // invoke C1.fun()
+
+// Console.println(((Inf)mc).bun());

@@ -35,7 +35,7 @@
 	<dependency>
 	  <groupId>info.julang.eng</groupId>
 	  <artifactId>juleng-maven-plugin</artifactId>
-	  <version>0.0.2</version>
+	  <version>0.0.3</version>
 	</dependency>
 	<!-- JULENG: END -->
   </dependencies>
@@ -332,7 +332,7 @@
     									juleng-maven-plugin
     								</artifactId>
     								<versionRange>
-    									[0.0.2,)
+    									[0.0.3,)
     								</versionRange>
     								<goals>
     									<goal>generate</goal>

@@ -1,0 +1,50 @@
+// Chained call
+interface IAdder : AdderExt {
+
+	int value();
+	
+	IAdder add(int val);
+}
+
+static class AdderExt {
+
+	static IAdder mul(IAdder this, int times) {
+		// Assume times is positive
+		int incr = this.value();
+		while(times > 1){
+			this = this.add(incr);
+			times--;
+		}
+		
+		return this;
+	}
+	
+	static IAdder sub(IAdder this, int val) {
+		this = this.add(-val);
+		return this;
+	}
+
+}
+
+class Adder : IAdder {
+
+	private int val;
+	
+	Adder(int val) {
+		this.val = val;
+	}
+	
+	static Adder create(int val) {
+		return new Adder(val);
+	}
+	
+	int value() {
+		return val;
+	}
+	
+	IAdder add(int val){
+		return new Adder(this.val + val);
+	}
+}
+
+int result100 = Adder.create(50).sub(30).mul(5).value();

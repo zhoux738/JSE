@@ -1,0 +1,65 @@
+// Call overloaded extension method installed to parent type/interface type
+interface IAdder1 : AdderExt1 {
+	
+	void add(int val);
+}
+
+interface IAdder2 : IAdder1, AdderExt2 {
+
+}
+
+class Adder3: IAdder2, AdderExt3 {
+
+	private int val;
+	
+	int value() { return val; }
+	
+	void add(int val){
+		this.val += val;
+	}
+}
+
+class Adder4: Adder3, AdderExt4 {
+
+}
+
+static class AdderExt1 {
+	static void calc(IAdder1 this){
+		this.add(1);
+	}
+}
+
+static class AdderExt2 {
+	static void calc(IAdder2 this, int arg){
+		this.add(arg);
+	}
+}
+
+static class AdderExt3 {
+	static void calc(Adder3 this, Adder3 another){
+		this.add(another.value());
+	}
+}
+
+static class AdderExt4 {
+	static void calc(Adder4 this, string str){
+		this.add(str.length);
+	}
+}
+
+Adder4 a1 = new Adder4();
+a1.calc();
+int r1 = a1.value();
+
+Adder4 a2 = new Adder4();
+a2.calc(2);
+int r2 = a2.value();
+
+Adder4 a3 = new Adder4();
+a3.calc(a2);
+a3.calc(1);
+int r3 = a3.value();
+
+Adder4 a4 = new Adder4();
+a4.calc("abcd");
+int r4 = a4.value();

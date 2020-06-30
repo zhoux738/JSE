@@ -1,0 +1,71 @@
+module System.IO;
+
+/*
+ * An extension class for [System.IO.Item] that adds shared methods applicable to both file and directory. 
+ */
+static class ItemExtension {
+	
+	/*
+	 * Move this item to another directory and rename it.
+	 *
+	 * This is a convenient method that wraps the functionality of [move()](Item#move) and [rename()](Item#rename) together. It is not
+	 * a transactional operation. It may fail halfway leaving a moved item yet to be renamed, although it will try its best to 
+	 * restore to the previous status.
+	 *
+	 * [param: this] The extension target.
+	 * [param: newName] The new item name. Must not contain FS separator.
+	 * [param: newDir] The new directory.
+	 * [throws: System.IO.IOException] An error occurred during the underlying file system operation. In particular, this exception
+	 * is thrown when we moved the item but failed to rename it, and a restoration (move-back) attempt was also foiled.
+	 * [return] True if the item was successfully moved and renamed; false if it couldn't be and no change has occurred.
+	 */
+	public static bool relocate(Item this, Directory newDir, string newName){
+		if (!newDir.exists()) {
+			return false;
+		}
+		
+		// TODO: Check name conflict in the dest dir
+	
+		bool succ1 = false;
+		bool succ2 = false;
+		Exception ex = null;
+		try {
+			if (succ1 = this.move(newDir)) {
+				if (newName != null) {
+					succ2 = this.rename(newName);
+				} else {
+					succ2 = true;
+				}
+			}
+		} catch (Exception e) {
+			ex = e;
+		}
+		
+		// Moved and renamed
+		if (succ2) {
+			return true;		
+		}
+		
+		// Moved but not renamed
+		if (succ1) {
+			// Try to move back
+			succ2 = this.move(parent);
+			if (succ2) {
+				if (ex != null) {
+					throw ex;
+				} else {
+					return false;
+				}
+			} else {
+				throw new IOException("Failed to relocate completely. Moved to " + newDir.getPath() + " but not renamed to " + newName, ex);
+			}
+		}
+		
+		// Not even moved
+		if (ex != null) {
+			throw ex;
+		} else {
+			return false;
+		}
+	}
+}

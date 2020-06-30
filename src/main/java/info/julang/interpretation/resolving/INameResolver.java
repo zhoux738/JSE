@@ -27,7 +27,7 @@ package info.julang.interpretation.resolving;
 import info.julang.memory.value.JValue;
 
 /**
- * Name resolver is a context-sensitive class that is used to resolve an identifier encountered bin script code. 
+ * Name resolver is a context-sensitive class that is used to resolve an identifier encountered in script code. 
  * In Julian we have several different situations where the strategy for resolving identifiers can vary.
  * <p/>
  * <li>In the loose code, i.e. the code not present in method, the thread is running in a global environment and 

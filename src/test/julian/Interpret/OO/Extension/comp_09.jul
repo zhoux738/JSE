@@ -1,0 +1,14 @@
+// Inside extension method, can refer to another extension method either by id or 'this.'
+class C : Ext {
+
+}
+
+static class Ext {
+	static int fun1(C this){ return _fun(this, 1); }
+	static int fun2(C this){ return this._fun(2); }
+	static int _fun(C this, int val){ return 5 + val; }
+}
+
+C c = new C();
+int r6 = c.fun1();
+int r7 = c.fun2();

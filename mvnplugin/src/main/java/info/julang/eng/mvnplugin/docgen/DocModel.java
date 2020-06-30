@@ -957,13 +957,31 @@ public final class DocModel {
 		/**
 		 * Get an extended signature for this member, which contains information such as 
 		 * visibility, scope, abstractness, return type and the core signature (name and parameters).
+		 * 
+		 * @param asInstalledExtensionMethod if true, will reformat the signature as if it were an instance member.
 		 */
-		public String getExtendedSignature(){
+		public String getExtendedSignature(boolean asInstalledExtensionMethod){
 			StringBuilder sb = new StringBuilder();
 			sb.append(getMemberHeader(false));
 			sb.append(getMemberType(false, null));
 			sb.append(getCoreSignature(false, null, null));
-			return sb.toString();
+			String result = sb.toString();
+			if (asInstalledExtensionMethod) {
+				// Remove static
+				result = result.replace(" static ", " ");
+				
+				// Remove 1st param
+				int begin = result.indexOf('(', 0);
+				int end = result.indexOf(',', begin);
+				int offset = 2;
+				if (end == -1) {
+					end = result.indexOf(')', begin);
+					offset = 0;
+				}
+				result = result.substring(0, begin + 1) + result.substring(end + offset);
+			}
+			
+			return result;
 		}
 
 		/**
@@ -1263,6 +1281,8 @@ public final class DocModel {
 		public List<TypeRef> interfaces;
 		/** The methods declared by this type. */
 		public List<Method> methods;
+		/** The extensions installed to this type. */
+		public List<TypeRef> extensions;
 		
 		boolean isInherited;
 		
@@ -1270,6 +1290,7 @@ public final class DocModel {
 			super(stype);
 			interfaces = new ArrayList<TypeRef>();
 			methods = new ArrayList<Method>();
+			extensions = new ArrayList<TypeRef>();
 		}
 		
 		public InterfaceType(){
@@ -1289,6 +1310,8 @@ public final class DocModel {
 		public List<Constructor> ctors;
 		/** The fields declared by this class. */
 		public List<Field> fields;
+		/** A static class? */
+		public boolean isStatic;
 		
 		public ClassType(){
 			super(ClassSubtype.CLASS);

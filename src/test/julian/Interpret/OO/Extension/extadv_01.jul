@@ -1,0 +1,17 @@
+// Function reference to an extension method is to the static method itself.
+class C : Ext {
+
+}
+
+static class Ext {
+	static int value = 1;
+	static int fun(C this){ return value; }
+}
+
+C c = new C();
+var f = c.fun;
+int r1 = f(c); // Must call as static
+
+Ext.value = 2;
+var f2 = Ext.fun; // Equivalent to the previous addressing from instance
+int r2 = f2(c);

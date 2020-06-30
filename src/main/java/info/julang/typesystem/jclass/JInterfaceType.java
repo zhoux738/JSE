@@ -24,6 +24,12 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.typesystem.AnyType;
@@ -35,11 +41,6 @@ import info.julang.typesystem.jclass.builtin.JAttributeType;
 import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 import info.julang.util.OneOrMoreList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Represents an interface type defined in Julian scripts.
@@ -80,9 +81,15 @@ public class JInterfaceType implements ICompoundType {
 	
 	Class<?> mappingTarget;
 	
+	OneOrMoreList<JClassType> extensions;
+	
 	//------------ private members holding interface information ------------//
 	
+	private int stamp;
+	
 	private JInterfaceType[] interfaces;
+	
+	private JInterfaceType[] ancestors;
 	
 	private InterfaceMemberMap interfaceMembers;
 	
@@ -93,6 +100,8 @@ public class JInterfaceType implements ICompoundType {
 	private JClassInitializerMember[] staticInitializerArray;
 
 	private JAnnotation[] annotationArray;
+	
+	private JClassType[] allExtensions;
 	
 	//----------------------- Constructors -----------------------//
 	
@@ -135,6 +144,11 @@ public class JInterfaceType implements ICompoundType {
 	}
 
 	//-------------------- IInterfaceType --------------------//
+	
+	@Override
+	public int getStamp() {
+		return stamp;
+	}
 	
 	@Override
 	public boolean isClassType(){
@@ -303,6 +317,148 @@ public class JInterfaceType implements ICompoundType {
 	}
 
 	@Override
+	public OneOrMoreList<JClassType> getExtensionClasses() {
+	    return extensions == null ? new OneOrMoreList<JClassType>() : extensions;
+	}
+
+	// [LAZY LOADING] (But can be invalidated - TODO)
+	public JClassType[] getAllExtensionClasses() {
+		if (allExtensions == null) {
+		    synchronized(this){
+		        if (allExtensions == null) {
+		    		JClassType[] arr = null;
+		    		JInterfaceType[] ancs = getAncestors(true);
+		    		if (ancs.length > 0) {
+			    		TypePrioritySorter sorter = new TypePrioritySorter();
+		        		for (int rank = 0; rank < ancs.length; rank++) {
+		        			JInterfaceType anc = ancs[rank];
+		        			OneOrMoreList<JClassType> exts = anc.getExtensionClasses();
+		        			if (exts.size() > 0) {
+		        				int order = 0;
+		        	    		for(JClassType ext : exts) {
+		    	    				TypePriority ep = sorter.next(ext);
+		    	    				if (!sorter.contains(ep)) {
+		    	    					sorter.add(ep, rank, order);
+		    	    					order++;
+		    	    				}
+		        	    		}
+		        			}
+		        		}
+		        		
+		        		arr = sorter.toArray(JClassType.class, true);
+		    		} else {
+		    			arr = new JClassType[0];
+		    		}
+		    		
+			        allExtensions = arr;
+		        }
+		    }
+		}
+		
+		return allExtensions;
+	}
+	
+	/*
+	 * DESIGN NOTES: Extension Method
+	 * 
+	 * 1. Extension class (extension for short) can be installed to a class or interface
+	 * 2. A class or interface will have access to all extensions installed to it or any of its ancestors.
+	 * 3. Resolving to extension method only occur when the following conditions are met
+	 *    (1) There is no local or inherited member of the same name. This means extension methods do not
+	 *        participate in the overloading with member methods, although they can overload among 
+	 *        themselves.
+	 *    (2) The addressing syntax is used: "inst.exfun();". This means just calling "exfun()" from an 
+	 *        instance method won't work.
+	 * 4. Extension methods cannot be exposed as a handle. Doing "var f = inst.exfun" will only return the
+	 *    static method. 
+	 */
+	
+	/**
+	 * Get all the ancestor types. This includes the parent type and interface type, as well as the parent 
+	 * type of interfaces thereof, all the way up to the root type Object. The array is deduplicated, and 
+	 * the order is based on the combination of logical proximity and lexical order:
+	 * <p>
+	 * 1. Logical proximity: the hops between the ancestor type and this type. For example, given the following:
+	 * <pre><code>
+	 * class A : B;
+	 * class B : C;
+	 * class C : D;
+	 * class B : I;
+	 * class D : I;
+	 * </code></pre>
+	 * Then B is 1 hop from A, C and I 2 and D 3. Note I also appears as the interface of D, but it got eliminated
+	 * from the result array.
+	 * <p>
+	 * 2. Lexical order: the position a type appears in the inheritance syntax. For example, given the following:
+	 * <pre><code>
+	 * class A : I1, B, I2; // A and B are class, I1 and I2 interface
+	 * </code></pre>
+	 * Then the order would be B, I1 and I2. The parent type always appears at the first no matter what position it
+	 * shows in the code. The interfaces types, however, do follow their text order.
+	 * @param includeThis If true, this type will appear as the first element of the returned array.
+	 * @return An array of this type's ancestor types, deduplicated and ordered based on proximity and text order.
+	 * Never null, but can be empty.
+	 */
+	public JInterfaceType[] getAncestors(boolean includeThis) {
+		if (ancestors == null) {
+		    synchronized(this){
+		        if(ancestors == null){
+		        	TypePrioritySorter sorter = new TypePrioritySorter();
+		    		Stack<JInterfaceType> stack = new Stack<JInterfaceType>();
+		    		stack.push(this);
+		    		
+		    		populateAncestors(sorter, stack, 0);
+
+		        	ancestors = sorter.toArray(JInterfaceType.class, includeThis);
+		        }
+		    }
+		}
+		
+		return ancestors;
+	}
+
+	private void populateAncestors(TypePrioritySorter sorter, Stack<JInterfaceType> stack, int rank) {
+		int order = 0;
+		List<JInterfaceType> toAdd = null;
+		
+		// First, pop each type from the stack and add it into the resultant map, if not added yet.
+		// These types come out in the order of priority.
+		while (!stack.isEmpty()) {
+			JInterfaceType ptyp = stack.pop();
+			TypePriority ep = sorter.next(ptyp);
+			if (!sorter.contains(ep)) {
+				if (toAdd == null) {
+					toAdd = new ArrayList<JInterfaceType>();
+				}
+				toAdd.add(ptyp);
+				sorter.add(ep, rank, order);
+				order++;
+			}
+		}
+		
+		// Then, if any type has been added, find out its parent/interfaces, push them into the stack 
+		// in the reversed order of priority, and recurse.
+		if (toAdd != null) {
+			for (int i = toAdd.size() - 1; i >= 0; i--) {
+				JInterfaceType ptyp = toAdd.get(i);
+				JInterfaceType[] infs = ptyp.getInterfaces();
+				for (int j = infs.length - 1; j >= 0; j--) {
+					stack.push(infs[j]);
+				}
+				
+				JClassType parent = ptyp.getParent();
+				if (parent != null) {
+					stack.push(parent);
+				}
+			}
+		}
+		
+		if (!stack.empty()) {
+			populateAncestors(sorter, stack, rank + 1);
+		}
+	}
+
+	@Override
 	public String getModuleName() {
 		return moduleName;
 	}
@@ -386,6 +542,11 @@ public class JInterfaceType implements ICompoundType {
 	@Override
 	public String toString() {
 		return name;
+	}
+	
+	@Override
+	public int hashCode() {
+		return name.hashCode();
 	}
 	
 	/**

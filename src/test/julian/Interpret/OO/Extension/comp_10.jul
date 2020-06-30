@@ -1,0 +1,36 @@
+// Call extension method installed to interface type
+
+interface ICalc : CalcExt {
+	void add(int another);
+	void multiply(int another);
+}
+
+class Calc : ICalc {
+	
+	int value;
+	
+	void add(int another){
+		value += another;
+	}
+	
+	void multiply(int another){
+		value *= another;
+	}
+	
+}
+
+static class CalcExt {
+
+	static ICalc calc(ICalc this, int a, int b) {
+		this.add(a);
+		this.multiply(b);
+		return this;
+	}
+	
+	static ICalc calc(ICalc this, int a) {
+		return this.calc(a, 10);
+	}
+}
+
+Calc c1 = new Calc();
+int result200 = ((Calc)c1.calc(20)).value;

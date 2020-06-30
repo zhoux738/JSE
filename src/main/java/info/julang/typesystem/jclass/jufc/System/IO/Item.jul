@@ -9,7 +9,7 @@ module System.IO;
  * These section are separated by a path separator, which can differ based on the OS. However,
  * Julian recognizes both '/' (POSIX) and '\' (Windows) as the equally legal path separator.
  */
-interface Item {
+interface Item : ItemExtension {
 
 	/*
 	 * Get the name of this item. This is only the simple name (with extension part) under the path. 
@@ -53,4 +53,39 @@ interface Item {
 	 */
 	bool isFile();
 	
+	/*
+	 * Rename this item while remaining in the same directory.
+	 *
+	 * Unlike a few file systems where the move command/API serves dual purpose, Julian splits the semantics between move and 
+	 * rename. [Move operation](#move) may only be used to move an item from one directory to another without changing its name,
+	 * while this method is only for renaming without moving around the file. The obvious implication of this division is that 
+	 * for the rename operation, the new name must not contain [file system separator](System.Environment#separator), and there 
+	 * must be no item within the same directory that is already possessing the same name. In any of these cases this method 
+	 * returns false.
+	 *
+	 * To move an item **and** change its name, use extension method [relocate()](ItemExtension#relocate).
+	 *
+	 * [param: newName] The new item name. Must not contain FS separator.
+	 * [throws: System.IO.IOException] An error occurred during the renaming operation.
+	 * [return] True if the item was successfully renamed; false if it couldn't be.
+	 */
+	bool rename(string newName);
+	
+	/*
+	 * Move this item to another directory.
+	 *
+	 * Unlike a few file systems where the move command/API serves dual purpose, Julian splits the semantics between move and 
+	 * rename. [Rename operation](#rename) is only for renaming without moving around the file, while this method may only be used 
+	 * to move an item from one directory to another without changing its name. The obvious implication of this division is that for
+	 * the move operation, the destination must be a valid directory, and there must be no item in that directory that is already
+	 * possessing the same name. In any of these cases this method returns false. Moving to the same directory is allowed and 
+	 * implemented trivially by returning true directly.
+	 *
+	 * To move an item **and** change its name, use extension method [relocate()](ItemExtension#relocate).
+	 *
+	 * [param: newDir] The new directory.
+	 * [throws: System.IO.IOException] An error occurred during file renaming operation.
+	 * [return] True if the item was successfully moved; false if it couldn't be.
+	 */
+	bool move(Directory newDir);
 }

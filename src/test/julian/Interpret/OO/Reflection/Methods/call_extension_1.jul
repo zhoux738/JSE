@@ -1,0 +1,19 @@
+// Cannot call extension method as instance method. Won't resolve
+import System.Reflection;
+
+class C : Ext {
+}
+
+static class Ext {
+	static bool exfun(C this){ return true; }
+}
+
+Type t = typeof(C);
+Method[] mtds = t.getMethods("exfun");
+
+int total = mtds.length;
+
+t = typeof(Ext);
+mtds = t.getMethods("exfun");
+Method m = mtds[0];
+bool result = m.call(new var[]{new C()});

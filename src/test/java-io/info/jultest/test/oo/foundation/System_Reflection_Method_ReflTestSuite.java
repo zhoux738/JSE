@@ -177,4 +177,11 @@ public class System_Reflection_Method_ReflTestSuite extends ExceptionTestsBase {
 		EFCommons.validateIntValue(gvt, "i", 10);
 		EFCommons.validateIntValue(gvt, "j", 24);
 	}
+	
+	@Test
+	public void callExtension1() throws EngineInvocationError, IOException {
+		VariableTable gvt = runInline(FEATURE, "call_extension_1.jul");
+		Commons.validateIntValue(gvt, "total", 0);
+		Commons.validateBoolValue(gvt, "result", true);
+	}
 }

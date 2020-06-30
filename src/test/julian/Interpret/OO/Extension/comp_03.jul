@@ -1,0 +1,32 @@
+// Call overloaded extension method
+class Calc : CalcExt {
+	
+	int value;
+	
+	void add(int another){
+		value += another;
+	}
+	
+	void multiply(int another){
+		value *= another;
+	}
+	
+}
+
+static class CalcExt {
+
+	static int calc(Calc this, int a, int b) {
+		this.add(a);
+		this.multiply(b);
+		return this.value;
+	}
+	
+	static int calc(Calc this, int a) {
+		return this.calc(a, 10);
+	}
+}
+
+Calc c = new Calc();
+int result200 = c.calc(20);
+c.value = 0;
+int result100 = c.calc(20, 5);

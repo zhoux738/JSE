@@ -78,6 +78,7 @@ import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.interpretation.IllegalLiteralException;
 import info.julang.interpretation.syntax.ClassDeclInfo;
+import info.julang.interpretation.syntax.ClassSubtype;
 import info.julang.interpretation.syntax.CtorDeclInfo;
 import info.julang.interpretation.syntax.FieldDeclInfo;
 import info.julang.interpretation.syntax.MemberDeclInfo;
@@ -581,44 +582,60 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 	
 	/** Fill in the base information about the type. Returns true if successful; false if this type should be skipped for doc extraction. */
 	private boolean fillBasics(
-		ClassDeclInfo cdi, Type typ, String sname, LazyAstInfo ainfo, ParserRuleContext prc, NamespacePool ns){
+		ClassDeclInfo declInfo, Type typ, String sname, LazyAstInfo ainfo, ParserRuleContext prc, NamespacePool ns){
 		typ.name = sname;
 		
 		// Fill summary and references
 		String typdoc = extractRawDoc(ainfo, prc);
 		typ.processRawDoc(typdoc);
 		
-		// Modifier
-		switch(cdi.getAccessibility()){
+		// Modifiers
+		switch(declInfo.getAccessibility()){
 		case PUBLIC:
-			typ.visibility = cdi.getAccessibility();
+			typ.visibility = declInfo.getAccessibility();
 			break;
 		default:
 			// return false;
+		}
+		
+		if (declInfo.isStatic() && typ.subtype == ClassSubtype.CLASS) {
+			((DocModel.ClassType)typ).isStatic = true;
 		}
 		
 		// Parent and interfaces
 		switch(typ.subtype){
 		case CLASS:
 		case INTERFACE:
-			List<ParsedTypeName> ptns = cdi.getParentTypes();
+			List<ParsedTypeName> ptns = declInfo.getParentTypes();
 			if (ptns != null){
 				for (ParsedTypeName ptn : ptns) {
-					TypeInfo resolved = mc.getTypeInfo(ptn, ns);
-					switch(resolved.getSubType()){
+					TypeInfo baseType = mc.getTypeInfo(ptn, ns);
+					switch(baseType.getSubType()){
 					case CLASS:
-						// class type => parent class
-						// (this shouldn't happen for interface type, but we trust that it won't happen since that would
-						// cause severe runtime issue and have already broken everything)
-						((DocModel.ClassType)typ).parent = new TypeRef(resolved);
+						// class type => parent class or extension class
+						if (baseType.isStatic()) {
+							if (declInfo.isStatic()) {
+								// static class can have static parent
+								((DocModel.ClassType)typ).parent = new TypeRef(baseType);
+							} else {
+								// Extension
+								((DocModel.InterfaceType)typ).extensions.add(new TypeRef(baseType));
+							}
+						} else {
+							if (declInfo.isStatic()) {
+								// static class cannot inherit from non-static class
+								logger.warn(
+									"Found a static class '" + declInfo.getFQName().toString() + 
+									"' that inherits from a non-static class '" + baseType.getFullName() + "'.");
+							} else {
+								// regular inheritance
+								((DocModel.ClassType)typ).parent = new TypeRef(baseType);
+							}			
+						}
 						break;
 					case INTERFACE:
 						// interface type => interfaces					
-						((DocModel.InterfaceType)typ).interfaces.add(new TypeRef(resolved));
-						break;
-					case ATTRIBUTE:
-						break;
-					case ENUM:
+						((DocModel.InterfaceType)typ).interfaces.add(new TypeRef(baseType));
 						break;
 					default:
 						break;
@@ -809,7 +826,8 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 				if (tans != null) {
 					for(TypeAndName tan : tans){
 						//TypeInfo resolved = mc.getTypeInfo(tan.getTypeName(), ns);
-						TypeDescription td = new TypeDescription(tan.getParamName(), "", tan.getTypeName().toString());
+						TypeInfo resolved = mc.getTypeInfo(tan.getTypeName(), ns);
+						TypeDescription td = new TypeDescription(tan.getParamName(), "", resolved.getFullName()); //tan.getTypeName().toString());
 						method.params.add(td);
 					}
 				}

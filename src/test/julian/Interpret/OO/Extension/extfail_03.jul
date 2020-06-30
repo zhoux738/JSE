@@ -1,0 +1,15 @@
+// Cannot call extension while passing 'this' explicitly
+class MyCls : Ext {
+
+}
+
+static class Ext { // not static
+
+	static int getVal(MyCls this){
+		return 1;
+	}
+}
+
+MyCls c = new MyCls();
+int result = c.getVal(c);
+Console.println(result);

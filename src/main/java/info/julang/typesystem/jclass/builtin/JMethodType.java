@@ -28,6 +28,7 @@ import info.julang.hosting.HostedExecutable;
 import info.julang.langspec.Keywords;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.ExecutableType;
+import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.MethodExecutable;
 
@@ -146,5 +147,34 @@ public class JMethodType extends JFunctionType implements ExecutableType {
 		JParameter[] params = this.getParams();
 		boolean skipFirst = params != null && params.length > 0 && params[0].getName().equals(Keywords.THIS);
 		return getName() + "(" + JParameter.getSignature(this.getParams(), skipFirst) + ")";
+	}
+
+	/**
+	 * Check if this method can serve as the extension for the specified type. An extension method for type T must satisfy
+	 * multiple criteria, and this method only covers a part of them.
+	 * <pre>
+	 *   - Declared in a static class .................... (checked elsewhere)
+	 *   - Declared as a static public method ............ (checked elsewhere)
+	 *   - The first parameter is named "this" ........... (checked by this method)
+	 *   - The first parameter is an Object type ......... (checked by this method)
+	 * </pre>
+	 * 
+	 * @param extendee The type to check if this method may extend
+	 * @return
+	 */
+	public boolean mayExtend(ICompoundType extendee) {
+		JParameter[] params = this.getParams();
+		if (params != null && params.length > 0) {
+			JParameter first = params[0];
+			if (first.getName().equals(Keywords.THIS)) {
+				JType firstTyp = first.getType();
+				if (firstTyp.isObject()) {
+					ICompoundType tgtTyp = (ICompoundType)firstTyp;
+					return extendee.isDerivedFrom(tgtTyp, true);
+				}
+			}
+		}
+		
+		return false;
 	}
 }

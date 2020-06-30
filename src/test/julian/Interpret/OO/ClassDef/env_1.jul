@@ -1,0 +1,18 @@
+static class Env {
+	
+	static string os = "Windows";
+	
+	static const int cpus = getCpus();
+	
+	private static int getCpus() {
+		return 4;
+	}
+	
+	static int getMemInMb() {
+		return 8192;
+	}
+}
+
+string os = Env.os;
+int cores = Env.cpus;
+int memory = Env.getMemInMb();

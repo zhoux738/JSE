@@ -164,6 +164,15 @@ public class System_Type_ReflTestSuite extends ExceptionTestsBase {
 		EFCommons.validateIntValue(gvt, "res2", 2);
 	}
 	
+	@Test
+	public void getExtensionsTest1() throws EngineInvocationError, IOException {		
+		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "BasicInfo/get_extensions_1.jul", Commons.SRC_REPO_ROOT);
+		IExtVariableTable gvt = rt.getGlobalVariableTable();
+
+		EFCommons.validateBoolValue(gvt, "res1", true);
+		EFCommons.validateBoolValue(gvt, "res2", true);
+	}
+	
 	// Type loading
 	
 	@Test

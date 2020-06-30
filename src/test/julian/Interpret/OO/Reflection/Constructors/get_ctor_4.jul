@@ -1,0 +1,10 @@
+import System.Reflection;
+
+static class MyClass {
+	static string sa;
+}
+
+Type t = typeof(MyClass);
+Constructor[] ctors = t.getConstructors();
+
+int count = ctors.length;

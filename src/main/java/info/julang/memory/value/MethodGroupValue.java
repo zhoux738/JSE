@@ -28,6 +28,7 @@ import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.VoidType;
 import info.julang.typesystem.jclass.builtin.JMethodGroupType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 
@@ -44,9 +45,9 @@ public class MethodGroupValue extends FuncValue implements IMethodValue {
 		super(memory, makeMethodGroupType(methodVals), JValueKind.METHOD_GROUP, false);
 		this.methodVals = methodVals;
 	}
-
-	public MethodValue[] getMethodValues(){
-		return methodVals;
+	
+	protected MethodGroupValue(MemoryArea memory, JMethodGroupType metGrpTyp) {
+		super(memory, metGrpTyp, JValueKind.METHOD_GROUP, false);
 	}
 	
 	private static JMethodGroupType makeMethodGroupType(MethodValue[] methodVals) {
@@ -75,6 +76,10 @@ public class MethodGroupValue extends FuncValue implements IMethodValue {
 		JMethodGroupType mgt = new JMethodGroupType(name, retTyp, containingTyp, typs);
 		return mgt;
 	}
+
+	public MethodValue[] getMethodValues(){
+		return methodVals;
+	}
 	
 	//------------ IMethodValue ------------//
 	
@@ -88,5 +93,33 @@ public class MethodGroupValue extends FuncValue implements IMethodValue {
 
 	public JValueKind getFuncValueKind() {
 		return JValueKind.METHOD_GROUP;
+	}
+	
+	//------------ Special: an empty group ------------//
+	
+	public static EmptyMethodGroupValue createEmptyMethodGroupValue(MemoryArea memory, String methodName, JType containingType) {
+		return new EmptyMethodGroupValue(memory, methodName, containingType);
+	}
+	
+	private static class EmptyMethodGroupValue extends MethodGroupValue {
+		
+		private EmptyMethodGroupValue(MemoryArea memory, String methodName, JType containingType) {
+			super(memory, new JMethodGroupType(methodName, VoidType.getInstance(), containingType, new JMethodType[0]));
+		}
+		
+		@Override
+		public MethodValue[] getMethodValues(){
+			return new MethodValue[0];
+		}
+
+		@Override
+		public boolean isStatic(){
+			return true;
+		}
+
+		@Override
+		public JValue getThisValue() {
+			return null;
+		}
 	}
 }

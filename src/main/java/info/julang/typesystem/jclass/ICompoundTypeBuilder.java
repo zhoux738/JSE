@@ -116,6 +116,12 @@ public interface ICompoundTypeBuilder extends IClassOrInterface {
 	void addInterface(JInterfaceType interfaceType);
 	
 	/**
+	 * Add a static class that extends the built type.
+	 * @param classType
+	 */
+	void addExtension(JClassType classType);
+	
+	/**
 	 * List all interfaces added so far. Can be null.
 	 */
 	List<JInterfaceType> getInterfaces();

@@ -1,0 +1,10 @@
+// static class cannot implement any interface
+
+interface Inf {}
+
+static class Env : Inf {
+	
+	static string os;
+}
+
+string os = Env.os;

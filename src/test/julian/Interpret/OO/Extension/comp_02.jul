@@ -1,0 +1,29 @@
+// Call as extension method
+class Calc : CalcExt {
+	
+	int value;
+	
+	void add(int another){
+		value += another;
+	}
+	
+	void multiply(int another){
+		value *= another;
+	}
+	
+}
+
+static class CalcExt {
+
+	static void addThenMultiply(Calc this, int a, int b) {
+		this.add(a);
+		this.multiply(b);
+	}
+
+}
+
+Calc c = new Calc();
+c.value = 0;
+c.addThenMultiply(20, 4);
+int result = c.value;
+//Console.println(result);

@@ -1,0 +1,9 @@
+// static class cannot define non-static ctor
+static class Env {
+	
+	static string os;
+	
+	private Env(){}
+}
+
+string os = Env.os;

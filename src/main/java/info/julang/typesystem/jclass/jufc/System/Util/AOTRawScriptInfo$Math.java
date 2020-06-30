@@ -80,7 +80,7 @@ public class AOTRawScriptInfo$Math extends RawScriptInfo {
         }
         
         public boolean isFinal() {
-            return true;
+            return false;
         }
         
         public boolean isConst() {
@@ -96,7 +96,7 @@ public class AOTRawScriptInfo$Math extends RawScriptInfo {
         }
 
         public boolean isStatic() {
-            return false;
+            return true;
         }
 
         public Accessibility getAccessibility() {

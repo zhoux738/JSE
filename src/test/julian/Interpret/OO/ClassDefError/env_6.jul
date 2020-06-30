@@ -1,0 +1,13 @@
+// static class cannot inherit from other types
+
+class Extern {
+
+}
+
+static class Env : Extern {
+	
+	static string os;
+
+}
+
+string ov = Env.os;

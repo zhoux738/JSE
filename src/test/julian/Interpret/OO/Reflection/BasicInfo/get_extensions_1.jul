@@ -1,0 +1,37 @@
+import System.Collection;
+
+static class AExt {
+	static void extra(A this){}
+}
+interface A : AExt { }
+
+static class BExt {
+	static void extra(B this){}
+}
+interface B : A, BExt { }
+
+Type taex = typeof(AExt);
+Type tbex = typeof(BExt);
+Type ta = typeof(A);
+Type tb = typeof(B);
+
+bool checkAll(Type[] actual, Type[] expected){
+	Map map = new Map();
+	for(Type t : actual){
+		map[t.toString()] = t;
+	}
+	
+	if (map.size() != expected.length){
+		return false;
+	}
+	
+	bool passed = true;
+	for(Type t2 : expected){
+		passed = passed && map[t2.toString()] != null;
+	}
+	
+	return passed; 
+}
+
+bool res1 = checkAll(ta.getExtensions(), new Type[]{taex});
+bool res2 = checkAll(tb.getExtensions(), new Type[]{tbex});

@@ -46,12 +46,20 @@ import info.julang.interpretation.context.Context;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.StackArea;
 import info.julang.memory.simple.SimpleStackArea;
+import info.julang.memory.value.JValue;
+import info.julang.memory.value.MethodValue;
+import info.julang.memory.value.ObjectMember;
 import info.julang.memory.value.TypeValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.modulesystem.ModuleManager;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper;
+import info.julang.typesystem.jclass.ICompoundType;
+import info.julang.typesystem.jclass.JClassMember;
+import info.julang.typesystem.jclass.JClassMethodMember;
 import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.MemberType;
 import info.julang.typesystem.jclass.builtin.IDeferredBuildable;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.loading.InternalTypeResolver;
@@ -106,6 +114,8 @@ public class TypeTable implements ITypeTable {
 	private MemoryArea heap;
 	
 	private Map<String, TypeInfo> types = new HashMap<String, TypeInfo>();
+	
+	private ExtMethodCache extMethodCache = new ExtMethodCache();
 	
 	private Map<String, ArrayTypeInfo> arrayTypes = Collections.synchronizedMap(new HashMap<String, ArrayTypeInfo>());
 	
@@ -189,6 +199,70 @@ public class TypeTable implements ITypeTable {
 				info == null ? null : 
 					(requireFinalized && !info.finalized) ? null : info.value;
 		}
+	}
+	
+	/**
+	 * Get all extension methods of the given name targeting the specified type.
+	 * 
+	 * @param methodName The name of the extension method
+	 * @param extendee The extended type
+	 * @return never null
+	 */
+	public OneOrMoreList<ObjectMember> getExtensionMethodsByClass(String methodName, ICompoundType extendee){
+		// Try cache first
+		OneOrMoreList<ObjectMember> result = extMethodCache.get(extendee, methodName);
+		if (result != null) {
+			return result;
+		}
+		
+		JClassType[] allExts = extendee.getAllExtensionClasses();
+		if (allExts.length > 0) {
+			int rank = Integer.MAX_VALUE >> 1;
+			for (JClassType extClass : allExts) {
+				JClassMember[] members = extClass.getClassStaticMembers();
+				for (JClassMember jcm : members) {
+					if (jcm.getName().equals(methodName)
+						&& jcm.getMemberType() == MemberType.METHOD 
+						&& jcm.getAccessibility() == Accessibility.PUBLIC) {
+						JClassMethodMember jcmm = (JClassMethodMember)jcm;
+						if(jcmm.getMethodType().mayExtend(extendee)) {
+							JValue metVal = getStaticMethodValue(extClass, jcmm);
+							if (metVal != null) {
+								ObjectMember om = new ObjectMember(metVal, rank);
+								rank++;
+								if (result == null) {
+									result = new OneOrMoreList<ObjectMember>(om);
+								} else {
+									result.add(om);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (result == null) {
+			result = new OneOrMoreList<ObjectMember>();
+		}
+		
+		// Add to cache
+		extMethodCache.put(extendee, methodName, result);
+		
+		return result;
+	}
+	
+	private JValue getStaticMethodValue(JClassType jclass, JClassMethodMember jcmm) {
+		TypeValue tval = getValue(jclass.getName());
+		MethodValue[] methods = tval.getMethodMemberValues(jcmm.getName());
+		for (MethodValue method : methods) {
+			if (method.getMethodType() == jcmm.getMethodType()) {
+				// This is the value matching the located member
+				return method;
+			}
+		}
+
+		return null;
 	}
 	
 	/**

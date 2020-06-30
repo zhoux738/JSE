@@ -24,6 +24,9 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.IExtValue.IObjectVal;
 import info.julang.external.interfaces.JValueKind;
@@ -39,9 +42,6 @@ import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JInterfaceType;
 import info.julang.util.OneOrMoreList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A value holding per-instance data, i.e. non-static members, of class type.

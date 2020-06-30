@@ -32,6 +32,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.DiagnosticErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
@@ -220,7 +221,8 @@ public class ANTLRParser {
 				JulianLexer lexer = new JulianLexer(input);
 				if (!GlobalSetting.EnableANTLRDefaultErrorReport){
 					lexer.removeErrorListeners();
-					lexer.addErrorListener(handler);			
+					lexer.addErrorListener(handler);
+					//lexer.addErrorListener(new DiagnosticErrorListener());
 				}
 				cts = new FilterableTokenStream(lexer);    		
 	    	}

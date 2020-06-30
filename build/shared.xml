@@ -30,7 +30,7 @@
       <fileset file="${lkgJarPath}"/>
     </resourcecount>
   </condition>
-   
+
   <!-- Check if we have built locally -->
   <property name="builtjar" location="${imported.basedir}/../target/JSE-${jse.version}.jar" relative="false"/>
   <available file="${builtjar}" property="builtJarPathExists"/>
@@ -40,13 +40,13 @@
       <not><isset property="builtJarPathExists"/></not>
 	</and>
   </condition>
-  	
+
   <!-- If LKG doesn't exist and we havn't built locally, abort -->
   <fail if="bothJarPathsMissing" message="Cannot invoke JSE from Ant. Must obtain a working copy first. Try run 'mvn package' from the source root."/>
 
   <!-- If LKG doesn't exist but a local copy exists, copy it over -->
   <copy file="${builtjar}" todir="${imported.basedir}/../build/lkg" unless:set="lkgJarPathExists"/>
-	
+
   <!-- Call Maven from Ant. Originally from http://maven.apache.org/ant-tasks/examples/mvn.html -->
   <macrodef name="maven">
     <attribute name="options" default="" />

@@ -1,0 +1,25 @@
+// for "C : Exa, Exb", will resolve to Exa.fun
+// for "C : I, Exb; I : Exa", will resolve to Exb.fun
+class C1 : Exa, Exb {
+	
+}
+
+interface I1 : Exa {}
+interface I2 : Exb {}
+
+class C2 : I2, I1 {
+	
+}
+
+static class Exa {
+	static string msg(C1 this) { return "exa"; }
+	static string msg(C2 this) { return "exa"; }
+}
+
+static class Exb {
+	static string msg(C1 this) { return "exb"; }
+	static string msg(C2 this) { return "exb"; }
+}
+
+String s1 = new C1().msg();
+String s2 = new C2().msg();

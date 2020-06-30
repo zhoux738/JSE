@@ -1,0 +1,24 @@
+static class Env {
+	
+	static string os = "Windows";
+	
+	protected static int getCpus() {
+		return 4;
+	}
+}
+
+static class MyEnv : Env {
+	
+	static string os = "Linux";
+	
+	public static int getCpus() {
+		return Env.getCpus() * 2;
+	}
+}
+
+int mycores = MyEnv.getCpus();
+string myos = MyEnv.os;
+string os = Env.os;
+Env.os = "Solaris";
+string myos2 = MyEnv.os;
+string os2 = Env.os;

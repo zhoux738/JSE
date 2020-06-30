@@ -1,0 +1,43 @@
+// Call extension method installed to parent type
+
+interface ICalc : CalcExt {
+	void add(int another);
+	void multiply(int another);
+}
+
+abstract class CalcBase : ICalc, CalcBaseExt {
+	
+	int value;
+	
+	void add(int another){
+		value += another;
+	}
+	
+}
+
+class Calc : CalcBase {
+	
+	void multiply(int another){
+		value *= another;
+	}
+	
+}
+
+static class CalcExt {
+
+	static ICalc calc(ICalc this, int a, int b) {
+		this.add(a);
+		this.multiply(b);
+		return this;
+	}
+}
+
+static class CalcBaseExt {
+	
+	static CalcBase calc(CalcBase this, int a) {
+		return this.calc(a, 10);
+	}
+}
+
+Calc c1 = new Calc();
+int result110 = ((Calc)c1.calc(11)).value;

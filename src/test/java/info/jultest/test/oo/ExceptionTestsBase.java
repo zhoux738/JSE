@@ -15,6 +15,10 @@ import info.julang.interpretation.errorhandling.JulianScriptException;
 
 /**
  * A mixin class providing validation support for Julian exceptions.
+ * <p>
+ * Consider using ExceptionTestRunner if preferring to not inheriting other classes 
+ * (for example, in a test class mixing exceptional and non-exceptional cases, or 
+ * in a class that needs to inherit from some other class).
  * 
  * @author Ming Zhou
  */

@@ -21,7 +21,7 @@ public abstract class JulianParserRunner extends ParserRunnerBase {
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		JulianParser parser = new JulianParser(tokens);
 		parser.addErrorListener(AbortingErrorHandler.INSTANCE);
-		//parser.addErrorListener(new DiagnosticErrorListener());
+		//parser.addErrorListener(new org.antlr.v4.runtime.DiagnosticErrorListener());
 		ProgramContext exeCtxt = parser.program();
  		//exeCtxt.inspect(parser);
 		return exeCtxt;

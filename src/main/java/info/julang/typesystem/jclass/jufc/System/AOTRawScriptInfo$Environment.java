@@ -97,7 +97,7 @@ public class AOTRawScriptInfo$Environment extends RawScriptInfo {
         }
 
         public boolean isStatic() {
-            return false;
+            return true;
         }
 
         public Accessibility getAccessibility() {

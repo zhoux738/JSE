@@ -25,6 +25,9 @@ SOFTWARE.
 package info.julang.interpretation.expression.operand;
 
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.MethodGroupValue;
+import info.julang.memory.value.TempValueFactory;
+import info.julang.typesystem.JType;
 
 /**
  * A member operand that represents a member of certain object ({@link #ofObject()}).
@@ -34,6 +37,7 @@ import info.julang.memory.value.JValue;
 public class InstMemberOperand extends MemberOperand {
 	
 	private JValue ofObject;
+	private MethodGroupValue extMethods;
 	
 	/**
 	 * The object whose member is wrapped by this operand.
@@ -44,9 +48,21 @@ public class InstMemberOperand extends MemberOperand {
 		return ofObject;
 	}
 	
-	public InstMemberOperand(JValue value, JValue ofObject, String memberName){
-		super(value, memberName);
+	/**
+	 * The extension methods for the same name.
+	 * @return null if no extension is installed to the type of this object.
+	 */
+	public MethodGroupValue getExtensionMethods() {
+		return extMethods;
+	}
+	
+	public InstMemberOperand(JValue value, JType type, MethodGroupValue extMethodGroup, JValue ofObject, String memberName){
+		super(value != null // Create an empty method group value since operand must hold a non-null value.
+				? value 
+				: TempValueFactory.createEmptyMethodGroupValue(memberName, type),
+			  memberName);
 		this.ofObject = ofObject;
+		this.extMethods = extMethodGroup;
 	}
 
 	@Override
@@ -54,4 +70,12 @@ public class InstMemberOperand extends MemberOperand {
 		return OperandKind.IMEMBER;
 	}
 	
+	@Override
+	public JValue getValue() {
+		return extMethods == null ? super.getValue() : extMethods;
+	}
+	
+	public JValue getMemberValue() {
+		return super.getValue();
+	}
 }

@@ -6,7 +6,7 @@ import System.Reflection;
  * A helper class providing runtime information about the current environment.
  */
  [Bridged(apiset="System.Environment")]
-class Environment {
+static class Environment {
 	
 	/*
 	 * Get the script which is running at the line where this method is called.

@@ -24,6 +24,13 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.mdgen;
 
+import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import info.julang.eng.mvnplugin.GlobalLogger;
 import info.julang.eng.mvnplugin.docgen.DocModel;
 import info.julang.eng.mvnplugin.docgen.DocModel.AnchorType;
 import info.julang.eng.mvnplugin.docgen.DocModel.ICoreSignatureDecorator;
@@ -33,13 +40,11 @@ import info.julang.eng.mvnplugin.docgen.DocModel.Type;
 import info.julang.eng.mvnplugin.docgen.DocModel.TypeDescription;
 import info.julang.eng.mvnplugin.docgen.DocModel.TypeRef;
 import info.julang.eng.mvnplugin.docgen.ModuleContext;
+import info.julang.eng.mvnplugin.docgen.TypeInfo;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.interpretation.syntax.ClassSubtype;
-
-import java.awt.Color;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import info.julang.typesystem.jclass.Accessibility;
+import info.julang.util.Pair;
 
 /*
  * A sample output:
@@ -174,7 +179,14 @@ public class MarkdownConverter implements AutoCloseable {
 		writer.addHeader(name, 1);
 		writer.write(" ");
 		if (typ.subtype != null) {
-			writer.add(StylizedString.create(typ.subtype.name()).addColor(Color.decode("0xC8C8C8")).setSize(3));
+			String subtitle = typ.subtype.name();
+			if (typ.subtype == ClassSubtype.CLASS) {
+				DocModel.ClassType ctype = (DocModel.ClassType)typ;
+				if (ctype.isStatic) {
+					subtitle = "STATIC " + subtitle;
+				}
+			}
+			writer.add(StylizedString.create(subtitle).addColor(Color.decode("0xC8C8C8")).setSize(3));
 		} else if (typ instanceof PrimitiveType && !typ.name.toLowerCase().equals("any")){
 			writer.add(StylizedString.create("PRIMITIVE").addColor(Color.decode("0xC8C8C8")).setSize(3));
 		}
@@ -200,6 +212,8 @@ public class MarkdownConverter implements AutoCloseable {
 			writer.append(list);
 			writer.nextLine(2, false);
 		}
+		
+		List<Pair<DocModel.ClassType, TypeRef>> extMethods = null;
 		
 		// Parent types
 		if (typ.subtype != null) {
@@ -229,6 +243,27 @@ public class MarkdownConverter implements AutoCloseable {
 					for (TypeRef tref : intfs) {
 						String link = resolve(tref).getLinkPath(typ, null);
 						writer.addItem(StylizedString.create(tref.getFullName()).toLink(link), 0, null);
+					}
+					
+					writer.nextLine(2, false);
+				}
+				
+				List<TypeRef> exts = itfTyp.extensions;
+				if (exts != null && exts.size() > 0){
+					writer.add(StylizedString.create("Known Extensions").toBold());
+					writer.nextLine(2, false);
+					for (TypeRef extRef : exts) {
+						String link = resolve(extRef).getLinkPath(typ, null);
+						writer.addItem(StylizedString.create(extRef.getFullName()).toLink(link), 0, null);
+						
+						TypeInfo extTypInfo = mc.getTypeInfo(extRef.simpleName, 0, typ.getNamespacePool());
+						DocModel.ClassType clsTyp = (DocModel.ClassType)extTypInfo.getTypeDoc();
+						if (clsTyp.methods.size() > 0) {
+							if (extMethods == null) {
+								extMethods = new ArrayList<>();
+							}
+							extMethods.add(new Pair<>(clsTyp, extRef));
+						}
 					}
 					
 					writer.nextLine(2, false);
@@ -319,7 +354,7 @@ public class MarkdownConverter implements AutoCloseable {
 				StylizedString c0 = StylizedString.create("constructor").toItalic();
 				String linkTgt = ctor.getAnchorName();
 				StylizedString c1 = StylizedString.create(typ.name, false).toBold().toLink("#"+ linkTgt);
-				String sig = ctor.getExtendedSignature();
+				String sig = ctor.getExtendedSignature(false);
 				StylizedString c2 = StylizedString.create(sig).toCode();
 				writer.addTableRow(c0, c1, c2);
 			}
@@ -328,12 +363,12 @@ public class MarkdownConverter implements AutoCloseable {
 		if (fields != null){
 			for (DocModel.Field field : fields) {
 				StylizedString c0_ = StylizedString.create("field").toItalic();
-				StylizedString c0s = field.isStatic ? StylizedString.create("S").toSup().addColor(Color.decode("#800080")) : PreStylizedString.EMPTY;
-				StylizedString c0c = field.isConst ? StylizedString.create("C").toSup().addColor(Color.decode("#ff9900")) : PreStylizedString.EMPTY;
+				StylizedString c0s = field.isStatic ? StylizedString.create("&nbsp;S").toSup().addColor(Color.decode("#800080")) : PreStylizedString.EMPTY;
+				StylizedString c0c = field.isConst ? StylizedString.create("&nbsp;C").toSup().addColor(Color.decode("#ff9900")) : PreStylizedString.EMPTY;
 				StylizedString c0 = c0_.merge(c0s, c0c);
 				String linkTgt = field.getAnchorName();
 				StylizedString c1 = StylizedString.create(field.name, false).toBold().toLink("#"+ linkTgt);
-				String sig = field.getExtendedSignature();
+				String sig = field.getExtendedSignature(false);
 				StylizedString c2 = StylizedString.create(sig).toCode();
 				writer.addTableRow(c0, c1, c2);
 			}
@@ -342,14 +377,40 @@ public class MarkdownConverter implements AutoCloseable {
 		if (methods != null){
 			for (DocModel.Method method : methods) {
 				StylizedString c0_ = StylizedString.create("method").toItalic();
-				StylizedString c0s = method.isStatic ? StylizedString.create("S").toSup().addColor(Color.decode("#800080")) : PreStylizedString.EMPTY;
-				StylizedString c0a = method.isAbstract ? StylizedString.create("A").toSup().addColor(Color.decode("#990033")) : PreStylizedString.EMPTY;
+				StylizedString c0s = method.isStatic ? StylizedString.create("&nbsp;S").toSup().addColor(Color.decode("#800080")) : PreStylizedString.EMPTY;
+				StylizedString c0a = method.isAbstract ? StylizedString.create("&nbsp;A").toSup().addColor(Color.decode("#990033")) : PreStylizedString.EMPTY;
 				StylizedString c0 = c0_.merge(c0s, c0a);
 				String linkTgt = method.getAnchorName();
 				StylizedString c1 = StylizedString.create(method.name, false).toBold().toLink("#"+ linkTgt);
-				String sig = method.getExtendedSignature();
+				String sig = method.getExtendedSignature(false);
 				StylizedString c2 = StylizedString.create(sig).toCode();
 				writer.addTableRow(c0, c1, c2);
+			}
+		}
+		
+		if (extMethods != null){
+			for (Pair<DocModel.ClassType, TypeRef> pair : extMethods) {
+				for (DocModel.Method method : pair.getFirst().methods) {
+					if (method.isStatic 
+						&& method.visibility == Accessibility.PUBLIC
+						&& method.params.size() > 0 
+						&& method.params.get(0).type.getFullName().equals(typ.getFullName())) {
+						StylizedString c0_ = StylizedString.create("method").toItalic();
+						StylizedString c0e = StylizedString.create("&nbsp;E").toSup().addColor(Color.decode("#40826D")); // Viridian
+						StylizedString c0 = c0_.merge(c0e);
+						String linkTgt = method.getAnchorName();
+						String link = pair.getSecond().getLinkPath(typ, null);
+						StylizedString c1 = StylizedString.create(method.name, false).toBold().toLink(link + "#" + linkTgt);
+						String sig = method.getExtendedSignature(true);
+						StylizedString c2 = StylizedString.create(sig).toCode();
+						writer.addTableRow(c0, c1, c2);
+					} else {
+						// This actually should not be an error. 
+						// But let's output it for now in case we have a bug somewhere causing an extension member to be not added.
+						GlobalLogger.get().warn(
+							"The member " + method.name + " from " + pair.getFirst().getFullName() + " is not qualified as an extension.");
+					}
+				}
 			}
 		}
 

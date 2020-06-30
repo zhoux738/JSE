@@ -24,6 +24,11 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.RuntimeCheckException;
@@ -32,11 +37,6 @@ import info.julang.typesystem.jclass.annotation.JAnnotation;
 import info.julang.typesystem.jclass.builtin.IDeferredBuildable;
 import info.julang.typesystem.loading.ISemanticChecker;
 import info.julang.util.OneOrMoreList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A builder used to create an interface type step by step.
@@ -172,6 +172,17 @@ public class JInterfaceTypeBuilder implements ICompoundTypeBuilder {
 			compoundType.interfaceList = new ArrayList<JInterfaceType>();
 		}
 		compoundType.interfaceList.add(interfaceType);
+	}
+	
+	@Override
+	public void addExtension(JClassType classType){
+		checkSealed();
+		
+		if(compoundType.extensions == null){
+			compoundType.extensions = new OneOrMoreList<JClassType>(classType);
+		} else {
+			compoundType.extensions.add(classType);
+		}
 	}
 	
 	@Override

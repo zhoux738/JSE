@@ -161,6 +161,9 @@ public class CollectScriptInfoStatement implements PrescanStatement {
 				throw new IllegalModuleFileException(info, stream, "Module declaration must appear at the beginning of script file.");
 			}
 		}
+
+		// IMPLEMENTATION NOTES:
+		// If you change the list of the tokens below, you most likely need to change StreamBasedSyntaxHelper as well.
 		
 		tok = stream.peek();
 		switch(tok.getType()){
@@ -171,6 +174,7 @@ public class CollectScriptInfoStatement implements PrescanStatement {
 		case JulianLexer.ATTRIBUTE:
 		case JulianLexer.ENUM:
 		case JulianLexer.ABSTRACT:
+		case JulianLexer.STATIC:
 		case JulianLexer.FINAL:		
 		case JulianLexer.LEFT_BRACKET: // annotation
 			LazyClassStatement cs = new LazyClassStatement();

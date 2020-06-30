@@ -26,6 +26,7 @@ package info.julang.execution.symboltable;
 
 import info.julang.external.interfaces.IExtValue;
 import info.julang.external.interfaces.IExtVariableTable;
+import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.UntypedValue;
@@ -131,14 +132,17 @@ public class VariableTable implements IVariableTable {
 		if(gvt == null && bindings != null){
 			return bindings.get(name);
 		} else if(tryGlobal && gvt != null){
+			JValue val = null;
 			Map<String, JValue> scope = gvt.scopes.peekLast();
 			if(scope != null){
-				return scope.get(name);
+				val = scope.get(name);
 			}
 			
-			if(gvt.bindings != null){
-				return gvt.bindings.get(name);
+			if(val == null && gvt.bindings != null){
+				val = gvt.bindings.get(name);
 			}
+			
+			return val;
 		}
 		
 		return null;

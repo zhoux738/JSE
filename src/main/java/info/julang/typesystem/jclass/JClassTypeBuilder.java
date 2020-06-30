@@ -172,6 +172,10 @@ public class JClassTypeBuilder extends JInterfaceTypeBuilder {
 		classType.properties.setFinal(isFinal);
 	}
 	
+	public void setStatic(boolean isStatic){
+		classType.properties.setStatic(isStatic);
+	}
+	
 	public void setHosted(boolean isHosted){
 		classType.properties.setHosted(isHosted);
 	}

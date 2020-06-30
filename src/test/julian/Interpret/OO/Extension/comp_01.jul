@@ -1,0 +1,28 @@
+// Call as static method
+class Calc {
+	
+	int value;
+	
+	void add(int another){
+		value += another;
+	}
+	
+	void multiply(int another){
+		value *= another;
+	}
+	
+}
+
+class CalcExt {
+
+	static void addThenMultiply(Calc this, int a, int b) {
+		this.add(a);
+		this.multiply(b);
+	}
+
+}
+
+Calc c = new Calc();
+c.value = 0;
+CalcExt.addThenMultiply(c, 20, 4);
+int result = c.value;

@@ -1,0 +1,9 @@
+// static class cannot define non-static field
+static class Env {
+	
+	static string os = "Windows";
+	
+	int cpus;
+}
+
+string os = Env.os;

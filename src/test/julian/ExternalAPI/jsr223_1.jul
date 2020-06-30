@@ -1,0 +1,7 @@
+void fun(){
+	val = "def";
+}
+
+fun();
+
+return "xyz";

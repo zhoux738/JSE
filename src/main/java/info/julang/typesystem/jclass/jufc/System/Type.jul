@@ -114,7 +114,7 @@ class Type {
 	hosted bool isPrimitive();
 	
 	/*
-	 * Check whether the type is a class type. Interface types, primitive types, [Any] and Void type is not class type; all the other are. 
+	 * Check whether the type is a class type. Interface types, primitive types, [Any] and Void type is not class type; all the others are. 
 	 *
 	 * [return] True if this type is a class type, inheriting, or exactly is, [Object].
 	 */
@@ -290,6 +290,28 @@ class Type {
 	}
 
 	/*
+	 * Get the extension types that are directly installed on this type.
+	 * 
+	 * The result array will only include those that are declared as the extension types for the current type. In
+	 * particular, it doesn't include any extension types that can be recursively discovered by tracing through the
+	 * type definition chain. In one example:
+	 * [code]
+	 *   static class ExtA { }
+	 *   interface A : ExtA { } // Install ExtA to A
+	 *   static class ExtB { }
+	 *   interface B : A, ExtB { } // Extend interface A from B and install ExtB to it
+	 *
+	 *   Type[] types1 = typeof(B).getExtensions(); // size = 1: ExtA
+	 * [code: end]
+	 *
+	 * [return] The directly installed extension classes. In case of types which do not have extenions, 
+	 * this returns a 0-sized Type array.
+	 */	
+	Type[] getExtensions(){
+		return _getExtensions();
+	}
+
+	/*
 	 * Get all the attributes annotated on the type definition.
 	 * 
 	 * The result array contains each instance of [Attribute] placed at the type definition. For example:
@@ -396,6 +418,9 @@ class Type {
 	[Bridged(name="getInterfaces")]
 	private hosted Type[] _getInterfaces();
 	private Type[] intfs;
+	
+	[Bridged(name="getExtensions")]
+	private hosted Type[] _getExtensions();
 	
 	[Bridged(name="getAttributes")]
 	private hosted Attribute[] _getAttributes();

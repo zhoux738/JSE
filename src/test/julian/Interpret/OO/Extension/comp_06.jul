@@ -1,0 +1,39 @@
+// Installing same extension class at multiple places along the inheritance line. Will resolve against the first bottom up.
+
+interface IAdder1 : AdderExt1 { // +1
+	
+	void add(int val);
+}
+
+interface IAdder2 : IAdder1, 
+				    AdderExt2 { // +2
+
+}
+
+class Adder: IAdder2, 
+		     AdderExt1 { // +1
+
+	private int val;
+	
+	int value() { return val; }
+	
+	void add(int val){
+		this.val += val;
+	}
+}
+
+static class AdderExt1 {
+	static void addMore(IAdder1 this){
+		this.add(1);
+	}
+}
+
+static class AdderExt2 {
+	static void addMore(IAdder2 this){
+		this.add(2);
+	}
+}
+
+Adder a = new Adder();
+a.addMore();
+int result = a.value();

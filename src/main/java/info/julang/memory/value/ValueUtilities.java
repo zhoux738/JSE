@@ -157,7 +157,7 @@ public final class ValueUtilities {
 			switch(oval.getBuiltInValueKind()){
 			case STRING:
 				ExtStringValue sval = (ExtStringValue)oval;
-				return new StringValue(memory, sval.getValue());
+				return new RefValue(memory, new StringValue(memory, sval.getValue()));
 			default:
 				break;
 			}

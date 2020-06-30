@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.memory.value;
 
 import info.julang.external.exceptions.JSEError;
+import info.julang.external.interfaces.IExtValue.IRefVal;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.interpretation.JNullReferenceException;
 import info.julang.memory.MemoryArea;
@@ -42,7 +43,7 @@ import info.julang.typesystem.jclass.builtin.JStringType;
  * 
  * @author Ming Zhou
  */
-public class RefValue extends JValueBase {
+public class RefValue extends JValueBase implements IRefVal {
 	
 	private ObjectValue referred;
 	
@@ -291,6 +292,11 @@ public class RefValue extends JValueBase {
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public IObjectVal getReferred() {
+		return referred;
 	}
 
 	/**

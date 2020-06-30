@@ -1,0 +1,10 @@
+// static class cannot inherit any non-static class
+
+class Parent {}
+
+static class Env : Parent {
+	
+	static string os;
+}
+
+string os = Env.os;

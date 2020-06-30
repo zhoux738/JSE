@@ -1,0 +1,17 @@
+// Install I's Extension class to C, where C : I
+class C : I, IExt {
+
+}
+
+interface I {
+
+}
+
+static class IExt {
+
+	static int getVal(I this){
+		return 5;
+	}
+}
+
+int result = new C().getVal();

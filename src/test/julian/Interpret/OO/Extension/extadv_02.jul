@@ -1,0 +1,14 @@
+// Function reference to overloaded extension method is to the static method method group itself.
+class C : Ext {
+
+}
+
+static class Ext {
+	static int fun(C this){ return 5; }
+	static int fun(C this, int val){ return fun(this) + val; }
+}
+
+C c = new C();
+var f = c.fun;
+int r5 = f(c); // Must call as static
+int r7 = f(c, 2); // Must call as static

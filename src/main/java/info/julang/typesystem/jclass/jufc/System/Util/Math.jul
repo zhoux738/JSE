@@ -10,7 +10,7 @@ import System;
  * is passed in, it will in most cases result in [System.ArgumentException].
  */
  [Bridged(apiset="System.Util.Math")]
-final class Math {
+static class Math {
 
 	/*
 	 * The ratio of a circle's circumference to its diameter.

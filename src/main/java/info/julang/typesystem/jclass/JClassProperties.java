@@ -24,6 +24,11 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
+/**
+ * The properties about a class.
+ * 
+ * @author Ming Zhou
+ */
 public class JClassProperties {
 
 	public JClassProperties(Accessibility acc){
@@ -36,6 +41,10 @@ public class JClassProperties {
 	
 	public boolean isFinal() {
 		return isFinal;
+	}
+	
+	public boolean isStatic() {
+		return isStatic;
 	}
 	
 	public Accessibility getAccessibility() {
@@ -54,6 +63,10 @@ public class JClassProperties {
 		this.isFinal = isFinal;
 	}
 
+	void setStatic(boolean isStatic) {
+		this.isStatic = isStatic;
+	}
+
 	void setAccessibility(Accessibility accessibility) {
 		this.accessibility = accessibility;
 	}
@@ -66,8 +79,9 @@ public class JClassProperties {
 	
 	private boolean isFinal;
 	
-	private Accessibility accessibility;
+	private boolean isStatic;
 
 	private boolean isHosted;
 	
+	private Accessibility accessibility;
 }

@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.external.interop;
 
 import info.julang.external.interfaces.IExtValue;
+import info.julang.external.interfaces.IExtValue.IRefVal;
 import info.julang.external.interfaces.IExtValue.IStringVal;
 import info.julang.external.interop.ExtValue.ExtStringValue;
 
@@ -44,7 +45,7 @@ public class StringBinding extends BindingBase {
 
 	@Override
 	public void update(IExtValue val) {
-		value = ((IStringVal) val).getStringValue();
+		value = ((IStringVal) ((IRefVal)val).getReferred()).getStringValue();
 	}
 	
 	@Override

@@ -31,6 +31,8 @@ import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.ICompoundTypeBuilder;
+import info.julang.typesystem.jclass.JClassProperties;
+import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JInterfaceType;
 import info.julang.typesystem.jclass.JInterfaceTypeBuilder;
 import info.julang.typesystem.jclass.annotation.JAnnotation;
@@ -89,10 +91,17 @@ public class InterfaceDeclarationStatement extends ClassLoadingStatement {
 			for(ParsedTypeName ptn : parents){
 				ICompoundType type = (ICompoundType)loadType(context, ptn);
 				if (type.isClassType()){
-					throw new IllegalClassDefinitionException(
-						context, 
-						"Interface " + declInfo.getFQName() + 
-						" cannot have inherit from a parent class (" + type.getName() + ").", declInfo);	
+
+					JClassProperties pps = type.getClassProperties();
+					if (pps.isStatic()) {
+						// Extension type
+						builder.addExtension((JClassType)type);
+					} else {
+						throw new IllegalClassDefinitionException(
+							context, 
+							"Interface " + declInfo.getFQName() + 
+							" cannot have inherit from a parent class (" + type.getName() + ").", declInfo);
+					}
 				} else {
 					// Interfaces to implement.
 					builder.addInterface((JInterfaceType)type);

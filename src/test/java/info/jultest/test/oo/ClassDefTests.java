@@ -310,4 +310,32 @@ public class ClassDefTests extends ClassTestBase {
 		validateIntValue(gvt, "i7", 7);
 		validateIntValue(gvt, "i11", 11);
 	}
+	
+	@Test
+	public void staticClassTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "env_1.jul"));
+
+		validateStringValue(gvt, "os", "Windows");
+		validateIntValue(gvt, "cores", 4);
+		validateIntValue(gvt, "memory", 8192);
+	}
+	
+	@Test
+	public void staticClassInheritsStaticClassTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "env_2.jul"));
+
+		validateIntValue(gvt, "mycores", 8);
+		validateStringValue(gvt, "myos", "Linux");
+		validateStringValue(gvt, "os", "Windows");
+		validateStringValue(gvt, "myos2", "Linux");
+		validateStringValue(gvt, "os2", "Solaris");
+	}
 }

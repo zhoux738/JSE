@@ -115,10 +115,13 @@ public class CallFuncOp extends Operator {
 					
 					// Select one from overloaded methods.
 					if(mt == null){
-						JValue[] args = retrieveArgumentValues(context, operands);
-						mv = selectOverloadedMethod((MethodGroupValue)imv, args, isStatic);
-						if (mv != null){
-							mt = mv.getMethodType();
+						MethodValue[] mvs = extractMethodValues(imv);
+						if (mvs != null) {
+							JValue[] args = retrieveArgumentValues(context, operands);
+							mv = selectOverloadedMethod(mvs, args, isStatic);
+							if (mv != null){
+								mt = mv.getMethodType();
+							}
 						}
 					}
 					
@@ -157,11 +160,13 @@ public class CallFuncOp extends Operator {
 			// get *this* object
 			JValue instance = memOd.ofObject();
 			String mName = memOd.getName();
-			ObjectValue val = RefValue.dereference(memOd.getValue());
+			ObjectValue val = RefValue.dereference(memOd.getMemberValue());
 			
-			Operand op = callMethodValue(context, val, instance, mName, operands);
-			if(op != null){
+			Operand op = callMethodValue(context, val, memOd.getExtensionMethods(), instance, mName, operands);
+			if (op != null) {
 				return op;
+			} else {
+				throw new RuntimeCheckException("The target is not a function and cannot be invoked.");
 			}
 		} else if(callee.getKind() == OperandKind.SMEMBER){
 			// 3.2) static method
@@ -170,9 +175,11 @@ public class CallFuncOp extends Operator {
 			String mName = memOd.getName();
 			ObjectValue val = RefValue.dereference(memOd.getValue());
 			
-			Operand op = callMethodValue(context, val, null, mName, operands);
-			if(op != null){
+			Operand op = callMethodValue(context, val, null, null, mName, operands);
+			if (op != null) {
 				return op;
+			} else {
+				throw new RuntimeCheckException("The target is not a function and cannot be invoked.");
 			}
 		}
 		
@@ -180,8 +187,7 @@ public class CallFuncOp extends Operator {
 	}
 	
 	// args doesn't contain "this"
-	private MethodValue selectOverloadedMethod(MethodGroupValue mgv, JValue[] args, boolean isStatic) {
-		MethodValue[] mvs = mgv.getMethodValues();
+	private MethodValue selectOverloadedMethod(MethodValue[] mvs, JValue[] args, boolean isStatic) {
 		for(MethodValue mv : mvs){
 			JMethodType mt = mv.getMethodType();
 			JParameter[] params = mt.getParams();
@@ -225,13 +231,20 @@ public class CallFuncOp extends Operator {
 	// return null if the given method value is not callable against the given arguments.
 	private Operand callMethodValue(
 		Context context, 
-		ObjectValue methodVal, 
-		JValue thisObj, 
+		ObjectValue methodVal,
+		MethodGroupValue extMethodVals, // null if it's static (but not extension) method
+		JValue thisObj,  				// null if it's static (but not extension) method
 		String methodName, 
 		Operand[] operands){
+		
+		JMethodType mTyp = null;
+		JValue[] args = null;
+		boolean checkedOverloaded = false;
+		boolean emptyOverloaded = false;
+		
+		// First try to use the method value, if provided
 		if(methodVal instanceof IMethodValue){
 			IMethodValue imv = (IMethodValue) methodVal;
-			JMethodType mTyp = null;
 			switch(imv.getFuncValueKind()){
 			case METHOD:
 				mTyp = (JMethodType) methodVal.getType();
@@ -242,37 +255,81 @@ public class CallFuncOp extends Operator {
 					return invokeDynamic(context, (FuncValue)thisObj, operands, methodName);
 				}
 				
-				JValue[] args = retrieveArgumentValues(context, operands);
-				MethodValue mv = selectOverloadedMethod((MethodGroupValue)imv, args, thisObj == null);
-				if (mv != null){
-					mTyp = mv.getMethodType();
+				checkedOverloaded = true;
+				MethodValue[] mvs = extractMethodValues(imv);
+				if (mvs != null) {
+					args = retrieveArgumentValues(context, operands);
+					MethodValue mv = selectOverloadedMethod(mvs, args, thisObj == null);
+					if (mv != null){
+						mTyp = mv.getMethodType();
+					}
 				} else {
-					StringBuilder sb = new StringBuilder("Cannot find an overloaded version that accepts arguments of type (");
-					int len = args.length - 1;
-					for(int i = 0; i < len; i++){
-						sb.append(args[i].getType().getName());
-						sb.append(", ");
-					}
-					if (len >= 0){
-						sb.append(args[len].getType().getName());
-					}
-					if (args.length == 0){
-						sb.append("void");
-					}
-					sb.append(")");
-					throw new IllegalArgumentsException(methodName, sb.toString());
+					emptyOverloaded = true;
 				}
+
 				break;
+				
 			default:
 				break;
 			}
-			
-			if(mTyp != null){
-				return callMethod(context, mTyp, thisObj, methodName, operands, false);
+		}
+
+		// If no inherent members are found, try extension methods.
+		//
+		// DESIGN NOTE: Extension methods do not participate in regular overloading resolution. If a member of 
+		// the same name is already defined, either directly or by inheritance, on the object's type, no 
+		// extension methods will be tried. 
+		if (mTyp == null && emptyOverloaded && extMethodVals != null) {
+			if (args == null) {
+				args = retrieveArgumentValues(context, operands);
 			}
+			
+			// Extension method is indeed static, but we prepare the arguments as if it were instance-scoped.
+			MethodValue mv = selectOverloadedMethod(extMethodVals.getMethodValues(), args, /* isStatic */ false);
+			if (mv != null){
+				mTyp = mv.getMethodType();
+			}
+		}
+		
+		if (mTyp != null) {
+			return callMethod(
+				context,
+				mTyp,
+				thisObj, // Used for both instance and extension methods
+				methodName,
+				operands,
+				false); // Strong-typed
+		} else if (checkedOverloaded) {
+			if (args == null) {
+				args = retrieveArgumentValues(context, operands);
+			}
+			
+			StringBuilder sb = new StringBuilder("Cannot find an overloaded version that accepts arguments of type (");
+			int len = args.length - 1;
+			for(int i = 0; i < len; i++){
+				sb.append(args[i].getType().getName());
+				sb.append(", ");
+			}
+			if (len >= 0){
+				sb.append(args[len].getType().getName());
+			}
+			if (args.length == 0){
+				sb.append("void");
+			}
+			sb.append(")");
+			throw new IllegalArgumentsException(methodName, sb.toString());
 		}
 
 		return null;
+	}
+	
+	/**
+	 * Return null if the group value contains no method values.
+	 */
+	private MethodValue[] extractMethodValues(IMethodValue imv) {
+		MethodValue[] mvs = ((MethodGroupValue)imv).getMethodValues();
+		return mvs.length > 0 ? mvs : null;
+		
 	}
 	
 	private Operand callMethod(

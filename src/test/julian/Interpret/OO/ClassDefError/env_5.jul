@@ -1,0 +1,12 @@
+// static class does inherit from Object, but it cannot override its members
+
+static class Env : Object {
+	
+	static string os;
+	
+	public string ToString() {
+		return "env";
+	}
+}
+
+string os = Env.os;

@@ -58,6 +58,7 @@ public class AOTRawScriptInfo$Item extends RawScriptInfo {
         public AOTClassDeclInfo_Item(RawScriptInfo minfo) {
             super(minfo);
             
+            m_parentNames.add(ParsedTypeName.makeFromFullName("ItemExtension"));
         }
 
         private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();

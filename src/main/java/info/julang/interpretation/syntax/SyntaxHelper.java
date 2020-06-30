@@ -35,6 +35,7 @@ import info.julang.execution.namespace.NamespaceConflictException;
 import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.BadSyntaxException;
 import info.julang.interpretation.context.Context;
+import info.julang.langspec.Keywords;
 import info.julang.langspec.ast.JulianLexer;
 import info.julang.langspec.ast.JulianParser;
 import info.julang.langspec.ast.JulianParser.AnnotationContext;
@@ -65,6 +66,9 @@ import info.julang.langspec.ast.JulianParser.Lambda_parameter_listContext;
 import info.julang.langspec.ast.JulianParser.Lambda_signatureContext;
 import info.julang.langspec.ast.JulianParser.Method_bodyContext;
 import info.julang.langspec.ast.JulianParser.Method_declarationContext;
+import info.julang.langspec.ast.JulianParser.Method_parameterContext;
+import info.julang.langspec.ast.JulianParser.Method_parameter_listContext;
+import info.julang.langspec.ast.JulianParser.Method_signature_mainContext;
 import info.julang.langspec.ast.JulianParser.ModifiersContext;
 import info.julang.langspec.ast.JulianParser.ProgramContext;
 import info.julang.langspec.ast.JulianParser.Rank_specifierContext;
@@ -220,12 +224,12 @@ public final class SyntaxHelper {
 	}
 
 	private static void readParentType(ClassDeclInfo declInfo, Class_extension_listContext exDefList) {
-		Composite_idContext cid = exDefList.composite_id();
-		ParsedTypeName ptn = ParsedTypeName.makeFromFullName(cid.getText());
-		declInfo.addParentTypeName(ptn);
-		Class_extension_listContext next = exDefList.class_extension_list();			
-		if (next != null){
-			readParentType(declInfo, next);
+		List<Composite_idContext> cids = exDefList.composite_id();		
+		if (cids != null){
+			for (Composite_idContext cid : cids) {
+				ParsedTypeName ptn = ParsedTypeName.makeFromFullName(cid.getText());
+				declInfo.addParentTypeName(ptn);
+			}
 		}
 	}
 	
@@ -532,8 +536,8 @@ public final class SyntaxHelper {
 		}
 		
 		// 4) Parameters
-		Function_signature_mainContext sig = metDecl.function_signature_main();
-		Function_parameter_listContext plist = sig.function_parameter_list();
+		Method_signature_mainContext sig = metDecl.method_signature_main();
+		Method_parameter_listContext plist = sig.method_parameter_list();
 		if (plist != null) {
 			parseParameterList(declInfo, plist);
 		}
@@ -714,6 +718,32 @@ public final class SyntaxHelper {
 			String pName = name.getText();
 			ParsedTypeName pType = parseTypeName(type);
 			declInfo.addParameter(pType, pName);
+		}
+	}
+	
+	private static void parseParameterList(MethodDeclInfo declInfo, Method_parameter_listContext plist){
+		List<Method_parameterContext> pclist = plist.method_parameter();
+		if (pclist != null) {
+			for (int i = 0; i < pclist.size(); i++) {
+				Method_parameterContext fp = pclist.get(i);
+
+				String pName;
+				TerminalNode id = fp.IDENTIFIER();
+				if (id != null) {
+					pName = id.getText();
+				} else {
+					// the name is 'this'
+					if (!declInfo.isStatic() || i > 0) {
+						throw new BadSyntaxException(
+							"Keyword 'this' can only be used as the first parameter's name for static extension method.", declInfo);
+					} else {
+						pName = Keywords.THIS.toString();
+					}
+				}
+				
+				ParsedTypeName pType = parseTypeName(fp.type());
+				declInfo.addParameter(pType, pName);
+			}
 		}
 	}
 }

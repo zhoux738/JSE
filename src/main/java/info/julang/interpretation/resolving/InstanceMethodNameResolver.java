@@ -33,6 +33,7 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectMember;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.memory.value.VoidValue;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.util.OneOrMoreList;
@@ -54,10 +55,13 @@ public class InstanceMethodNameResolver implements INameResolver, IContextAware<
 	
 	private MethodContext context;
 	
-	public InstanceMethodNameResolver(IVariableTable vt, ITypeTable tt, ICompoundType type){
+	private IMemberNameResolver memResolver;
+	
+	public InstanceMethodNameResolver(IVariableTable vt, ITypeTable tt, ICompoundType type, IMemberNameResolver memResolver){
 		this.vt = vt;
 		this.tt = tt;
 		this.type = type;
+		this.memResolver = memResolver != null ? memResolver : NoCacheMemberNameResolver.INSTANCE;
 	}
 
 	@Override
@@ -80,9 +84,18 @@ public class InstanceMethodNameResolver implements INameResolver, IContextAware<
 		if(v != null){
 			return v;
 		}
-	
+		
 		// 3) instance member?
-		v = getMember(id);
+		v = memResolver.resolve(id);
+		if (v == null) {
+			// Havn't resolved this id before
+			v = getMember(id);
+			memResolver.save(id, v);
+		} else if (v == VoidValue.DEFAULT) {
+			// It has been resolved to null
+			v = null;
+		}
+
 		if(v != null){
 			return v;
 		}
@@ -98,7 +111,7 @@ public class InstanceMethodNameResolver implements INameResolver, IContextAware<
 	
 	private void initThisValue() {
 		if(thisValue == null) {
-			thisValue = (ObjectValue) vt.getVariable("this", false);
+			thisValue = (ObjectValue) vt.getVariable("this", false).deref();
 		}
 	}
 

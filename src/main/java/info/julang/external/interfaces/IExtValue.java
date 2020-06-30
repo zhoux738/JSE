@@ -92,4 +92,8 @@ public interface IExtValue {
 	public static interface IHostedVal extends IObjectVal {
 		Object getHostedObject();
 	}
+	
+	public static interface IRefVal {
+		IObjectVal getReferred();
+	}
 }

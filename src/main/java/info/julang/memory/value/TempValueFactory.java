@@ -173,6 +173,16 @@ public final class TempValueFactory {
 	}
 	
 	/**
+	 * Create a method group value that contains no methods.
+	 * 
+	 * @param members
+	 * @return
+	 */
+	public static JValue createEmptyMethodGroupValue(String methodName, JType containingType) {
+		return MethodGroupValue.createEmptyMethodGroupValue(null, methodName, containingType);
+	}
+	
+	/**
 	 * Create a method group value.
 	 * 
 	 * @param members
