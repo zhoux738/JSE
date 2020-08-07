@@ -34,6 +34,7 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
+import info.julang.ide.editors.partitioning.JulianPartitionScanner;
 import info.julang.ide.editors.scanning.FontStyle;
 import info.julang.ide.editors.scanning.JulianSourceScanner;
 import info.julang.ide.editors.scanning.SingleTokenScanner;
@@ -43,6 +44,8 @@ public class JulianConfiguration extends SourceViewerConfiguration {
 	
 	private JulianSourceScanner scanner;
 	private SingleTokenScanner commentScanner;
+	private SingleTokenScanner blockCommentScanner;
+	private SingleTokenScanner charScanner;
 	private SingleTokenScanner stringScanner;
 	private IColorManager colorManager;
 	
@@ -51,7 +54,7 @@ public class JulianConfiguration extends SourceViewerConfiguration {
 		JulianPartitionScanner.JULIAN_BLOCK_COMMENT,
 		JulianPartitionScanner.JULIAN_COMMENT,
 		JulianPartitionScanner.JULIAN_STRING_LITERAL,
-		//JulianPartitionScanner.JULIAN_CHAR_LITERAL,
+		JulianPartitionScanner.JULIAN_CHAR_LITERAL,
 		//JulianPartitionScanner.JULIAN_REGEX_LITERAL
 	};
 
@@ -80,19 +83,24 @@ public class JulianConfiguration extends SourceViewerConfiguration {
 		if (commentScanner == null) {
 			commentScanner = new SingleTokenScanner(colorManager, sourceViewer, FontStyle.COMMENT);
 			commentScanner.initialze();
+			blockCommentScanner = new SingleTokenScanner(colorManager, sourceViewer, FontStyle.COMMENT);
+			blockCommentScanner.initialze();
 			stringScanner = new SingleTokenScanner(colorManager, sourceViewer, FontStyle.LITERAL);
 			stringScanner.initialze();
+			charScanner = new SingleTokenScanner(colorManager, sourceViewer, FontStyle.LITERAL);
+			charScanner.initialze();
 		}
 		
-		addScanner(reconciler, IDocument.DEFAULT_CONTENT_TYPE, getJulianScanner(sourceViewer));
-		addScanner(reconciler, JulianPartitionScanner.JULIAN_BLOCK_COMMENT, commentScanner);
-		addScanner(reconciler, JulianPartitionScanner.JULIAN_COMMENT, commentScanner);
-		addScanner(reconciler, JulianPartitionScanner.JULIAN_STRING_LITERAL, stringScanner);
+		addPartitionScanner(reconciler, IDocument.DEFAULT_CONTENT_TYPE, getJulianScanner(sourceViewer));
+		addPartitionScanner(reconciler, JulianPartitionScanner.JULIAN_BLOCK_COMMENT, blockCommentScanner);
+		addPartitionScanner(reconciler, JulianPartitionScanner.JULIAN_COMMENT, commentScanner);
+		addPartitionScanner(reconciler, JulianPartitionScanner.JULIAN_STRING_LITERAL, stringScanner);
+		addPartitionScanner(reconciler, JulianPartitionScanner.JULIAN_CHAR_LITERAL, charScanner);
 
 		return reconciler;
 	}
 	
-	private void addScanner(PresentationReconciler reconciler, String contentType, ITokenScanner scanner) {
+	private void addPartitionScanner(PresentationReconciler reconciler, String contentType, ITokenScanner scanner) {
 		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(scanner);
 		reconciler.setDamager(dr, contentType);
 		reconciler.setRepairer(dr, contentType);

@@ -231,7 +231,7 @@ interface AsyncStream {
 }
 
 /*
- * A stream class base that implements most interface details. The subclasses need only implement that actual the I/O operation.
+ * A stream class base that implements most interface details. The subclasses need only implement the actual I/O operation.
  *
  * This stream doesn't support marking.
  */

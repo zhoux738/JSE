@@ -135,7 +135,7 @@ public class JObjectType extends JClassType implements IDeferredBuildable {
 		return true;
 	}
 	
-	public static class BoostrapingBuilder implements TypeBootstrapper {
+	public static class BootstrapingBuilder implements TypeBootstrapper {
 		
 		private JClassType proto;
 		
@@ -222,12 +222,17 @@ public class JObjectType extends JClassType implements IDeferredBuildable {
 		}
 		
 		@Override
-		public void boostrapItself(JClassTypeBuilder builder){
+		public void bootstrapItself(JClassTypeBuilder builder){
 			if(JObjectType.INSTANCE == null){
 				JObjectType jabt = (JObjectType) builder.build(false);
 				jabt.setBuilder(builder);
 				JObjectType.INSTANCE = jabt;
 			}
+		}
+		
+		@Override
+		public void reset() {
+			JObjectType.INSTANCE = null;
 		}
 		
 		@Override

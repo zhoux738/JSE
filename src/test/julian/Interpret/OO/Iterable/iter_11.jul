@@ -1,0 +1,21 @@
+// toArray
+import System.Collection;
+
+string[] src = new string[] { "baic", "byd", "chery", "faw" };
+
+var a1 = src.toArray();
+bool c1 = a1 is string[];
+src[0] = "foton";
+
+var a2 = src.toList().toArray();
+bool c2 = 
+	a2.length == 4
+ && a2[0] == "foton"
+ && a2[1] == "byd"
+ && a2[2] == "chery"
+ && a2[3] == "faw";
+bool c3 = a2 is var[];
+
+int[] src2 = new int[0];
+var a3 = src2.toArray();
+bool c4 = a3 is int[] && a3.length == 0;

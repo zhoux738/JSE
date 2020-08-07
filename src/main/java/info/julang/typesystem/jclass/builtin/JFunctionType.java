@@ -33,8 +33,17 @@ import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.exceptions.JSEError;
 import info.julang.hosting.HostedExecutable;
+import info.julang.interpretation.context.Context;
+import info.julang.interpretation.internal.NewObjExecutor;
+import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.memory.value.ArrayValue;
+import info.julang.memory.value.ArrayValueFactory;
 import info.julang.memory.value.FuncValue;
+import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.memory.value.TypeValue;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
@@ -43,14 +52,20 @@ import info.julang.typesystem.VoidType;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
 import info.julang.typesystem.jclass.ExecutableType;
+import info.julang.typesystem.jclass.ICompoundTypeBuilder;
+import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassMethodMember;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeBuilder;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.JReturn;
+import info.julang.typesystem.jclass.MethodExecutable;
 import info.julang.typesystem.jclass.TypeBootstrapper;
 import info.julang.typesystem.jclass.builtin.JObjectType.MethodNames;
 import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
+import info.julang.typesystem.jclass.jufc.SystemTypeUtility;
+import info.julang.typesystem.jclass.jufc.System.ScriptType;
+import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptParam;
 
 /**
  * The Function type is for function defined in script.
@@ -88,18 +103,29 @@ summary =
 + "\n * see [tutorial on Function](tutorial: function)."
 + "\n */"
 )
-public class JFunctionType extends JClassType implements ExecutableType {
+public class JFunctionType extends JClassType implements ExecutableType, IDeferredBuildable {
 	
 	public static FQName FQNAME = new FQName("Function");
 	public static String MethodName_invoke = "invoke";
+	public static String MethodName_getReturnType = "getReturnType";
+	public static String MethodName_getParameters = "getParameters";
+	public static String MethodName_getFunctionKind = "getFunctionKind";
+	
+	private static String System_Reflection_FunctionKind = "System.Reflection.FunctionKind";
 	
 	public static BoostrapingBuilder PrototypeBuilder = new BoostrapingBuilder();
 	
+	private static JFunctionType DEFAULT = null;
+	
+	public static JFunctionType getInstance() {
+		return DEFAULT;
+	}
+
 	/**
 	 * The default function type is used mainly for typing operations such as type comparison.
 	 * Its parameter list is empty, the executable a NOP, and returns nothing.
 	 */
-	public static JFunctionType DEFAULT = PrototypeBuilder.providePrototype();
+	private static JFunctionType PROTO = PrototypeBuilder.providePrototype();
 	
 	public static class BoostrapingBuilder implements TypeBootstrapper {
 		
@@ -125,15 +151,6 @@ public class JFunctionType extends JClassType implements ExecutableType {
 			
 			//Disallow inheritance from this class in script
 			builder.setFinal(true);
-			
-			//Field
-			
-			//TODO: add methods in future after the type system is complete
-			/*
-			 * getType
-			 * getParameters()
-			 * getReturnType()
-			 */
 			
 			//Methods
 			
@@ -167,11 +184,28 @@ public class JFunctionType extends JClassType implements ExecutableType {
 						METHOD_invoke, 
 						functionType),
 				    null));
+			
+			/*
+			 * The following are added upon build completion:
+			 *   - getParameters()
+			 *   - getReturnType()
+			 */
 		}
 		
 		@Override
-		public void boostrapItself(JClassTypeBuilder builder){
-			// Do nothing
+		public void bootstrapItself(JClassTypeBuilder builder){
+			if(DEFAULT == null){
+				JFunctionType jabt = (JFunctionType) builder.build(false);
+				jabt.setBuilder(builder);
+				DEFAULT = jabt;
+			}
+		}
+		
+		@Override
+		public void reset() {
+			proto = null;
+			DEFAULT = null;
+			PROTO = this.providePrototype();
 		}
 
 		@Override
@@ -189,8 +223,6 @@ public class JFunctionType extends JClassType implements ExecutableType {
 	private static HostedExecutable METHOD_toString = new HostedExecutable(FQNAME, MethodNames.toString.name()) {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
-			//TODO: method like this should delegate to its Type's corresponding members in future after the type system is complete
-			
 			FuncValue thisVal = ArgumentUtil.<FuncValue>getThisValue(args);
 			JFunctionType jft = (JFunctionType)thisVal.getType();
 			
@@ -255,6 +287,187 @@ public class JFunctionType extends JClassType implements ExecutableType {
 		}
 	};
 	
+	// getFunctionKind()
+	@JulianDoc(
+		name = "getFunctionKind",
+		summary =   "/*"
+				+ "\n * Get the kind of this function."
+				+ "\n */",
+		params = { },
+		returns = "An [enum](System.Reflection.FunctionKind) value representing the kind of the function."
+	)
+	private static HostedExecutable METHOD_getFunctionKind = new HostedExecutable(FQNAME, MethodName_getFunctionKind) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// this value
+			ObjectValue thisVal = ArgumentUtil.<ObjectValue>getThisValue(args);
+			
+			// => this function's type
+			JFunctionType funcTyp = (JFunctionType)thisVal.getType();
+			
+			// => the (internal) function kind
+			FunctionKind funcKind = funcTyp.getFunctionKind();
+			
+			// => System.Reflection.FunctionKind
+			// String literals used below are based on the enum values defined in
+			// /info/julang/typesystem/jclass/jufc/System/Reflection/FunctionKind.jul
+			
+			String enumName; // Do not initialize. Let the compiler analyze its initialization.
+			switch(funcKind) {
+			case FUNCTION:
+				enumName = "GLOBAL";
+				break;
+
+			case LAMBDA:
+				enumName = "LAMBDA";
+				break;
+
+			case CONSTRUCTOR:
+				enumName = "CONSTRUCTOR";
+				break;
+				
+			case METHOD:
+				JMethodType jmt = (JMethodType)funcTyp;
+				boolean sta = jmt.isHosted() ? jmt.getHostedExecutable().isStatic() : jmt.getMethodExecutable().isStatic();
+				if (sta) {
+					enumName = "STATIC_METHOD";
+					break;
+				} else {
+					enumName = "INSTANCE_METHOD";
+					break;
+				}
+				
+			case METHOD_GROUP:
+				JMethodGroupType jmgt = (JMethodGroupType)funcTyp;
+				JMethodType[] metTyps = jmgt.getJMethodTypes();
+				if (metTyps.length > 0) {
+					MethodExecutable me = (MethodExecutable)metTyps[0].getExecutable();
+					if (!me.isStatic()) {
+						enumName = "INSTANCE_METHOD_GROUP";
+						break;
+					}
+				}
+				
+				enumName = "STATIC_METHOD_GROUP";
+				break;
+				
+			default:
+				throw new JSEError("Unrecognized FunctionKind: " + funcKind);
+			}
+			
+			// => the type value for the return type
+			RefValue rv = SystemTypeUtility.createEnumValue(System_Reflection_FunctionKind, runtime, enumName);
+
+			return new Result(rv);
+		}
+	};
+	
+	// getReturnType()
+	@JulianDoc(
+		name = "getReturnType",
+		summary =   "/*"
+				+ "\n * Get the return type for this function."
+				+ "\n * "
+				+ "\n * A lambda doesn't have an explicitly defined return type. So this method would return null."
+				+ "\n */",
+		params = { },
+		returns = "An object representing the return type of the function."
+	)
+	private static HostedExecutable METHOD_getReturnType = new HostedExecutable(FQNAME, MethodName_getReturnType) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// this value
+			ObjectValue thisVal = ArgumentUtil.<ObjectValue>getThisValue(args);
+			
+			// => this function's type
+			JFunctionType funcTyp = (JFunctionType)thisVal.getType();
+			
+			// => the return type
+			if (funcTyp.getFunctionKind() == FunctionKind.LAMBDA) {
+				// Special: return null if it's a lambda.
+				return new Result(RefValue.NULL);
+			}
+			
+			JReturn ret = funcTyp.getReturn();
+			JType retTyp = ret.isUntyped() ? AnyType.getInstance() : funcTyp.getReturnType();
+			
+			// => the type value for the return type
+			TypeValue tv = runtime.getTypeTable().getValue(retTyp.getName());
+			
+			// Wrap in System.Type
+			ObjectValue ov = tv.getScriptTypeObject(runtime);
+			
+			// Convert the result to Julian type
+			return new Result(TempValueFactory.createTempRefValue(ov));
+		}
+	};
+	
+	// getParameters()
+	@JulianDoc(
+		name = "getParameters",
+		summary =   "/*"
+				+ "\n * Get the parameters of this function."
+				+ "\n * "
+				+ "\n * If it's an instance method, the resultant array would contain as the first parameter the type"
+				+ "\n * of the instance's class, with the name of 'this'. If it's an extension method, the first element"
+				+ "\n * will be of the extended class, also with the name of 'this'. This applies no matter how the"
+				+ "\n * function object is obtained (either from an extended intance, such as ```Function f = ext.exfun;```,"
+				+ "\n * or from the extension class directly, i.e. ```Function f = ExtClass.exfun;```)."
+				+ "\n * "
+				+ "\n * Since a method group contains multiple function objects differentiated exactly by the parameter"
+				+ "\n * list, this method simply returns those for the first function. The caller is therefore advised"
+				+ "\n * to call [getFunctionKind()](#getFunctionKind) to understand what the returned value means."
+				+ "\n */",
+		params = { },
+		returns = "An array of [System.Parameter] representing the parameters of this function."
+	)
+	private static HostedExecutable METHOD_getParameters = new HostedExecutable(FQNAME, MethodName_getParameters) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// this value
+			ObjectValue thisVal = ArgumentUtil.<ObjectValue>getThisValue(args);
+			
+			// => this function's type
+			JFunctionType funcTyp = (JFunctionType)thisVal.getType();
+			
+			// => the params
+			JParameter[] params;
+			if (funcTyp.getFunctionKind() == FunctionKind.METHOD_GROUP) {
+				params = ((JMethodGroupType)funcTyp).getJMethodTypes()[0].getParams();
+			} else {
+				params = funcTyp.getParams();
+			}
+			
+			// => System.Reflection.Parameter[]
+			JClassType systemReflectionParameter = (JClassType) SystemTypeUtility.ensureTypeBeLoaded(runtime, ScriptParam.FQCLASSNAME);
+						
+			ArrayValue av = ArrayValueFactory.createArrayValue(
+				runtime.getStackMemory().currentFrame(), runtime.getTypeTable(), systemReflectionParameter, params.length);
+
+			JClassConstructorMember paramCtor = systemReflectionParameter.getClassConstructors()[0];
+			
+			for (int i = 0; i < params.length; i++) {
+				// Create a Julian object of type System.Reflection.Argument
+				NewObjExecutor noe = new NewObjExecutor(runtime);
+				ObjectValue ov = noe.newObjectInternal(systemReflectionParameter, paramCtor, new Argument[0]);
+
+				// Create a native object for the Argument
+				ScriptParam sp = new ScriptParam();
+				sp.setParam(params[i]);
+				
+				// Bind the native object with the Julian object
+				HostedValue hv = (HostedValue)ov;
+				hv.setHostedObject(sp);
+				
+				// Set to the array member
+				ov.assignTo(av.getValueAt(i));
+			}
+			
+			// Convert the result to Julian type
+			return new Result(av);
+		}
+	};
+	
 	private JParameter[] params;
 	
 	protected JReturn ret;
@@ -304,7 +517,7 @@ public class JFunctionType extends JClassType implements ExecutableType {
 	 * @param executable
 	 */
 	public JFunctionType(String name, JParameter[] params, JType returnType, NamespacePool nsPool, Executable executable) {
-		super(name, DEFAULT, null); //set parent to be default function (used to be JObjectType.getInstance())
+		super(name, PROTO, null); //set parent to be default function (used to be JObjectType.getInstance())
 		this.params = params;
 		if(returnType != null && returnType != AnyType.getInstance()){
 			this.ret = new JReturn(returnType);
@@ -348,5 +561,91 @@ public class JFunctionType extends JClassType implements ExecutableType {
 	 */
 	public String getSignature() {
 		return getName() + "(" + JParameter.getSignature(this.getParams(), false) + ")";
+	}
+	
+	//--------------- IDeferredBuildable ---------------//
+	
+	private ICompoundTypeBuilder builder;
+	
+	@Override
+	public boolean deferBuild(){
+		return true;
+	}
+	
+	@Override
+	public void completeBuild(Context context) {
+		if (builder != null) {
+			// System.Type
+			JClassType systemType = (JClassType)context.getTypeResolver().resolveType(
+				ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME));
+			
+			// System.Reflection.Parameter
+			JClassType systemReflectionParameter = (JClassType)context.getTypeResolver().resolveType(
+				ParsedTypeName.makeFromFullName(ScriptParam.FQCLASSNAME));
+			
+
+			// System.Reflection.Parameter
+			JClassType systemReflectionFunctionKind = (JClassType)context.getTypeResolver().resolveType(
+				ParsedTypeName.makeFromFullName(System_Reflection_FunctionKind));
+			
+			// System.Reflection.Parameter[]
+			JArrayType systemReflectionParameterArray = JArrayType.createJArrayType(
+				context.getTypTable(), systemReflectionParameter, 1);
+			
+			// getFunctionKind()
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(), MethodName_getFunctionKind, Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						MethodName_getFunctionKind,
+						new JParameter[]{
+							new JParameter("this", builder.getStub())
+						}, 
+						systemReflectionFunctionKind, 
+						METHOD_getFunctionKind, 
+						builder.getStub()), 
+					null));
+			
+			// getReturnType()
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(), MethodName_getReturnType, Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						MethodName_getReturnType,
+						new JParameter[]{
+							new JParameter("this", builder.getStub())
+						}, 
+						systemType, 
+						METHOD_getReturnType, 
+						builder.getStub()), 
+					null));
+		
+			// getParameters()
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(), MethodName_getParameters, Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						MethodName_getParameters,
+						new JParameter[]{
+							new JParameter("this", builder.getStub())
+						}, 
+						systemReflectionParameterArray, 
+						METHOD_getParameters, 
+						builder.getStub()), 
+					null));
+			
+			builder.seal();
+			builder = null;
+		}
+	}
+
+	@Override
+	public void setBuilder(ICompoundTypeBuilder builder) {
+		this.builder = builder;
+	}
+
+	@Override
+	public void preInitialize() {
+		this.initialized = true;
 	}
 }

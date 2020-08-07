@@ -40,12 +40,57 @@
       <not><isset property="builtJarPathExists"/></not>
 	</and>
   </condition>
-
-  <!-- If LKG doesn't exist and we havn't built locally, abort -->
-  <fail if="bothJarPathsMissing" message="Cannot invoke JSE from Ant. Must obtain a working copy first. Try run 'mvn package' from the source root."/>
+  <condition property="canCopyBuiltJar">
+    <and>
+      <not><isset property="lkgJarPathExists"/></not>
+      <isset property="builtJarPathExists"/>
+    </and>
+  </condition>
 
   <!-- If LKG doesn't exist but a local copy exists, copy it over -->
-  <copy file="${builtjar}" todir="${imported.basedir}/../build/lkg" unless:set="lkgJarPathExists"/>
+  <echo message="LKG jar missing. Copying from the local build output." if:set="canCopyBuiltJar"/>
+  <copy file="${builtjar}" todir="${imported.basedir}/../build/lkg" if:set="canCopyBuiltJar"/>
+
+  <!-- If LKG doesn't exist and we haven't built locally, try to download the latest from the offical website -->
+  <!-- curl -L http://127.0.0.1:3000/latest -o ${imported.basedir}/../build/lkg/JSE-LKG.jar -->
+  <echo message="LKG jar missing. Obtaining from official website." if:set="bothJarPathsMissing"/>
+  <exec executable="curl" dir="${basedir}" failonerror="true" outputproperty="curloutput" errorproperty="curlerror" if:set="bothJarPathsMissing">
+    <arg value="-L"/> <!-- Support redirection -->
+  	<arg value="-s"/> <!-- Silent mode -->
+  	<arg value="--fail"/> <!-- Fail on HTTP error -->
+    <arg value="http://${official.website}/latest"/>
+    <arg value="-o"/>
+    <arg value="${imported.basedir}/../build/lkg/JSE-LKG.jar"/>
+  </exec>
+
+  <!-- If we have tried any fix, attest the existence again -->
+  <condition property="triedFixingLkgJar">
+	<or>
+      <isset property="canCopyBuiltJar"/>
+      <isset property="bothJarPathsMissing"/>
+	</or>
+  </condition>
+  <pathconvert property="lkgJarPathAfterFix" setonempty="false" pathsep=" " if:set="triedFixingLkgJar">
+    <path>
+      <fileset dir="${imported.basedir}/../build/lkg" includes="JSE-*.jar" />
+    </path>
+  </pathconvert>
+  <condition property="lkgJarPathExistsAfterFix" if:set="triedFixingLkgJar">
+    <resourcecount when="greater" count="0">
+      <fileset file="${lkgJarPathAfterFix}"/>
+    </resourcecount>
+  </condition>
+	
+  <!-- If LKG still doesn't exist after all the efforts, abort -->
+  <condition property="failedToAttestLkgJar">
+    <and>
+      <not><isset property="lkgJarPathExists"/></not>
+      <not><isset property="lkgJarPathExistsAfterFix"/></not>
+    </and>
+  </condition>
+  <fail if="failedToAttestLkgJar" message=
+"Cannot invoke JSE from Ant. Must obtain a working copy first. Try run 'mvn package' from the source root. 
+If this is the first time you are trying to build it, may get the latest JSE jar from the official website or contact the author."/>
 
   <!-- Call Maven from Ant. Originally from http://maven.apache.org/ant-tasks/examples/mvn.html -->
   <macrodef name="maven">

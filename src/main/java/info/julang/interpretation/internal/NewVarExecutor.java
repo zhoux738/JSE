@@ -99,7 +99,7 @@ public class NewVarExecutor {
 				throw new JSEError("Cannot initialize a variable with both null type and null value.");
 			}
 			
-			val = ValueUtilities.makeDefaultValue(context.getFrame(), type, false, context.getTypTable());
+			val = ValueUtilities.makeDefaultValue(context.getFrame(), type, false);
 		} else if (val.getKind() == JValueKind.OBJECT){
 			val = new RefValue(context.getFrame(), (ObjectValue)val);
 		}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feature id="info.julang.ide.feature" label="Julian Development Environment" version="0.1.28" provider-name="Ming Zhou"><!-- VERSION_ATTRIBUTE -->
+<feature id="info.julang.ide.feature" label="Julian Development Environment" version="0.1.29" provider-name="Ming Zhou"><!-- VERSION_ATTRIBUTE -->
 
    <description url="http://julang.info">
       This feature brings Julian development experience into Eclipse. It also integrates with (but doesn&apos;t require) JDT to allow a developer to write both Java and Julian in the same Java project.

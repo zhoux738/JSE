@@ -1,0 +1,12 @@
+import ModuleSys.ModB;
+import System.Reflection;
+
+int fun(string s) {
+	return s.length;
+}
+
+Function fun1 = fun.getParameters; 
+Parameter[] pms = fun1.getParameters();
+bool plist = pms.length == 1 && pms[0].getType() == typeof(Function);
+bool ret = fun1.getReturnType() == typeof(Parameter[]);
+bool kind = fun1.getFunctionKind() == FunctionKind.INSTANCE_METHOD;

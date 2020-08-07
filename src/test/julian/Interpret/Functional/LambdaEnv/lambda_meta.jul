@@ -1,0 +1,14 @@
+//LambdaEnvTests
+
+Function l = (int x, y) => { return x; };
+
+bool kind = l.getFunctionKind() == System.Reflection.FunctionKind.LAMBDA;
+var pms = l.getParameters();
+
+bool plist = pms.length == 2 
+	&& pms[0].getName() == "x" 
+	&& pms[0].getType() == typeof(int) 
+	&& pms[1].getName() == "y"
+	&& pms[1].getType() == typeof(Any);
+	
+bool ret = l.getReturnType() == null;

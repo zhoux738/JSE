@@ -1,0 +1,17 @@
+// chained call
+import System.Collection;
+
+string[] arr = new string[] { "target0", "not", "notag", "target1", "nontarget2", "ttttt" };
+
+var tmp = arr
+	.skip(1)
+	.filter(e => e.length >= 6)
+	.filter(e => e.startsWith('t'))
+	.append("target2")
+	.concat(new string[] { "nt1", "target3" })
+	.filter(e => e.startsWith("target"))
+	.map(e => e)
+	.take(2);
+	
+var res1 = tmp.toArray();
+var res2 = tmp.zip(tmp, (e, f) => e + f).toArray();

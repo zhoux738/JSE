@@ -4,10 +4,15 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateUntypedValue;
+import static info.jultest.test.EFCommons.runViaFactory;
+
 import info.jultest.test.Commons;
+import info.jultest.test.EFCommons;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
+import info.julang.external.interfaces.IExtEngineRuntime;
+import info.julang.external.interfaces.IExtVariableTable;
 import info.julang.memory.value.JValue;
 
 import org.junit.Test;
@@ -155,5 +160,14 @@ public class LambdaEnvTests {
 		validateIntValue(gvt, "a2", 7);
 	}
 	
-	
+	@Test
+	public void lambdaMetadataTest() throws EngineInvocationError {
+		IExtEngineRuntime rt = runViaFactory(
+			Commons.Groups.FUNCTIONAL, FEATURE, "lambda_meta.jul", Commons.SRC_REPO_ROOT);
+		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		
+		EFCommons.validateBoolValue(gvt, "plist", true);
+		EFCommons.validateBoolValue(gvt, "kind", true);
+		EFCommons.validateBoolValue(gvt, "ret", true);
+	}
 }

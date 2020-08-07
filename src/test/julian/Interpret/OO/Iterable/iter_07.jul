@@ -1,0 +1,50 @@
+// reduce, count
+import System.Collection;
+
+class Manuf {
+	string country;
+	string brand;
+	
+	Manuf(string country, string brand) {
+		this.country = country;
+		this.brand = brand;
+	}
+}
+
+Manuf[] arr = new Manuf[] { 
+	new Manuf("us", "gm"),
+	new Manuf("de", "vw"),
+	new Manuf("se", "volvo"),
+	new Manuf("us", "ford"),
+	new Manuf("de", "bmw"),
+	new Manuf("de", "mb") 
+};
+
+Map map = new Map();
+
+arr.reduce(map, (m, manuf) => {
+	m[manuf.country] = 0;
+	return m;
+});
+
+arr.reduce(map, (m, manuf) => {
+	m[manuf.country]++;
+	return m;
+});
+
+string[] res1 = new string[3];
+int index = 0;
+for (var kvp : map) {
+	res1[index] = kvp.key + "=" + kvp.value;
+	//Console.print(kvp.key);
+	//Console.print("=");
+	//Console.print(kvp.value);
+	//Console.print(", ");
+	index++;
+}
+
+//de=3, se=1, us=2
+Array.sort(res1, false);
+
+int count = arr.filter(m => m.country == "de").count();
+bool check = arr.count() == arr.length;

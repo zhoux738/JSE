@@ -5,8 +5,8 @@ module System.Concurrency;
  *
  * Julian provides language-level support for using a lock:
  * [code]
- *    var mylck = new Lock();
- *    lock (mylck) {
+ *    var lock = new Lock();
+ *    sync (lock) {
  *      ... ... // critical region guarded by the lock.
  *    }
  * [code: end]

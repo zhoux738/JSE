@@ -1,0 +1,46 @@
+import ModuleSys.ModB;
+import System.Reflection;
+
+int fun1(int i, string s, Person p) {
+	return 0;
+}
+
+string[] names = new string[] {
+	"i", "s", "p"
+};
+
+Type[] types = new Type[] {
+	typeof(int),
+	typeof(string),
+	typeof(Person)
+};
+
+bool v1 = false;
+
+Parameter[] pms = fun1.getParameters();
+
+int len = pms.length;
+int i = 0;
+for (Parameter p : pms) {
+	if (p.getName() != names[i] || p.getType() != types[i]) {
+		throw new Exception(
+			"expected " + names[i] + "/" + types[i].toString() + 
+			", but saw " + p.getName() + "/" + p.getType().toString());	
+	}
+	
+	i++;
+}
+
+if (len != names.length) {
+	throw new Exception(
+		"expected " + names.length + " params, but saw " + len + ".");	
+}
+
+v1 = true;
+
+int fun2() {
+	return 0;
+}
+
+bool v2 = (fun2.getParameters().length == 0);
+

@@ -122,6 +122,10 @@ public class ScriptType {
 		this.jtyp = jtyp;
 	}
 	
+	public JType getType() {
+		return this.jtyp;
+	}
+	
 	//----------------- native executors -----------------//
 	
 	private static class LoadExecutor extends StaticNativeExecutor<ScriptType> {
@@ -330,7 +334,7 @@ public class ScriptType {
 			synchronized(ScriptType.class) {
 				if (specialTyps == null) {
 					specialTyps = new JClassType[] {
-						JFunctionType.DEFAULT,
+						JFunctionType.getInstance(),
 						JArrayBaseType.getInstance(),
 						JAttributeBaseType.getInstance(),
 						JEnumBaseType.getInstance()

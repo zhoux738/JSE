@@ -1,0 +1,26 @@
+// filter, map
+class C {
+	string n;
+	C(string n) { this.n = n; }
+}
+
+C c(string n){
+	return new C(n);
+}
+
+C[] arr = new C[] { c("baic"), c("byd"), c("chery"), c("faw"), c("foton"), c("geely"), c("saic") };
+
+int i = 0;
+var iter = arr
+	.filter(s => s.n.length > 3)
+	.map(s => { 
+		i++; // Won't execute until the iter is demanded
+		return s.n + '_' + s.n.length;
+	});
+
+int index = 0;
+string[] res = new string[5];
+for (var v : iter) {
+	res[index] = i + ":" + v;
+	index++;
+}

@@ -146,17 +146,16 @@ public class JProcess {
 		}
 		
 		private void createCurrentProcessObject(ThreadRuntime rt){
-			Pair<JType, Context> pair = SystemTypeUtility.ensureTypeBeLoaded(rt, JProcess.FullTypeName);
-			JType typ = pair.getFirst();
-			
+			JType typ = SystemTypeUtility.ensureTypeBeLoaded(rt, JProcess.FullTypeName);
+
 			CurrentProcess cp = new CurrentProcess();
 			hv = new HostedValue(rt.getHeap(), typ);
 			
 			// Set fields on Julian object
 			
 			// private ProcessState state
-			pair = SystemTypeUtility.ensureTypeBeLoaded(rt, ProcessState_FullTypeName);
-			JEnumType etype = (JEnumType) pair.getFirst();
+			typ = SystemTypeUtility.ensureTypeBeLoaded(rt, ProcessState_FullTypeName);
+			JEnumType etype = (JEnumType) typ;
 			EnumValue ev = new EnumValue(rt.getStackMemory().currentFrame(), etype, 1, "IN_PROGRESS");
 			ev.assignTo(hv.getMemberValue("state"));
 			
@@ -205,8 +204,7 @@ public class JProcess {
 			// private PipeStream wirteStream;
 			// private PipeStream readStream;
 			// private PipeStream errorStream;
-			pair = SystemTypeUtility.ensureTypeBeLoaded(rt, ProcessPipeStream.FullTypeName);
-			typ = (JType) pair.getFirst();
+			typ = SystemTypeUtility.ensureTypeBeLoaded(rt, ProcessPipeStream.FullTypeName);
 			setPipeStream(rt, typ, cp, "readStream", 0);
 			setPipeStream(rt, typ, cp, "wirteStream", 1);
 			setPipeStream(rt, typ, cp, "errorStream", 2);

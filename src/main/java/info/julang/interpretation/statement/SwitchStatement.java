@@ -24,12 +24,21 @@ SOFTWARE.
 
 package info.julang.interpretation.statement;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import info.julang.execution.Result;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.ExitCause;
 import info.julang.interpretation.StatementBase;
 import info.julang.interpretation.UndefinedVariableNameException;
 import info.julang.interpretation.context.Context;
+import info.julang.interpretation.expression.operator.TypeofOp;
+import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.interpretation.syntax.SyntaxHelper;
 import info.julang.langspec.ast.JulianLexer;
 import info.julang.langspec.ast.JulianParser.Case_conditionContext;
 import info.julang.langspec.ast.JulianParser.Case_sectionContext;
@@ -39,6 +48,7 @@ import info.julang.langspec.ast.JulianParser.StatementContext;
 import info.julang.langspec.ast.JulianParser.Statement_listContext;
 import info.julang.langspec.ast.JulianParser.Switch_blockContext;
 import info.julang.langspec.ast.JulianParser.Switch_statementContext;
+import info.julang.langspec.ast.JulianParser.TypeContext;
 import info.julang.memory.value.EnumValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.RefValue;
@@ -47,13 +57,8 @@ import info.julang.memory.value.TempValueFactory;
 import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.UnknownTypeException;
 import info.julang.typesystem.jclass.builtin.JEnumType;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  * The switch statement in Julian language.
@@ -66,13 +71,15 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * } </code></pre>
  * Note that:
  * <p/>
- *   <li>val1, val2, ... must be constants or literals, and can only be Boolean, Char, Enum, Integer or String type.</li>
+ *   <li>val1, val2, ... must be constants or literals, and can only be 
+ *       Boolean, Char, Enum, Integer, String type or a <code>typeof</code> expression.</li>
  *   <li>there can be any number of case clauses</li>
  *   <li>there can be zero or one default clause, which must appear after all the case clauses</li>
  *   <li>the statements following "case val:" are sequentially interpreted, 
  *   and will fall through to the next case clause, unless a break is used.</li>
  *   <li>if encountering a break, exit the block; if encountering a continue, exit a block only if this switch 
  *   statement sits inside a construct which permits continue (such as for statement).</li>
+ *   <li>if the case condition is an id that is not resolvable, or a type not recognized, the case will be skipped</li>
  * <br/><br/>
  * 
  * @author Ming Zhou
@@ -134,20 +141,22 @@ public class SwitchStatement extends StatementBase implements IHasExitCause, IHa
 				//  : CASE case_condition COLON statement_list?
 				//  ;
 				//case_condition
-				//  : IDENTIFIER | CHAR_LITERAL | INTEGER_LITERAL | STRING_LITERAL
+				//  : IDENTIFIER | CHAR_LITERAL | INTEGER_LITERAL | STRING_LITERAL ｜ TYPEOF LEFT_PAREN type RIGHT_PAREN
 				//  ;
 				Case_conditionContext cond = csc.case_condition();
 				
 				JValue value = getCaseValue(context, cond, switchOnEnum); 
-				
-				if(switchOnEnum){
-					// It's an enum
-					if(value.isEqualTo(enumLiteral)){
-						matched = true;
-					}
-				} else if(value.getType() == jumpTo.getType()){
-					if(value.isEqualTo(jumpTo)){
-						matched = true;
+
+				if (value != null) {
+					if(switchOnEnum){
+						// It's an enum
+						if(value.isEqualTo(enumLiteral)){
+							matched = true;
+						}
+					} else if(value.getType() == jumpTo.getType()){
+						if(value.isEqualTo(jumpTo)){
+							matched = true;
+						}
 					}
 				}
 				
@@ -183,10 +192,13 @@ public class SwitchStatement extends StatementBase implements IHasExitCause, IHa
 		switch(sym.getType()){
 		case JulianLexer.INTEGER_LITERAL:
 			return TempValueFactory.createTempIntValue(Integer.parseInt(text));
+			
 		case JulianLexer.CHAR_LITERAL:
 			return TempValueFactory.createTempCharValue(ANTLRHelper.reEscapeAsChar(text, true));
+			
 		case JulianLexer.STRING_LITERAL:
 			return TempValueFactory.createTempStringValue(ANTLRHelper.reEscapeAsString(text, true));
+			
 		case JulianLexer.IDENTIFIER:
 			JValue val = null;
 			if (switchOnEnum) {
@@ -200,6 +212,20 @@ public class SwitchStatement extends StatementBase implements IHasExitCause, IHa
 			}
 			
 			return val;
+			
+		case JulianLexer.TYPEOF:
+			RefValue rv = null;
+			try {
+				TypeContext tc = cond.type();
+				ParsedTypeName ptn = SyntaxHelper.parseTypeName(tc);
+				JType type = context.getTypeResolver().resolveType(ptn);
+				rv = TypeofOp.getTypeObject(runtime, context, type);
+			} catch (UnknownTypeException e) {
+				// Ignore
+			}
+			
+			return rv;
+			
 		default:
 			throw ANTLRHelper.getUnrecognizedTerminalError(tnode);
 		}

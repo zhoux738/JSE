@@ -43,6 +43,6 @@ public class JLambdaType extends JFunctionType implements ExecutableType {
 
 	@Override
 	public FunctionKind getFunctionKind(){
-		return FunctionKind.LAMDA;
+		return FunctionKind.LAMBDA;
 	}
 }

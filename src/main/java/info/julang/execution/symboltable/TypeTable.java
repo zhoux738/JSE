@@ -62,6 +62,7 @@ import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.MemberType;
 import info.julang.typesystem.jclass.builtin.IDeferredBuildable;
 import info.julang.typesystem.jclass.builtin.JArrayType;
+import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.julang.typesystem.loading.InternalTypeResolver;
 import info.julang.util.OneOrMoreList;
 
@@ -102,6 +103,11 @@ public class TypeTable implements ITypeTable {
 				art.add(arrayType);
 			}
 		}
+		
+		@Override
+		public String toString() {
+			return type.getName() + (finalized ? " (F)" : " (NF)");
+		}
 	}
 	
 	private static class ArrayTypeInfo {
@@ -119,8 +125,6 @@ public class TypeTable implements ITypeTable {
 	
 	private Map<String, ArrayTypeInfo> arrayTypes = Collections.synchronizedMap(new HashMap<String, ArrayTypeInfo>());
 	
-	public static TypeTable singleton;
-	
 	/**
 	 * [CFOW]
 	 * 
@@ -129,19 +133,6 @@ public class TypeTable implements ITypeTable {
 	 */
 	public TypeTable(IExtMemoryArea heap){
 		this.heap = (MemoryArea)heap;
-		singleton = this;
-	}
-	
-	/**
-	 * Get the current global instance of type table.
-	 * <p>
-	 * Within a JSE runtime there is only one type table. This method works as long as the type table is created through engine 
-	 * factory's interface, such that a unique class loader is used for a different engine instance. 
-	 *  
-	 * @return The type table hosted by the current JSE runtime.
-	 */
-	public static TypeTable getInstance(){
-		return singleton;
 	}
 	
 	/**
@@ -254,6 +245,10 @@ public class TypeTable implements ITypeTable {
 	
 	private JValue getStaticMethodValue(JClassType jclass, JClassMethodMember jcmm) {
 		TypeValue tval = getValue(jclass.getName());
+		if (tval == null){//DELETEME
+			TypeValue tv = getValue(jclass.getName(), false);
+			System.out.println(jclass.getName() + (tv == null ? " is not initialized. " : " is not finalized."));
+		}
 		MethodValue[] methods = tval.getMethodMemberValues(jcmm.getName());
 		for (MethodValue method : methods) {
 			if (method.getMethodType() == jcmm.getMethodType()) {
@@ -265,24 +260,32 @@ public class TypeTable implements ITypeTable {
 		return null;
 	}
 	
-	/**
-	 * Add a new type to type table. A {@link info.julang.memory.value.TypeValue type value} 
-	 * for this type is also added to heap memory.
-	 * 
-	 * @param name
-	 * @param type
-	 * @param finalized
-	 */
-	public synchronized void addType(String name, JType type, boolean finalized){
+	public void addType(String name, JType type){
+		addType(name, type, true, false);
+	}
+	
+	TypeInfo addBuiltinType(String name, JType type) {
+		return addType(name, type, false, true);
+	}
+	
+	private synchronized TypeInfo addType(String name, JType type, boolean createValue, boolean finalized){
 		if(types.containsKey(name)){
 			throw new SymbolDuplicatedDefinitionException(name);
 		}
 		
 		TypeInfo info = new TypeInfo();
 		info.type = type;
-		info.value = new TypeValue(heap, type);	
+		if (createValue) {
+			info.value = new TypeValue(heap, type);	
+		}
+		
+		if (type instanceof JEnumType) {
+			((JEnumType)type).setValue(info.value);
+		}
 		info.finalized = finalized;
 		types.put(name, info);
+		
+		return info;
 	}
 	
 	/**
@@ -295,19 +298,22 @@ public class TypeTable implements ITypeTable {
 			// Build built-in class types
 			Map<String, JClassType> builtinTypes = BuiltinTypeBootstrapper.bootstrapClassTypes();
 			
-			// Add built-in class types to type table
+			// Add built-in class types to type table, but do not create type values yet 
+			// (addBuiltinType won't create type value)
 			List<IDeferredBuildable> deferred = new ArrayList<IDeferredBuildable>();
+			List<TypeInfo> builtinTypeInfos = new ArrayList<TypeInfo>();
 			for(Entry<String, JClassType> entry : builtinTypes.entrySet()) {
 				JClassType type = entry.getValue();
 				if (type.deferBuild()){
 					deferred.add((IDeferredBuildable)type);
 				}
 				
-				addType(entry.getKey(), type, true);
+				builtinTypeInfos.add(addBuiltinType(entry.getKey(), type));
+				
 				if (JArrayType.isArrayType(type)) {
 					ArrayTypeInfo ati = new ArrayTypeInfo();
 					ati.type = (JArrayType)type;
-					ati.value = new TypeValue(heap, type);
+					// ati.value = new TypeValue(heap, type);
 					arrayTypes.put(type.getName(), ati);
 				}
 			}
@@ -323,6 +329,14 @@ public class TypeTable implements ITypeTable {
 			Context context = Context.createSystemLoadingContext(tr);
 			for(IDeferredBuildable bd : deferred){
 				bd.completeBuild(context);
+			}
+
+			// Create type values now
+			for (TypeInfo ti : builtinTypeInfos) {
+				ti.value = new TypeValue(heap, ti.type);
+			}
+			for (ArrayTypeInfo ati : arrayTypes.values()) {
+				ati.value = new TypeValue(heap, ati.type);
 			}
 			
 			initialized = true;

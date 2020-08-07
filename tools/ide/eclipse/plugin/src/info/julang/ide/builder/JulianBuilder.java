@@ -26,9 +26,13 @@ package info.julang.ide.builder;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -45,11 +49,18 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.BuildAction;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.IProgressConstants2;
 
 import info.julang.ide.Constants;
+import info.julang.ide.JulianPlugin;
+import info.julang.ide.editors.JulianEditor;
 import info.julang.ide.properties.JulianScriptProperties;
 import info.julang.ide.util.ResourceUtil;
 import info.julang.interpretation.BadSyntaxException;
@@ -57,6 +68,7 @@ import info.julang.interpretation.errorhandling.IHasLocationInfoEx;
 import info.julang.modulesystem.ModuleManager;
 import info.julang.modulesystem.prescanning.RawScriptInfo;
 import info.julang.parser.ANTLRParser;
+import info.julang.parser.LazyAstInfo;
 
 /**
  * A builder that is invoked upon resources change inside a Julian project.
@@ -71,17 +83,20 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 
 	public static final String MARKER_TYPE = Constants.PLUGIN_ID + ".julianProblem";
 	
+	private static final String EXTNAME = "." + Constants.FILE_EXT;
+	
 	@Override
 	protected IProject[] build(
 		int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
+		IProject proj = getProject();
 		if (kind == FULL_BUILD) {
 			fullBuild(monitor);
 		} else {
-			IResourceDelta delta = getDelta(getProject());
+			IResourceDelta delta = getDelta(proj);
 			if (delta == null) {
 				fullBuild(monitor);
 			} else {
-				incrementalBuild(delta, monitor);
+				incrementalBuild(proj, delta, monitor);
 			}
 		}
 		
@@ -110,8 +125,14 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 		}
 	}
 	
+	/**
+	 * Build all files with project-specific configuration.
+	 * 
+	 * @param window
+	 * @param project
+	 */
 	public static void buildAll(IWorkbenchWindow window, IProject project) {
-		WorkspaceJob cleanJob = new WorkspaceJob("Build all ...") {
+		WorkspaceJob buildAllJob = new WorkspaceJob("Build all ...") {
 			@Override
 			public boolean belongsTo(Object family) {
 				return ResourcesPlugin.FAMILY_MANUAL_BUILD.equals(family);
@@ -131,21 +152,62 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 			}
 		};
 		
-		cleanJob.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
-		cleanJob.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
-		cleanJob.schedule();
+		buildAllJob.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
+		buildAllJob.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
+		buildAllJob.schedule();
+	}
+	
+	/**
+	 * Build a single file with maximum parsing level.
+	 * 
+	 * @param file
+	 * @param continuation the action to perform after a successful build.
+	 */
+	public static void buildSingle(IFile file, Runnable continuation) {
+		WorkspaceJob parseSingleJob = new WorkspaceJob("Parsing ...") {
+			@Override
+			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+				parse(file, ParsingLevel.ADV_SYNTAX);
+				
+				continuation.run();
+				
+				return Status.OK_STATUS;
+			}
+		};
+		
+		parseSingleJob.schedule();
 	}
 	
 	//--------------- Processing a Single File ---------------//
 
-	private void process(IResource resource, ParsingLevel lvl) {
-		if (lvl != ParsingLevel.LEXICAL 
-			&& resource instanceof IFile 
+	private IFile process(IResource resource, ParsingLevel lvl) {
+		if (resource instanceof IFile 
 			&& resource.getName().endsWith("." + Constants.FILE_EXT)) {
-			
-			deleteMarkers(resource);
-
 			IFile file = (IFile) resource;
+			
+			return parse(file, lvl);
+		}
+		
+		// Not a file
+		return null;
+	}
+	
+	/**
+	 * Parse the Julian file and mark problems. Store AST if enabled.
+	 * <p>
+	 * May get the parsing level from project-specific configuration with the following code:
+	 * <pre><code>
+	 *   ParsingLevel lvl = ParsingLevel.loadFromProject(proj, ParsingLevel.SYNTAX);
+	 * </code></pre>
+	 * 
+	 * @param file
+	 * @param lvl The parsing level.
+	 * @return
+	 */
+	private static IFile parse(IFile file, ParsingLevel lvl) {
+		if (lvl != ParsingLevel.LEXICAL) {
+			deleteMarkers(file);
+
 			if (JulianScriptProperties.isEnabledForParsing(file)) {
 				try {
 					if (lvl == ParsingLevel.SYNTAX) {
@@ -155,21 +217,27 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 					} else if (lvl == ParsingLevel.ADV_SYNTAX) {
 						// We are not sure if this is a module file. So must parse without assuming the module name.
 						RawScriptInfo rsinfo = ModuleManager.loadScriptInfoFromPath(null, ResourceUtil.getAbsoluteFSPath(file));
-						BadSyntaxException bse = rsinfo.getAstInfo().getBadSyntaxException();
+						LazyAstInfo ainfo = rsinfo.getAstInfo();
+						BadSyntaxException bse = ainfo.getBadSyntaxException();
+						JulianPlugin.getASTRepository().put(file, ainfo);
 						if (bse != null) {
-							this.report(file, bse.getMessage(), bse, true);
+							report(file, bse.getMessage(), bse, true);
+						} else {
+							return file;
 						}
 					}
 				} catch (BadSyntaxException bex) {
-					this.report(file, bex.getMessage(), bex, true);
+					report(file, bex.getMessage(), bex, true);
 				} catch (CoreException | FileNotFoundException e) {
 					// TODO - report a problem, but not mark
 				}
 			}
 		}
+		
+		return null;
 	}
 
-	private void deleteMarkers(IResource file) {
+	private static void deleteMarkers(IResource file) {
 		try {
 			file.deleteMarkers(MARKER_TYPE, false, IResource.DEPTH_ZERO);
 		} catch (CoreException ce) {
@@ -177,7 +245,7 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 		}
 	}
 	
-	private void report(IFile file, String msg, IHasLocationInfoEx ex, boolean isErrorOrWarning) {
+	private static void report(IFile file, String msg, IHasLocationInfoEx ex, boolean isErrorOrWarning) {
 		try {
 			IMarker marker = file.createMarker(MARKER_TYPE);
 			marker.setAttribute(IMarker.MESSAGE, msg);
@@ -206,15 +274,70 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 	private void fullBuild(IProgressMonitor monitor) throws CoreException {
 		IProject project = getProject();
 		ParsingLevel lvl = ParsingLevel.loadFromProject(project, ParsingLevel.SYNTAX);
-		project.accept(new JulianProjectVisitor(lvl));
+		
+		JulianProjectVisitor jpv = new JulianProjectVisitor(lvl);
+		project.accept(jpv);
+		
+		JulianPlugin.getASTRepository().removeAllExcept(jpv.filesBuilt);
+
+		// Only explicitly update the folding regions of the active editor.
+		if (jpv.filesBuilt.size() > 0) {
+			refreshActiveEditor(file -> {
+				return jpv.filesBuilt.contains(file);
+			});
+		}
 	}
 
-	private void incrementalBuild(IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
-		delta.accept(new JulianProjectDeltaVisitor());
+	private void incrementalBuild(IProject proj, IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
+		JulianProjectDeltaVisitor visitor = new JulianProjectDeltaVisitor(proj);
+		delta.accept(visitor);
+		
+		List<IFile> filesBuilt = visitor.filesBuilt;
+		List<IFile> filesRemoved = visitor.filesRemoved;
+		
+		if (filesRemoved != null) {
+			JulianPlugin.getASTRepository().removeAll(filesRemoved);
+		}
+		
+		// Only explicitly update the folding regions of the active editor.
+		if (filesBuilt != null) {
+			refreshActiveEditor(file -> {
+				return filesBuilt.stream().anyMatch(f -> f.equals(file));
+			});
+		}
+	}
+	
+	private void refreshActiveEditor(Predicate<IFile> p) {
+		Display disp = Display.getDefault();
+		disp.asyncExec(() -> {
+			// Get the active editor.
+			IEditorPart edPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			if (edPart != null && edPart instanceof JulianEditor) {
+				IEditorInput input = edPart.getEditorInput();
+				if (input instanceof FileEditorInput) {
+					FileEditorInput fei = (FileEditorInput)input;
+					IFile file = fei.getFile();
+					// If it's a Julian script file which just got built,
+					if (file.getName().endsWith(EXTNAME) 
+						&& p.test(file)) {
+						// ... update its folding regions.
+						((JulianEditor)edPart).updateFoldingRegions(false);
+					}
+				}
+			}
+		});
 	}
 
 	// Visitor for incremental build
 	private class JulianProjectDeltaVisitor implements IResourceDeltaVisitor {
+		private List<IFile> filesBuilt;
+		private List<IFile> filesRemoved;
+		
+		private JulianProjectDeltaVisitor(IProject proj) {
+			if (JulianPlugin.getASTRepository().isEnabledFor(proj)) {
+				filesRemoved = new ArrayList<IFile>();
+			}
+		}
 		
 		@Override
 		public boolean visit(IResourceDelta delta) throws CoreException {
@@ -222,17 +345,24 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 			IProject proj = resource.getProject();
 			ParsingLevel lvl = ParsingLevel.loadFromProject(proj, ParsingLevel.SYNTAX);
 			switch (delta.getKind()) {
-			case IResourceDelta.ADDED:
-				// Resource is added.
-				process(resource, lvl);
-				break;
 			case IResourceDelta.REMOVED:
 				// Resource is removed.
-				// This doesn't affect syntax validity of the remaining files. So nothing to be done here.
+				if (filesRemoved != null && resource instanceof IFile) {
+					filesRemoved.add((IFile)resource);
+				}
+				
 				break;
+			case IResourceDelta.ADDED:
 			case IResourceDelta.CHANGED:
-				// Resource is changed.
-				process(resource, lvl);
+				// Resource is added/changed.
+				IFile file = process(resource, lvl);
+				if (file != null) {
+					if (filesBuilt == null) {
+						filesBuilt = new ArrayList<IFile>();
+					}
+					filesBuilt.add(file);
+				}
+				
 				break;
 			}
 			
@@ -245,14 +375,18 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 	private class JulianProjectVisitor implements IResourceVisitor {
 		
 		private ParsingLevel lvl;
+		private Set<IFile> filesBuilt;
 		
 		private JulianProjectVisitor(ParsingLevel lvl) {
 			this.lvl = lvl;
+			this.filesBuilt = new HashSet<>();
 		}
 		
 		public boolean visit(IResource resource) {
-			
-			process(resource, lvl);
+			IFile f = process(resource, lvl);
+			if (f != null) {
+				this.filesBuilt.add(f);
+			}
 			
 			// Return true to continue visiting children.
 			return true;

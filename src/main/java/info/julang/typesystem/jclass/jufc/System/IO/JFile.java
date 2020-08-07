@@ -190,6 +190,10 @@ public class JFile extends JItem {
 		}
 	}
 
+	public boolean create() throws IOException {
+		return this.item.createNewFile();
+	}
+	
 	public String readAll() throws FileNotFoundException, IOException {
 		int length = (int) item.length();
 		FileInputStream fos = new FileInputStream(item);

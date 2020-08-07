@@ -1,0 +1,28 @@
+import ModuleSys.ModB;
+
+int fun1(string s) {
+	return s.length;
+}
+
+string str1 = fun1.toString();
+
+var t = fun1.getReturnType();
+string str2 = t.toString();
+
+void fun2(bool[] b) {
+}
+
+string str3 = fun2.toString();
+
+var t2 = fun2.getReturnType();
+string str4 = t2.toString();
+
+Person getPerson(Person p){
+	return p;
+}
+
+string str5 = getPerson.toString();
+Type ptyp = getPerson.getReturnType();
+bool bool6 = ptyp == typeof(Person);
+
+bool kind = fun1.getFunctionKind() == System.Reflection.FunctionKind.GLOBAL;

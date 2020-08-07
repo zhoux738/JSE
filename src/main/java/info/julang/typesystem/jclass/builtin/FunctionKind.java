@@ -32,7 +32,7 @@ public enum FunctionKind {
 	
 	CONSTRUCTOR,
 	
-	LAMDA,
+	LAMBDA,
 	
 	METHOD_GROUP
 	

@@ -61,6 +61,7 @@ public class SystemRawScriptInfoInitializer {
 			"Math",
 			"Interfaces",
 			"Internals",
+			"Extension",
 			"Exception",
 		});
 		map.put("System.Lang", new String[]{
@@ -73,6 +74,7 @@ public class SystemRawScriptInfoInitializer {
 			"Module",
 			"Script",
 			"Constructor",
+			"FunctionKind",
 			"Parameter",
 			"Exception",
 		});
@@ -149,6 +151,10 @@ public class SystemRawScriptInfoInitializer {
         map.put("System/Util/Internals.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Internals>(
             info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Internals.class));
+        
+        map.put("System/Util/Extension.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Extension>(
+            info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Extension.class));
         
         map.put("System/Util/Exception.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Util.AOTRawScriptInfo$Exception>(
@@ -285,6 +291,10 @@ public class SystemRawScriptInfoInitializer {
         map.put("System/Reflection/Constructor.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Constructor>(
             info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Constructor.class));
+        
+        map.put("System/Reflection/FunctionKind.jul", new SystemRawScriptInfoFactory<
+            info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$FunctionKind>(
+            info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$FunctionKind.class));
         
         map.put("System/Reflection/Parameter.jul", new SystemRawScriptInfoFactory<
             info.julang.typesystem.jclass.jufc.System.Reflection.AOTRawScriptInfo$Parameter>(

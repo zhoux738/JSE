@@ -1,0 +1,69 @@
+class C {
+	string n;
+	C(string n) { this.n = n; }
+}
+
+C c(string n){
+	return new C(n);
+}
+
+C[] arr = new C[] { c("baic"), c("byd"), c("chery"), c("faw") };
+
+var iter1 = arr.append(c("foton"));
+
+int index = 0;
+string[] res1 = new string[5];
+for (var v : iter1) {
+	res1[index] = v.n;
+	index++;
+	//Console.print(v.n);
+	//Console.print(',');
+}
+//Console.println("");
+
+var iter2 = arr.concat(new C[]{c("geely"), c("saic")});
+index = 0;
+// append, concat
+string[] res2 = new string[6];
+for (var v : iter2) {
+	res2[index] = v.n;
+	index++;
+	//Console.print(v.n);
+	//Console.print(',');
+}
+//Console.println("");
+
+var iter3 = arr.append(c("foton"));
+index = 0;
+string[] res3 = new string[5];
+for (var v : iter3) {
+	res3[index] = v.n;
+	index++;
+	//Console.print(v.n);
+	//Console.print(',');
+}
+//Console.println("");
+
+var iter4 = arr.append(new C[]{c("geely"), c("saic")});
+index = 0;
+string[] res4 = new string[4];
+bool res4LastElementChecked = false;
+for (var v : iter4) {
+	if (index == 4) { // the last one is an array
+		//Console.print("[" + v.length + "]");
+		res4LastElementChecked = (v.length == 2 && v[0].n == "geely" && v[1].n == "saic");
+	} else {
+		//Console.print(v.n);
+		//Console.print(',');
+		res4[index] = v.n;
+	}
+	
+	index++;
+}
+
+/*
+baic,byd,chery,faw,foton,
+baic,byd,chery,faw,geely,saic,
+baic,byd,chery,faw,foton,
+baic,byd,chery,faw,[2]
+*/

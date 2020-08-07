@@ -24,24 +24,46 @@ SOFTWARE.
 
 package info.julang.ide.editors;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.projection.ProjectionSupport;
+import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 
+import info.julang.ide.JulianPlugin;
+import info.julang.ide.builder.JulianBuilder;
+import info.julang.ide.builder.ParsingLevel;
+import info.julang.ide.editors.folding.FoldingManager;
 import info.julang.ide.themes.ColorManagerFactory;
 import info.julang.ide.themes.IColorManager;
 import info.julang.ide.themes.SharedColorManager;
 import info.julang.ide.themes.ThemeChangeListener;
+import info.julang.parser.LazyAstInfo;
 
+/**
+ * The source editor for Julian.
+ * 
+ * @author Ming Zhou
+ */
 public class JulianEditor extends TextEditor {
-
+	
+	private static final String CONTEXT_NAME = "#JulianEditorContext";
+	
+	private static final String[] KEY_BINDINGS = new String[] { "info.julang.editors.binding.context" };
+	
 	private IColorManager colorManager;
 	private JulianConfiguration config;
 	private EditorThemeChangeListener listener;
+	private FoldingManager foldingMgr;
 
 	private class EditorThemeChangeListener implements IPropertyChangeListener {
 		
@@ -76,6 +98,17 @@ public class JulianEditor extends TextEditor {
 	}
 	
 	@Override
+	protected void initializeEditor() {
+		super.initializeEditor();
+		setEditorContextMenuId(CONTEXT_NAME);
+	}
+	
+	@Override
+	protected void initializeKeyBindingScopes() {
+		setKeyBindingScopes(KEY_BINDINGS);
+	}
+	
+	@Override
 	public void dispose() {
 		try {
 			config.dispose();
@@ -100,5 +133,47 @@ public class JulianEditor extends TextEditor {
 		
 		super.dispose();
 	}
+	
+	// The following code are for supporting folding.
+	
+	public void updateFoldingRegions(boolean forceBuild) {
+		IFile file = ((FileEditorInput)this.getEditorInput()).getFile();
+		LazyAstInfo ainfo = JulianPlugin.getASTRepository().get(file);
 
+		// We can do this only if the file has been built successfully, with its AST stored (ParsingLevel >= ADV_SYNTAX).
+		// If the file has not been built, build it now.
+		if (ainfo == null
+			&& forceBuild
+			&& ParsingLevel.loadFromProject(file.getProject(), ParsingLevel.SYNTAX).ordinal() >= ParsingLevel.ADV_SYNTAX.ordinal()) {
+			JulianBuilder.buildSingle(file, () -> { 
+				LazyAstInfo ainfoNew = JulianPlugin.getASTRepository().get(file);
+				if (ainfoNew != null) {
+					this.foldingMgr.update(ainfoNew);
+				}
+			});
+		} else {
+			if (ainfo != null) {
+				this.foldingMgr.update(ainfo);
+			}
+		}
+	}
+
+	@Override
+	public void createPartControl(Composite parent) {
+		super.createPartControl(parent);
+		ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+		ProjectionSupport projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
+		foldingMgr = new FoldingManager(viewer, projectionSupport);
+		this.updateFoldingRegions(true);
+	}
+
+	@Override
+	protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
+		ISourceViewer viewer = new ProjectionViewer(
+			parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
+
+		getSourceViewerDecorationSupport(viewer);
+
+		return viewer;
+	}
 }

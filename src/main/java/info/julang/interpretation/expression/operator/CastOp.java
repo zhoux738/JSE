@@ -118,7 +118,7 @@ public class CastOp extends Operator {
 			
 			if(ov == RefValue.NULL){
 				if(toType.isObject()){
-					JValue dv = ValueUtilities.makeDefaultValue(context.getFrame(), toType, false, context.getTypTable());
+					JValue dv = ValueUtilities.makeDefaultValue(context.getFrame(), toType, false);
 					ov.assignTo(dv);
 					return new ValueOperand(dv);
 				} else {

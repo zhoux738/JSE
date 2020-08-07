@@ -1,0 +1,22 @@
+// append, concat
+import System.Collection;
+
+List list = new List();
+list.add("geely");
+list.add("saic");
+
+var iter = list.append("baic").concat(new string[]{"byd", "chery"}).concat(new string[0]).concat(list).append("faw");
+
+int index = 0;
+string[] res1 = new string[8];
+for (var v : iter) {
+	res1[index] = v;
+	//Console.print('"');
+	//Console.print(v);
+	//Console.print('"');
+	//Console.print(',');
+	index++;
+}
+/*
+"geely","saic","baic","byd","chery","geely","saic","faw",
+*/

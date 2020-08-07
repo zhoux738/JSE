@@ -1,0 +1,37 @@
+// next() after done
+import System.Collection;
+import System.Util;
+
+var org = new string[] { "baic", "byd", "chery", "faw" };
+IIterable src1 = org.append("foton");
+
+int i = 0;
+IIterator it1 = src1.getIterator();
+while(it1.hasNext()){
+	it1.next();
+	i++;
+}
+
+bool b1 = false;
+try {
+	it1.next();
+} catch (Exception ex) {
+	b1 = true;	
+}
+
+IIterable src2 = org.filter(e => e == "_ne_");
+bool b2 = false;
+try {
+	var it2 = src2.getIterator();
+	it2.next();
+} catch (Exception ex) {
+	b2 = true;	
+}
+
+IIterable src3 = org.skip(10);
+bool b3 = false;
+try {
+	src3.getIterator().next();
+} catch (Exception ex) {
+	b3 = true;	
+}

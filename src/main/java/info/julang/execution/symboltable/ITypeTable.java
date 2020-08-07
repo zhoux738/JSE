@@ -73,13 +73,14 @@ public interface ITypeTable extends IExtTypeTable {
 	
 	/**
 	 * Add a new type to type table. A {@link info.julang.memory.value.TypeValue type value} 
-	 * for this type is also added to heap memory.
+	 * for this type is also added to heap memory. The type is not finalized yet, therefore
+	 * cannot be retrieved by calling {@link #addType(String, JType)} at this point. Only after
+	 * {@link #finalizeTypes(List)} with the type's name will this type become available.
 	 * 
 	 * @param name
 	 * @param type
-	 * @param finalized
 	 */
-	public void addType(String name, JType type, boolean finalized);
+	public void addType(String name, JType type);
 	
 	/**
 	 * Remove all types which are not finalized.

@@ -54,7 +54,12 @@ public interface TypeBootstrapper {
 	 * 
 	 * @param builder
 	 */
-	void boostrapItself(JClassTypeBuilder builder);
+	void bootstrapItself(JClassTypeBuilder builder);
+	
+	/**
+	 * Reset the built type. Used for tests.
+	 */
+	void reset();
 
 	/**
 	 * The fully qualified type name in Julian's type system.

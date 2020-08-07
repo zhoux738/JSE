@@ -367,7 +367,7 @@ public class TypeLoader {
 			}
 			
 			String name = typ.getName();
-			tt.addType(name, typ, false);
+			tt.addType(name, typ);
 			typeNames.add(name);
 		}
 	

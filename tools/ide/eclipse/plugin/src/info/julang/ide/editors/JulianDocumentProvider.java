@@ -27,8 +27,10 @@ package info.julang.ide.editors;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
-import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
+
+import info.julang.ide.editors.partitioning.JulianPartitionScanner;
+import info.julang.ide.editors.partitioning.ResettablePartitioner;
 
 /**
  * Provides Julian source file as an partitioned IDocument. 
@@ -42,13 +44,13 @@ public class JulianDocumentProvider extends FileDocumentProvider {
 	protected IDocument createDocument(Object element) throws CoreException {
 		IDocument document = super.createDocument(element);
 		if (document != null) {
-			IDocumentPartitioner partitioner = new FastPartitioner(
+			IDocumentPartitioner partitioner = new ResettablePartitioner(
 				new JulianPartitionScanner(),
 				new String[] { 
 					JulianPartitionScanner.JULIAN_BLOCK_COMMENT, 
 					JulianPartitionScanner.JULIAN_COMMENT, 
 					JulianPartitionScanner.JULIAN_STRING_LITERAL,
-					//JulianPartitionScanner.JULIAN_CHAR_LITERAL,
+					JulianPartitionScanner.JULIAN_CHAR_LITERAL,
 					//JulianPartitionScanner.JULIAN_REGEX_LITERAL
 				});
 			

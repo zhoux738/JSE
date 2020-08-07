@@ -27,24 +27,38 @@ package info.julang.typesystem.jclass.jufc;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.memory.value.RefValue;
+import info.julang.memory.value.TypeValue;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.jufc.System.ScriptType;
 import info.julang.util.Pair;
 
+/**
+ * Provides a few static routines to interact with System types.
+ * 
+ * @author Ming Zhou
+ *
+ */
 public final class SystemTypeUtility {
-
-	public static JType ensureTypeBeLoaded(Context context, String typeName){
-		JType typ = null;
-		if ((typ = context.getTypTable().getType(typeName)) == null){
-			ParsedTypeName ptn = ParsedTypeName.makeFromFullName(typeName);
-			typ = context.getTypeResolver().resolveType(ptn);	
+	
+	public static JClassType ensureTypeBeLoaded(ThreadRuntime threadRt, String typeName) {
+		JClassType systemType = (JClassType) threadRt.getTypeTable().getType(typeName);
+		if (systemType == null) {
+			Context context = Context.createSystemLoadingContext(threadRt);
+			threadRt.getTypeResolver().resolveType(context, ParsedTypeName.makeFromFullName(typeName), true);
+			systemType = (JClassType) threadRt.getTypeTable().getType(typeName);
 		}
 		
-		return typ;
+		return systemType;
 	}
 	
-	public static Pair<JType, Context> ensureTypeBeLoaded(ThreadRuntime threadRt, String typeName){
-		Context context = Context.createSystemLoadingContext(threadRt);
-		return new Pair<JType, Context>(ensureTypeBeLoaded(context, typeName), context);
+	public static RefValue createEnumValue(String fullTypeName, ThreadRuntime rt, String enumName){
+		ensureTypeBeLoaded(rt, fullTypeName);
+		TypeValue tv = (TypeValue) rt.getTypeTable().getValue(fullTypeName);
+		RefValue rv = (RefValue) tv.getMemberValue(enumName);
+		
+		rv = new RefValue(rt.getStackMemory().currentFrame(), rv.getReferredValue());
+		return rv;
 	}
-	
 }

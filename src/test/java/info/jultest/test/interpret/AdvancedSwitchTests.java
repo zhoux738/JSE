@@ -4,6 +4,7 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
+import static info.jultest.test.Commons.resetTypeSystem;
 import info.jultest.test.Commons;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
@@ -63,5 +64,16 @@ public class AdvancedSwitchTests {
 		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "switch_adv_05.jul"));
 		
 		validateStringValue(gvt, "s", "F");
+	}
+	
+	@Test
+	public void switchOverTypeofTest() throws EngineInvocationError {
+		resetTypeSystem();
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "switch_adv_06.jul"));
+		
+		validateStringValue(gvt, "s", "B");
 	}
 }

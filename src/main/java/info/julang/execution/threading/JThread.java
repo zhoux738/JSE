@@ -286,8 +286,7 @@ public class JThread {
 		if(threadObjectInJulian == null){
 			if (props.isMain()){				
 				// If this is the main thread, lazy-initialize the object.
-				Pair<JType, Context> pair = SystemTypeUtility.ensureTypeBeLoaded(threadRt, ScriptThread.FullTypeName);
-				JType typ = pair.getFirst();
+				JType typ = SystemTypeUtility.ensureTypeBeLoaded(threadRt, ScriptThread.FullTypeName);
 				
 				ScriptThread st = new ScriptThread(this, this.runnable);
 				HostedValue hv = new HostedValue(threadRt.getHeap(), typ);

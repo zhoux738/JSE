@@ -18,10 +18,11 @@ import info.julang.external.interfaces.IExtValue.IIntVal;
 import info.julang.external.interfaces.IExtVariableTable;
 import info.julang.util.Box;
 import info.jultest.test.Commons;
+import info.jultest.test.threading.ThreadingTestBase;
 
 //(Uncomment @RunWith for reliability test)
 //@org.junit.runner.RunWith(org.junit.runners.Parameterized.class)
-public class TerminationTests extends ThreadingTestBase {
+public class TerminationTestSuite extends ThreadingTestBase {
 
 	private static final String FEATURE = "Termination";
 

@@ -1,0 +1,31 @@
+// append, concat
+string[] arr = new string[] { "baic", "byd" };
+
+var iter1 = arr.append("");
+int index = 0;
+string res1 = "-";
+for (var v : iter1) {
+	index++;
+	if (index == 3) {
+		res1 = v;
+	}
+}
+
+var iter2 = arr.concat("");
+index = 0;
+string res2 = "-";
+for (var v : iter2) {
+	index++;
+	if (index == 3) {
+		res2 = v;
+	}
+}
+
+iter2 = arr.concat(new string[0]);
+index = 0;
+for (var v : iter2) {
+	index++;
+}
+
+// res1 == res2 == ""
+// index == 2

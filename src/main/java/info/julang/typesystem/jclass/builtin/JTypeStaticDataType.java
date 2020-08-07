@@ -58,7 +58,7 @@ public class JTypeStaticDataType extends JClassType {
 		return true;
 	}
 	
-	public static class BoostrapingBuilder implements TypeBootstrapper {
+	public static class BootstrapingBuilder implements TypeBootstrapper {
 		
 		private JTypeStaticDataType proto;
 		
@@ -81,10 +81,15 @@ public class JTypeStaticDataType extends JClassType {
 		}
 		
 		@Override
-		public void boostrapItself(JClassTypeBuilder builder){
+		public void bootstrapItself(JClassTypeBuilder builder){
 			if(JTypeStaticDataType.INSTANCE == null){
 				JTypeStaticDataType.INSTANCE = (JTypeStaticDataType) builder.build(true);
 			}
+		}
+		
+		@Override
+		public void reset() {
+			JTypeStaticDataType.INSTANCE = null;
 		}
 		
 		@Override

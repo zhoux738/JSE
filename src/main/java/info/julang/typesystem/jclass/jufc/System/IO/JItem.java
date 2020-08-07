@@ -59,10 +59,6 @@ public abstract class JItem {
 		return item.exists();
 	}
 	
-	public boolean create() {
-		return item.mkdir();
-	}
-	
 	public boolean delete() {
 		return item.delete();
 	}

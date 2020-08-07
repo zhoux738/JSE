@@ -79,14 +79,14 @@ public class HostingPlatformException extends JSERuntimeException {
 	}
 
 	private static String makeMsg(Exception inner, FQName className, String methodName) {
-		return "An exception is thrown from a method implemented by hosting language." + 
+		return "An exception is thrown from a method implemented by the hosting language." + 
 				(inner instanceof JulianScriptException ? // If we have a script exception as the cause, no need to repeat what is to be seen in the stack trace.
 					"" : 
 					" Method: " + className.toString() + "." + methodName + ", Exception: " + inner.getMessage());
 	}
 	
 	private static String makeCustomizedMsg(String msg, FQName className, String methodName) {
-		return "A problem is encountered when calling a method implemented by hosting language. Method: " + 
+		return "A problem is encountered when calling a method implemented by the hosting language. Method: " + 
 				className.toString() + "." + methodName + ", Exception: " + msg;
 	}
 

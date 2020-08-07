@@ -136,7 +136,7 @@ interface IIndexable {
  * foreach statement is essentially interacting with an IIterator, not an IIterable. IIterable is
  * useful in that it decouples the ability of iteration from the state-tracking during such iteration.
  */
-interface IIterable {
+interface IIterable : IIterableExtension {
 
 	/*
 	 * Get an iterator from this object. The iterator provides methods to traverse through the 

@@ -136,7 +136,7 @@ public class KnownMappedType implements IMappedType {
 			throw new JSEError("Cannot retrieve field value from platform type.");
 		}
 		
-		JValue tgt = ValueUtilities.makeDefaultValue(mem, typ, false, context.getTypTable());
+		JValue tgt = ValueUtilities.makeDefaultValue(mem, typ, false);
 		src.assignTo(tgt);
 		
 		return tgt;

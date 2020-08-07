@@ -1,7 +1,7 @@
 import System;
 import System.Reflection;
 
-Type vtyp = typeof(Void);
+Type vtyp = typeof(void);
 
 string s0 = vtyp.getFullName();
 string s1 = vtyp.getSimpleName();

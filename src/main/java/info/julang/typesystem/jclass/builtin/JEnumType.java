@@ -66,11 +66,20 @@ public class JEnumType extends JDefinedClassType {
 	private String defaultLiteral;
 	private int defaultOrdinal;
 	private Map<String, Integer> enums;
+	private TypeValue tvalue;
 	
 	public JEnumType(String name) {
 		super(name);
 	}
+	
+	public TypeValue getValue() {
+		return tvalue;
+	}
 
+	public void setValue(TypeValue val) {
+		this.tvalue = val;
+	}
+	
 	@Override
 	public Convertibility getConvertibilityTo(JType type) {
 		if(type.getKind() == JTypeKind.INTEGER || type == JStringType.getInstance()){

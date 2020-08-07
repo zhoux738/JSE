@@ -222,6 +222,10 @@ public class JDirectory extends JItem {
 		}
 	}
 	
+	public boolean create() {
+		return this.item.mkdir();
+	}
+	
 	public boolean[] getChildInfo(String name) {
 		File ch = new File(item, name);
 		boolean[] res = new boolean[] {

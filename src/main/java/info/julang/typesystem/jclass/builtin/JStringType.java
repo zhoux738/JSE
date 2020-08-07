@@ -164,7 +164,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 		}
 	}
 	
-	public static class BoostrapingBuilder implements TypeBootstrapper {
+	public static class BootstrapingBuilder implements TypeBootstrapper {
 		
 		private JStringType proto;
 		
@@ -563,12 +563,17 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 		}
 		
 		@Override
-		public void boostrapItself(JClassTypeBuilder builder){
+		public void bootstrapItself(JClassTypeBuilder builder){
 			if(JStringType.INSTANCE == null){
 				JStringType jst = (JStringType) builder.build(false);
 				jst.setBuilder(builder);
 				JStringType.INSTANCE = jst;
 			}
+		}
+		
+		@Override
+		public void reset() {
+			JStringType.INSTANCE = null;
 		}
 		
 		@Override
@@ -789,6 +794,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 				+ "\n * Check if the string is null or empty (containing no characters)."
 				+ "\n */",
 		params = {"The string to check."},
+		isStatic = true,
 		returns = "true if the checked string is null or empty.",
 		exceptions = { }
 	)

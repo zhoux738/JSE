@@ -208,7 +208,64 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor">
       </editor>
    </extension>
-   
+   <!-- (To add more commands, follow "NEW_CMD" instructions.) --> 
+   <!-- Command: Toggle the source lines with comment prefixes -->
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="julianEditorCommandCategory"
+            name="Julian source editor commands">
+      </category>
+      <!-- NEW_CMD 1/3: define command and its handler -->
+      <command
+            categoryId="julianEditorCommandCategory"
+            id="info.julang.ide.editors.toggle.comment"
+            defaultHandler="info.julang.ide.editors.ToggleCommentHandler"
+            name="Toggle comments"
+            description="Toggle lines with comment prefixes.">
+      </command>
+   </extension>
+   <extension 
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:#JulianEditorContext?after=additions">
+         <separator
+            name="julian.source.commands.group"
+            visible="true">
+         </separator>
+         <!-- For now, don't place them in a submenu. Will re-evaluate when we have more commands. -->
+         <!-- <menu label="Julian Source"> -->
+         
+         <!-- NEW_CMD 2/3: define context menu item -->
+         <command
+               label="Toggle comments"
+               commandId="info.julang.ide.editors.toggle.comment"
+               style="push">
+         </command>
+         <!-- </menu> -->
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            name="Editing Julian Source Code"
+            description="Editing Julian Source Code"
+            parentId="org.eclipse.ui.textEditorScope"
+            id="info.julang.editors.binding.context">
+      </context>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <!--  Windows/Linux: M1=CTRL,    M2=SHIFT, M3=ALT, M4=(N/A)
+            Macintosh:     M1=COMMAND, M2=SHIFT, M3=ALT, M4=CTRL -->
+      <!-- NEW_CMD 3/3: define key binding -->
+      <key
+            sequence="M1+/"
+            contextId="info.julang.editors.binding.context"
+            commandId="info.julang.ide.editors.toggle.comment"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+   </extension>
+           
    <!-- 5. Launcher -->
    <extension point="org.eclipse.core.expressions.propertyTesters">
 	  <propertyTester

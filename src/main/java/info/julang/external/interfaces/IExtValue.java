@@ -85,6 +85,11 @@ public interface IExtValue {
 		String getStringValue();
 	}
 	
+	public static interface IArrayVal extends IObjectVal {
+		IExtValue get(int index);
+		int getLength();
+	}
+	
 	public static interface IEnumVal extends IObjectVal {
 		int getOrdinal();
 	}

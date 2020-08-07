@@ -1,0 +1,19 @@
+import ModuleSys.ModB;
+import System.Reflection;
+
+class MyClass {
+	int fun1(string s, Person p) {
+		return s.length;
+	}
+	int fun1(string s) {
+		return s.length;
+	}
+}
+
+MyClass mc = new MyClass();
+Function fun1 = mc.fun1; // method group
+
+Parameter[] pms = fun1.getParameters(); // This can return either of the two.
+bool plist = pms.length >= 2 && pms.length <= 3;
+bool ret = fun1.getReturnType() == typeof(int);
+bool kind = fun1.getFunctionKind() == System.Reflection.FunctionKind.INSTANCE_METHOD_GROUP;

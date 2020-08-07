@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <bundle id="info.julang.ide" version="0.1.28"><!-- VERSION_ATTRIBUTE -->
+   <bundle id="info.julang.ide" version="0.1.29"><!-- VERSION_ATTRIBUTE -->
       <category name="info.julang.ide.category"/>
    </bundle>
    <category-def name="info.julang.ide.category" label="Julian Development Environment">

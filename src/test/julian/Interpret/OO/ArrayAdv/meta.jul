@@ -1,0 +1,8 @@
+class C {
+
+}
+
+string[] arr1 = new string[0];
+bool c1 = arr1.getElementType() == typeof(string);
+bool c2 = (new int[5]).getElementType() == typeof(int);
+bool c3 = (new C[1]).getElementType() == typeof(C);

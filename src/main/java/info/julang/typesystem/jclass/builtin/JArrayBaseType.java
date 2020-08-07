@@ -25,27 +25,34 @@ SOFTWARE.
 package info.julang.typesystem.jclass.builtin;
 
 import info.julang.execution.Argument;
+import info.julang.execution.ArgumentUtil;
 import info.julang.execution.Result;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.JSEError;
 import info.julang.hosting.HostedExecutable;
 import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.internal.NewObjExecutor;
 import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.memory.value.ArrayValue;
+import info.julang.memory.value.ArrayValueFactory;
 import info.julang.memory.value.BasicArrayValue;
 import info.julang.memory.value.BoolValue;
+import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectArrayValue;
 import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.memory.value.TypeValue;
 import info.julang.memory.value.UntypedValue;
 import info.julang.memory.value.ValueUtilities;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
+import info.julang.typesystem.JArgumentException;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.VoidType;
 import info.julang.typesystem.basic.BoolType;
@@ -66,6 +73,7 @@ import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
 import info.julang.typesystem.jclass.builtin.doc.JulianFieldMemberDoc;
 import info.julang.typesystem.jclass.builtin.doc.JulianFieldMembersDoc;
 import info.julang.typesystem.jclass.jufc.SystemTypeNames;
+import info.julang.typesystem.jclass.jufc.System.ScriptType;
 
 /**
  * ArrayBase type is the parent type of all other array types. The internal name of this type is just "ARRAY".
@@ -152,9 +160,11 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 
 	public static final FQName FQNAME = new FQName("Array");
 	
-	private static final String METHOD_NAME_COPY = "copy";
-	private static final String METHOD_NAME_FILL = "fill";
-	private static final String	METHOD_NAME_SORT = "sort";
+	private static final String METHOD_NAME_copy = "copy";
+	private static final String METHOD_NAME_fill = "fill";
+	private static final String	METHOD_NAME_sort = "sort";
+	private static final String METHOD_NAME_createArray = "createArray";
+	private static final String METHOD_NAME_getElementType = "getElementType";
 	
 	private static JArrayBaseType INSTANCE;
 
@@ -168,7 +178,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 	}
 	
 	private JArrayBaseType(){
-		
+		this.initialized = false;
 	}
 
 	public static JArrayBaseType getInstance() {
@@ -180,7 +190,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		return true;
 	}
 	
-	public static class BoostrapingBuilder implements TypeBootstrapper {
+	public static class BootstrapingBuilder implements TypeBootstrapper {
 		
 		private JArrayBaseType proto;
 		
@@ -211,9 +221,9 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 			builder.addStaticMember(
 				new JClassMethodMember(
 					builder.getStub(),
-					METHOD_NAME_COPY, Accessibility.PUBLIC, true, false,
+					METHOD_NAME_copy, Accessibility.PUBLIC, true, false,
 					new JMethodType(
-						METHOD_NAME_COPY,
+						METHOD_NAME_copy,
 						new JParameter[]{
 							new JParameter("src", arrayType),
 							new JParameter("srcOffset", IntType.getInstance()),
@@ -230,9 +240,9 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 			builder.addStaticMember(
 				new JClassMethodMember(
 					builder.getStub(),
-					METHOD_NAME_FILL, Accessibility.PUBLIC, true, false,
+					METHOD_NAME_fill, Accessibility.PUBLIC, true, false,
 					new JMethodType(
-							METHOD_NAME_FILL,
+						METHOD_NAME_fill,
 						new JParameter[]{
 							new JParameter("src", arrayType),
 							new JParameter("val", AnyType.getInstance()),
@@ -246,9 +256,9 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 			builder.addStaticMember(
 				new JClassMethodMember(
 					builder.getStub(),
-					METHOD_NAME_SORT, Accessibility.PUBLIC, true, false,
+					METHOD_NAME_sort, Accessibility.PUBLIC, true, false,
 					new JMethodType(
-							METHOD_NAME_SORT,
+							METHOD_NAME_sort,
 						new JParameter[]{
 							new JParameter("src", arrayType),
 							new JParameter("desc", BoolType.getInstance()),
@@ -266,12 +276,17 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		}
 		
 		@Override
-		public void boostrapItself(JClassTypeBuilder builder){
+		public void bootstrapItself(JClassTypeBuilder builder){
 			if(JArrayBaseType.INSTANCE == null){
 				JArrayBaseType jabt = (JArrayBaseType) builder.build(false);
 				jabt.setBuilder(builder);
 				JArrayBaseType.INSTANCE = jabt;
 			}
+		}
+		
+		@Override
+		public void reset() {
+			JArrayBaseType.INSTANCE = null;
 		}
 
 		@Override
@@ -304,7 +319,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 				"type being incompatible, values overlapping, illegal values or illegal combination thereof, of parametrers, etc."
 				}
 	)
-	private static HostedExecutable METHOD_copy  = new HostedExecutable(FQNAME, METHOD_NAME_COPY) {
+	private static HostedExecutable METHOD_copy  = new HostedExecutable(FQNAME, METHOD_NAME_copy) {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
@@ -319,17 +334,17 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 
 			// These two checks may not be necessary
 			if (!JArrayType.isArrayType(srcType)){
-				throw new IllegalArgumentsException(METHOD_NAME_COPY, "Value of source is not an array.");
+				throw new IllegalArgumentsException(METHOD_NAME_copy, "Value of source is not an array.");
 			}
 			if (!JArrayType.isArrayType(dstType)){
-				throw new IllegalArgumentsException(METHOD_NAME_COPY, "Value of destination is not an array.");
+				throw new IllegalArgumentsException(METHOD_NAME_copy, "Value of destination is not an array.");
 			}
 			if (srcType != dstType){
-				throw new IllegalArgumentsException(METHOD_NAME_COPY, "Values of source and destination are of different types.");
+				throw new IllegalArgumentsException(METHOD_NAME_copy, "Values of source and destination are of different types.");
 			}
 			if (src == dst){
 				// We don't allow this as of 0.1.6 (although Java does)
-				throw new IllegalArgumentsException(METHOD_NAME_COPY, "Source and destination arrays must not refer to the same one.");
+				throw new IllegalArgumentsException(METHOD_NAME_copy, "Source and destination arrays must not refer to the same one.");
 			}
 			
 			int oss = offsetSrc.getIntValue();
@@ -338,13 +353,13 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 			
 			// Basic sanity checks against oss, osd and cnt.
 			if (oss < 0) {
-				throw new IllegalArgumentsException(METHOD_NAME_COPY, "Value of source offset cannot be negative");
+				throw new IllegalArgumentsException(METHOD_NAME_copy, "Value of source offset cannot be negative");
 			}
 			if (osd < 0) {
-				throw new IllegalArgumentsException(METHOD_NAME_COPY, "Value of destination offset cannot be negative");
+				throw new IllegalArgumentsException(METHOD_NAME_copy, "Value of destination offset cannot be negative");
 			}
 			if (cnt < 0) {
-				throw new IllegalArgumentsException(METHOD_NAME_COPY, "Value of count cannot be negative");
+				throw new IllegalArgumentsException(METHOD_NAME_copy, "Value of count cannot be negative");
 			}
 			int cnt1 = cnt, cnt2 = cnt;
 			int srcToCopy = oss + cnt1;
@@ -400,7 +415,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 				"System.IllegalAssignmentException: if the filling value is not incompatible with array's element type."
 				}
 	)
-	private static HostedExecutable METHOD_fill = new HostedExecutable(FQNAME, METHOD_NAME_FILL) {
+	private static HostedExecutable METHOD_fill = new HostedExecutable(FQNAME, METHOD_NAME_fill) {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
@@ -451,7 +466,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 				 },
 		exceptions = { }
 	)
-	private static HostedExecutable METHOD_sort = new HostedExecutable(FQNAME, METHOD_NAME_SORT) {
+	private static HostedExecutable METHOD_sort = new HostedExecutable(FQNAME, METHOD_NAME_sort) {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
@@ -462,6 +477,90 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 			src.sort(runtime, desc);
 			
 			return Result.Void;
+		}
+	};
+	
+	// getElementType()
+	@JulianDoc(
+		name = "getElementType",
+		summary =   "/*"
+				+ "\n * Get the element type for this array."
+				+ "\n */",
+		params = { },
+		returns = "A [System.Type] object representing the element type of the array."
+	)
+	private static HostedExecutable METHOD_getElementType = new HostedExecutable(FQNAME, METHOD_NAME_getElementType) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// this value
+			ObjectValue thisVal = ArgumentUtil.<ObjectValue>getThisValue(args);
+			
+			// => this array's type
+			JType typ = thisVal.getType();
+			if (!(typ instanceof JArrayType)) {
+				if (typ == INSTANCE) {
+					// Special: return null if it's the Array's base type.
+					return new Result(RefValue.NULL);
+				} else {
+					throw new JSEError("Cannot get element type from " + typ.getName());
+				}
+			}
+			
+			JArrayType arrTyp = (JArrayType)thisVal.getType();
+			
+			// => the element type
+			JType eleTyp = arrTyp.getElementType();
+			
+			// => the type value for the return type
+			TypeValue tv = runtime.getTypeTable().getValue(eleTyp.getName());
+			
+			// Wrap in System.Type
+			ObjectValue ov = tv.getScriptTypeObject(runtime);
+			
+			// Convert the result to Julian type
+			return new Result(TempValueFactory.createTempRefValue(ov));
+		}
+	};
+	
+	// createArray()
+	@JulianDoc(
+		name = "createArray",
+		summary =   "/*"
+				+ "\n * Create a new array of the specifed element type and length. This is equivalent to ```new T[]```."
+				+ "\n */",
+		params = {"The element type (T).", "The array's length (N)"},
+		paramTypes = {"System.Type", "int"},
+		returns = "An N-sized array object of type T[].",
+		isStatic = true,
+		exceptions = {"System.ArgumentException: if the argument is not valid."}
+	)
+	private static HostedExecutable METHOD_createArray = new HostedExecutable(FQNAME, METHOD_NAME_createArray) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			// Extract the arguments
+			ObjectValue typeVal = ArgumentUtil.getArgumentValue(0, args);
+			if (typeVal == null 
+			    || typeVal.isNull()) {
+        		throw new JArgumentException("elementType");
+			}
+			
+			HostedValue hv = (HostedValue)typeVal;
+			ScriptType st = (ScriptType)hv.getHostedObject();
+			JType etyp = st.getType();
+			
+			int val;
+			IntValue lengthVal = ArgumentUtil.<IntValue>getArgumentValue(1, args);
+			if (lengthVal == null 
+			    || (val = lengthVal.getIntValue()) < 0) {
+        		throw new JArgumentException("length");
+			}
+
+			// Create an array object
+			ITypeTable tt = runtime.getTypeTable();
+			ArrayValue av = ArrayValueFactory.createArrayValue(runtime.getHeap(), tt, etyp, val);
+			
+			// Convert the result to Julian type
+			return new Result(TempValueFactory.createTempRefValue(av));
 		}
 	};
 	
@@ -590,7 +689,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 	
 	//--------------- IDeferredBuildable ---------------//
 	
-	private ICompoundTypeBuilder builder;
+	private BuiltinClassTypeBuilder builder;
 	
 	@Override
 	public boolean deferBuild(){
@@ -600,10 +699,40 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 	@Override
 	public void completeBuild(Context context) {
 		if (builder != null) {
+			// System.Type
+			JClassType systemType = (JClassType)context.getTypeResolver().resolveType(
+				ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME));
+			
 			JInterfaceType jit = (JInterfaceType)context.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_IIndexable));
 			builder.addInterface(jit);
+			
 			jit = (JInterfaceType)context.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_IIterable));
 			builder.addInterface(jit);
+			
+			//createArray
+			builder.addBuiltinStaticMethod(
+				METHOD_NAME_createArray, 
+				new JParameter[]{
+					new JParameter("elementType", systemType),
+					new JParameter("length", IntType.getInstance()),
+				}, 
+				INSTANCE,
+				METHOD_createArray);
+			
+			//getElementType
+			builder.addInstanceMember(
+				new JClassMethodMember(
+					builder.getStub(),
+					METHOD_NAME_getElementType, Accessibility.PUBLIC, false, false,
+					new JMethodType(
+						METHOD_NAME_getElementType,
+						new JParameter[]{
+							new JParameter("this", JArrayBaseType.INSTANCE)
+						}, 
+						systemType, 
+						METHOD_getElementType,
+						JArrayBaseType.INSTANCE),
+				    null));
 			
 			/*
 			 * System.Util.IIndexable:
@@ -681,7 +810,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 
 	@Override
 	public void setBuilder(ICompoundTypeBuilder builder) {
-		this.builder = builder;
+		this.builder = (BuiltinClassTypeBuilder)builder;
 	}
 
 	@Override

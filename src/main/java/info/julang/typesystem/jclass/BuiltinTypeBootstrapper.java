@@ -24,6 +24,11 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
@@ -34,6 +39,7 @@ import info.julang.typesystem.basic.ByteType;
 import info.julang.typesystem.basic.CharType;
 import info.julang.typesystem.basic.FloatType;
 import info.julang.typesystem.basic.IntType;
+import info.julang.typesystem.jclass.builtin.BuiltinClassTypeBuilder;
 import info.julang.typesystem.jclass.builtin.JArrayBaseType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.jclass.builtin.JAttributeBaseType;
@@ -42,11 +48,6 @@ import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 import info.julang.typesystem.jclass.builtin.JStringType;
 import info.julang.typesystem.jclass.builtin.JTypeStaticDataType;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A bootstrapper used to load a set of most fundamental built-in object types.
@@ -80,8 +81,15 @@ public final class BuiltinTypeBootstrapper {
 		};
 		
 		for (JType t : typs) {
-			typeTable.addType(t.getName(), t, true);
+			typeTable.addType(t.getName(), t);
 		}
+		
+		List<String> names = new ArrayList<String>();
+		for (int i = 0; i < typs.length; i++){
+			names.add(typs[i].getName());
+		}
+		
+		typeTable.finalizeTypes(names);
 	}
 	
 	/**
@@ -104,6 +112,20 @@ public final class BuiltinTypeBootstrapper {
 		return allTypes;
 	}
 	
+	/**
+	 * Clear all cached built-in types. Calling {@link #bootstrapClassTypes()} will cause rebuild.
+	 */
+	public static void clearClassTypes() {
+		List<BuiltinTypeBuilder> bootstrapperList = new ArrayList<BuiltinTypeBuilder>();
+		createBootstrappers(bootstrapperList);
+		for (BuiltinTypeBuilder b : bootstrapperList) {
+			b.builder.reset();
+		}
+		allTypes = null;
+		arrayType = null;
+		done = false;
+	}
+	
 	private static void bootstrap0(){
 		// Get all the bootstrappers
 		List<BuiltinTypeBuilder> bootstrapperList = new ArrayList<BuiltinTypeBuilder>();
@@ -114,17 +136,16 @@ public final class BuiltinTypeBootstrapper {
 		
 		// Create prototypes and put them into the suite collection
 		TypeBootstrapper[] bootstrappers = new TypeBootstrapper[total];
-		JClassTypeBuilder[] builders = new JClassTypeBuilder[total];
+		BuiltinClassTypeBuilder[] builders = new BuiltinClassTypeBuilder[total];
 		int i = 0;
 		Map<BuiltinTypes, TypeSuite> suiteMap = new HashMap<BuiltinTypes, TypeSuite>();
 		for(BuiltinTypeBuilder entry : bootstrapperList){
 			BuiltinTypes typeName = entry.type;
 			TypeBootstrapper bs = entry.builder;
 			TypeSuite suite = new TypeSuite(
-				new JClassTypeBuilder(
+				new BuiltinClassTypeBuilder(
 					bs.getTypeName(), 
-					bs.providePrototype(), 
-					true)); // skip sanity check
+					bs.providePrototype()));
 			suiteMap.put(typeName, suite);
 			bootstrappers[i] = bs;
 			builders[i] = suite.builder;
@@ -154,7 +175,7 @@ public final class BuiltinTypeBootstrapper {
 		
 		// Finally, complete bootstrapping
 		for(i=0; i<total; i++){
-			bootstrappers[i].boostrapItself(builders[i]);
+			bootstrappers[i].bootstrapItself(builders[i]);
 			allTypes.put(bootstrappers[i].getTypeName(), bootstrappers[i].providePrototype());
 		}
 	}
@@ -169,12 +190,12 @@ public final class BuiltinTypeBootstrapper {
 	private static JClassType arrayType; 
 	
 	private static int createBootstrappers(List<BuiltinTypeBuilder> map){
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.OBJECT, new JObjectType.BoostrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.STRING, new JStringType.BoostrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.ARRAY, new JArrayBaseType.BoostrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.TYPE, new JTypeStaticDataType.BoostrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.ENUM, new JEnumBaseType.BoostrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.ATTRIBUTE, new JAttributeBaseType.BoostrapingBuilder()));
+		map.add(new BuiltinTypeBuilder(BuiltinTypes.OBJECT, new JObjectType.BootstrapingBuilder()));
+		map.add(new BuiltinTypeBuilder(BuiltinTypes.STRING, new JStringType.BootstrapingBuilder()));
+		map.add(new BuiltinTypeBuilder(BuiltinTypes.ARRAY, new JArrayBaseType.BootstrapingBuilder()));
+		map.add(new BuiltinTypeBuilder(BuiltinTypes.TYPE, new JTypeStaticDataType.BootstrapingBuilder()));
+		map.add(new BuiltinTypeBuilder(BuiltinTypes.ENUM, new JEnumBaseType.BootstrapingBuilder()));
+		map.add(new BuiltinTypeBuilder(BuiltinTypes.ATTRIBUTE, new JAttributeBaseType.BootstrapingBuilder()));
 		map.add(new BuiltinTypeBuilder(BuiltinTypes.FUNCTION, JFunctionType.PrototypeBuilder));	
 		return map.size();
 	}
@@ -215,9 +236,9 @@ public final class BuiltinTypeBootstrapper {
 		
 		JClassType stub;
 		
-		JClassTypeBuilder builder;
+		BuiltinClassTypeBuilder builder;
 		
-		TypeSuite(JClassTypeBuilder builder){
+		TypeSuite(BuiltinClassTypeBuilder builder){
 			this.builder = builder;
 			this.stub = (JClassType)builder.getStub();
 		}

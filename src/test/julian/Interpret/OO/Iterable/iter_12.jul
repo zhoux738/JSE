@@ -1,0 +1,20 @@
+// first, last
+import System.Collection;
+
+string[] src = new string[] { "baic", "byd", "chery", "faw" };
+
+var s3 = src.take(0).first(); // null
+var s4 = src.skip(4).first(); // null
+
+var s5 = src.take(0).last(); // null
+var s6 = src.skip(4).last(); // null
+
+var s1 = src.first();
+var s2 = src.last();
+
+bool b1 = false;
+try {
+	src.take(0).first(true);
+} catch (IllegalStateException ex) {
+	b1 = true;
+}

@@ -1,0 +1,18 @@
+// variable name and enum name overlap - try enum first
+class A {}
+class B {}
+
+string s = "";
+switch( (new B()).getType() ){
+case typeof(A):
+  s = "A";
+  break;
+case typeof(B):
+  s = "B";
+  break;
+case typeof(string):
+  s = "S";
+  break;
+default:
+  s = "Unknown";
+}

@@ -1,0 +1,26 @@
+// toList
+import System.Collection;
+
+string[] arr = new string[] { "baic", "byd", "chery", "faw", "foton", "geely", "saic" };
+
+List l1 = arr.toList();
+
+string[] res1 = new string[arr.length];
+int index = 0;
+for (var e : l1) {
+	res1[index] = e;
+	index++;
+}
+
+List l2 = l1.map(e => (string)e.length).toList();
+string[] res2 = new string[arr.length];
+index = 0;
+for (var e : l2) {
+	res2[index] = e;
+	index++;
+}
+
+
+List l3 = l1.toList();
+l3.remove(l3.size() - 1);
+int length = l1.size(); // no effect on l1

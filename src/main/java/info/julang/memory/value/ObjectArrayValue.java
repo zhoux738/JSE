@@ -222,6 +222,19 @@ public class ObjectArrayValue extends ArrayValue {
 		
 		@Override
 		protected int compareObjectValues(JValue v1, JValue v2) {
+			// First handle the special case. Null value is always considered "smaller".
+			if (v1.isNull()) {
+				if (v2.isNull()) {
+					// both null
+					return 0;
+				} else {
+					return -1;
+				}
+			} if (v2.isNull()) {
+				return 1;
+			}
+			
+			// Both are non-null.
 			JMethodType jmt = findMethod(v1);
 			if (jmt != null) {
 				FuncCallExecutor fcall = new FuncCallExecutor(rt);

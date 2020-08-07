@@ -1,0 +1,33 @@
+// take, skip
+
+string[] arr = new string[] { "baic", "byd", "chery", "faw", "foton", "geely", "saic" };
+
+var iter1 = arr.take(5).skip(3); // 'faw','foton'
+var iter2 = arr.skip(4).take(2); // 'foton','geely'
+var iter3 = arr.take(2).skip(3); // empty
+var iter4 = arr.skip(8).take(1); // empty
+
+int index = 0;
+string[] sa1 = new string[2];
+for (var v : iter1) {
+	sa1[index] = v;
+	//Console.print("'");
+	//Console.print(v);
+	//Console.print("'");
+	//Console.print(',');
+	index++;
+}
+
+index = 0;
+string[] sa2 = new string[2];
+for (var v : iter2) {
+	sa2[index] = v;
+	//Console.print("'");
+	//Console.print(v);
+	//Console.print("'");
+	//Console.print(',');
+	index++;
+}
+
+bool b3 = !iter3.getIterator().hasNext();
+bool b4 = !iter4.getIterator().hasNext();

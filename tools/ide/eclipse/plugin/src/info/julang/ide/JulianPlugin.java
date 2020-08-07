@@ -31,6 +31,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.osgi.framework.BundleContext;
 
+import info.julang.ide.ast.ASTRepository;
 import info.julang.ide.themes.SharedColorManager;
 
 /**
@@ -38,14 +39,18 @@ import info.julang.ide.themes.SharedColorManager;
  * 
  * @author Ming Zhou
  */
-public class Activator extends AbstractUIPlugin {
+public class JulianPlugin extends AbstractUIPlugin {
 
-	private static Activator plugin;
+	private static JulianPlugin plugin;
+	
+	private ASTRepository repo;
 	
 	/**
 	 * The constructor
 	 */
-	public Activator() { }
+	public JulianPlugin() { 
+		repo = new ASTRepository();
+	}
 
 	@Override
 	public void start(BundleContext context) throws Exception {
@@ -78,7 +83,7 @@ public class Activator extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static Activator getDefault() {
+	public static JulianPlugin getDefault() {
 		return plugin;
 	}
 
@@ -91,5 +96,9 @@ public class Activator extends AbstractUIPlugin {
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(Constants.PLUGIN_ID, path);
+	}
+	
+	public static ASTRepository getASTRepository() {
+		return plugin.repo;
 	}
 }

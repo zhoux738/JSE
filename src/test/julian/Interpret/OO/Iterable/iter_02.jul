@@ -1,0 +1,30 @@
+// flatten
+string[] arr = new string[] { 
+	"bmw,mb,vw", // [3]
+	"volvo",  // 1
+	"", 	  // [1]
+	"hyundai" // [1]
+};
+
+var iter = arr
+	.flatten(s => { 
+		string[] sections = s.split(',');
+		if (sections.length != 1) {
+			return sections;
+		} else {
+			if (sections[0] == "volvo") {
+				return sections[0];
+			} else if (sections[0] == "") {
+				return new string[0];
+			} else {
+				return sections;
+			}
+		}
+	});
+
+int index = 0;
+string[] res = new string[5]; // expected: bmw, mb, vw, volvo, hyundai
+for (var v : iter) {
+	res[index] = v;
+	index++;
+}

@@ -70,15 +70,6 @@ public abstract class NativeExecutorBase implements INativeExecutor {
 		return new Pair<HostedValue, RefValue>(hv, rv);
 	}
 	
-	protected RefValue createEnumValue(String fullTypeName, ThreadRuntime rt, String enumName){
-		SystemTypeUtility.ensureTypeBeLoaded(rt, fullTypeName);
-		TypeValue tv = (TypeValue) rt.getTypeTable().getValue(fullTypeName);
-		RefValue rv = (RefValue) tv.getMemberValue(enumName);
-		
-		rv = new RefValue(rt.getStackMemory().currentFrame(), rv.getReferredValue());
-		return rv;
-	}
-	
 	/**
 	 * Create an int value in the current frame.
 	 * 

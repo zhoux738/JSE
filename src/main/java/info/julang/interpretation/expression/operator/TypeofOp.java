@@ -66,7 +66,13 @@ public class TypeofOp extends Operator {
 		return res;
 	}
 
-	private Operand getTypeObject(Context context, JType type) {	
+	private Operand getTypeObject(Context context, JType type) {
+		RefValue rv = getTypeObject(rt, context, type);
+		
+		return new ValueOperand(rv);
+	}
+	
+	public static RefValue getTypeObject(ThreadRuntime rt, Context context, JType type) {	
 		if (type.isObject()){
 			Accessibility.checkTypeVisibility((ICompoundType)type, context.getContainingType(), true);
 		}
@@ -75,6 +81,6 @@ public class TypeofOp extends Operator {
 		ObjectValue ov = tv.getScriptTypeObject(rt);
 		RefValue rv = new RefValue(context.getFrame(), ov);
 		
-		return new ValueOperand(rv);
+		return rv;
 	}
 }

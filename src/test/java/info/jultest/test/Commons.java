@@ -33,6 +33,7 @@ import info.julang.memory.value.StringValue;
 import info.julang.memory.value.UntypedValue;
 import info.julang.modulesystem.ClassInfo;
 import info.julang.modulesystem.ModuleManager;
+import info.julang.typesystem.jclass.BuiltinTypeBootstrapper;
 
 public final class Commons {
 
@@ -161,6 +162,27 @@ public final class Commons {
 	    return ecs;
 	}
 	
+	/**
+	 * Reset all the cached built-in types.
+	 * <p>
+	 * JSE uses static fields to store built-in types. This works fine in production environment due to 
+	 * the isolation enabled by the separate class loader, but is problematic for tests. For example, a few
+	 * class types, e.g. IIterable, are actually loaded into the type table as a side-effect of the
+	 * initial type building process, but the logic encoded in the bootstrapper makes it skip the building 
+	 * if it finds that the target types are already built, by checking those static fields such as 
+	 * JStringType.getInstance().
+	 * <p>
+	 * Calling this method if the test fails when running with others, but is successful when running alone.
+	 * This most commonly applies to tests involving system types loaded during bootstrapping, namely those
+	 * defined in System, System.Reflection and System.Util modules.
+	 * <p>
+	 * An alternative way is to use EFCommon utilities to run the tests using the JSE class loader. It also
+	 * benefits from approximating the real world usage, but is significantly slower.
+	 */
+	public static void resetTypeSystem() {
+		BuiltinTypeBootstrapper.clearClassTypes();
+	}
+	
 	public static VariableTable runInline(String feature, String script) throws EngineInvocationError{
 		VariableTable gvt = new VariableTable(null);
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
@@ -277,8 +299,8 @@ public final class Commons {
 	public static ArrayValue validateArrayValue(VariableTable vt, String varName, int length){
 		JValue value = vt.getVariable(varName);
 		assertNotNull("Variable " + varName + " not defined?", value);
-		assertEquals(RefValue.class, value.getClass());
-		ArrayValue avalue = (ArrayValue)(((RefValue) value).getReferredValue());
+		//assertEquals(RefValue.class, value.getClass());
+		ArrayValue avalue = (ArrayValue)(value.deref());
 		// length
 		assertEquals(length, avalue.getLength());
 		

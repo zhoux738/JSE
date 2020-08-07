@@ -151,7 +151,7 @@ public class JAttributeBaseType extends JClassType {
 //		return new JClassMember[]{fmember1, fmember2};
 //	}
 	
-	public static class BoostrapingBuilder implements TypeBootstrapper {
+	public static class BootstrapingBuilder implements TypeBootstrapper {
 
 		private JAttributeBaseType proto;
 		
@@ -173,10 +173,15 @@ public class JAttributeBaseType extends JClassType {
 		}
 		
 		@Override
-		public void boostrapItself(JClassTypeBuilder builder){
+		public void bootstrapItself(JClassTypeBuilder builder){
 			if(JAttributeBaseType.INSTANCE == null){
 				JAttributeBaseType.INSTANCE = (JAttributeBaseType) builder.build(true);
 			}
+		}
+		
+		@Override
+		public void reset() {
+			JAttributeBaseType.INSTANCE = null;
 		}
 		
 		@Override

@@ -177,7 +177,7 @@ public final class ValueUtilities {
 	 * @param tt type table
 	 * @return
 	 */
-	public static JValue makeDefaultValue(MemoryArea memory, JType type, boolean isConst, ITypeTable tt) {
+	public static JValue makeDefaultValue(MemoryArea memory, JType type, boolean isConst) {
 		JValueBase val = null;
 		if(type != null){
 			switch(type.getKind()){
@@ -203,8 +203,7 @@ public final class ValueUtilities {
 				if (type instanceof JEnumType) {
 					// Special: if it's an Enum, initialize it with the default constant (the first enum entry).
 					JEnumType etype = (JEnumType) type;
-					String fn = etype.getName();
-					TypeValue tVal = tt.getValue(fn);
+					TypeValue tVal = etype.getValue();
 					
 					RefValue rv = null;
 					if (tVal == null) {
@@ -224,7 +223,7 @@ public final class ValueUtilities {
 				throw new JSEError("Trying to create value for a value of " + type.getKind().name());
 			}
 		} else {
-			val = new UntypedValue(memory, makeDefaultValue(memory, JObjectType.getInstance(), isConst, tt));
+			val = new UntypedValue(memory, makeDefaultValue(memory, JObjectType.getInstance(), isConst));
 		}
 
 		if(val != null){

@@ -95,7 +95,10 @@ public class ObjectMemberStorage {
 						JClassMember member = cml.getClassMember();
 						switch(member.getMemberType()){
 						case FIELD:
-							val = ValueUtilities.makeDefaultValue(memory, member.getType(), sealConst && ((JClassFieldMember)member).isConst(), TypeTable.getInstance());	
+							val = ValueUtilities.makeDefaultValue(
+								memory,
+								member.getType(),
+								sealConst && ((JClassFieldMember)member).isConst());	
 							break;
 						case METHOD:
 							if(addMethod){

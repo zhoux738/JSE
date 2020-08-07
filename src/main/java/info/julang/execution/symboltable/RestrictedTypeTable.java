@@ -88,13 +88,13 @@ public class RestrictedTypeTable implements ITypeTable {
 	}
 
 	@Override
-	public void addType(String name, JType type, boolean finalized) {
+	public void addType(String name, JType type) {
 		if (!isAllowedInAttributContext(type)) {
 			throw new IllegalAttributeUsageException(
 				"Trying to load a type which is not allowed in Attribute initializer: " + type.getName());
 		}
 		
-		this.tt.addType(name, type, finalized);
+		this.tt.addType(name, type);
 	}
 
 	@Override

@@ -35,7 +35,7 @@ import info.julang.memory.value.ValueUtilities;
 import info.julang.modulesystem.naming.FQName;
 
 /**
- * A hosting executable runs a subroutine that is directly implemented by hosting language (in contrast to
+ * A hosting executable runs a subroutine that is directly implemented by the hosting language (in contrast to
  * interpreting a Julian script)
  * 
  * @author Ming Zhou

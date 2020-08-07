@@ -26,6 +26,8 @@ package info.julang.memory.value;
 
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.interfaces.IExtValue;
+import info.julang.external.interfaces.IExtValue.IArrayVal;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.indexable.BuiltInIndexable;
@@ -41,7 +43,7 @@ import info.julang.typesystem.jclass.builtin.JArrayType;
  * 
  * @author Ming Zhou
  */
-public abstract class ArrayValue extends ObjectValue implements JIndexableValue {
+public abstract class ArrayValue extends ObjectValue implements JIndexableValue, IArrayVal {
 	
 	private JArrayType type;
 	
@@ -141,11 +143,6 @@ public abstract class ArrayValue extends ObjectValue implements JIndexableValue 
 		}
 		return getInternal(index);
 	}
-	
-	/**
-	 * Length of this array. This is equivalent to calling "array.length" in script.
-	 */
-	public abstract int getLength();
 
 	/**
 	 * Sort this array in place.
@@ -153,4 +150,16 @@ public abstract class ArrayValue extends ObjectValue implements JIndexableValue 
 	 * @param desc true to sort in descending order (large => small)
 	 */
 	public abstract void sort(ThreadRuntime rt, boolean desc);
+	
+	// Shared with IArrayValue
+	/**
+	 * Length of this array. This is equivalent to calling "array.length" in script.
+	 */
+	public abstract int getLength();
+	
+	//--------------------- IArrayValue ---------------------//
+	
+	public IExtValue get(int index) {
+		return getInternal(index);
+	}
 }

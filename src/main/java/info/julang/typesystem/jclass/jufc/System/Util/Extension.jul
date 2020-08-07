@@ -1,0 +1,801 @@
+module System.Util;
+
+/*
+ * Provides extension methods to IIterable interface. Therefore these methods also become 
+ * available for [string](String), [array](Array) and other container classes.
+ *
+ * Throughout this documentation page, the word _iterable_ refers to an object of IIterable 
+ * type. 
+ * 
+ * All of the extension methods do not mutate the existing iterable (the ```this``` argument). 
+ */
+static class IIterableExtension {
+
+	// Check if the argument is null. The extension methods in this class throw nullref exception if
+	// the extendee instance is null, as if it were an instance method called against a null object.
+	private static void _checkNull(var iter) {
+		if (iter == null) {
+			throw new System.NullReferenceException();
+		}
+	}
+
+	// Perform some very basic type checking to early fail invalid invocation.
+	private static void _checkFunction(
+		string exfunName, Function func, int args, Type requiredRetType, Type illegalRetType){
+		if (func == null) {
+			throw new System.NullReferenceException();
+		}
+		
+		bool checkRetType = requiredRetType != null || illegalRetType != null;
+		// Console.println("func.getFunctionKind(): " + func.getFunctionKind().toString());
+		switch (func.getFunctionKind()) {
+		case LAMBDA:
+			checkRetType = false;
+		case GLOBAL:
+		case STATIC_METHOD:
+			System.Reflection.Parameter[] pms = func.getParameters();
+			if (pms.length != args) {
+				throw new System.Lang.RuntimeCheckException(
+					"The function provided to " + exfunName + "() contains " + pms.length 
+					+ " parameters. " + args + " is required.");
+			}
+			break;
+		case INSTANCE_METHOD:
+			System.Reflection.Parameter[] pms = func.getParameters();
+			if (pms.length != args + 1) {
+				throw new System.Lang.RuntimeCheckException(
+					"The function provided to " + exfunName + "() contains " + (pms.length - 1) 
+					+ " parameters. " + args + " is required.");
+			}
+			break;
+		default:
+			break;
+		}
+		
+		if (checkRetType) {
+			Type rtp = func.getReturnType();
+			if (requiredRetType != null && rtp != requiredRetType) {
+				throw new System.Lang.RuntimeCheckException(
+					"The function provided to " + exfunName + "() returns type " + rtp.getFullName() + 
+					". It's required to return type " + requiredRetType.getFullName());
+			} else if (illegalRetType != null && rtp == illegalRetType) {
+				throw new System.Lang.RuntimeCheckException(
+					"The function provided to " + exfunName + "() returns type " + rtp.getFullName() + 
+					", which is not allowed.");
+			}
+		}
+	}
+
+	/*
+	 * Project each item from the iterable to another using the specified function.
+	 *
+	 * [param: this] The iterable to project from.
+	 * [param: mapper] A function (```var fun(var)```) that projects one item to another.
+	 * [return] A new iterable with items projected from this iterable. Therefore the size remains the same.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the required signature. 
+	 * This is a rather weak type enforcement to be performed at the beginning of this method to make it fail early.
+	 * Even if it does pass this check, the function may very well fail later when being actually invoked, throwing 
+	 * various other exceptions indicative of type incompatibility.
+	 */
+	static IIterable map(IIterable this, Function mapper) {
+		_checkNull(this);
+		_checkFunction("map", mapper, 1, null, typeof(void));
+		return new LazyIterable(
+			this, null, mapper, (iter, _, func) => new MappingIterator(iter, func, false));
+	}
+	
+	/*
+	 * Invokes the specified function with each orderly matching pair of elements from the two iterables and 
+	 * yields the result into the resultant iterable, until either of the input iterables reaches the end. 
+	 * So if the two iterables are of different lengths, the returned iterable would have the same number of 
+	 * items as the shorter one.
+	 *
+	 * [param: this] The first iterable to zip from.
+	 * [param: second] The second iterable to zip from.
+	 * [param: zipper] A function (```var fun(var, var)```) that yields a result out of the two paired items.
+	 * [return] A new iterable with items produced by the function from the pairs of the input iterables. 
+	 * Has the same size as the shorter one.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the required signature. 
+	 * This is a rather weak type enforcement to be performed at the beginning of this method to make it fail early.
+	 * Even if it does pass this check, the function may very well fail later when being actually invoked, throwing 
+	 * various other exceptions indicative of type incompatibility.
+	 */
+	static IIterable zip(IIterable this, IIterable second, Function zipper) {
+		_checkNull(this);
+		_checkFunction("zip", zipper, 2, null, typeof(void));
+		return new LazyIterable(
+			this, second, zipper, (iter, arg, func) => new ZippingIterator(iter, arg, func));
+	}
+	
+	/*
+	 * Project each item from the iterable to **zero** or more using the specified function. If the mapper returns
+	 * a value of IIterable, then each constituent item will be added to the resultant iterable. Beware that if 
+	 * the mapper, for a given item, somehow returns an iterable that contains nothing, such as a zero-length array. 
+	 * That item would contribute no new items into the resultant iterable. So it's possible that this method returns 
+	 * an iterable that has an even smaller size than the input.
+	 *
+	 * If the mapper returns a value that is **not** of IIterable, or if it returns a [String], then the whole 
+	 * return value is added as a single item, exactly like what [map()](#map) does.
+	 *
+	 * Despite of implementing IIterable that consists of the characters, the [String] type will not be flattened by 
+	 * this method. This is a special treatment, since it is less likely one would want to create an iterable of 
+	 * [char]s. If such break-down is indeed desired, the user may convert the string to an array of char to explicitly 
+	 * return from the mapper function.
+	 *
+	 * [param: this] The iterable to project from.
+	 * [param: mapper] A function (```var fun(var)```) that projects one item to zero or more.
+	 * [return] A new iterable with items flatly projected from this iterable.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the required signature. 
+	 * This is a rather weak type enforcement to be performed at the beginning of this method to make it fail early.
+	 * Even if it does pass this check, the function may very well fail later when being actually invoked, throwing 
+	 * various other exceptions indicative of type incompatibility.
+	 */
+	static IIterable flatten(IIterable this, Function mapper) {
+		_checkNull(this);
+		_checkFunction("flatten", mapper, 1, null, typeof(void));
+		return new LazyIterable(
+			this, null, mapper, (iter, _, func) => new MappingIterator(iter, func, true));
+	}
+
+	/*
+	 * Invoke the predicate function aginst each item, and return an iterable that is comprised 
+	 * of only those items that are positively asserted by the predicate.
+	 *
+	 * [param: this] The iterable to filter from.
+	 * [param: predicate] A function (```bool fun(var)```) that decides if the item should be 
+	 * kept in the result iterable (true) or be discarded (false).
+	 * [return] A new Iterable with items filtered out by the predicate out of this Iterable.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the required signature. 
+	 * This is a rather weak type enforcement to be performed at the beginning of this method to make it fail early.
+	 * Even if it does pass this check, the function may very well fail later when being actually invoked, throwing 
+	 * various other exceptions indicative of type incompatibility.
+	 */	
+	static IIterable filter(IIterable this, Function predicate) {
+		_checkNull(this);
+		_checkFunction("filter", predicate, 1, typeof(bool), null);
+		return new LazyIterable(
+			this, null, predicate, (iter, _, func) => new FilterIterator(iter, func));
+	}
+
+	/*
+	 * Concatenate more items into this iterable to form a new iterable.
+	 *
+	 * If the argument ```extra``` is an IIterable that is not a [String], this method will add all
+	 * of its items into the new iterable. This means if the extra iterable is empty, then nothing will
+	 * be added.
+	 * 
+	 * If the argument is not an IIterable or is a String, then this method functions exactly like
+	 * [append()](#append).
+	 *
+	 * [param: this] The iterable to filter from.
+	 * [param: extra] The extra object to be concatenate into the new iterable.
+	 * [return] A new iterable which combines all of its original items and the new items.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */		
+	static IIterable concat(IIterable this, var extra) {
+		_checkNull(this);
+		return new LazyIterable(
+			this, extra, null, (iter, arg, _) => new ConcatIterator(iter, arg, true));
+	}
+	
+	/*
+	 * Append one more item into this iterable to form a new iterable.
+	 *
+	 * Unlike [concat()](#concat), this method will always treat the argument ```extra``` as a single object.
+	 * No matter what type or value it has, it will end up being added as the last item of the result iterable.
+	 *
+	 * [param: this] The iterable to be appended to.
+	 * [param: extra] The extra object to be appended to this iterable.
+	 * [return] A new iterable which combines all of its original items and the new item (```extra```).
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */	
+	static IIterable append(IIterable this, var extra) {
+		_checkNull(this);
+		return new LazyIterable(
+			this, extra, null, (iter, arg, _) => new ConcatIterator(iter, arg, false));
+	}
+	
+	/*
+	 * Create a new iterable that consists of the first N items of the given source iterable, 
+	 * where N is specified by ```count```.
+	 *
+	 * If the count is more than the length of the source iterable, the resultant iterable 
+	 * will only contain all of whose that make up of te source. Therefore the new iterable's 
+	 * length can be less than ```count```.
+	 *
+	 * [param: this] The source iterable.
+	 * [param: count] The number of items to take from the source.
+	 * [return] A new iterable which contains the first ```count``` (or less) items of the source iterable.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */
+	static IIterable take(IIterable this, int count) {
+		_checkNull(this);
+		return new LazyIterable(
+			this, count, null, (iter, arg, _) => new TruncateIterator(iter, arg, false));
+	}
+	
+	/*
+	 * Create a new iterable that consists of all the items of the given source iterable except 
+	 * the first N, where N is specified by ```count```.
+	 *
+	 * If the count is more than or equal to the length of the source iterable, the resultant  
+	 * iterable will contain nothing.
+	 *
+	 * [param: this] The source iterable.
+	 * [param: count] The number of items to skip from the source.
+	 * [return] A new iterable which contains all but the first ```count``` (or less) items of 
+	 * the source iterable.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */
+	static IIterable skip(IIterable this, int count) {
+		_checkNull(this);
+		return new LazyIterable(
+			this, count, null, (iter, arg, _) => new TruncateIterator(iter, arg, true));
+	}
+	
+	/*
+	 * Performs a series of "folding" operation over the entire item set to produce a single value
+	 * at the termination.
+	 *
+	 * This method applies the reduction function (```reducer```) against each item with the 
+	 * result of the previous invocation. The first call uses the seed value (```seed```) as the 
+	 * previous result.
+	 *
+	 * An example of using this method to calculate the sum of all elements in an int array:
+	 * [code]
+	 *   int[] array = new int[]{ ... };
+	 *   int result = array.reduce(0, (a, b) => a + b);
+	 * [code:end]
+	 *
+	 * [param: this] The source iterable.
+	 * [param: seed] Used as the first argument when the reducer is called for the first time.
+	 * [param: reducer] Used as the first argument when the reducer is called for the first time.
+	 * [return] A function (```T fun(T, item)```) that produces a value of arbitrary but 
+	 * consistent type T.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the required signature. 
+	 * This is a rather weak type enforcement to be performed at the beginning of this method to make it fail early.
+	 * Even if it does pass this check, the function may very well fail later when being actually invoked, throwing 
+	 * various other exceptions indicative of type incompatibility.
+	 */
+	static var reduce(IIterable this, var seed, Function reducer) {
+		_checkNull(this);
+		_checkFunction("reduce", reducer, 2, null, typeof(void));
+		var result = seed;
+		for (var ele : this) {
+			result = reducer(result, ele);
+		}
+		
+		return result;
+	}
+	
+	/*
+	 * Get the total number of items in the iterable.
+	 *
+	 * [param: this] The iterable to count.
+	 * [return] The total number of items.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */
+	static int count(IIterable this){
+		if (this != null) {
+			if (this is Array) {
+				return this.length;
+			} else if (this is System.Collection.Container) {
+				return this.size();
+			}
+		}
+		
+		return reduce(this, 0, (prev, _) => prev + 1);
+	}
+	
+	/*
+	 * Check if all of the items in the iterable can be asserted positively by the specified predicate.
+	 * Returns false if at least one of them failed to pass the predicate.
+	 * 
+	 * [param: this] The iterable to check.
+	 * [param: predicate] A function (```bool fun(var)```) that asserts each item. The method returns as soon
+	 * as this predicate returns false.
+	 * [return] true if the predicate yields true for all of the items from the iterable; false if the predicate
+	 * retruns false for at least one item thereof.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the required signature. 
+	 * This is a rather weak type enforcement to be performed at the beginning of this method to make it fail early.
+	 * Even if it does pass this check, the function may very well fail later when being actually invoked, throwing 
+	 * various other exceptions indicative of type incompatibility.
+	 */	
+	static bool all(IIterable this, Function predicate) {
+		_checkNull(this);
+		_checkFunction("all", predicate, 1, typeof(bool), null);
+		for (var ele : this) {
+			if (!predicate(ele)){
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	/*
+	 * Check if at least one of the items in the iterable can be asserted positively by the specified predicate.
+	 * Returns false if all of them failed to pass the predicate.
+	 * 
+	 * [param: this] The iterable to check.
+	 * [param: predicate] A function (```bool fun(var)```) that asserts each item. The method returns as soon
+	 * as this predicate returns true.
+	 * [return] true if the predicate yields true for at least one of the items from the iterable; false if the predicate
+	 * retruns false for all of the constituent items.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the required signature. 
+	 * This is a rather weak type enforcement to be performed at the beginning of this method to make it fail early.
+	 * Even if it does pass this check, the function may very well fail later when being actually invoked, throwing 
+	 * various other exceptions indicative of type incompatibility.
+	 */	
+	static bool any(IIterable this, Function predicate) {
+		_checkNull(this);
+		_checkFunction("any", predicate, 1, typeof(bool), null);
+		for (var ele : this) {
+			if (predicate(ele)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/*
+	 * Returns the first item of the given iterable. Depending on ```throwOnEmpty```, either returns null 
+	 * or throw an exception if the the iterable is empty.
+	 * 
+	 * [param: this] The iterable to return the first item from.
+	 * [param: throwOnEmpty] If true, throw a [System.IllegalStateException] when the iterable is empty; 
+	 * if false, returns null instead.
+	 * [return] The first item of the given iterable if present, or null if ```throwOnEmpty``` is false.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.IllegalStateException] If the iterable is empty, and ```throwOnEmpty``` is true.
+	 */	
+	static var first(IIterable this, bool throwOnEmpty){
+		_checkNull(this);
+		for (var ele : this) {
+			return ele;
+		}
+		
+		if (throwOnEmpty) {
+			throw new System.IllegalStateException("Reached the end of iterable. Cannot demand more.");
+		} else {
+			return null;
+		}
+	}
+
+	/*
+	 * Returns the first item of the given iterable, or null if it is empty.
+	 * 
+	 * [param: this] The iterable to return the first item from.
+	 * [return] The first item of the given iterable if present, otherwise null.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */
+	static var first(IIterable this){
+		return first(this, false);
+	}
+	
+	/*
+	 * Returns the last item of the given iterable. Depending on ```throwOnEmpty```, either returns null 
+	 * or throw an exception if the the iterable is empty.
+	 * 
+	 * [param: this] The iterable to return the last item from.
+	 * [param: throwOnEmpty] If true, throw a [System.IllegalStateException] when the iterable is empty; 
+	 * if false, returns null instead.
+	 * [return] The last item of the given iterable if present, or null if ```throwOnEmpty``` is false.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * [throws: System.IllegalStateException] If the iterable is empty, and ```throwOnEmpty``` is true.
+	 */
+	static var last(IIterable this, bool throwOnEmpty){
+		_checkNull(this);
+		if (this is IIndexable){
+			return this[this.size() - 1];
+		}
+		
+		var last = null;
+		bool empty = true;
+		for (var ele : this) {
+			if(empty){
+				empty = false;
+			}
+			
+			last = ele;
+		}
+		
+		if (empty) {
+			if (throwOnEmpty) {
+				throw new System.IllegalStateException("Reached the end of iterable. Cannot demand more.");
+			} else {
+				return null;
+			}
+		} else {
+			return last;
+		}
+	}
+
+	/*
+	 * Returns the last item of the given iterable, or null if it is empty.
+	 * 
+	 * [param: this] The iterable to return the last item from.
+	 * [return] The last item of the given iterable if present, otherwise null.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */
+	static var last(IIterable this){
+		return last(this, false);
+	}
+	
+	/*
+	 * Convert the given iterable into an [System.Collection.List].
+	 * 
+	 * [param: this] The source iterable.
+	 * [return] A List that contains all of the items from the source.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */
+	static System.Collection.List toList(IIterable this){
+		_checkNull(this);
+		System.Collection.List list = new System.Collection.List();
+		for (var ele : this) {
+			list.add(ele);
+		}
+		
+		return list;
+	}
+	
+	/*
+	 * Convert the given iterable into an [Array].
+	 *
+	 * If the given iterable is already an array, this method creates a new array of the same type and copies 
+	 * each item over. Otherwise, usually an untyped array (```var[]```) is created to hold the copied items. 
+	 * For certain types such as [System.Collection.Map] a more precise array type may be used, but the caller 
+	 * must NOT count on this behavior.   
+	 * 
+	 * [param: this] The source iterable.
+	 * [return] An array of appropriate type that contains all of the items from the source.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */
+	static var toArray(IIterable this){
+		_checkNull(this);
+		var tgt = null;
+		if (this is Array) {
+			// If it's an array, create a new array of the same type and copy the elements over.
+			Type etyp = this.getElementType();
+			int len = this.length;
+			tgt = Array.createArray(etyp, len);
+			Array.copy(this, 0, tgt, 0, len);
+		} else if (this is System.Collection.Map) {
+			// If it's a map, create an array of Entry and copy the entries over.
+			var src = this.getEntries();
+			int len = src.size();
+			tgt = new System.Collection.Entry[len];
+			Array.copy(src, 0, tgt, 0, len);
+		} else {
+			// Otherwise, create an untyped array with the same length and copy the items one by one.
+			int len = this.count();
+			tgt = new var[len];
+			int i = 0;
+			for(var item : this){
+				tgt[i] = item;
+				i++;
+			}
+		}
+		
+		return tgt;
+	}
+	
+	/*
+	 * Convert the given iterable into a [System.Collection.Map].
+	 *
+	 * The caller must provide a function to produce a key from the item, and may provide another
+	 * function that converts the same item into a value. The key-value pair will be stored into
+	 * the resultant map. If the value-producing function is null, a default one will be used which
+	 * simply treats the item itself as the value.
+	 *
+	 * If more than one item produces the same key, only the first one will be added to the map, 
+	 * while the rest gets discarded.  
+	 * 
+	 * [param: this] The source iterable.
+	 * [param: toKey] A required function (```var fun(var)```) that converts an item to an object 
+	 * to be used as the map's key.
+	 * [param: toValue] An optional function (```var fun(var)```) that converts an item to an object 
+	 * to be used as the map's value.
+	 * [return] A map that contains key-value pairs converted from each item by the provided functions.
+	 * [throws: System.NullReferenceException] If the given iterable, or the key-producer function 
+	 * (```toKey```) is null.
+	 * [throws: System.Lang.RuntimeCheckException] If either of the given functions doesn't satisfy the 
+	 * required signature. This is a rather weak type enforcement to be performed at the beginning of 
+	 * this method to make it fail early. Even if a function does pass this check, it may very well 
+	 * fail later when being actually invoked, throwing various other exceptions indicative of type 
+	 * incompatibility.
+	 */
+	static System.Collection.Map toMap(IIterable this, Function toKey, Function toValue){
+		_checkNull(this);
+		_checkNull(toKey);
+		_checkFunction("toMap", toKey, 1, null, typeof(void));
+		if (toValue != null){
+			_checkFunction("toMap", toValue, 1, null, typeof(void));
+		}
+		
+		System.Collection.Map map = new System.Collection.Map();
+		for (var ele : this) {
+			var key = toKey(ele);
+			if (!map.hasKey(key)) {
+				map[key] = (toValue == null ? ele : toValue(ele));
+			}
+		}
+		
+		return map;
+	}
+
+	/*
+	 * Convert the given iterable into a [System.Collection.Map].
+	 *
+	 * The caller must provide a function to produce a key from the item. The item itself will 
+	 * be stored as the value.
+	 *
+	 * If more than one item produces the same key, only the first one will be added to the map, 
+	 * while the rest gets discarded.  
+	 * 
+	 * [param: this] The source iterable.
+	 * [param: toKey] A required function (```var fun(var)```) that converts an item to an object 
+	 * to be used as the map's key.
+	 * [return] A map in which the key is converted from each item by the provided function and the
+	 * value is the item itself.
+	 * [throws: System.NullReferenceException] If the given iterable, or the function (```toKey```) is null.
+	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the 
+	 * required signature. This is a rather weak type enforcement to be performed at the beginning of 
+	 * this method to make it fail early. Even if it does pass this check, the function may very well 
+	 * fail later when being actually invoked, throwing various other exceptions indicative of type 
+	 * incompatibility.
+	 */	
+	static System.Collection.Map toMap(IIterable this, Function toKey){	
+		return toMap(this, toKey, null);
+	}
+}
+
+internal class LazyIterable : IIterable {
+
+	private IIterable inner;
+	private var arg;
+	private Function func;
+	private Function factory;
+	
+	internal LazyIterable(
+		IIterable inner, var arg, Function func, Function factory) {
+		this.inner = inner;
+		this.arg = arg;
+		this.func = func;
+		this.factory = factory;
+	}
+	
+	// Implements IIterable
+	public IIterator getIterator() {
+		return factory(inner, arg, func);
+	}
+}
+
+internal class TruncateIterator : IIterator {
+
+	private IIterator inner;
+	private int count;
+	private bool _skip;
+
+	internal TruncateIterator(IIterable iterable, int count, bool isSkip) {
+		this.inner = iterable.getIterator();
+		this.count = count;
+		this._skip = isSkip;
+	}
+	
+	bool hasNext() {
+		if (_skip){
+			if (count > 0) {
+				// Skip the first (up to) N elements
+				while(count > 0 && inner.hasNext()){
+					inner.next();
+					count--;
+				}
+			
+				if (count > 0){
+					count = 0;
+				}
+			}
+		} else if (count <= 0) {
+			return false;
+		}
+		
+		return inner.hasNext();
+	}
+	
+	var next() {
+		if (!_skip) {
+			if (count <= 0) {
+				throw new IllegalStateException("Reached the end of iterable. Cannot demand more.");
+			} else {
+				var ret = inner.next();
+				count--;
+				return ret;
+			}
+		} else {
+			if (count != 0) {
+				hasNext();
+			}
+			
+			return inner.next();
+		}
+	}
+}
+
+internal class ConcatIterator : IIterator {
+
+	private IIterator inner;
+	private bool flatten;
+	private var extra;
+	private bool _done;
+
+	internal ConcatIterator(IIterable iterable, var extra, bool flatten) {
+		this.inner = iterable.getIterator();
+		this.flatten = flatten;
+		this.extra = extra;
+	}
+	
+	bool hasNext() {
+		if (inner.hasNext()){
+			return true;
+		}
+		
+		if (!_done) {
+			// continue with the appended
+			if (flatten && extra is IIterable && !(extra is string)) {
+				inner = extra.getIterator();
+			} else {
+				inner = (new var[]{ extra }).getIterator();
+			}
+			
+			_done = true;
+			return hasNext();
+		} else {
+			return false;
+		}
+	}
+	
+	var next() {
+		return inner.next();
+	}
+}
+
+internal class FilterIterator : IIterator {
+
+	private IIterator inner;
+	private Function func;
+	private var _nextItem;
+	private bool _end;
+	private bool _calledHasNext;
+
+	internal FilterIterator(IIterable iterable, Function func) {
+		this.inner = iterable.getIterator();
+		this.func = func;
+	}
+	
+	bool hasNext() {
+		while (inner.hasNext()) {
+			var item = inner.next();
+			if (func(item)){
+				_nextItem = item;
+				_calledHasNext = true;
+				return true;
+			}
+		}
+		
+		_end = true;
+		return false;
+	}
+	
+	var next() {
+		if (!_calledHasNext) {
+			hasNext();
+		}
+		
+		if (_end) {
+			throw new IllegalStateException("Reached the end of iterable. Cannot demand more.");
+		}
+		
+		var ret = _nextItem;
+		_calledHasNext = false;
+		return ret;
+	}
+}
+
+internal class MappingIterator : IIterator {
+
+	private IIterator prefetched;
+	private IIterator inner;
+	private Function _func;
+	private bool flatten;
+	private var _nextItem;
+	private bool _calledHasNext;
+	private bool _end;
+
+	internal MappingIterator(IIterable iterable, Function func, bool flatten) {
+		this.inner = iterable.getIterator();
+		this._func = func;
+		this.flatten = flatten;
+	}
+	
+	bool hasNext() {
+		while(true) {
+			// First try to read from the prefetched iterable
+			if (prefetched != null) {
+				if (prefetched.hasNext()) {
+					_nextItem = prefetched.next();
+					_calledHasNext = true;
+					return true;
+				} else {
+					// Reach the end of prefetched iterable
+					prefetched = null;
+				}
+			}
+			
+			// Then try to read from the inner iterable
+			bool innerHasNext = inner.hasNext();
+			if (!innerHasNext) {
+				_end = true;
+				return false;
+			} else {
+				// Prefetch the next item
+				var nextItem = _func(inner.next());
+				
+				if (flatten && nextItem is IIterable && !(nextItem is string)) {
+					prefetched = nextItem.getIterator();
+				} else {
+					// Return this item as is
+					_nextItem = nextItem;
+					_calledHasNext = true;
+					return true;
+				}
+			}
+		}
+	}
+	
+	var next() {
+		if (!_calledHasNext) {
+			hasNext();
+		}
+		
+		if (_end) {
+			throw new IllegalStateException("Reached the end of iterable. Cannot demand more.");
+		}
+		
+		var ret = _nextItem;
+		_calledHasNext = false;
+		return ret;
+	}
+}
+
+internal class ZippingIterator : IIterator {
+
+	private IIterator inner;
+	private IIterator another;
+	private Function _func;
+
+	internal ZippingIterator(IIterable iterable, IIterable counterpart, Function func) {
+		this.inner = iterable.getIterator();
+		this.another = counterpart.getIterator();
+		this._func = func;
+	}
+	
+	bool hasNext() {
+		return inner.hasNext() && another.hasNext();
+	}
+	
+	var next() {
+		var v1 = inner.next();
+		var v2 = another.next();
+		
+		return _func(v1, v2);
+	}
+}

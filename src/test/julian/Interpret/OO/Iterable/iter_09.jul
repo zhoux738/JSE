@@ -1,0 +1,50 @@
+// toMap
+import System.Collection;
+
+class Manuf {
+	string country;
+	string brand;
+	
+	Manuf(string country, string brand) {
+		this.country = country;
+		this.brand = brand;
+	}
+}
+
+Manuf[] arr = new Manuf[] { 
+	new Manuf("us", "gm"),
+	new Manuf("de", "vw"),
+	new Manuf("se", "volvo"),
+	new Manuf("us", "ford"),
+	new Manuf("de", "bmw"),
+	new Manuf("de", "mb") 
+};
+
+Map map = arr.toMap(e => e.country, e => e.brand[0]);
+
+string[] res1 = new string[3];
+int index = 0;
+// "de=v", "se=v", "us=g"
+for (var kvp : map) {
+	res1[index] = kvp.key + "=" + kvp.value;
+	//Console.print("\"");
+	//Console.print(res1[index]);
+	//Console.print("\"");
+	//Console.print(", ");
+	index++;
+}
+
+map = arr.toMap(e => e.country);
+
+//Console.println("");
+string[] res2 = new string[3];
+index = 0;
+// "de=v", "se=v", "us=g"
+for (var kvp : map) {
+	res2[index] = kvp.key + "=" + kvp.value.brand;
+	//Console.print("\"");
+	//Console.print(res2[index]);
+	//Console.print("\"");
+	//Console.print(", ");
+	index++;
+}

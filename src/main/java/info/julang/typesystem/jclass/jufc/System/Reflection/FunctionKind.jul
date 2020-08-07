@@ -1,0 +1,36 @@
+module System.Reflection;
+
+import System;
+
+// If updating this file, pay attention to 
+// info/julang/typesystem/jclass/builtin/JFunctionType.java's METHOD_getFunctionKind
+
+/*
+ * The kind of a function object.
+ *
+ * In Julian, a function can be defined in different ways - as a global function, 
+ * a class member method, a lamba, etc. When holding the function object, calling
+ * ```getFunctionKind()``` will return a value of this type.
+ */
+enum FunctionKind {
+	/* A global function defined outside of any types. */
+	GLOBAL,
+	
+	/* An instance member method. */
+	INSTANCE_METHOD,
+	
+	/* A static member method. */
+	STATIC_METHOD,
+	
+	/* A constructor. */
+	CONSTRUCTOR,
+	
+	/* A lambda, without differentiating the containing function, which itself can be one of these kinds. */
+	LAMBDA,
+	
+	/* A group of instance member methods. */
+	INSTANCE_METHOD_GROUP,
+	
+	/* A group of static member methods. This also applies for extension method group. */
+	STATIC_METHOD_GROUP
+}

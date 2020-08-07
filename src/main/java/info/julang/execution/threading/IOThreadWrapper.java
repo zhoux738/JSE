@@ -59,7 +59,7 @@ public class IOThreadWrapper extends JSEObjectWrapper implements IOThreadHandle 
 		// useIndependentThreadRuntime = true: must use a new thread runtime since we are going to call post() and complete() from JVM's worker thread.
 		super(FullName, rt, ov, true); 
 		
-		this.registerMethod(Method_post,     "post",     false, new JType[]{ JFunctionType.DEFAULT });
+		this.registerMethod(Method_post,     "post",     false, new JType[]{ JFunctionType.getInstance() });
 		this.registerMethod(Method_start,    "start",    false, new JType[]{ });
 		this.registerMethod(Method_complete, "complete", false, new JType[]{ });
         this.registerMethod(Method_abort,    "abort",    false, new JType[]{ });

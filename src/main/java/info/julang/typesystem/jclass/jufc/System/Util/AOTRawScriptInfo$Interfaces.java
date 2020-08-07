@@ -175,6 +175,7 @@ public class AOTRawScriptInfo$Interfaces extends RawScriptInfo {
         public AOTClassDeclInfo_IIterable(RawScriptInfo minfo) {
             super(minfo);
             
+            m_parentNames.add(ParsedTypeName.makeFromFullName("IIterableExtension"));
         }
 
         private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();

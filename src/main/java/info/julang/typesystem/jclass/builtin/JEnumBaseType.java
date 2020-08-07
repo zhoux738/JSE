@@ -179,7 +179,7 @@ public class JEnumBaseType extends JClassType {
 		return true;
 	}
 	
-	public static class BoostrapingBuilder implements TypeBootstrapper {
+	public static class BootstrapingBuilder implements TypeBootstrapper {
 
 		private JEnumBaseType proto;
 		
@@ -228,10 +228,15 @@ public class JEnumBaseType extends JClassType {
 		}
 		
 		@Override
-		public void boostrapItself(JClassTypeBuilder builder){
+		public void bootstrapItself(JClassTypeBuilder builder){
 			if(JEnumBaseType.INSTANCE == null){
 				JEnumBaseType.INSTANCE = (JEnumBaseType) builder.build(true);
 			}
+		}
+		
+		@Override
+		public void reset() {
+			JEnumBaseType.INSTANCE = null;
 		}
 		
 		@Override

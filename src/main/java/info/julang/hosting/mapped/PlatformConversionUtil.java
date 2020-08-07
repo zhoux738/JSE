@@ -234,7 +234,7 @@ public final class PlatformConversionUtil {
 			throw new MappedTypeConversionException("Unable to convert " + name + " to a script type.");
 		}
 		
-		JValue tgt = ValueUtilities.makeDefaultValue(context.getHeap(), src.getType(), false, context.getTypTable());
+		JValue tgt = ValueUtilities.makeDefaultValue(context.getHeap(), src.getType(), false);
 		src.assignTo(tgt);		
 		return tgt;
 	}

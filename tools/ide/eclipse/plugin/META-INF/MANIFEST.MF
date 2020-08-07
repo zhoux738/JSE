@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: info.julang.ide
 Bundle-SymbolicName: info.julang.ide;singleton:=true
-Bundle-Version: 0.1.28
-Bundle-Activator: info.julang.ide.Activator
+Bundle-Version: 0.1.29
+Bundle-Activator: info.julang.ide.JulianPlugin
 Bundle-Vendor: Ming Zhou
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

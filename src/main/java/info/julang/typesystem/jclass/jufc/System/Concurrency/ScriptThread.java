@@ -46,6 +46,7 @@ import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
 import info.julang.memory.value.VoidValue;
 import info.julang.typesystem.jclass.builtin.JFunctionType;
+import info.julang.typesystem.jclass.jufc.SystemTypeUtility;
 
 /**
  * The platform binding of <code><font color="green">System.Concurrency.Thread</font></code>.
@@ -163,7 +164,7 @@ public class ScriptThread {
 		@Override
 		protected JValue apply(ThreadRuntime rt, ScriptThread thread, Argument[] args) throws Exception {	
 			ScriptThreadState state = thread.getState();
-			return createEnumValue(ScriptThreadState.FullTypeName, rt, state.toString());
+			return SystemTypeUtility.createEnumValue(ScriptThreadState.FullTypeName, rt, state.toString());
 		}
 		
 	}

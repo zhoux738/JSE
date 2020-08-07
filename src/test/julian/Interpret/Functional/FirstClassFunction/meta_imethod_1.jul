@@ -1,0 +1,46 @@
+import ModuleSys.ModB;
+import System.Reflection;
+
+class MyClass {
+	int fun1(string s, Person p) {
+		return s.length;
+	}
+}
+
+MyClass mc = new MyClass();
+Function fun1 = mc.fun1;
+
+string[] names = new string[] {
+	"this", "s", "p"
+};
+
+Type[] types = new Type[] {
+	typeof(MyClass),
+	typeof(string),
+	typeof(Person)
+};
+
+bool plist = false;
+
+Parameter[] pms = fun1.getParameters();
+
+int len = pms.length;
+int i = 0;
+for (Parameter p : pms) {
+	if (p.getName() != names[i] || p.getType() != types[i]) {
+		throw new Exception(
+			"expected " + names[i] + "/" + types[i].toString() + 
+			", but saw " + p.getName() + "/" + p.getType().toString());	
+	}
+	
+	i++;
+}
+
+if (len != names.length) {
+	throw new Exception(
+		"expected " + names.length + " params, but saw " + len + ".");	
+}
+
+plist = true;
+
+bool kind = fun1.getFunctionKind() == System.Reflection.FunctionKind.INSTANCE_METHOD;

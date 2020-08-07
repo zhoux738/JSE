@@ -1,0 +1,15 @@
+// first, last
+import System.Collection;
+
+string[] src1 = new string[] { "baic", "byd", "chery", "faw" };
+string[] src2 = new string[] { "PK", "SZ", "AH", "CC" };
+var src3 = src2.take(3);
+var src4 = src2.append("HK");
+
+string merge(string a, string b){
+	return a + '_' + b;
+}
+
+var a1 = src2.zip(src1, merge).toArray(); // equal
+var a2 = src3.zip(src1, merge).toArray(); // less then src1
+var a3 = src4.zip(src1, merge).toArray(); // more than src1

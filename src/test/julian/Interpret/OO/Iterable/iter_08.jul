@@ -1,0 +1,8 @@
+// all, any
+string[] arr = new string[] { "baic", "byd", "chery", "faw", "foton", "geely", "saic" };
+
+int count = 0;
+bool allTrue = arr.all(e => e.length >= 3);
+bool allFalse = arr.all(e => e.length >= 4 && (count++) > 0); // byd (count will be added only once for baic)
+bool anyTrue = arr.any(e => e.length >= 5); // chery
+bool anyFalse = arr.any(e => e.length >= 6); // none

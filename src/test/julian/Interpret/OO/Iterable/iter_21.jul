@@ -1,0 +1,39 @@
+// function check failure
+import System.Collection;
+import System.Util;
+import System.Lang;
+
+string[] src = new string[] { "baic", "byd", "chery", "faw" };
+bool[] flags = new bool[4];
+
+bool res1 = flags.all(b => !b);
+
+try {
+	src.filter(()=>1); // ERROR: no arg
+} catch (RuntimeCheckException ex) {
+	flags[0] = true;	
+}
+
+void fun1(var e) { }
+try {
+	src.map(fun1); // ERROR: returns void
+} catch (RuntimeCheckException ex) {
+	flags[1] = true;	
+}
+
+var fun2(var e) { return e; }
+try {
+	src.filter(fun2); // ERROR: returns non-bool
+} catch (RuntimeCheckException ex) {
+	flags[2] = true;	
+}
+
+try {
+	var another = src;
+	src = null;
+	src.zip(another, fun); // ERROR: src == null
+} catch (NullReferenceException ex) {
+	flags[3] = true;	
+}
+
+bool res2 = flags.all(b => b);

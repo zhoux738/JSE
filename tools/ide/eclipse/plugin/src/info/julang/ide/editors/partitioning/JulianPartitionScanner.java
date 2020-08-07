@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.ide.editors;
+package info.julang.ide.editors.partitioning;
 
 import org.eclipse.jface.text.rules.*;
 
@@ -39,24 +39,26 @@ import org.eclipse.jface.text.rules.*;
 public class JulianPartitionScanner extends RuleBasedPartitionScanner {
 	
 	// IMPLEMENTATION NOTES:
-	// This partitioning approach mirrors that used by JDT. See
+	// This partitioning approach mirrors that previously used by JDT. See
 	// https://github.com/eclipse/eclipse.jdt.ui/blob/master/org.eclipse.jdt.ui/ui/org/eclipse/jdt/internal/ui/text/JavaPartitionScanner.java
 
 	public final static String JULIAN_BLOCK_COMMENT = "__julian_block_comment";
 	public final static String JULIAN_COMMENT = "__julian_comment";
 	public final static String JULIAN_STRING_LITERAL = "__julian_string_literal";
+	public final static String JULIAN_CHAR_LITERAL = "__julian_char_literal";
 	
 	// The following regions are usually small, so there is no need to partition them out.
-	//public final static String JULIAN_CHAR_LITERAL = "__julian_char_literal";
 	//public final static String JULIAN_REGEX_LITERAL = "__julian_regex_literal";
 
 	public JulianPartitionScanner() {
+		// Order is important - these rules are processed in this order and if any rule evaluates 
+		// successfully the rest would be ignored.
 		IPredicateRule[] rules = new IPredicateRule[] {
-			new MultiLineRule("/*", "*/", new Token(JULIAN_BLOCK_COMMENT)),
 			new EndOfLineRule("//", new Token(JULIAN_COMMENT)),
 			new MultiLineRule("\"", "\"", new Token(JULIAN_STRING_LITERAL), '\\'), // Julian's string literal is multi-line
-			//new SingleLineRule("'", "'", new Token(JULIAN_STRING_LITERAL), '\\'),
-			//new MultiLineRule("/", "/", new Token(JULIAN_REGEX_LITERAL), '\\')
+			new SingleLineRule("'", "'", new Token(JULIAN_STRING_LITERAL), '\\'),
+			//new MultiLineRule("/", "/", new Token(JULIAN_REGEX_LITERAL), '\\'),
+			new MultiLineRule("/*", "*/", new Token(JULIAN_BLOCK_COMMENT)),
 		};
 
 		setPredicateRules(rules);

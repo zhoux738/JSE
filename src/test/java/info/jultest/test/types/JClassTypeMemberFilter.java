@@ -50,10 +50,10 @@ public class JClassTypeMemberFilter {
 	}
 	
 	private static ClassMemberCriteria funcCriteria = 
-		ClassMemberCriteria.create(true).setClassScope().setParentType(JFunctionType.DEFAULT);
+		ClassMemberCriteria.create(true).setClassScope().setParentType(JFunctionType.getInstance());
 	
 	private static ClassMemberCriteria fieldCriteria = 
-		ClassMemberCriteria.create(true).setClassScope().setParentType(JFunctionType.DEFAULT).negate();
+		ClassMemberCriteria.create(true).setClassScope().setParentType(JFunctionType.getInstance()).negate();
 	
 	static class ClassMemberCriteria {
 

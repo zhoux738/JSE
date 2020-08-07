@@ -215,7 +215,7 @@ public class FuncCallExecutor {
 				if (!looseTyping){
 					throw new RuntimeCheckException("Wrong number of arguments when calling " + funcName + ".");
 				} else {
-					aval = ValueUtilities.makeDefaultValue(rt.getStackMemory().currentFrame(), param.getType(), false, rt.getTypeTable());
+					aval = ValueUtilities.makeDefaultValue(rt.getStackMemory().currentFrame(), param.getType(), false);
 				}
 			}
 			
@@ -317,7 +317,7 @@ public class FuncCallExecutor {
 				if (retTyp == VoidType.getInstance()){
 					retTyp = JObjectType.getInstance();
 				}
-				val = ValueUtilities.makeDefaultValue(rt.getStackMemory().currentFrame(), retTyp, false, rt.getTypeTable());
+				val = ValueUtilities.makeDefaultValue(rt.getStackMemory().currentFrame(), retTyp, false);
 			}
 			return val;
 		} catch (JulianScriptException jse){

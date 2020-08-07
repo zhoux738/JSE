@@ -2,12 +2,14 @@ package info.jultest.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
 import info.julang.external.EngineFactory;
 import info.julang.external.EngineFactory.EngineParamPair;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.interfaces.IExtEngineRuntime;
 import info.julang.external.interfaces.IExtValue;
-import info.julang.external.interfaces.IExtValue.IHostedVal;
+import info.julang.external.interfaces.IExtValue.IArrayVal;
+import info.julang.external.interfaces.IExtValue.IRefVal;
 import info.julang.external.interfaces.IExtValue.IStringVal;
 import info.julang.external.interfaces.IExtVariableTable;
 import info.julang.external.interfaces.JValueKind;
@@ -154,6 +156,28 @@ public final class EFCommons {
 		assertNotNull(value);
 		IStringVal sv = (IStringVal)value;
 		assertEquals(v, sv.getStringValue());
+	}
+	
+	/**
+	 * Validate that the variable is of [string] type and contains the specified values.
+	 */
+	public static void validateStringArrayValue(IExtVariableTable vt, String varName, String[] vs){
+		IExtValue value = vt.getValue(varName);
+		assertNotNull(value);
+		IArrayVal av = (IArrayVal)value;
+		assertEquals(vs.length, av.getLength());
+		
+		for (int i = 0; i < av.getLength(); i++) {
+			IExtValue v = av.get(i);
+			IStringVal sv = null;
+			if (v.getKind() == JValueKind.REFERENCE) {
+				sv = (IStringVal)((IRefVal)v).getReferred();
+			} else {
+				sv = (IStringVal)value;
+			}
+
+			assertEquals(vs[i], sv.getStringValue());	
+		}
 	}
 
 // There are several ways of doing this.

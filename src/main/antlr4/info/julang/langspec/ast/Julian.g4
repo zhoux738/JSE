@@ -144,7 +144,6 @@ NEW_LINE
 // 3. Keywords
 
 ABSTRACT :     'abstract';
-ANY:           'any';
 AS:            'as';             // RESERVED
 ATTRIBUTE :    'attribute';
 BOOL :         'bool';
@@ -720,7 +719,11 @@ case_section
     : CASE case_condition COLON statement_list?
     ;
 case_condition
-    : IDENTIFIER | CHAR_LITERAL | INTEGER_LITERAL | STRING_LITERAL
+    : IDENTIFIER 
+    | CHAR_LITERAL
+    | INTEGER_LITERAL
+    | STRING_LITERAL
+    | TYPEOF LEFT_PAREN type RIGHT_PAREN
     ;
 default_section 
     : DEFAULT COLON statement_list?

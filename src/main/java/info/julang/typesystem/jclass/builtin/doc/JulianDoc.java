@@ -85,7 +85,7 @@ public @interface JulianDoc {
 	 * <p>
 	 * Each element is a Type name corresponding to the parameter at the same index.
 	 */
-	String[] paramTypes() default {};;
+	String[] paramTypes() default {};
 	
 	/**
 	 * Detailed description about the exceptions to be thrown. 

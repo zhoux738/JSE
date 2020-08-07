@@ -14,7 +14,7 @@ import org.junit.Test;
 //(Uncomment @RunWith for reliability test)
 //@org.junit.runner.RunWith(org.junit.runners.Parameterized.class)
 //@RunWith(Parameterized.class)
-public class InterruptReliabilityTests extends ThreadingTestBase {
+public class InterruptReliabilityTestSuite extends ThreadingTestBase {
 
 	// (Uncomment data() for reliability test)
 //	@org.junit.runners.Parameterized.Parameters

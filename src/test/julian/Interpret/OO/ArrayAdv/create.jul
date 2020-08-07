@@ -1,0 +1,22 @@
+class C {
+
+}
+
+var arr1 = Array.createArray(typeof(C), 5);
+bool c1 = arr1.getType() == typeof(C[]);
+bool c2 = arr1[2] == null;
+
+var arr2 = Array.createArray(typeof(string), 3);
+bool c3 = arr2.getType() == typeof(string[]);
+bool c4 = arr2.length == 3;
+bool c5 = arr2[2] == null;
+
+var arr3 = Array.createArray(typeof(bool), 1);
+bool c6 = arr3.getType() == typeof(bool[]);
+bool c7 = arr3[0] == false;
+
+var arr4 = Array.createArray(typeof(string[]), 3);
+bool c8 = arr4.getType() == typeof(string[][]);
+bool c9 = arr4[0] == null;
+
+
