@@ -1,20 +1,10 @@
 package info.jultest.test.oo;
 
-import static info.jultest.test.Commons.getScriptFile;
-import static info.jultest.test.Commons.makeSimpleEngine;
-import static info.jultest.test.Commons.validateBoolValue;
-import static info.jultest.test.Commons.validateIntValue;
-import static info.jultest.test.Commons.validateStringValue;
-import info.jultest.test.Commons;
-import info.julang.dev.GlobalSetting;
-import info.julang.execution.simple.SimpleScriptEngine;
-import info.julang.execution.symboltable.VariableTable;
+import org.junit.Test;
+
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.errorhandling.KnownJSException;
-import info.julang.memory.value.AttemptToChangeConstException;
-
-import org.junit.Assume;
-import org.junit.Test;
+import info.jultest.test.Commons;
 
 public class ArgumentTests {
 

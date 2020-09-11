@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.typesystem.jclass.jufc.System;
 
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadAbortedException;
@@ -131,6 +132,10 @@ public class JProcess {
 	private static class GetCurrentExecutor extends StaticNativeExecutor<JProcess> {
 
 		private HostedValue hv;
+		
+		GetCurrentExecutor(){
+			super(PACON.Environment.Name, PACON.Environment.Op_read);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
@@ -278,6 +283,10 @@ public class JProcess {
 	
 	private static class WaitExecutor extends IOInstanceNativeExecutor<JProcess> {
 		
+		WaitExecutor() {
+			super(PACON.Process.Name, PACON.Process.Op_wait);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JProcess proc, Argument[] args) throws Exception {
 			int ec = proc.wait(rt);
@@ -287,6 +296,10 @@ public class JProcess {
 	}
 	
 	private static class WaitForExecutor extends IOInstanceNativeExecutor<JProcess> {
+		
+		WaitForExecutor() {
+			super(PACON.Process.Name, PACON.Process.Op_wait);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JProcess proc, Argument[] args) throws Exception {
@@ -299,6 +312,10 @@ public class JProcess {
 	
 	private static class StartExecutor extends IOInstanceNativeExecutor<JProcess> {
 		
+		StartExecutor() {
+			super(PACON.Process.Name, PACON.Process.Op_control);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JProcess proc, Argument[] args) throws Exception {
 			proc.start(rt);
@@ -308,6 +325,10 @@ public class JProcess {
 	}
 	
 	private static class KillExecutor extends IOInstanceNativeExecutor<JProcess> {
+		
+		KillExecutor() {
+			super(PACON.Process.Name, PACON.Process.Op_control);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JProcess proc, Argument[] args) throws Exception {
@@ -319,6 +340,10 @@ public class JProcess {
 	
 	private static class GetExitCodeExecutor extends IOInstanceNativeExecutor<JProcess> {
 		
+		GetExitCodeExecutor() {
+			super(PACON.Process.Name, PACON.Process.Op_control);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JProcess proc, Argument[] args) throws Exception {
 			int ec = proc.exitcode();
@@ -328,6 +353,10 @@ public class JProcess {
 	}
 	
 	private static class GetEnvArgExecutor extends IOInstanceNativeExecutor<JProcess> {
+		
+		GetEnvArgExecutor() {
+			super(PACON.Environment.Name, PACON.Environment.Op_read);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JProcess proc, Argument[] args) throws Exception {

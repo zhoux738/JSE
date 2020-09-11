@@ -30,6 +30,7 @@ import java.util.List;
 
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
@@ -129,6 +130,10 @@ public class ScriptType {
 	//----------------- native executors -----------------//
 	
 	private static class LoadExecutor extends StaticNativeExecutor<ScriptType> {
+		
+		LoadExecutor(){
+			super(PACON.Reflection.Name, PACON.Reflection.Op_load);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {

@@ -24,6 +24,9 @@ SOFTWARE.
 
 package info.julang.external.interfaces;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import info.julang.external.exceptions.EngineInvocationError;
 
 public interface IExtScriptEngine {
@@ -70,4 +73,29 @@ public interface IExtScriptEngine {
 	 * In other words if the engine is running this method will return false.
 	 */
 	boolean abort();
+	
+	/**
+	 * Set a limit for the engine. In runtime if this limit is broken or to be broken 
+	 * a <code><font color="green">System.UnderprivilegeException</font></code> will be thrown, 
+	 * possibly crashing the engine.
+	 * <p>
+	 * By default, no limit is set.
+	 * 
+	 * @param name The name of this limit.
+	 * @param value The value to set.
+	 */
+	void setLimit(String name, int value);
+	
+	/**
+	 * Set standard IO redirection. If set, the engine will redirection input and out to the given streams.
+	 * <p>
+	 * All arguments are optional. If any is set to null, no redirection will happen for that stream, instead 
+	 * the platform's default, namely System.in/out/err, will be used. If no redirection is intended, do not
+	 * bother calling this method at all.
+	 * 
+	 * @param out The output stream. 
+	 * @param err The error stream.
+	 * @param in The input stream.
+	 */
+	void setRedirection(OutputStream out, OutputStream err, InputStream in);
 }

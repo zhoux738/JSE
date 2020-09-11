@@ -36,6 +36,8 @@ attribute Bridged {
  * 
  * This approach allows a convenient and easy-to-use platform inter-operation at the price of performance.
  * As of current version, this is the only way for ordinary users to talk to JVM classes.
+ *
+ * To use this attribute, access policy `System.Interop/map` must be enabled.
  */
 [AttributeType(
 	target=AttributeTarget.CLASS|AttributeTarget.METHOD|AttributeTarget.CONSTRUCTOR, 

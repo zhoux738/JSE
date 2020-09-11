@@ -24,6 +24,9 @@ SOFTWARE.
 
 package info.julang.external;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import javax.script.ScriptException;
 
 import info.julang.external.exceptions.EngineInvocationError;
@@ -51,14 +54,20 @@ import info.julang.external.interop.IntegerBinding;
 import info.julang.external.interop.StringBinding;
 
 /**
- * A Julian script engine.
- * <p/>
+ * The public-facing Julian Script Engine (JSE) API.
+ * <p>
  * This is a user-friendly facade which provides all the basic functionalities of the script engine.
- * The engine is reentrant and provides APIs that are fault-tolerant. In case of script failure, the 
- * error info (stacktrace, etc.) will be printed out to the standard error.
- * <p/>
- * Alternatively, if standard Java scripting interface is preferred, user may choose to use javax.script
- * (JSR-223) API to get an engine instance.
+ * The engine is isolated, reentrant and provides APIs that are fault-tolerant. In case of script 
+ * failure, the error info (stacktrace, etc.) will be printed out to a configurable sink which 
+ * defaults to the platfrom's standard error.
+ * <p>
+ * However, there is a practicality issue with this API. Most Java users would prefer to targeting  
+ * the standard Java scripting interface, a.k.a <code>javax.script</code> (JSR-223) package. Julian 
+ * does also provide fully compliant JSR-223 API, which is in fact a thin wrapper of this class.
+ * <p>
+ * When using JSE from the command line, the entrance is {@link info.julang.CmdLineApplication}, 
+ * which parses cmdline arguments and provides interactive experiences. But ultimately it still uses
+ * this class to execute the script.
  * 
  * @see {@link info.julang.jsr223.JulianScriptingEngine JSR-223 compliant Julian script engine}.
  * @author Ming Zhou
@@ -66,7 +75,12 @@ import info.julang.external.interop.StringBinding;
 public class JulianScriptEngine {
 	
 	protected IExtScriptEngine engine;
+	
 	private EngineInitializationOption option;
+	
+	private InputStream input;
+	private OutputStream output;
+	private OutputStream error;
 	
 	public JulianScriptEngine(boolean throwOnScriptError, boolean isInteractiveMode){
 		this(new EngineInitializationOption(true, throwOnScriptError, isInteractiveMode));
@@ -93,6 +107,68 @@ public class JulianScriptEngine {
 	 */
 	public void reset(){
 		engine.reset();
+	}
+	
+	/**
+	 * Allow access to the named category/operations.
+	 * <p>
+	 * If the operations are not given, allow all operations under this category.
+	 * If the category is the wildcard (*), allow everything. This is also the default setting.
+	 * <p>
+	 * @param category
+	 * @param operations
+	 */
+	public void allow(String category, String... operations){
+		engine.getContext().addPolicy(true, category, operations);
+	}
+	
+	/**
+	 * Deny access to the named category/operations.
+	 * <p>
+	 * If the operations are not given, deny all operations under this category.
+	 * If the category is the wildcard (*), deny everything.
+	 * <p>
+	 * @param category
+	 * @param operations
+	 */
+	public void deny(String category, String... operations){
+		engine.getContext().addPolicy(false, category, operations);
+	}
+	
+	/**
+	 * Set standard input stream. This method can be called multiple times, but the new value 
+	 * will only take effect until the next invocation (e.g. {@link JulianScriptEngine#runFile(String)}).
+	 * <p>
+	 * This is the input source for <code><font color="green">System.Console.readln()</font></code>.
+	 * 
+	 * @param input The standard input stream to use within the scripts. If null, default to the platform's standard input.
+	 */
+	public void setInput(InputStream input) {
+		this.input = input;
+	}
+	
+	/**
+	 * Set standard output stream. This method can be called multiple times, but the new value 
+	 * will only take effect until the next invocation (e.g. {@link JulianScriptEngine#runFile(String)}).
+	 * <p>
+	 * This is the output sink for <code><font color="green">System.Console.println()</font></code>.
+	 * 
+	 * @param input The standard output stream to use within the scripts. If null, default to the platform's standard output.
+	 */
+	public void setOutput(OutputStream output) {
+		this.output = output;
+	}
+	
+	/**
+	 * Set standard error stream. This method can be called multiple times, but the new value 
+	 * will only take effect until the next invocation (e.g. {@link JulianScriptEngine#runFile(String)}).
+	 * <p>
+	 * This is the output sink for unhandled exceptions.
+	 * 
+	 * @param input The standard error stream to use within the scripts. If null, default to the platform's standard error.
+	 */
+	public void setError(OutputStream error) {
+		this.error = error;
 	}
 	
 	//----------------------------- External Bindings -----------------------------//
@@ -284,13 +360,18 @@ public class JulianScriptEngine {
 	
 	private Object runInternal(String script, String[] args, boolean isFileOrSnippet) throws JSEException {
 		try {
+			engine.setRedirection(output, error, input);
+			
 			engine.getContext().setArguments(args);
 			if (isFileOrSnippet) {
 				engine.runFile(script);
 			} else {
 				engine.runSnippet(script);
 			}
-			return convertResult(engine.getResult());
+			
+			IExtResult result = engine.getResult();
+			
+			return convertResult(result);
 		} catch (JSEError error) {
 			// Engine bug
 			throw new JSEException("The engine encountered an unexpected exception.", error);

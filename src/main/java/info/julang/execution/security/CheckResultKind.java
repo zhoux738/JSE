@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Ming Zhou
+Copyright (c) 2017 Ming Zhou
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,36 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.ide.launcher.io;
+package info.julang.execution.security;
 
-/**
- * A facade for providing atomic replacements of all I/O streams registered with the system.
- * 
- * @author Ming Zhou
- */
-public class SystemIO {
-	
-	public static SystemIO INSTANCE = new SystemIO();
-	
-	public static SystemIO getInstance() {
-		return INSTANCE;
-	}
-	
-	private SystemIO() {}
-	
-	public void saveFrom(IOSet ioSet) {
-		// Make sure the default is created.
-		DefaultIOSet defSet = DefaultIOSet.getInstance();
-		
-		try {
-			System.setOut(ioSet.getOut());
-			System.setErr(ioSet.getErr());
-			System.setIn(ioSet.getIn());
-		} catch (Throwable e) {
-			System.setOut(defSet.getOut());
-			System.setErr(defSet.getErr());
-			System.setIn(defSet.getIn());
-		}
-	}
+public enum CheckResultKind {
 
+	/**
+	 * The permission is granted.
+	 */
+	ALLOW,
+	
+	/**
+	 * The permission is denied.
+	 */
+	DENY,
+	
+	/**
+	 * The permission is pending for further processing. This usually means to default to the general 
+	 * setting, which is ALLOW by default, but can be overridden by the engine's public API.
+	 */
+	UNDEFINED
+	
 }

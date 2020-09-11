@@ -28,6 +28,7 @@ import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.Executable;
 import info.julang.execution.Result;
+import info.julang.execution.security.UnderprivilegeException;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.memory.StackArea;
 import info.julang.memory.value.JValue;
@@ -74,6 +75,9 @@ public abstract class HostedExecutable implements Executable {
 		} catch (JSERuntimeException jsrex) {
 			// Throw any JSERuntimeException as is.
 			throw jsrex;
+		} catch (SecurityException ex) {
+			// For security exception, wrap it in System.UnderprivilegeException.
+			throw new UnderprivilegeException(new HostingPlatformException(ex, className, methodName));
 		} catch (Exception ex) {
 			// For other kinds of exceptions wrap it in HostingPlatformException.
 			throw new HostingPlatformException(ex, className, methodName);

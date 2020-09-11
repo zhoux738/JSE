@@ -32,12 +32,12 @@ import info.julang.execution.Argument;
 import info.julang.execution.EngineRuntime;
 import info.julang.execution.Executable;
 import info.julang.execution.Result;
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.exceptions.JSEError;
-import info.julang.interpretation.context.Context;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.StackArea;
@@ -47,7 +47,6 @@ import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.jufc.SystemTypeUtility;
 import info.julang.typesystem.jclass.jufc.System.Concurrency.ScriptThread;
 import info.julang.typesystem.loading.InternalTypeResolver;
-import info.julang.util.Pair;
 
 /**
  * A JThread represents a thread running in script engine. It may or may not be backed by a native thread.
@@ -401,6 +400,11 @@ public class JThread {
 		@Override
 		public JThreadManager getThreadManager() {
 			return engineRt.getThreadManager();
+		}
+
+		@Override
+		public StandardIO getStandardIO() {
+			return engineRt.getStandardIO();
 		}
 
         @Override

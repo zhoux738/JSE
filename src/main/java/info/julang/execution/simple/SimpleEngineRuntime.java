@@ -25,11 +25,13 @@ SOFTWARE.
 package info.julang.execution.simple;
 
 import info.julang.execution.EngineRuntime;
+import info.julang.execution.StandardIO;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.JThreadManager;
+import info.julang.external.EngineFactory;
 import info.julang.external.interfaces.IExtMemoryArea;
 import info.julang.external.interfaces.IExtModuleManager;
 import info.julang.external.interfaces.IExtTypeTable;
@@ -49,14 +51,17 @@ public class SimpleEngineRuntime implements EngineRuntime {
 	private IModuleManager mm;
 	protected IVariableTable gvt;
 	private JThreadManager tm;
+	private StandardIO io;
 	
-	private SimpleEngineRuntime(MemoryArea heap, IVariableTable gvt, ITypeTable tt, IModuleManager mm, InternalTypeResolver tr, JThreadManager tm) {
+	private SimpleEngineRuntime(
+		MemoryArea heap, IVariableTable gvt, ITypeTable tt, IModuleManager mm, InternalTypeResolver tr, JThreadManager tm) {
 		this.heap = heap;
 		this.gvt = gvt;
 		this.tt = tt;
 		this.mm = mm;
 		this.tr = tr;
 		this.tm = tm;
+		this.io = new StandardIO();
 	}
 	
 	/**
@@ -116,6 +121,15 @@ public class SimpleEngineRuntime implements EngineRuntime {
 	@Override
 	public JThreadManager getThreadManager() {
 		return tm;
+	}
+
+	@Override
+	public StandardIO getStandardIO() {
+		return io;
+	}
+	
+	public void setStandardIO(StandardIO io) {
+		this.io = io;
 	}
 
 }

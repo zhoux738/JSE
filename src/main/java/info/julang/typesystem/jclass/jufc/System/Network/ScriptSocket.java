@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.typesystem.jclass.jufc.System.Network;
 
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
 import info.julang.hosting.HostedMethodProviderFactory;
@@ -97,6 +98,10 @@ public class ScriptSocket extends ScriptSocketBase {
     
     private static class BindExecutor extends IOInstanceNativeExecutor<ScriptSocket> {
 
+    	BindExecutor() {
+			super(PACON.Socket.Name, PACON.Socket.Op_connect);
+		}
+    	
         @Override
         protected JValue apply(ThreadRuntime rt, ScriptSocket thisVal, Argument[] args) throws Exception {
             String host = this.getString(args, 0);
@@ -111,6 +116,10 @@ public class ScriptSocket extends ScriptSocketBase {
     
     private static class ConnectExecutor extends IOInstanceNativeExecutor<ScriptSocket> {
 
+    	ConnectExecutor() {
+			super(PACON.Socket.Name, PACON.Socket.Op_connect);
+		}
+    	
         @Override
         protected JValue apply(ThreadRuntime rt, ScriptSocket thisVal, Argument[] args) throws Exception {
             String host = this.getString(args, 0);
@@ -190,7 +199,7 @@ public class ScriptSocket extends ScriptSocketBase {
     }
     
     private static class GetStreamExecutor extends IOInstanceNativeExecutor<ScriptSocket> {
-
+    	
         @Override
         protected JValue apply(ThreadRuntime rt, ScriptSocket thisVal, Argument[] args) throws Exception {
         	BoolValue bv = (BoolValue)this.getValue(args, 0);
@@ -303,7 +312,6 @@ public class ScriptSocket extends ScriptSocketBase {
         } catch (UnknownHostException e) {
             throw new JSENetworkException(e);
         } catch (SocketException e) {
-        	e.printStackTrace();
             throw new JSESocketException(e.getMessage());
         } catch (IOException e) {
             throw new JSEIOException(e.getMessage());

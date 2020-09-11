@@ -19,4 +19,16 @@ public final class AssertHelper {
 		}
 	}
 	
+	/**
+	 * Serially search the input and ascertain that it contains each given string without specific order.
+	 * 
+	 * @param input
+	 * @param strings
+	 */
+	public static void validateStringOccurencesUnordered(String input, String... strings){
+		for(String str : strings){
+			int found = input.indexOf(str, 0);
+			Assert.assertTrue("Cannot find " + str, found >= 0);
+		}
+	}
 }

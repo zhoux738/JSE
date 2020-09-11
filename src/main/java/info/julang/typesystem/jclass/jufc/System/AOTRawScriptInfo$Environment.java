@@ -81,7 +81,7 @@ public class AOTRawScriptInfo$Environment extends RawScriptInfo {
         }
         
         public boolean isFinal() {
-            return false;
+            return true;
         }
         
         public boolean isConst() {

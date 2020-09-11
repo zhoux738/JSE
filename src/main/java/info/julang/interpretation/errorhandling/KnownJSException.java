@@ -50,6 +50,7 @@ public enum KnownJSException {
 	StackOverflow("System.StackOverflowException"),
 	TypeIncompatible("System.TypeIncompatibleException"),
 	UndefinedVariableName("System.UndefinedVariableNameException"),
+	Underprivilege("System.UnderprivilegeException"),
 	UnknownMember("System.UnknownMemberException"),
 	UnknownType("System.UnknownTypeException"),
 	

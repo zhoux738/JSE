@@ -24,11 +24,12 @@ SOFTWARE.
 
 package info.julang.modulesystem;
 
+import java.util.List;
+
+import info.julang.execution.security.EnginePolicyEnforcer;
 import info.julang.execution.threading.JThread;
 import info.julang.external.interfaces.IExtModuleManager;
 import info.julang.hosting.HostedMethodManager;
-
-import java.util.List;
 
 public interface IModuleManager extends IExtModuleManager {
 
@@ -55,6 +56,12 @@ public interface IModuleManager extends IExtModuleManager {
 	 */
 	public HostedMethodManager getHostedMethodManager();
 	
+	/**
+	 * Get the engine policy enforcer.
+	 * 
+	 * @return
+	 */
+	public EnginePolicyEnforcer getEnginePolicyEnforcer();
 
 	/**
 	 * Load a module of specified name.

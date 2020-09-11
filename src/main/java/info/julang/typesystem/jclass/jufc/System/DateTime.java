@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.HostedMethodProviderFactory;
 import info.julang.hosting.SimpleHostedMethodProvider;
@@ -93,6 +94,10 @@ public class DateTime {
 	
 	private static class GetNowExecutor extends StaticNativeExecutor<DateTime> {
 
+		GetNowExecutor(){
+			super(PACON.Environment.Name, PACON.Environment.Op_read);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) {
 			Pair<HostedValue, RefValue> pair = createHostedValue(FullTypeName, rt, true);

@@ -27,6 +27,7 @@ package info.julang.typesystem.jclass.jufc.System.IO;
 import info.julang.execution.Argument;
 import info.julang.execution.Executable;
 import info.julang.execution.Result;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.IOThreadHandle;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.NullIOThreadHandle;
@@ -118,7 +119,9 @@ public class JFileStream {
 	
 	protected static class ReadExecutor extends IOInstanceNativeExecutor<JFileStream> {
 		
-		public ReadExecutor() { }
+		public ReadExecutor() { 
+			super(PACON.IO.Name, PACON.IO.Op_read);
+		}
 
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
@@ -130,7 +133,9 @@ public class JFileStream {
 	
 	protected static class ReadArrayExecutor extends IOInstanceNativeExecutor<JFileStream> {
 		
-		public ReadArrayExecutor() { }
+		public ReadArrayExecutor() { 
+			super(PACON.IO.Name, PACON.IO.Op_read);
+		}
 
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
@@ -162,7 +167,9 @@ public class JFileStream {
 	
 	protected static class WriteExecutor extends IOInstanceNativeExecutor<JFileStream> {
 		
-		public WriteExecutor() { }
+		public WriteExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
 
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
@@ -176,7 +183,9 @@ public class JFileStream {
 	// private hosted void _write(byte[] buffer, int offset, int count);
 	protected static class WriteArrayExecutor extends IOInstanceNativeExecutor<JFileStream> {
 		
-		public WriteArrayExecutor() { }
+		public WriteArrayExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
 
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
@@ -221,7 +230,7 @@ public class JFileStream {
 	protected static class FlushExecutor extends IOInstanceNativeExecutor<JFileStream> {
 		
 		public FlushExecutor() { }
-
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
 			jfs.flush();
@@ -234,6 +243,10 @@ public class JFileStream {
 	
 	// private hosted void _writeAsync(byte[] buffer, int offset, PromiseHandle handle);
 	protected static class WriteArrayAsyncExecutor extends IOInstanceNativeExecutor<JFileStream> {
+	
+		WriteArrayAsyncExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
@@ -256,6 +269,10 @@ public class JFileStream {
 	// private hosted void _readAsync(byte[] buffer, int offset, Function callback, PromiseHandle handle);
 	protected static class ReadArrayAsyncExecutor extends IOInstanceNativeExecutor<JFileStream> {
 		
+		ReadArrayAsyncExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_read);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {
 			ArrayValue array = getArray(args, 0);
@@ -277,6 +294,10 @@ public class JFileStream {
 	
 	// private hosted void _readAllAsync(byte[] buffer, Function callback, PromiseHandle handle);
 	protected static class ReadArrayToEOFAsyncExecutor extends IOInstanceNativeExecutor<JFileStream> {
+		
+		ReadArrayToEOFAsyncExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_read);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFileStream jfs, Argument[] args) throws Exception {

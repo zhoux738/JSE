@@ -276,10 +276,18 @@ public class JulianScriptException extends RuntimeException {
 		bv.assignTo(jv);
 	}
 	
+	/**
+	 * Get the JSE instance's exception message. 
+	 * (In contrast, getMessage() returns a rather generic error message for the Java instance.)
+	 */
 	public String getExceptionMessage(){
 		return getExceptionMessageInternal(exception);
 	}
 	
+	/**
+	 * Get the stack trace in JSE.
+	 * (In contrast, getStackTrace() returns Java stack trace.)
+	 */
 	public String[] getStackTraceAsArray(){
 		return getStackTraceAsArrayInternal(exception);
 	}

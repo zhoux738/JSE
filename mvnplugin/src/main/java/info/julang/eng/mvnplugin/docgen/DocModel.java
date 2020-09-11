@@ -164,6 +164,7 @@ public final class DocModel {
 		static final String THROWS = "throws";
 		static final String INHERITED = "inherited";
 		static final String NO_DOC = "nodoc";
+		static final String ACCESS = "access";
 		
 		public static final String CODE = "code";
 		public static final String CODE_END = "end";
@@ -179,6 +180,7 @@ public final class DocModel {
 			ALL.add(THROWS);
 			ALL.add(INHERITED);
 			ALL.add(NO_DOC);
+			ALL.add(ACCESS);
 		}
 	}
 	
@@ -1072,6 +1074,8 @@ public final class DocModel {
 		public List<TypeDescription> params;
 		/** Exceptions that can be thrown. */
 		public List<TypeDescription> exceptions;
+		/** Platform access policy */
+		public List<String> accesses;
 		
 		public Constructor(String name){
 			this.name = name;
@@ -1103,6 +1107,20 @@ public final class DocModel {
 					for(TypeDescription td : params){ // Inefficient, but OK for a small total
 						if (name.equals(td.name)){
 							td.summary = map.get(key).toString();
+						}
+					}
+					break;
+				case Keys.ACCESS:
+					String accVal = map.get(key).toString();
+					String[] accAll = accVal.split(",");
+					for (String acc : accAll) {
+						String accTrimmed = acc.trim();
+						if (!accTrimmed.isEmpty()) {
+							if (accesses == null) {
+								accesses = new ArrayList<String>();
+							}
+							
+							accesses.add(accTrimmed);
 						}
 					}
 					break;

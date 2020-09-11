@@ -36,6 +36,14 @@ import info.julang.memory.value.JValue;
  */
 public abstract class InstanceNativeExecutor<T> extends NativeExecutorBase {
 	
+	public InstanceNativeExecutor(){
+		super();
+	}
+	
+	public InstanceNativeExecutor(String category, String operation){
+		super(category, operation);
+	}
+	
 	@Override
 	public JValue execute(ThreadRuntime rt, HostedValue hvalue, Argument[] args) throws Exception {
 		@SuppressWarnings("unchecked")

@@ -1,0 +1,23 @@
+import System.Concurrency;
+
+void g(){
+	while(true){
+		Thread.sleep(2);
+	}
+}
+
+bool caught = false;
+
+try {
+	int i = 10;
+	while(i > 0){
+		Thread t = Thread.create(g);
+		t.start();
+		Thread.sleep(1);
+		i--;
+	}
+} catch (UnderprivilegeException ex) {
+	caught = ex.getMessage().contains("(2)");
+}
+
+bool done = true;

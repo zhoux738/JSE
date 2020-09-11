@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import info.julang.execution.EngineRuntime;
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.threading.IThreadLocalObjectFactory;
 import info.julang.execution.threading.JThread;
@@ -245,10 +246,6 @@ public class TypeTable implements ITypeTable {
 	
 	private JValue getStaticMethodValue(JClassType jclass, JClassMethodMember jcmm) {
 		TypeValue tval = getValue(jclass.getName());
-		if (tval == null){//DELETEME
-			TypeValue tv = getValue(jclass.getName(), false);
-			System.out.println(jclass.getName() + (tv == null ? " is not initialized. " : " is not finalized."));
-		}
 		MethodValue[] methods = tval.getMethodMemberValues(jcmm.getName());
 		for (MethodValue method : methods) {
 			if (method.getMethodType() == jcmm.getMethodType()) {
@@ -496,5 +493,11 @@ public class TypeTable implements ITypeTable {
             // No support for local storage
             return null;
         }
+
+		@Override
+		public StandardIO getStandardIO() {
+            // No support for std IO redirection
+			return new StandardIO();
+		}
 	}
 }

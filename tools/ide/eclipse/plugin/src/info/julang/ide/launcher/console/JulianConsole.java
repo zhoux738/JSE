@@ -25,7 +25,7 @@ SOFTWARE.
 package info.julang.ide.launcher.console;
 
 import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.OutputStream;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
@@ -34,14 +34,13 @@ import org.eclipse.ui.console.IOConsoleOutputStream;
 
 import info.julang.ide.PluginImages;
 import info.julang.ide.launcher.JulianRunner;
-import info.julang.ide.launcher.io.IOSet;
 
 /**
  * An effectively singleton console. The JulianRunner class has logic to ensure that users cannot launch again when one is already ongoing.
  * 
  * @author Ming Zhou
  */
-public class JulianConsole extends IOConsole implements IOSet {
+public class JulianConsole extends IOConsole {
 
 	private static final String CONSOLE_NAME = "JSE Console";
 
@@ -61,26 +60,26 @@ public class JulianConsole extends IOConsole implements IOSet {
 		super.init();
 		
 		// stdout
-		out = new PrintStream(this.newOutputStream());
+		out = this.newOutputStream();
 		
 		// stderr
 		IOConsoleOutputStream mos = this.newOutputStream();
 		mos.setColor(new Color(Display.getCurrent(), 255, 0, 0));
-		err = new PrintStream(mos);
+		err = mos;
 		
 		// stdin
 		in = this.getInputStream();
 	}
 
-	private PrintStream out;
-	private PrintStream err;
+	private OutputStream out;
+	private OutputStream err;
 	private InputStream in;
 	
-	public PrintStream getOut() {
+	public OutputStream getOut() {
 		return out;
 	}
 	
-	public PrintStream getErr() {
+	public OutputStream getErr() {
 		return err;
 	}
 	

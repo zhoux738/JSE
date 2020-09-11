@@ -26,6 +26,7 @@ package info.julang.jsr223;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -37,11 +38,13 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import info.julang.execution.security.IEnginePolicy;
 import info.julang.external.EngineInitializationOption;
 import info.julang.external.JulianScriptEngine;
 import info.julang.external.exceptions.JSEException;
 import info.julang.external.interfaces.IExtEngineContext;
 import info.julang.external.interop.IBinding;
+import info.julang.util.Pair;
 
 /**
  * Julian scripting engine implementation as per JSR-223 (https://www.jcp.org/en/jsr/detail?id=223)
@@ -60,6 +63,26 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 
 	/** Use this as the key to set module paths object (of type List/Array) to ScriptContext. */
 	public static final String MODULE_PATHS = "JSE_MODULE_PATHS";
+	
+	/** 
+	 * Use this as the key to set a variable of type List&lt;String&gt; or String[] to 
+	 * ScriptContext that contains the policies to be explicitly allowed. 
+	 * Each element should be in the form of <code>CATEGORY/OPERATION(,OPERATION)*</code>, 
+	 * such as "System.Environment/read", or "System.IO/read,write".
+	 * <p>
+	 * By default, all policies are allowed.
+	 */
+	public static final String ALLOW_POLICIES = "JSE_ALLOW_POLICIES";
+	
+	/** 
+	 * Use this as the key to set a variable of type List&lt;String&gt; or String[] to 
+	 * ScriptContext that contains the policies to be explicitly denied. 
+	 * Each element should be in the form of <code>CATEGORY/OPERATION(,OPERATION)*</code>,
+	 * such as "System.Environment/read", or "System.IO/read,write".
+	 * <p>
+	 * By default, all policies are allowed.
+	 */
+	public static final String DENY_POLICIES = "JSE_DENY_POLICIES";
 	
 	private JulianScriptEngineInternal jse;
 	
@@ -92,7 +115,7 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 	}
 
 	@Override
-	public Object eval(Reader reader, ScriptContext context) throws ScriptException {	
+	public Object eval(Reader reader, ScriptContext context) throws ScriptException {
 		int size = 8192;
 	    int read = 0;
 	    char[] arr = new char[size];
@@ -125,6 +148,43 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 		this.factory = factory;
 	}
 	
+	private List<Pair<String, String[]>> processPolicies(Object obj){
+		List<Pair<String, String[]>> lst = null;
+		if(obj instanceof List){
+			lst = new ArrayList<Pair<String, String[]>>();
+			@SuppressWarnings("rawtypes")
+			List polList = (List)obj;
+			for(Object ele : polList){
+				if(ele instanceof String){
+					String polStr = (String) ele;
+					String[] sections = polStr.split("/");
+					if (sections.length == 2) {
+						if (IEnginePolicy.WILDCARD.equals(sections[0].trim())) {
+							lst.add(new Pair<String, String[]>(IEnginePolicy.WILDCARD, null));
+						} else {
+							lst.add(new Pair<String, String[]>(sections[0], sections[1].split(",")));
+						}
+					} else if (sections.length == 1) {
+						if (IEnginePolicy.WILDCARD.equals(sections[0].trim())) {
+							lst.add(new Pair<String, String[]>(IEnginePolicy.WILDCARD, null));
+						} else {
+							lst.add(new Pair<String, String[]>(sections[0], new String[] { IEnginePolicy.WILDCARD }));
+						}
+					}			
+				}
+			}
+		} else if (obj instanceof String[]){
+			List<String> slist = new ArrayList<String>();
+			for (String s : (String[])obj) {
+				slist.add(s);
+			}
+			
+			lst = processPolicies(slist);
+		}
+
+		return lst.size() > 0 ? lst : null;
+	}
+	
 	private void processContext(ScriptContext context){
 		if(context == null){
 			return;
@@ -146,7 +206,27 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 				String[] arr = (String[]) obj1;
 				for(Object ele : arr){
 					String modPath = (String) ele;
-					jse.addModulePath(modPath);	
+					jse.addModulePath(modPath);
+				}
+			}
+		}
+		
+		// Set policies
+		Object obj2 = context.getAttribute(ALLOW_POLICIES);
+		if (obj2 != null) {
+			List<Pair<String, String[]>> pairs = processPolicies(obj2);
+			if (pairs != null) {
+				for (Pair<String, String[]> pair : pairs) {
+					jse.allow(pair.getFirst(), pair.getSecond());
+				}
+			}
+		}
+		obj2 = context.getAttribute(DENY_POLICIES);
+		if(obj2 != null){
+			List<Pair<String, String[]>> pairs = processPolicies(obj2);
+			if (pairs != null) {
+				for (Pair<String, String[]> pair : pairs) {
+					jse.deny(pair.getFirst(), pair.getSecond());
 				}
 			}
 		}

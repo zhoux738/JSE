@@ -86,14 +86,20 @@ class FileStream : StreamBase, AsyncStream {
 	[Bridged(name="readAllAsync")]	
 	private hosted void _readToEndAsync(byte[] buffer, Function callback, PromiseHandle handle);
 	
-	/* [inherited] */
+	/*
+	 * [inherited] 	 
+	 * [access] System.IO/read
+	 */
 	public Promise readAsync(byte[] buffer, int offset){
 		DeferredPromise dp = Promise.defer();
 		_readAsync(buffer, offset, dp.getHandle());
 		return dp;
 	}
 	
-	/* [inherited] */
+	/*
+	 * [inherited] 	 
+	 * [access] System.IO/read
+	 */
 	public Promise readToEndAsync(byte[] buffer, Function callback){
 		DeferredPromise dp = Promise.defer();
 		_readToEndAsync(buffer, callback, dp.getHandle());
@@ -108,7 +114,10 @@ class FileStream : StreamBase, AsyncStream {
 		return canRead(); 
 	}
 	
-	/* [inherited] */
+	/*
+	 * [inherited] 	 
+	 * [access] System.IO/write
+	 */
 	public Promise writeAsync(byte[] buffer, int offset, int length){
 		DeferredPromise dp = Promise.defer();
 		_writeAsync(buffer, offset, dp.getHandle());

@@ -67,6 +67,7 @@ class ServerSocket : ISocket {
 	/*
 	 * Bind this server socket to a local address.
 	 *
+	 * [access] System.Socket/connect
 	 * [param: localHost] The local host name to bind to before starting listening.
 	 * [param: localPort] The local port to bind to before starting listening.
 	 */
@@ -88,6 +89,7 @@ class ServerSocket : ISocket {
 	 * to process the socket in a synchronous way, although such practices, common to traditional server
 	 * programming, is not recommended in Julian, which prefers an async-first API model.
 	 *
+	 * [access] System.Socket/listen
 	 * [return] The socket created as the result of next connection. 
 	 */
 	[Bridged(name="accept")]

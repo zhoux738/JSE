@@ -24,14 +24,16 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import info.julang.execution.Argument;
 import info.julang.execution.Result;
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.Display;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
-import info.julang.execution.threading.JThreadManager;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.context.Context;
@@ -56,8 +58,6 @@ import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.loading.InternalTypeResolver;
-
-import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * The executable for lambda invocation.
@@ -179,10 +179,10 @@ public class LambdaExecutable extends InterpretedExecutable {
 		InternalTypeResolver typResolver,
 		IModuleManager mm,
 		NamespacePool namespaces, 
-		JThreadManager tm,
+		StandardIO io,
 		JThread jthread){
 		return new LambdaContext(
-			frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, jthread,
+			frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread,
 			display, definingContextType, containingType, exeContextType);
 	}
 	

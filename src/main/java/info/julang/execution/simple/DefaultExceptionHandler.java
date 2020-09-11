@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.execution.simple;
 
 import info.julang.execution.ScriptExceptionHandler;
+import info.julang.execution.StandardIO;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 
 /**
@@ -35,8 +36,10 @@ import info.julang.interpretation.errorhandling.JulianScriptException;
 public class DefaultExceptionHandler implements ScriptExceptionHandler {
 
 	private boolean printToStdErr;
+	private StandardIO io;
 	
-	public DefaultExceptionHandler(boolean printToStdErr){
+	public DefaultExceptionHandler(StandardIO io, boolean printToStdErr){
+		this.io = io;
 		this.printToStdErr = printToStdErr;
 	}
 	
@@ -44,7 +47,7 @@ public class DefaultExceptionHandler implements ScriptExceptionHandler {
 	public void onException(JulianScriptException jse) {
 		if(printToStdErr){
 			String s = jse.getStandardExceptionOutput(0, true);
-			System.err.print(s);
+			io.getError().print(s);
 		}
 	}
 

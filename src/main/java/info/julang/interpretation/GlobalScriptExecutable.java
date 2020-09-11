@@ -133,7 +133,7 @@ public class GlobalScriptExecutable extends InterpretedExecutable {
 			JValue val = result.getReturnedValue(true);
 			if (val != null && val != VoidValue.DEFAULT){
 				try {
-					ConsoleWrapper cw = new ConsoleWrapper(runtime, null);
+					ConsoleWrapper cw = new ConsoleWrapper(runtime);
 					cw.println(val);
 				} catch (Exception e) {
 					// Since a user can cause error in toString() callback, must keep running.

@@ -27,7 +27,6 @@ package info.julang.interpretation;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.interop.JSEObjectWrapper;
 import info.julang.memory.value.JValue;
-import info.julang.memory.value.ObjectValue;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 
@@ -42,10 +41,10 @@ public class ConsoleWrapper extends JSEObjectWrapper {
 	public static final String Method_println_string = "println(Object)";
 	
 	/**
-	 * Create a wrapper over a System.Concurrency.PromiseHandle object.
+	 * Create a wrapper over a System.Console class.
 	 */
-	public ConsoleWrapper(ThreadRuntime rt, ObjectValue ov){
-		super(FullName, rt, ov, false);
+	public ConsoleWrapper(ThreadRuntime rt){
+		super(FullName, rt, null, false);
 		this.registerMethod(Method_println_string, "println", true, new JType[]{ JObjectType.getInstance() });
 	}
 	

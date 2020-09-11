@@ -452,3 +452,47 @@ class IllegalStateException : Exception {
 	 */
 	IllegalStateException(string msg) : super(msg) {} 
 }
+
+/*
+ * The exception due to the script running without required privilege to get access to certain system or 
+ * platform resources. Such access can be denied by either the scripting engine or the underlying platform. 
+ *
+ * When instantiating an engine instance, the user may explicitly set platform access control in the form of
+ * a tuple: <bool: allowOrDeny, string category, string operation>. If started without any setting, the 
+ * engine will have unrestricted access, but still be subject to the regulation by the platform beneath, 
+ * such as JVM's Security Manager.
+ *
+ * For more details on access control, see [here](tutorial: access control).
+ */
+class UnderprivilegeException : Exception {
+
+	private bool _isPlatform;
+	
+	/* 
+	 * Create an instance of UnderprivilegeException with specified category and operation name.
+	 * 
+	 * [param: msg] The message for this exception.
+	 */
+	UnderprivilegeException(string msg) : super(msg) {
+		_isPlatform = false;	
+	} 
+
+	/* 
+	 * Create an instance of UnderprivilegeException with specified platform-born exception.
+	 * 
+	 * [param: ex] The exception thrown by the platform due to access denied to system resources.
+	 */	
+	UnderprivilegeException(HostingPlatformException ex) 
+		: super("Access is denied by the underlying plaform.", ex) {
+		_isPlatform = true;	
+	}
+	
+	/*
+	 * Check whether the exception was caused by the platform or the engine.
+	 *
+	 * [return] True if it's caused by the platform, false the engine.
+	 */
+	bool isCausedByPlatform() {
+		return _isPlatform;
+	}
+}

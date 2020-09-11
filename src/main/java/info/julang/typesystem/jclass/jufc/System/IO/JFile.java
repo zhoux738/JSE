@@ -32,6 +32,7 @@ import java.nio.file.Paths;
 
 import info.julang.execution.Argument;
 import info.julang.execution.ArgumentUtil;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.HostedMethodProviderFactory;
 import info.julang.hosting.SimpleHostedMethodProvider;
@@ -88,6 +89,10 @@ public class JFile extends JItem {
 	
 	private static class GetNameExecutor extends InstanceNativeExecutor<JFile> {
 		
+		GetNameExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_stat);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
 			StringValue sv = TempValueFactory.createTempStringValue(jfile.getName());
@@ -97,6 +102,10 @@ public class JFile extends JItem {
 	}
 	
 	private static class GetPathExecutor extends InstanceNativeExecutor<JFile> {
+
+		GetPathExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_stat);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
@@ -108,6 +117,10 @@ public class JFile extends JItem {
 	
 	private static class GetParentPathExecutor extends InstanceNativeExecutor<JFile> {
 		
+		GetParentPathExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_stat);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
 			String pp = jfile.getParentPath();
@@ -117,6 +130,10 @@ public class JFile extends JItem {
 	}
 	
 	private static class ExistExecutor extends InstanceNativeExecutor<JFile> {
+		
+		ExistExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_stat);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
@@ -128,6 +145,10 @@ public class JFile extends JItem {
 	
 	private static class CreateExecutor extends IOInstanceNativeExecutor<JFile> {
 		
+		CreateExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
 			BoolValue sv = TempValueFactory.createTempBoolValue(jfile.create());
@@ -137,6 +158,10 @@ public class JFile extends JItem {
 	}
 	
 	private static class DeleteExecutor extends InstanceNativeExecutor<JFile> {
+	
+		DeleteExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
@@ -147,6 +172,10 @@ public class JFile extends JItem {
 	}
 	
 	private static class MoveExecutor extends IOInstanceNativeExecutor<JFile> {
+		
+		MoveExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
@@ -160,6 +189,10 @@ public class JFile extends JItem {
 	
 	private static class RenameExecutor extends IOInstanceNativeExecutor<JFile> {
 		
+		RenameExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {
 			StringValue sv = ArgumentUtil.<StringValue>getArgumentValue(0, args);
@@ -170,6 +203,10 @@ public class JFile extends JItem {
 	}
 	
 	private static class ReadAllTextExecutor extends IOInstanceNativeExecutor<JFile> {
+		
+		ReadAllTextExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JFile jfile, Argument[] args) throws Exception {

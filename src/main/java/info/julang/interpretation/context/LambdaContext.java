@@ -24,12 +24,12 @@ SOFTWARE.
 
 package info.julang.interpretation.context;
 
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.Display;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
-import info.julang.execution.threading.JThreadManager;
 import info.julang.interpretation.resolving.LambdaNameResolver;
 import info.julang.memory.MemoryArea;
 import info.julang.modulesystem.IModuleManager;
@@ -59,7 +59,7 @@ public class LambdaContext extends Context {
 		InternalTypeResolver typResolver,
 		IModuleManager mm,
 		NamespacePool nsPool, 
-		JThreadManager tm,
+		StandardIO io,
 		JThread jthread,
 		Display display,
 		ContextType definingContextType,
@@ -74,7 +74,7 @@ public class LambdaContext extends Context {
 			mm, 
 			nsPool,
 			new LambdaNameResolver(varTable, typTable, display, definingContextType, containingType),
-			tm,
+			io,
 			jthread,
 			exeContextType
 		);

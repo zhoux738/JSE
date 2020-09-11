@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.interpretation.context;
 
 import info.julang.execution.InContextTypeResolver;
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
@@ -71,7 +72,7 @@ public abstract class Context {
 	
 	private InContextTypeResolver tr;
 	
-	private JThreadManager tm;
+	private StandardIO io;
 	
 	private JThread jthread;
 
@@ -87,7 +88,7 @@ public abstract class Context {
 		IModuleManager mm,
 		NamespacePool nsPool,
 		INameResolver nameResolver,
-		JThreadManager tm,
+		StandardIO io,
 		JThread jthread,
 		ExecutionContextType exeContextTyp) {
 		this.cntxTyp = cntxTyp;
@@ -99,7 +100,7 @@ public abstract class Context {
 		this.mm = mm;
 		this.nsPool = nsPool;
 		this.nr = nameResolver;
-		this.tm = tm;
+		this.io = io;
 		this.jthread = jthread;
 		this.exeContextTyp = exeContextTyp;
 	}
@@ -172,11 +173,15 @@ public abstract class Context {
 	}
 
 	public JThreadManager getThreadManager() {
-		return tm;
+		return jthread.getThreadRuntime().getThreadManager();
 	}
 
 	public JThread getJThread() {
 		return jthread;
+	}
+	
+	public StandardIO getStandardIO() {
+		return io;
 	}
 	
 	/**
@@ -206,7 +211,7 @@ public abstract class Context {
 				                             rt.getTypeResolver(), 
 				/* ModuleManager mm */       rt.getModuleManager(), 
 				/* NamespacePool nsPool */   rt.getThreadStack().getNamespacePool(),
-				/* JThreadManager tm */      rt.getThreadManager(),
+				/* StandardIO io */          rt.getStandardIO(),
 				/* JThread jthread */        rt.getJThread());
 		}
 		

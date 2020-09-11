@@ -38,12 +38,45 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
-import info.julang.memory.value.TypeValue;
 import info.julang.typesystem.JArgumentException;
-import info.julang.typesystem.jclass.jufc.SystemTypeUtility;
 import info.julang.util.Pair;
 
 public abstract class NativeExecutorBase implements INativeExecutor {
+	
+	IPolicyChecker checker;
+	
+	/**
+	 * Create a base instance without policy checking.
+	 */
+	protected NativeExecutorBase(){
+		this(null);
+	}
+	
+	/**
+	 * Create a base instance with the customized policy checker.
+	 * @param checker
+	 */
+	protected NativeExecutorBase(IPolicyChecker checker){
+		this.checker = checker;
+	}
+	
+	/**
+	 * Create a base instance with the standard policy checking. It queries the policy engine 
+	 * with the given category and operation name, and throws exception if the permission is
+	 * not granted.
+	 * 
+	 * @param category
+	 * @param operation
+	 */
+	protected NativeExecutorBase(String category, String operation){
+		this(new PlatformAccessPolicyChecker(category, operation));
+	}
+	
+	public void enforcePolicy(ThreadRuntime rt) {
+		if (checker != null) {
+			checker.checkPolicy(rt);
+		}
+	}
 	
 	//---------------- JValue generators ----------------//
 	

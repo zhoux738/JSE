@@ -82,4 +82,11 @@ public interface EngineRuntime extends IExtEngineRuntime {
 	 * @return
 	 */
 	JThreadManager getThreadManager();
+	
+	/**
+	 * Get standard input/output streams.
+	 * 
+	 * @return
+	 */
+	StandardIO getStandardIO();
 }

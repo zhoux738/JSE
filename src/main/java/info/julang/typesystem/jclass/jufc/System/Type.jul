@@ -44,6 +44,7 @@ class Type {
 	 * entire dependency closure of the required type. Otherwise the Type object will be immediately returned 
 	 * from engine's type storage. This method is thread-safe.
 	 *
+	 * [access] System.Reflection/load
 	 * [param: typeName] The fully qualified type name, including dimension info, written in pairs of 
 	 * square brackets, at the end. The syntax is completely same to type identifier that appears at the 
 	 * start of a variable definition, so language-alias can be used (```int``` instead of Integer).

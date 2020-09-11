@@ -1,6 +1,7 @@
 package info.jultest.test;
 
 import info.julang.dev.GlobalSetting;
+import info.julang.execution.StandardIO;
 import info.julang.execution.simple.DefaultExceptionHandler;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.value.ObjectValue;
@@ -9,7 +10,7 @@ import info.julang.typesystem.jclass.JClassType;
 public class TestExceptionHandler extends DefaultExceptionHandler {
 
 	public TestExceptionHandler() {
-		super(GlobalSetting.DumpException);
+		super(new StandardIO(), GlobalSetting.DumpException);
 	}
 
 	private String typName;

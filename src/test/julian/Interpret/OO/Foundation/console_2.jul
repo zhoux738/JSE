@@ -13,3 +13,5 @@ class Car {
 Car c = new Car("BYD");
 
 Console.print(c);
+
+bool done = true;

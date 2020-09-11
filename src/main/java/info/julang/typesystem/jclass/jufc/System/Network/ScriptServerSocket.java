@@ -24,7 +24,17 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc.System.Network;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.nio.channels.ServerSocketChannel;
+
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
 import info.julang.hosting.HostedMethodProviderFactory;
@@ -37,15 +47,6 @@ import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.VoidValue;
 import info.julang.typesystem.jclass.jufc.System.IO.IOInstanceNativeExecutor;
 import info.julang.typesystem.jclass.jufc.System.IO.JSEIOException;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.channels.ServerSocketChannel;
 
 /**
  * The native implementation of <font color="green">System.Network.Socket</font>.
@@ -91,6 +92,10 @@ public class ScriptServerSocket extends ScriptSocketBase {
     
     private static class BindExecutor extends IOInstanceNativeExecutor<ScriptServerSocket> {
 
+    	BindExecutor() {
+			super(PACON.Socket.Name, PACON.Socket.Op_connect);
+		}
+		
         @Override
         protected JValue apply(ThreadRuntime rt, ScriptServerSocket thisVal, Argument[] args) throws Exception {
             String host = this.getString(args, 0);
@@ -105,6 +110,10 @@ public class ScriptServerSocket extends ScriptSocketBase {
     
     private static class AcceptExecutor extends IOInstanceNativeExecutor<ScriptServerSocket> {
 
+    	AcceptExecutor() {
+			super(PACON.Socket.Name, PACON.Socket.Op_listen);
+		}
+    	
         @Override
         protected JValue apply(ThreadRuntime rt, ScriptServerSocket thisVal, Argument[] args) throws Exception {
             Socket sock = thisVal.accept();
@@ -131,7 +140,7 @@ public class ScriptServerSocket extends ScriptSocketBase {
     }
     
     private static class CloseExecutor extends IOInstanceNativeExecutor<ScriptServerSocket> {
-
+    	
         @Override
         protected JValue apply(ThreadRuntime rt, ScriptServerSocket thisVal, Argument[] args) throws Exception {     
             thisVal.close();

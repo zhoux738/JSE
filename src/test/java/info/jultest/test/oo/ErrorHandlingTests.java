@@ -1,13 +1,15 @@
 package info.jultest.test.oo;
 
-import info.jultest.test.Commons;
-import info.jultest.test.FakeJThread;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.simple.SimpleEngineRuntime;
 import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.JThread;
-import info.julang.execution.threading.JThreadManager;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.context.FunctionContext;
@@ -20,10 +22,8 @@ import info.julang.modulesystem.ModuleManager;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.loading.InternalTypeResolver;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import info.jultest.test.Commons;
+import info.jultest.test.FakeJThread;
 
 public class ErrorHandlingTests {
 
@@ -73,7 +73,7 @@ public class ErrorHandlingTests {
 			resolver,
 			manager,
 			new NamespacePool(),
-			new JThreadManager(),
+			new StandardIO(),
 			null); //(JThread)
 	}
 	

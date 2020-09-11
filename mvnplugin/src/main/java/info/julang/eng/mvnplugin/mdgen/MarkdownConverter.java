@@ -186,23 +186,27 @@ public class MarkdownConverter implements AutoCloseable {
 					subtitle = "STATIC " + subtitle;
 				}
 			}
-			writer.add(StylizedString.create(subtitle).addColor(Color.decode("0xC8C8C8")).setSize(3));
+			writer.add(StylizedString.create(subtitle).addColor(Color.decode("0xC8C8C8")).setSizeByPercent(40));
 		} else if (typ instanceof PrimitiveType && !typ.name.toLowerCase().equals("any")){
-			writer.add(StylizedString.create("PRIMITIVE").addColor(Color.decode("0xC8C8C8")).setSize(3));
+			writer.add(StylizedString.create("PRIMITIVE").addColor(Color.decode("0xC8C8C8")).setSizeByPercent(40));
 		}
 		writer.nextLine(2, false);
 		
 		// Type name alias (only applicable to some built-in types)
+		String alias = null;
 		if (typ instanceof PrimitiveType) {
 			PrimitiveType pt = (PrimitiveType)typ;
-			String alias = pt.alias;
-			if (alias != null && !"".equals(alias)){
-				//**Language-level Alias** - <font size= "3" color="#dark-purple">**`string`**</font>
-				writer.add(StylizedString.create("Language-level Alias").toBold());
-				writer.write(" - ");
-				writer.add(StylizedString.create(alias, false).toBold().toCode().setSize(3).addColor(CodeSnippet.KeywordColor));
-				writer.nextLine(2, false);
-			}
+			alias = pt.alias;
+		} else if (typ.getFullName().equals("String")) {
+			alias = "string";
+		}
+		
+		if (alias != null && !"".equals(alias)){
+			//**Language-level Alias** - <font size= "3" color="#dark-purple">**`string`**</font>
+			writer.add(StylizedString.create("Language-level Alias").toBold());
+			writer.write(" - ");
+			writer.add(StylizedString.create(alias, false).toBold().toCode().addColor(CodeSnippet.KeywordColor));
+			writer.nextLine(2, false);
 		}
 		
 		// Type summary
@@ -547,6 +551,32 @@ public class MarkdownConverter implements AutoCloseable {
 	// Write sub-entries of a constructor/method: params, return, exceptions and references.
 	private boolean writeSubEntries(DocModel.Constructor ctor) throws IOException{
 		boolean hasExtra = false;
+		
+		//	**Required Policies**
+		//
+		//	- System.Environment/read, System.IO/read
+		if (ctor.accesses != null) {
+			int size = ctor.accesses.size();
+			if (size > 0) {
+				writer.add(StylizedString.create("Required Policies").toBold());
+				writer.nextLine(2, false);
+				
+				StylizedString[] sss = new StylizedString[size * 2 - 1];
+				for (int i = 0; i < size; i++){
+					sss[i] = StylizedString.create(ctor.accesses.get(i)).toCode().addBackgroundColor(Color.decode("#DFDFDF"));
+
+					i++;
+					if (i < size) {
+						sss[i] = StylizedString.create(", ");
+					}
+				}
+				
+				writer.addItem(StylizedString.mergeAll(sss), 0, null);
+				
+				writer.nextLine(false);
+				hasExtra = true;
+			}
+		}
 		
 		//	**Parameters**
 		//

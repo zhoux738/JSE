@@ -24,15 +24,18 @@ SOFTWARE.
 
 package info.julang.interpretation;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.Executable;
 import info.julang.execution.Result;
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
-import info.julang.execution.threading.JThreadManager;
 import info.julang.execution.threading.ThreadFrame;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadStack;
@@ -58,9 +61,6 @@ import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.loading.InternalTypeResolver;
-
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 
 /**
  * The interpreted executable is the core class of the scripting engine. It reads token stream from 
@@ -102,9 +102,9 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	private IModuleManager mm;
 	
 	/**
-	 * The global thread manager 
+	 * The standard IO streams
 	 */
-	private JThreadManager tm;
+	private StandardIO io;
 	
 	/**
 	 * The AST to be interpreted
@@ -193,12 +193,12 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 		// module manager
 		mm = runtime.getModuleManager();
 		
-		// thread manager
-		tm = runtime.getThreadManager();
+		// standard IO
+		io = runtime.getStandardIO();
 
 		// prepare context
 		Context ctxt = prepareContext(
-			frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, runtime.getJThread());
+			frame, heap, varTable, typTable, typResolver, mm, namespaces, io, runtime.getJThread());
 		
 		// save arguments into current context.
 		prepareArguments(args, ctxt);
@@ -256,9 +256,9 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 		InternalTypeResolver typResolver,
 		IModuleManager mm,
 		NamespacePool namespaces,
-		JThreadManager tm,
+		StandardIO io,
 		JThread jthread){
-		return new FunctionContext(frame, heap, varTable, typTable, typResolver,  mm, namespaces, tm, jthread);
+		return new FunctionContext(frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread);
 	}
 	
 	/**

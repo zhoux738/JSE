@@ -78,4 +78,13 @@ public interface IExtEngineContext {
 	 * @param path
 	 */
 	void addModulePath(String path);
+	
+	/**
+	 * Add an engine policy.
+	 * 
+	 * @param allowOrDeny True to allow, false deny
+	 * @param category the name of policy category
+	 * @param operations the operations to allow or deny under this category
+	 */
+	void addPolicy(boolean allowOrDeny, String category, String[] operations);
 }

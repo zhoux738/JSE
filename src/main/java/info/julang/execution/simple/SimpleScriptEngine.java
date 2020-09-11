@@ -24,6 +24,8 @@ SOFTWARE.
 
 package info.julang.execution.simple;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,8 +43,13 @@ import info.julang.execution.IScriptEngine;
 import info.julang.execution.Result;
 import info.julang.execution.ScriptExceptionHandler;
 import info.julang.execution.ScriptProvider;
+import info.julang.execution.StandardIO;
 import info.julang.execution.State;
 import info.julang.execution.StringScriptProvider;
+import info.julang.execution.security.EngineLimit;
+import info.julang.execution.security.EngineLimitPolicy;
+import info.julang.execution.security.EnginePolicyEnforcer;
+import info.julang.execution.security.IEnginePolicy;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadManager;
@@ -62,6 +69,7 @@ import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.ValueUtilities;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.typesystem.jclass.builtin.JStringType;
+import info.julang.util.Pair;
 
 /**
  * The simplest implementation of Julian Scripting Engine. Single-thread model; simple context for information sharing.
@@ -81,7 +89,7 @@ public class SimpleScriptEngine implements IScriptEngine {
 	
 	private SimpleEngineContext context;
 	
-	private EngineRuntime runtime;
+	private SimpleEngineRuntime runtime;
 	
 	private ScriptExceptionHandler handler;
 	
@@ -93,7 +101,13 @@ public class SimpleScriptEngine implements IScriptEngine {
 	
 	private boolean interactiveMode;
 	
+	private boolean useDefExHandler;
+	
 	private JThread mainThread;
+	
+	private boolean policyUpdated;
+	
+	private List<Pair<EngineLimit, Integer>> limits;
 	
 	/**
 	 * [CFOW] Create a new SimpleScriptEngine.
@@ -107,12 +121,10 @@ public class SimpleScriptEngine implements IScriptEngine {
 		this.firstTime = true;
 		this.interactiveMode = option.isInteractiveMode();
 		
-		this.runtime = (EngineRuntime)runtime;
+		this.runtime = (SimpleEngineRuntime)runtime;
 		initializeInteractiveMode(this.runtime);
 		
-		if(option.useExceptionDefaultHandler()){
-			handler = new DefaultExceptionHandler(true);
-		}
+		this.useDefExHandler = option.useExceptionDefaultHandler();
 	}
 	
 	/**
@@ -169,13 +181,34 @@ public class SimpleScriptEngine implements IScriptEngine {
 		
 		runtime.getTypeTable().initialize(runtime);
 		
+		// Set module paths
 		IModuleManager modManager = runtime.getModuleManager();
 		modManager.clearModulePath();
 		for(String path : context.modulePaths){
 			modManager.addModulePath(path);
 		}
 		
-		// execute the script in blocking mode
+		// Configure platform access
+		if (policyUpdated) {
+			modManager.resetPlatformAccess();
+			if (context.policies != null) {
+				for (PolicyConfig pc : context.policies) {
+					modManager.setPlatformAccess(
+						pc.allowOrDeny, pc.category, pc.operations);
+				}
+			}
+			policyUpdated = false;
+		}
+		
+		// Set limits
+		if (limits != null && limits.size() > 0) {
+			EnginePolicyEnforcer enforcer = modManager.getEnginePolicyEnforcer();
+			for (Pair<EngineLimit, Integer> lm : limits) {
+				enforcer.addPolicy(new EngineLimitPolicy(lm.getFirst(), lm.getSecond()));
+			}
+		}
+		
+		// Execute the script in blocking mode
 		try {
 			state = State.RUNNING;
 			
@@ -236,6 +269,9 @@ public class SimpleScriptEngine implements IScriptEngine {
 			state = State.FAULTED;
 			context.exception = jse;
 			result = new Result(jse);
+			if (handler == null && useDefExHandler){
+				handler = new DefaultExceptionHandler(this.runtime.getStandardIO(), true);
+			}
 			if(handler != null){
 				handler.onException(jse); // the handler can decide if it needs to throw.
 			}
@@ -295,8 +331,8 @@ public class SimpleScriptEngine implements IScriptEngine {
 	}
 
 	@Override
-	public void setExceptionHandler(ScriptExceptionHandler hanlder) {
-		this.handler = hanlder;
+	public void setExceptionHandler(ScriptExceptionHandler handler) {
+		this.handler = handler;
 	}
 	
 	/**
@@ -314,7 +350,31 @@ public class SimpleScriptEngine implements IScriptEngine {
 		state = State.NOT_STARTED;
 	}
 	
-	public EngineRuntime getRuntime() {
+	/**
+	 * [CFOW]
+	 */
+	@Override
+	public void setLimit(String name, int value) {
+		EngineLimit lim = EngineLimit.fromString(name);
+		if (lim != null) {
+			if (limits == null) {
+				limits = new ArrayList<>();
+			}
+			
+			limits.add(new Pair<>(lim, value));
+		}
+	}
+	
+	/**
+	 * [CFOW]
+	 */
+	@Override
+	public void setRedirection(OutputStream os, OutputStream err, InputStream is) {
+		SimpleEngineRuntime ert = getRuntime();
+		ert.setStandardIO(new StandardIO(is, os, err));
+	}
+	
+	public SimpleEngineRuntime getRuntime() {
 		if(runtime == null){
 			runtime = SimpleEngineRuntime.createDefault();
 			initializeInteractiveMode(runtime);
@@ -371,6 +431,8 @@ public class SimpleScriptEngine implements IScriptEngine {
 		private String[] arguments;
 		
 		private JulianScriptException exception;
+		
+		private List<PolicyConfig> policies;
 		
 		@Override
 		public IBinding getBinding(String name) {
@@ -448,6 +510,29 @@ public class SimpleScriptEngine implements IScriptEngine {
 			exception = null;
 		}
 		
+		@Override
+		public void addPolicy(boolean allowOrDeny, String category, String[] operations) {
+			if (policies == null) {
+				policies = new ArrayList<>();
+			}
+			
+			PolicyConfig conf = new PolicyConfig();
+			conf.allowOrDeny = allowOrDeny;
+			conf.category = category.trim();
+			conf.operations = operations;
+			
+			if (IEnginePolicy.WILDCARD.equals(conf.category)) {
+				policies.clear();
+			}
+			
+			policies.add(conf);
+			policyUpdated = true;
+		}
 	}
-
+	
+	class PolicyConfig {
+		boolean allowOrDeny;
+		String category;
+		String[] operations;
+	}
 }

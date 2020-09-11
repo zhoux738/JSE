@@ -95,5 +95,11 @@ public class System_Network_NetAddress_IOTestSuite {
         
         validateBoolValue(gvt, "b0", true);
         validateBoolValue(gvt, "b1", true);
+        validateBoolValue(gvt, "b2", true);
+        validateBoolValue(gvt, "b3", true);
+        validateBoolValue(gvt, "b4", true);
+        validateBoolValue(gvt, "b5", false);
+        validateBoolValue(gvt, "b6", false);
+        validateBoolValue(gvt, "b7", true);
     }
 }

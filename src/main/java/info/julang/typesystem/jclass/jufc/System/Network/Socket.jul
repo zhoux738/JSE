@@ -78,6 +78,7 @@ class Socket : ISocket {
 	 * it cannot be rebound to another address/port, and it will remain in [BOUND](SocketState#BOUND) state forever, 
 	 * even after disconnection.
 	 *
+	 * [access] System.Socket/connect
 	 * [param: localHost] The local host name to bind to upon connection.
 	 * [param: localPort] The local port to bind to upon connection.
 	 */
@@ -85,13 +86,17 @@ class Socket : ISocket {
 	hosted void bind(string localHost, int localPort);
 	
 	/*
-	 * Connect this socket to a remote address/port. 
+	 * Connect this socket to a remote address/port.
 	 *
 	 * If the socket has not bound yet, this will first bind the socket to the local address/port as specified in
 	 * the constructors, should it have been instantiated in that fashion. Had no address/port been specified for this 
 	 * socket during construction, this method will first bind to a local address/port as provisioned by the OS, which
 	 * comprises of a local address resolved from local host name (see [Address.getLocal()](Address#getLocal)), and an
-	 * ephemeral local port.  
+	 * ephemeral local port.
+	 *
+	 * [access] System.Socket/connect
+	 * [param: remoteHost] The remote host name to connect to.
+	 * [param: remotePort] The remote port to connect to.
 	 */
 	[Bridged(name="connect")]
 	hosted void connect(string remoteHost, int remotePort);
@@ -193,6 +198,8 @@ class Socket : ISocket {
 	 * 
 	 * Only one input stream instance will be associated with each socket. Calling this multiple times
 	 * returns the same stream object. Closing this stream will cause the socket to be disconnected.
+	 *
+	 * Access policy `System.Socket/read` must be enabled to perform read operation on this stream.
 	 * 
 	 * [return] An input stream enabled for reading operations.
 	 */
@@ -215,6 +222,8 @@ class Socket : ISocket {
 	 * Only one output stream instance will be associated with each socket. Calling this multiple times
 	 * returns the same stream object. Closing this stream will cause the socket to be disconnected.
 	 * 
+	 * Access policy `System.Socket/write` must be enabled to perform read operation on this stream.
+	 *
 	 * [return] An output stream enabled for writing operations.
 	 */
 	SocketStream getWriteStream(){

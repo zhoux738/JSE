@@ -7,3 +7,10 @@ bool b0 = addr.isLoopback();
 addr = NetAddress.resolve("127.1.23.199");
 bool b1 = addr.isLoopback();
 //Console.println(b0);
+
+bool b2 = NetAddress.resolve("127.0.0.1").isLoopback();
+bool b3 = NetAddress.resolve("::1").isLoopback();
+bool b4 = NetAddress.resolve("0:0::0:1").isLoopback();
+bool b5 = NetAddress.resolve("0:0::a:1").isLoopback();
+bool b6 = NetAddress.resolve(":::1").isLoopback();
+bool b7 = NetAddress.resolve("::01").isLoopback();

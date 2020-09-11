@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Ming Zhou
+Copyright (c) 2017 Ming Zhou
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.ide.launcher.io;
+package info.julang.execution.security;
 
 /**
- * Contains streams inherited from the platform.
+ * The policy to confine the resource usage within a certain limit.
  * 
  * @author Ming Zhou
  */
-public class DefaultIOSet extends StandardIOSet {
+public class EngineLimitPolicy implements IEnginePolicy<Integer> {
 
-	private static DefaultIOSet INSTANCE;
+	private EngineLimit lim;
+	private int val;
 	
-	public static DefaultIOSet getInstance() {
-		if (INSTANCE == null) {
-			synchronized (DefaultIOSet.class) {
-				if (INSTANCE == null) {
-					INSTANCE = new DefaultIOSet();
-				}
-			}
-		}
-		
-		return INSTANCE;
+	public EngineLimitPolicy(EngineLimit lim, int value) {
+		this.lim = lim;
+		this.val = value;
 	}
 	
-	private DefaultIOSet() {
-		super(System.out, System.err, System.in);
-	}	
+	@Override
+	public String getName() {
+		return lim.getName();
+	}
+
+	@Override
+	public CheckResult check(Integer value) {
+		boolean violated = lim.isMaxOrMin() ? value > this.val : value < this.val;
+		
+		if (violated) {
+			return CheckResult.deny(String.format(lim.getMessageTemplate(), val));
+		}
+		
+		return CheckResult.allow();
+	}
 	
+	public int getValue() {
+		return val;
+	}
 }

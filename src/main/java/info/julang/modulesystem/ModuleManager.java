@@ -24,6 +24,20 @@ SOFTWARE.
 
 package info.julang.modulesystem;
 
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import info.julang.execution.security.CheckResultKind;
+import info.julang.execution.security.EnginePolicyEnforcer;
+import info.julang.execution.security.IEnginePolicy;
+import info.julang.execution.security.PlatformAccessPolicy;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThread.MonitorInterruptCondition;
@@ -44,15 +58,7 @@ import info.julang.typesystem.jclass.jufc.SystemRawScriptInfoLoader;
 import info.julang.typesystem.jclass.jufc.System.IO.JSEIOException;
 import info.julang.typesystem.loading.InternalTypeResolver;
 import info.julang.util.OneOrMoreList;
-
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import info.julang.util.Pair;
 
 /**
  * The module manager is a globally shared runtime object for module management. Its main duties are:
@@ -60,35 +66,44 @@ import java.util.Set;
  * <li>Loading a specified module and all of required modules (those the interested one depends on).</li>
  * <li>Maintaining a cache of all the modules loaded.</li>
  * </ul>
- * <p/>
+ * <p>
  * Generally, when the engine encounters a module import declaration (such as "<code><b>import</b> A.B.C;</code>") 
  * it will load the module, as well as all the requirements, using this class. The ModuleManager maintains an 
  * internal cache that will track all the loaded modules, so that it won't load a given module more than once.
- * <p/>
+ * <p>
  * A key property of this class is that for any loaded modules, it is guaranteed that all of its required modules
  * are also loaded. This is called <b>Loading Completeness Principle</b> (LCP). 
- * <p/>
+ * <p>
+ * In addition to managing regular modules, this class also carries a few related responsibilities:
+ * <ul>
+ * <li>Through {@link HostedMethodManager}, managing mapped platform API.</li>
+ * <li>Through {@link EnginePolicyEnforcer}, safeguarding access to the platform resources.</li>
+ * </ul>
  * This class is expected to be called during pre-interpretation stage where all the script files are pre-scanned 
  * for collecting type information. In future it may be also called during dynamic scripting.
- * <p/>
+ * <p>
  * @author Ming Zhou
  */
 public class ModuleManager implements IModuleManager {
 
+	// Concurrency control
 	private Object lock = new Object();
-	
 	private Thread owningThread;
 	
+	// Module management
 	private Map<String, ModuleInfo> cache;
-	
 	private ModuleLocator locator;
-	
 	private Map<String, OneOrMoreList<ClassInfo>> allClasses;
 	
+	// Platform API mapping
 	private HostedMethodManager hmm;
-	
 	private ClassLoader extLoader;
-
+	
+	// Policy enforcement
+	private EnginePolicyEnforcer policyEnforcer;
+	private Map<String, Pair<String[], String[]>> policies;
+	private CheckResultKind checkKind = CheckResultKind.UNDEFINED;
+	
 	/**
 	 * [CFOW]
 	 */
@@ -565,5 +580,149 @@ public class ModuleManager implements IModuleManager {
 		}
 		
 		return hmm;
+	}
+	
+	//----------------- Engine Policy Enforcer -----------------//
+	
+	public EnginePolicyEnforcer getEnginePolicyEnforcer() {
+		if (policyEnforcer == null) {
+			synchronized(ModuleManager.class) {
+				if (policyEnforcer == null) {
+					initializePolicyEnforcer();
+				}
+			}
+		}
+		
+		return policyEnforcer;
+	}
+
+	private void initializePolicyEnforcer() {
+		policyEnforcer = new EnginePolicyEnforcer();
+		if (checkKind != CheckResultKind.UNDEFINED) {
+			policyEnforcer.setDefault(checkKind == CheckResultKind.ALLOW);
+		}
+		
+		if (policies != null && policies.size() > 0) {
+			for (Entry<String, Pair<String[], String[]>> kvp : policies.entrySet()) {
+				policyEnforcer.addPolicy(
+					new PlatformAccessPolicy(kvp.getKey(), kvp.getValue().getFirst(), kvp.getValue().getSecond()));
+			}
+		}
+	}
+	
+	@Override
+	public void resetPlatformAccess() {
+		policyEnforcer = null;
+		checkKind = CheckResultKind.UNDEFINED;
+		policies = null;
+	}
+
+	@Override
+	public void setPlatformAccess(boolean allowOrDeny, String category, String... operations) {
+		if (policyEnforcer != null) {
+			// For now, can only be called before the engine has started enforcing policies.
+			// After we introduce Julian API for policy config this may be changed.
+			return;
+		}
+		
+		if (policies == null) {
+			policies = new HashMap<String, Pair<String[], String[]>>();
+		}
+		
+		if (IEnginePolicy.WILDCARD.equals(category)) {
+			// Sweeping setting. Void all the previous settings.
+			checkKind = allowOrDeny ? CheckResultKind.ALLOW : CheckResultKind.DENY;
+			policies.clear();
+			return;
+		}
+		
+		String categoryLower = category.toLowerCase();
+		String[] operationsLower;
+		if (operations != null && operations.length > 0) {
+			int len = operations.length;
+			operationsLower = new String[len];
+			for (int i = 0; i < len; i++) {
+				operationsLower[i] = operations[i].toLowerCase().trim();
+			}
+		} else {
+			operationsLower = new String[] { IEnginePolicy.WILDCARD };
+		}
+		
+		setPlatformAccess0(allowOrDeny, categoryLower, operationsLower);
+	}
+	
+	// operations: min size == 1
+	private void setPlatformAccess0(boolean allowOrDeny, String category, String[] operations) {
+		Pair<String[], String[]> pair = policies.get(category);
+		if (pair == null) {
+			pair = new Pair<String[], String[]>(
+				allowOrDeny ? operations : null,
+				allowOrDeny ? null : operations
+			);
+			policies.put(category, pair);
+		} else {
+			String[] these = allowOrDeny ? pair.getFirst() : pair.getSecond();
+			String[] those = allowOrDeny ? pair.getSecond() : pair.getFirst();
+			if (these != null) {
+				these = mergeOps(these, operations);
+			} else {
+				these = operations;
+			}
+
+			if (those != null) {
+				those = excludeOps(those, these);
+			}
+			policies.put(category, new Pair<String[], String[]>(these, those));
+		}
+	}
+	
+	private static String[] excludeOps(String[] those, String[] these) {
+		Set<String> set = new HashSet<String>();
+		for (String op : those) {
+			set.add(op);
+		}
+		
+		boolean excludeAll = false;
+		for (String op : these) {
+			if (IEnginePolicy.WILDCARD.equals(op)) {
+				excludeAll = true;
+				break;
+			}
+			
+			if (set.contains(op)) {
+				set.remove(op);
+			}
+		}
+		
+		if (excludeAll) {
+			return null;
+		} else {
+			String[] results = new String[set.size()];
+			return set.toArray(results);
+		}
+	}
+
+	private static String[] mergeOps(String[] these, String[] operations) {
+		Set<String> set = new HashSet<String>();
+		for (String op : these) {
+			set.add(op);
+		}
+
+		boolean includeAll = false;
+		for (String op : operations) {
+			if (IEnginePolicy.WILDCARD.equals(op)) {
+				includeAll = true;
+				break;
+			}
+			
+			set.add(op);
+		}
+		
+		if (includeAll) {
+			return new String[] { IEnginePolicy.WILDCARD };
+		} else {
+			String[] results = new String[set.size()];
+			return set.toArray(results);
+		}
 	}
 }

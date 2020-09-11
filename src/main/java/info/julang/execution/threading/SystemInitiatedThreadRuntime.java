@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.execution.threading;
 
 import info.julang.execution.InContextTypeResolver;
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
@@ -161,4 +162,8 @@ public class SystemInitiatedThreadRuntime implements ThreadRuntime {
     
     private Map<String, Object> tls;
     
+	@Override
+	public StandardIO getStandardIO() {
+		return context.getStandardIO();
+	}
 }

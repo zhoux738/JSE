@@ -38,7 +38,7 @@ import info.julang.memory.JSEStackOverflowException;
 import info.julang.typesystem.jclass.jufc.System.Concurrency.ScriptThread.ScriptThreadState;
 
 /**
- * The standard {@link Runnable Java Runnable} implementation that's associated with a {@ JThread} object.
+ * The standard {@link Runnable Java Runnable} implementation that's associated with a {@link JThread} object.
  * <p/>
  * The implementation of {@link Runnable#run()} calls {@ JThread#run(Argument[])}. At the end it captures 
  * the unhandled exception, if any.
@@ -93,13 +93,15 @@ public class JThreadRunnable implements Runnable {
 		} catch (Exception e) {
 			error = e;
 			
-			// Before we have thread exception handler, uncomment these when debugging multi-threading issue.
+			// Uncomment these when debugging multi-threading issue.
 			/* *
-			System.out.println("Thread faulted. Remove this after fixing.");
-			error.printStackTrace();
+			info.julang.execution.StandardIO sio = thread.getThreadRuntime().getStandardIO();
+			java.io.PrintStream stdout = sio.getOut();
+			stdout.println("Thread faulted. Remove this after fixing.");
+			error.printStackTrace(sio.getError());
 			if(e instanceof JulianScriptException){
 				JulianScriptException jse = (JulianScriptException) e;
-				System.out.println("JSE message: " + jse.getExceptionMessage());
+				stdout.println("JSE message: " + jse.getExceptionMessage());
 			}
 			//*/
 		} catch (Error er) {
@@ -119,7 +121,7 @@ public class JThreadRunnable implements Runnable {
 			if(!handled && !thread.isMain() && error instanceof JulianScriptException){
 				try {
 					if(handler == null){
-						handler = new DefaultExceptionHandler(true);
+						handler = new DefaultExceptionHandler(thread.getThreadRuntime().getStandardIO(), true);
 					}
 					
 					handler.onException((JulianScriptException)error);

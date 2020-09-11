@@ -28,6 +28,7 @@ class File : Item {
 	/*
 	 * Get the name of this file. This is only the simple name (with extension) on the path.
 	 *
+	 * [access] System.IO/stat
 	 * [return] The file's name
 	 */
 	public string getName(){
@@ -40,6 +41,7 @@ class File : Item {
 	/*
 	 * Get the absolute path of this file, including the name.
 	 *
+	 * [access] System.IO/stat
 	 * [return] The file's path, including the name. Note this can be different from the path used 
 	 * by the [constructor](#File(string)), which could take a relative path.
 	 */	
@@ -55,6 +57,7 @@ class File : Item {
 	 * but won't scale well if the file is too large and the operation is too frequent. When dealing 
 	 * with reading large files at high frequency, always consider using an [asynchronous stream](#getReadStream) first.
 	 *
+	 * [access] System.IO/read
 	 * [return] The contents from this file, in the format of plain ASCII text. 
 	 */
 	[Bridged(name="readAllText")]
@@ -63,6 +66,7 @@ class File : Item {
 	/*
 	 * Whether this file exist on file system.
 	 *
+	 * [access] System.IO/stat
 	 * [return] True if the file exists.
 	 */
 	public bool exists(){
@@ -75,6 +79,7 @@ class File : Item {
 	/*
 	 * Create a file represented by this object.
 	 *
+	 * [access] System.IO/write
 	 * [throws: System.IO.IOException] An error occurred during file creation.
 	 * [return] True if the file was created; false if the file already exists.
 	 */
@@ -88,6 +93,7 @@ class File : Item {
 	/*
 	 * Delete this file.
 	 *
+	 * [access] System.IO/write
 	 * [throws: System.IO.IOException] An error occurred during file deletion.
 	 * [return] True if the file was successfully deleted; false if the file didn't exist.
 	 */
@@ -101,6 +107,7 @@ class File : Item {
 	/*
 	 * Get the directory this file resides in.
 	 *
+	 * [access] System.IO/stat
 	 * [throws: System.IO.IOException] An error occurred when trying to get the parent directory.
 	 * [return] The parent directory. Or null if the path doesn't exist.
 	 */	
@@ -118,6 +125,7 @@ class File : Item {
 	
 	/*
 	 * [inherited]
+	 * [access] System.IO/write
 	 * [param: newName] The new file name. Must not contain FS separator.
 	 * [return] True if the file was successfully renamed; false if the file couldn't be.
 	 */
@@ -134,6 +142,7 @@ class File : Item {
 	
 	/*
 	 * [inherited]
+	 * [access] System.IO/write
 	 * [return] True if the file was successfully moved; false if the file couldn't be.
 	 */
 	public bool move(Directory newDir){
@@ -146,6 +155,8 @@ class File : Item {
 	/*
 	 * Get a stream to read from this file. 
 	 *
+	 * Access policy `System.IO/read` must be enabled to perform read operation on this stream.
+	 *
 	 * [see: System.IO.FileStream]
 	 * [return] A stream that supports reading (both synchronously and asynchronously) but not writing or marking. 
 	 */
@@ -155,6 +166,8 @@ class File : Item {
 	
 	/*
 	 * Get a stream to write into this file. 
+	 *
+	 * Access policy `System.IO/write` must be enabled to perform write operation on this stream.
 	 *
 	 * [see: System.IO.FileStream]
 	 * [return] A stream that supports writing but not reading or marking. 

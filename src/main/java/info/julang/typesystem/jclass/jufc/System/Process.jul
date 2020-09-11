@@ -79,6 +79,8 @@ class ProcessConfig {
 	
 	/*
 	 * Get a [map](type: Map) which contains all environment variables, with their names as the key.
+	 *
+	 * [return] The map keyed by environment variable name.
 	 */
 	public Map getEnvArgs(){
 		return this.args;
@@ -236,6 +238,7 @@ class Process {
 	 * Since the returned object represents the current process (a JVM instance on which Julian engine is running), 
 	 * most methods that have modifying behavior are not allowed to call.
 	 *
+	 * [access] System.Environment/read
 	 * [return] An instance representing the current process.
 	 */
 	[Bridged(name="getCurrent")]
@@ -263,6 +266,7 @@ class Process {
 	 * Get the environment variable. This method will only work against the current process object,
 	 * otherwise it throws.
 	 *
+	 * [access] System.Environment/read
 	 * [param: name] The environment variable's name
 	 * [return] The environment variable with the specified name. Null if not existing.
 	 */
@@ -309,6 +313,7 @@ class Process {
 	/*
 	 * Start the process. A process can only be started once.
 	 *
+	 * [access] System.Process/control
 	 * [throws: IllegalStateException] if the process is not in [a state to start](ProcessState#NOT_STARTED).
 	 */
 	void start(){
@@ -328,6 +333,7 @@ class Process {
 	/*
 	 * Wait for the process to finish.
 	 *
+	 * [access] System.Process/wait
 	 * [return] The exit code of the process upon its completion.
 	 */
 	int wait(){
@@ -348,6 +354,7 @@ class Process {
 	/*
 	 * Wait, for only specified milliseconds, for the process to finish.
 	 *
+	 * [access] System.Process/wait
 	 * [param: millisec] The duration, in millisec, to wait for the process to finish.
 	 * [return] True if the process ran to the end within the specified waiting duration.
 	 */
@@ -377,6 +384,7 @@ class Process {
 	/*
 	 * Kill the process.
 	 *
+	 * [access] System.Process/control
 	 * [throws: IllegalStateException] if the process [has not started yet](ProcessState#NOT_STARTED).
 	 * [return] The exit code of the process upon its completion.
 	 */
@@ -414,6 +422,7 @@ class Process {
 	/*
 	 * Get the exit code. Result is undefined if the process is not terminated yet.
 	 *
+	 * [access] System.Process/control
 	 * [return] If the process has finished, the exit code as returned by that process. If the process has not finished, the status code is undefined.
 	 */
 	[Bridged(name="getExitCode")]

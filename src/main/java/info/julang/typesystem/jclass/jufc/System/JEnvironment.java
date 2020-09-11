@@ -27,6 +27,7 @@ package info.julang.typesystem.jclass.jufc.System;
 import java.io.File;
 
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
 import info.julang.hosting.HostedMethodProviderFactory;
@@ -71,6 +72,10 @@ public class JEnvironment {
 	
 	private static class GetScriptExecutor extends StaticNativeExecutor<JEnvironment> {
 
+		GetScriptExecutor(){
+			super(PACON.Environment.Name, PACON.Environment.Op_read);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
 			ObjectValue ov = getScript(rt);

@@ -42,6 +42,7 @@ import info.julang.execution.EngineRuntime;
 import info.julang.execution.Executable;
 import info.julang.execution.Result;
 import info.julang.execution.namespace.NamespacePool;
+import info.julang.execution.security.EngineLimit;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.exceptions.JSEError;
 import info.julang.memory.StackArea;
@@ -204,6 +205,7 @@ public class JThreadManager {
 	 * 
 	 * @param thread
 	 * @return the {@link JThreadRunnable runnable} created from this {@link JThread}, which can be waited on.
+	 * @throws info.julang.execution.security.RuntimeQuotaException if by running this thread it would break the max thread limit.
 	 */
 	public JThreadRunnable runBackground(JThread thread){
 		if (thread == main) {
@@ -221,7 +223,8 @@ public class JThreadManager {
 			}
 			
 			if (executor == null) {
-				initializeExecutorService();
+				int maxThreads = thread.getThreadRuntime().getModuleManager().getEnginePolicyEnforcer().getLimit(EngineLimit.MAX_THREADS);
+				initializeExecutorService(maxThreads);
 			}
 			
 			JThreadRunnable runnable = executor.execute(thread);
@@ -382,14 +385,21 @@ public class JThreadManager {
     }
 	
 	// To reduce locking overhead, always call this with a check condition
-	private synchronized void initializeExecutorService(){
+	private synchronized void initializeExecutorService(int threadLimit){
 		if (executor == null) {
-			// The length is set to 1, the minimal number possible. This is to let
+			// The length is set to 1, the smallest number possible. This is to let
 			// the executor to dispatch the new threads as soon as possible.
 			BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(1);
-			
-			int procNum = Math.min(Math.max(Runtime.getRuntime().availableProcessors() * 128, 1), 2048);
-			executor = new JSEThreadPoolExecutor(procNum, queue);				
+
+			int min = Math.min(Math.max(Runtime.getRuntime().availableProcessors() * 8, 1), 1024);
+			if (threadLimit > 0) {
+				// If thread limit is set, set the max thread number at twice the limit. We are not hitting there anyway.
+				threadLimit = Math.min(min, threadLimit);
+				executor = new JSEThreadPoolExecutor(true, threadLimit, threadLimit * 2, queue);	
+			} else {
+				// Otherwise, have each processor maintain a minimum of 8 threads.
+				executor = new JSEThreadPoolExecutor(false, min, Integer.MAX_VALUE, queue);		
+			}		
 		}
 	}
 	
@@ -410,16 +420,22 @@ public class JThreadManager {
 	
 	private class JSEThreadPoolExecutor extends ThreadPoolExecutor {
 		
+		private int threadLimit = EngineLimit.UNDEFINED;
+		
 		private JSEThreadPoolExecutor(
-			int minThreads, BlockingQueue<Runnable> queue) {
+			boolean hasLimit, int minThreads, int maxThreads, BlockingQueue<Runnable> queue) {
 			super(
-				minThreads,				//	minimal number of threads
-				Integer.MAX_VALUE,  	//  maximum number of threads
+				minThreads,				//	minimum number of threads
+				maxThreads,  			//  maximum number of threads
 				1, 						//  keep-alive time before excess idle thread (beyond minimal) is recycled
 				TimeUnit.MICROSECONDS,	//  unit of the parameter above
 				queue,					//  a queue used to keep submitted tasks when all the threads are occupied
 				new DefaultThreadFactory());
 			                            //  the factory to produce thread from the given runnable. See DefaultThreadFactory in this file.
+		
+			if (hasLimit) {
+				threadLimit = minThreads;
+			}
 		}
 		
 		@Override
@@ -433,6 +449,14 @@ public class JThreadManager {
 		}
 		
 		JThreadRunnable execute(JThread jthread) {
+			// Check the limit.
+			//   - Engine limit must be preset before running, so it's fine to cache the limit's value.
+			//   - Use getActiveCount() + 2 to count the main thread and the thread to execute here.
+			if (threadLimit != EngineLimit.UNDEFINED) {
+				jthread.getThreadRuntime().getModuleManager().getEnginePolicyEnforcer().checkLimit(
+					EngineLimit.MAX_THREADS, this.getActiveCount() + 2);
+			}
+			
 			// Pass "this" along in order to call JThread.exeThread() properly.
 			HostedValue thisObj = jthread.getScriptThreadObject();
 			JThreadRunnable runnable = jthread.getRunnable(

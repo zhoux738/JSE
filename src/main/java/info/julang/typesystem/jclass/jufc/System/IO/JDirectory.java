@@ -30,6 +30,7 @@ import java.nio.file.Paths;
 
 import info.julang.execution.Argument;
 import info.julang.execution.ArgumentUtil;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.HostedMethodProviderFactory;
 import info.julang.hosting.SimpleHostedMethodProvider;
@@ -90,6 +91,10 @@ public class JDirectory extends JItem {
 	
 	private static class GetNameExecutor extends InstanceNativeExecutor<JDirectory> {
 		
+		GetNameExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_stat);
+		}
+
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
 			StringValue sv = TempValueFactory.createTempStringValue(jdir.getName());
@@ -99,6 +104,10 @@ public class JDirectory extends JItem {
 	}
 	
 	private static class GetPathExecutor extends InstanceNativeExecutor<JDirectory> {
+		
+		GetPathExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_stat);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
@@ -110,6 +119,10 @@ public class JDirectory extends JItem {
 	
 	private static class GetParentPathExecutor extends InstanceNativeExecutor<JDirectory> {
 		
+		GetParentPathExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_stat);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
 			String pp = jdir.getParentPath();
@@ -119,6 +132,10 @@ public class JDirectory extends JItem {
 	}
 	
 	private static class ExistExecutor extends InstanceNativeExecutor<JDirectory> {
+		
+		ExistExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_stat);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
@@ -130,6 +147,10 @@ public class JDirectory extends JItem {
 	
 	private static class CreateExecutor extends InstanceNativeExecutor<JDirectory> {
 		
+		CreateExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
 			BoolValue sv = TempValueFactory.createTempBoolValue(jdir.create());
@@ -140,6 +161,10 @@ public class JDirectory extends JItem {
 	
 	private static class DeleteExecutor extends InstanceNativeExecutor<JDirectory> {
 		
+		DeleteExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
 			BoolValue sv = TempValueFactory.createTempBoolValue(jdir.delete());
@@ -149,6 +174,10 @@ public class JDirectory extends JItem {
 	}
 
 	private static class MoveExecutor extends IOInstanceNativeExecutor<JDirectory> {
+		
+		MoveExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
@@ -161,6 +190,10 @@ public class JDirectory extends JItem {
 	}
 	
 	private static class RenameExecutor extends IOInstanceNativeExecutor<JDirectory> {
+	
+		RenameExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_write);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
@@ -171,6 +204,10 @@ public class JDirectory extends JItem {
 		
 	}
 	private static class GetChildInfoExecutor extends InstanceNativeExecutor<JDirectory> {
+		
+		GetChildInfoExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_list);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {
@@ -189,6 +226,10 @@ public class JDirectory extends JItem {
 	}
 	
 	private static class ListAllExecutor extends InstanceNativeExecutor<JDirectory> {
+		
+		ListAllExecutor() {
+			super(PACON.IO.Name, PACON.IO.Op_list);
+		}
 		
 		@Override
 		protected JValue apply(ThreadRuntime rt, JDirectory jdir, Argument[] args) throws Exception {

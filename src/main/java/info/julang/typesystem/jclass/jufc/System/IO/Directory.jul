@@ -24,7 +24,10 @@ class Directory : Item {
 	hosted Directory(string path);
 
 	/*
-	 * Get the name of this directory. This is only the simple name (with extension part) under the path. 
+	 * Get the name of this directory. This is only the simple name (with extension part) under the path.
+	 *
+	 * [access] System.IO/stat
+	 * [return] The name of this directory.
 	 */	
 	public string getName(){
 		return _getName();
@@ -35,6 +38,9 @@ class Directory : Item {
 
 	/*
 	 * Get the absolute path of this directory. This doesn't include the name.
+	 *
+	 * [access] System.IO/stat
+	 * [return] The absolute path of this directory.
 	 */		
 	public string getPath(){
 		return _getPath();
@@ -46,6 +52,7 @@ class Directory : Item {
 	/*
 	 * Whether this directory exist on file system.
 	 *
+	 * [access] System.IO/stat
 	 * [return] True if the directory exists.
 	 */
 	public bool exists(){
@@ -58,6 +65,7 @@ class Directory : Item {
 	/*
 	 * Create a directory represented by this object.
 	 *
+	 * [access] System.IO/write
 	 * [throws: System.IO.IOException] An error occurred during directory creation.
 	 * [return] True if the directory was created; false if the directory already exists.
 	 */	
@@ -74,6 +82,7 @@ class Directory : Item {
 	 * This operation is not transactional. If an exception is thrown during the call some items
 	 * may have been deleted. 
 	 *
+	 * [access] System.IO/write
 	 * [throws: System.IO.IOException] An error occurred during directory deletion.
 	 * [return] True if the directory, along with all of its sub-directories and files contained with, 
 	 * were successfully deleted; false if the directory didn't exist.
@@ -88,6 +97,7 @@ class Directory : Item {
 	/*
 	 * Get the directory this file resides in.
 	 *
+	 * [access] System.IO/stat
 	 * [throws: System.IO.IOException] An error occurred when trying to get the parent directory.
 	 * [return] The parent directory. Or null if the path doesn't exist.
 	 */	
@@ -102,6 +112,7 @@ class Directory : Item {
 	
 	/*
 	 * [inherited]
+	 * [access] System.IO/write
 	 * [param: newName] The new directory name. Must not contain FS separator.
 	 * [return] True if the directory was successfully renamed; false if the directory couldn't be.
 	 */
@@ -118,6 +129,7 @@ class Directory : Item {
 	
 	/*
 	 * [inherited]
+	 * [access] System.IO/write
 	 * [return] True if the directory was successfully moved; false if the directory couldn't be.
 	 */
 	public bool move(Directory newDir){
@@ -133,6 +145,7 @@ class Directory : Item {
 	/*
 	 * Get the immediate child with the specified name.
 	 *
+	 * [access] System.IO/list
 	 * [param: name] The name of the child item.
 	 * [throws: System.IO.IOException] If the name contains separator. This method cannot be used to get a non-immediate child.
 	 * [return] An [item](System.IO.Item) which can be either [File](System.IO.File) or [Directory](System.IO.Directory); 
@@ -162,6 +175,7 @@ class Directory : Item {
 	/*
 	 * List all items directly under this directory.
 	 *
+	 * [access] System.IO/list
 	 * [return] An array of items directly under this directory, including files and sub-directories. With this method, 
 	 * a recursion-based approach is usually applicable to processing all the items under a given directory.
 	 */

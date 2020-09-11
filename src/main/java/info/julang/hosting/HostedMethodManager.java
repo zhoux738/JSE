@@ -91,7 +91,10 @@ public class HostedMethodManager {
 	 * @return a {@link MappedTypeInfo} object that contains the detailed information on the platform class.
 	 * @throws IllegalAttributeUsageException if the same platform type has been mapped before. 
 	 */
-	public synchronized MappedTypeInfo mapPlatformType(FQName fqName, boolean isClass, MappedHostedAttribute hattr, AttrValue av) throws IllegalTypeMappingException {
+	public synchronized MappedTypeInfo mapPlatformType(
+		FQName fqName, boolean isClass, MappedHostedAttribute hattr, AttrValue av)
+		throws IllegalTypeMappingException {
+		
 		if (mapper == null) {
 			mapper = new PlatformTypeMapper();
 			mapped = new HashMap<String, Pair<FQName, MappedTypeInfo>>();

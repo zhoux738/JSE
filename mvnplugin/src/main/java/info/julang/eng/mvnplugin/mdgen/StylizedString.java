@@ -26,7 +26,6 @@ package info.julang.eng.mvnplugin.mdgen;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import info.julang.eng.mvnplugin.GlobalLogger;
@@ -38,9 +37,19 @@ import info.julang.eng.mvnplugin.GlobalLogger;
  */
 public class StylizedString {
 	
+	private static class StyleValue {
+		private String property;
+		private String value;
+		private StyleValue(String p, String v) {
+			property = p;
+			value = v;
+		}
+	}
+	
 	protected String txt;
-	private String color;
-	private String size;
+	private StyleValue color;
+	private StyleValue bgcolor;
+	private StyleValue size;
 	private String link;
 	private boolean byMarkdown;
 	private List<String> htmlTags;
@@ -88,7 +97,14 @@ public class StylizedString {
 	
 	public StylizedString addColor(Color color){
 		if(color != null){
-			this.color = "#" + Integer.toHexString(color.getRGB()).substring(2).toUpperCase();
+			this.color = new StyleValue("color", "#" + Integer.toHexString(color.getRGB()).substring(2).toUpperCase());
+		}
+		return this;
+	}
+	
+	public StylizedString addBackgroundColor(Color color){
+		if(color != null){
+			this.bgcolor = new StyleValue("background-color", "#" + Integer.toHexString(color.getRGB()).substring(2).toUpperCase());
 		}
 		return this;
 	}
@@ -113,10 +129,10 @@ public class StylizedString {
 		}
 		return this;
 	}
-
-	public StylizedString setSize(int i) {
-		if (i > 0) {
-			size = String.valueOf(i);
+	
+	public StylizedString setSizeByPercent(int percentage) {
+		if (percentage >= 0 && percentage <= 100) {
+			size = new StyleValue("font-size", String.valueOf(percentage) + "%");
 		}
 		return this;
 	}
@@ -162,14 +178,38 @@ public class StylizedString {
 		return new PreStylizedString(sb.toString());
 	}
 	
+	private static String getStyleValue(StyleValue... strings) {
+		StringBuilder sb = new StringBuilder();
+		for(StyleValue sv : strings) {
+			if (sv != null) {
+				sb.append(sv.property);
+				sb.append(":");
+				sb.append(sv.value);
+				sb.append(";");
+			}
+		}
+		
+		return sb.toString();
+	}
+	
 	@Override
 	public String toString(){
-		String res = (color != null || size != null) ? 
-			// Apply <font></font> only if color or size is customized.
-			"<font" + (color != null ? " color=\"" + color + "\"" : "") 
-			+ (size != null ? " size=\"" + size + "\"" : "") 
-			+ ">" + txt + "</font>" 
-			: txt;
+		// <span style="background-color:#dfdfdf;color:#dfdfdf;font-size:14;">
+		String res = null;
+		if (color != null || size != null || bgcolor != null) {
+			String style = getStyleValue(color, size, bgcolor);
+			res = "<span style=\"" + style + "\">" + txt + "</span>";
+		} else {
+			res = txt;
+		}	
+		
+//		String res = (color != null || size != null) ? 
+//			// Apply <font></font> only if color or size is customized.
+//			"<font" + (color != null ? " color=\"" + color + "\"" : "") 
+//			+ (size != null ? " size=\"" + size + "\"" : "") 
+//			+ ">" + txt + "</font>" 
+//			: txt;
+		
 		if (link != null) {
 			res = byMarkdown ? "[" + res + "](" + link + ")" : "<a href=\"" + link + "\">" + res + "</a>";
 		}

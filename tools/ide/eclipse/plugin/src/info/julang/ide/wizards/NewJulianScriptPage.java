@@ -328,6 +328,9 @@ public class NewJulianScriptPage extends WizardPage {
 				Object obj = m_selection.getFirstElement();
 				if (obj.getClass() == clazz) {
 					return (T) obj;
+				} else if (clazz == IProject.class && obj instanceof IResource) {
+					// IResource cannot convert to IProject via IAdaptable
+					return (T)((IResource) obj).getProject();
 				} else if (obj instanceof IAdaptable) {
 					return ((IAdaptable) obj).getAdapter(clazz);
 				}

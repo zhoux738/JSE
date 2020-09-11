@@ -4,18 +4,19 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import junit.framework.Assert;
-import info.jultest.test.AssertHelper;
-import info.jultest.test.Commons;
-import info.jultest.test.TestExceptionHandler;
+
 import info.julang.JSERuntimeException;
 import info.julang.dev.GlobalSetting;
-import info.julang.execution.IScriptEngine;
 import info.julang.execution.simple.DefaultExceptionHandler;
+import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.interpretation.errorhandling.KnownJSException;
+import info.jultest.test.AssertHelper;
+import info.jultest.test.Commons;
+import info.jultest.test.TestExceptionHandler;
+import junit.framework.Assert;
 
 /**
  * Use this class when the test case needs to throw a Julian exception yet 
@@ -27,7 +28,7 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 	
 	private TestExceptionHandler teh;
 	
-	private IScriptEngine engine;
+	private SimpleScriptEngine engine;
 	
 	private String group;
 	
@@ -52,7 +53,7 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		String fileName) 
 		throws EngineInvocationError {
 		
-		engine.setExceptionHandler(new DefaultExceptionHandler(true));
+		engine.setExceptionHandler(new DefaultExceptionHandler(engine.getRuntime().getStandardIO(), true));
 		engine.run(getScriptFile(group, feature, fileName));
 	}
 	

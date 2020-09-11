@@ -29,11 +29,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import info.julang.execution.Argument;
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
-import info.julang.execution.threading.JThreadManager;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.context.Context;
@@ -153,13 +153,13 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 		InternalTypeResolver typResolver,
 		IModuleManager mm,
 		NamespacePool namespaces,
-		JThreadManager tm,
+		StandardIO io,
 		JThread jthread){
 		// If it's a static method, we can reuse the resolver. For instance method, must create a new resolver for each call, 
 		// because the instance members are held in distinct storage.
 		MethodMemberNameResolver mres = isStatic ? this.staticResolver : new MethodMemberNameResolver();
 		return new MethodContext(
-			frame, heap, varTable, typTable, typResolver, mm, namespaces, tm, jthread, 
+			frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread, 
 			containingType, isStatic, ExecutionContextType.InMethodBody, mres); 
 			// Technically setting exe-context type to InMethodBody is not correct. We should
 			// deduce this value from the context/runtime. But it's fine so far because 

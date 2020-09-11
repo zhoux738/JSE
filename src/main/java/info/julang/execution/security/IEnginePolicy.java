@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Ming Zhou
+Copyright (c) 2017 Ming Zhou
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,36 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.ide.launcher.io;
+package info.julang.execution.security;
 
-import java.io.InputStream;
-import java.io.PrintStream;
+public interface IEnginePolicy<ARG> {
 
-public class StandardIOSet implements IOSet {
+	static final String WILDCARD = "*";
 	
-	PrintStream out;
-	PrintStream err;
-	InputStream in;
+	/**
+	 * Must be unique. Also the prefix "System." is reserved.
+	 */
+	String getName();
 	
-	public StandardIOSet(
-		PrintStream outOrig,
-		PrintStream errOrig,
-		InputStream inOrig) {
-		
-		this.out = outOrig;
-		this.err = errOrig;
-		this.in = inOrig;
-	}
-	
-	public PrintStream getOut() {
-		return out;
-	}
-	
-	public PrintStream getErr() {
-		return err;
-	}
-	
-	public InputStream getIn() {
-		return in;
-	}
+	/**
+	 * Check the policy with the given argument, which is supposed to be 
+	 * matching the policy's type parameter during runtime.
+	 * 
+	 * @param action The name of operation
+	 * @param arg The argument.
+	 * @return One of three {@link CheckResult results}.
+	 */
+	CheckResult check(ARG arg);
 }

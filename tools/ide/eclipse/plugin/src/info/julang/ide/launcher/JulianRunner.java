@@ -32,8 +32,6 @@ import info.julang.external.JulianScriptEngine;
 import info.julang.external.exceptions.JSEException;
 import info.julang.ide.launcher.console.ConsoleManager;
 import info.julang.ide.launcher.console.JulianConsole;
-import info.julang.ide.launcher.io.DefaultIOSet;
-import info.julang.ide.launcher.io.SystemIO;
 import info.julang.ide.reporting.LimitationWarner;
 
 /**
@@ -116,14 +114,14 @@ public class JulianRunner {
 			arguments = new String[0];
 		}
 		
-		SystemIO sysIo = SystemIO.getInstance();
-		
 		// Create a new set of streams targeting the JSE console.
 		JulianConsole console = ConsoleManager.create(this);
 		
-		// Replace the System streams with the new streams, redirecting all System.out/err/in operation to the IDE console.
-		sysIo.saveFrom(console);
-
+		// Redirect stdio to the IDE console.
+		jse.setOutput(console.getOut());
+		jse.setError(console.getErr());
+		jse.setInput(console.getIn());
+		
 		if (view != null) {
 			view.display(console);
 		}
@@ -143,9 +141,6 @@ public class JulianRunner {
 						// Don't care
 					}
 				}
-				
-				// Restore. This must happen no matter what.
-				sysIo.saveFrom(DefaultIOSet.getInstance());
 				
 				synchronized (JulianRunner.class) {
 					s_path = "";

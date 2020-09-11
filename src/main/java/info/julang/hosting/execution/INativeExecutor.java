@@ -32,6 +32,13 @@ import info.julang.memory.value.JValue;
 public interface INativeExecutor {
 
 	/**
+	 * Enforce the engine policy. Throw UnderprivilegeException in violation.
+	 * @param rt thread runtime
+	 * @throws UnderprivilegeException
+	 */
+	void enforcePolicy(ThreadRuntime rt);
+	
+	/**
 	 * @param rt thread runtime
 	 * @param hvalue "this" value.
 	 * @param args doesn't include "this" value.

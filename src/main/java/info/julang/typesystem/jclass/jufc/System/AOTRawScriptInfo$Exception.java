@@ -51,6 +51,7 @@ public class AOTRawScriptInfo$Exception extends RawScriptInfo {
         m_classes.add(new RawClassInfo("UnknownTypeException", new AOTClassDeclInfo_UnknownTypeException (this)));
         m_classes.add(new RawClassInfo("IllegalModuleException", new AOTClassDeclInfo_IllegalModuleException (this)));
         m_classes.add(new RawClassInfo("IllegalStateException", new AOTClassDeclInfo_IllegalStateException (this)));
+        m_classes.add(new RawClassInfo("UnderprivilegeException", new AOTClassDeclInfo_UnderprivilegeException (this)));
 
         m_requirements = new ArrayList<RequirementInfo>();
         m_requirements.add(new RequirementInfo("System", null));
@@ -1371,6 +1372,64 @@ public class AOTRawScriptInfo$Exception extends RawScriptInfo {
         
         public String getName(){
             return "IllegalStateException";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.PUBLIC;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_UnderprivilegeException extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_UnderprivilegeException(RawScriptInfo minfo) {
+            super(minfo);
+            
+            m_parentNames.add(ParsedTypeName.makeFromFullName("Exception"));
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.UnderprivilegeException");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "UnderprivilegeException";
         }
 
         public ClassSubtype getSubtype() {

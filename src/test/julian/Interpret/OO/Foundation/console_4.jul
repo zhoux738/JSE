@@ -1,0 +1,3 @@
+String out = Console.readln() + Console.readln();
+bool flag = Console.readln() != null || Console.readln() != null;
+bool done = true;

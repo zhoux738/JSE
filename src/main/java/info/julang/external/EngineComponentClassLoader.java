@@ -44,8 +44,8 @@ public class EngineComponentClassLoader extends URLClassLoader {
 	
 	// Classes from the following packages, as well as packages underneath them, will
 	// be delegated to the parent loader.
-	private static final String PKG_EXTERNAL_PREFIX = "info.julang.external";
-	private static final String PKG_UTIL_PREFIX = "info.julang.util";
+	private static final String PKG_EXTERNAL_PREFIX = "info.julang.external.";
+	private static final String PKG_UTIL_PREFIX = "info.julang.util.";
 
 	private int seq;
 	

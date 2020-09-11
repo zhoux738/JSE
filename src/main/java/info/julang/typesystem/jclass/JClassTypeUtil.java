@@ -28,7 +28,6 @@ import info.julang.external.exceptions.JSEError;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.typesystem.JType;
-import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.builtin.JConstructorType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
@@ -48,11 +47,11 @@ public final class JClassTypeUtil {
 	public static JClassConstructorMember findConstructors(
 		JClassConstructorMember[] ctors, 
 		JValue[] values, 
-		boolean matchThisObj){
-		
+		boolean matchThisObj){	
 		if(ctors == null){
 			throw new JSEError("Constructor candidates cannot be null.", JClassTypeUtil.class);
 		}
+		
 		if(values == null){
 			values = new JValue[0];
 		}
@@ -64,11 +63,12 @@ public final class JClassTypeUtil {
 			if(params.length != values.length){
 				continue; // number of arguments not matching, try next
 			}
+			
 			JType pTyp = null;
 			JType vTyp = null;
 			boolean found = true;
 			int start = matchThisObj ? 0 : 1;
-			for(int i = start; i<total; i++){
+			for(int i = start; i<total && found; i++){
 				pTyp = params[i].getType(); // must not be null
 				vTyp = values[i].getType(); // can be null
 				if (vTyp == null) {
@@ -89,23 +89,14 @@ public final class JClassTypeUtil {
 				
 				if(pTyp == vTyp){
 					continue;
-				} else if (pTyp.getKind() == JTypeKind.CLASS) {
-					if(vTyp.getKind() == JTypeKind.CLASS){
-						ICompoundType cpTyp = (ICompoundType) pTyp;
-						ICompoundType cvTyp = (ICompoundType) vTyp;
-						if(cvTyp.isDerivedFrom(cpTyp, true)){
-							continue;
-						}
-					}
-				} else {
-					Convertibility conv = vTyp.getConvertibilityTo(pTyp);
-					if(conv.isSafe()){
-						continue;
-					} else {
-						found = false;
-						break;		
-					}
 				}
+
+				Convertibility conv = vTyp.getConvertibilityTo(pTyp);
+				if(conv.isSafe()){
+					continue;
+				}
+				
+				found = false;
 			}
 			
 			if(found){

@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.typesystem.jclass.jufc.System.Reflection;
 
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
 import info.julang.execution.threading.ThreadRuntimeHelper.IObjectPopulater;
@@ -88,6 +89,10 @@ public class ScriptModule {
     
     private static class FindExecutor extends StaticNativeExecutor<ScriptModule> {
         
+    	FindExecutor(){
+    		super(PACON.Reflection.Name, PACON.Reflection.Op_load);
+    	}
+    	
         @Override
         protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
             String name = getString(args, 0);

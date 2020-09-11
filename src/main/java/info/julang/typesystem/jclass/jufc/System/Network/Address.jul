@@ -77,8 +77,7 @@ class NetAddress {
 		}
 		
 		if (address == "127.0.0.1" // most common IPv4 loopback, but we will check other 127.0.0.0/8 addresses later	
-		 || address == "::1"
-		 || address == "0000:0000:0000:0000:0000:0000:0000:0001"){
+		 || address == "::1"){ // most common IPv6 loopback notation.
 			return true;
 		}
 		
@@ -92,6 +91,46 @@ class NetAddress {
 				
 				return true;
 			}	
+		} else if (type == AddressType.IPv6) {
+			try {
+				String[] ss = address.split(":");
+				int len = ss.length;
+				if (len >= 3 && len <= 8) {
+					int max = ss.length - 1;
+					if ((int)ss[max] == 1) { // The last section is 1
+						int c_dc_undetected = 0;
+						int c_dc_initiated = 1;
+						int c_dc_detected = 2;
+						int dc_state = c_dc_undetected;
+						bool error = false;
+						for(int i = max - 1; i >= 0; i--){ // Only allow up to one ::, while other octets must be 0
+							String s = ss[i];
+							if (s == "") {
+								if (dc_state == c_dc_undetected) {
+									dc_state = c_dc_initiated;
+								} else {
+									error = true;
+									break;
+								}
+							} else {
+								if (dc_state == c_dc_initiated) {
+									dc_state = c_dc_detected;
+								}
+								if ((int)s != 0){
+									error = true;
+									break;
+								}
+							}
+						}
+						
+						if (dc_state != c_dc_initiated && !error) {
+							return true;
+						}
+					}
+				}
+			} catch (System.IllegalCastingException ex) {
+				return false;
+			}
 		}
 		
 		return false;
@@ -103,6 +142,7 @@ class NetAddress {
 	 * If the name is an address itself no resolution will occur and the resultant array will only contain 
 	 * one address from the given name.
 	 * 
+	 * [access] System.Network/resolve
 	 * [param: name] The host name to resolve.
 	 * [return] An array of network addresses that are resolved from the given host name. If the name is 
 	 * unresolvable or illegal the array will be empty.
@@ -116,6 +156,7 @@ class NetAddress {
 	 * If the name is an address itself no resolution will occur and the argument will be directly converted
 	 * to an address object.
 	 * 
+	 * [access] System.Network/resolve
 	 * [param: name] The host name to resolve.
 	 * [return] A network address resolved from the given host name. Null if the name is unresolvable or illegal.
 	 */	

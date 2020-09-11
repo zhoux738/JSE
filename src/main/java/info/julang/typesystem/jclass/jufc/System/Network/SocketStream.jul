@@ -260,7 +260,10 @@ class SocketStream : StreamBase, AsyncStream {
 	[Bridged(name="writeAsync")]		
 	private hosted void _writeAsync(byte[] buffer, int offset, int length, PromiseHandle handle);
 	
-	/* [inherited] */
+	/* 
+	 * [inherited] 
+	 * [access] System.Socket/read
+ 	 */
 	public Promise readAsync(byte[] buffer, int offset){
 		DeferredPromise dp = Promise.defer();
 		_readAsync(buffer, offset, dp.getHandle(), false);
@@ -273,7 +276,10 @@ class SocketStream : StreamBase, AsyncStream {
 		return dp;
 	}
 	
-	/* [inherited] */
+	/* 
+	 * [inherited] 
+	 * [access] System.Socket/read
+ 	 */
 	public Promise readToEndAsync(byte[] buffer, Function callback){
 		DeferredPromise dp = Promise.defer();
 		_readToEndAsync(buffer, callback, dp.getHandle());
@@ -288,7 +294,10 @@ class SocketStream : StreamBase, AsyncStream {
 		return canRead(); 
 	}
 	
-	/* [inherited] */
+	/* 
+	 * [inherited] 
+	 * [access] System.Socket/write
+ 	 */
 	public Promise writeAsync(byte[] buffer, int offset, int length){
 		DeferredPromise dp = Promise.defer();
 		_writeAsync(buffer, offset, length, dp.getHandle());

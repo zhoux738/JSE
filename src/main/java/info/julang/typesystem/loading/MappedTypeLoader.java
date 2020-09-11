@@ -24,7 +24,14 @@ SOFTWARE.
 
 package info.julang.typesystem.loading;
 
+import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import info.julang.execution.Result;
+import info.julang.execution.security.PACON;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.SystemInitiatedThreadRuntime;
 import info.julang.external.exceptions.JSEException;
@@ -49,6 +56,7 @@ import info.julang.interpretation.context.Context;
 import info.julang.langspec.Keywords;
 import info.julang.memory.value.AttrValue;
 import info.julang.memory.value.TempValueFactory;
+import info.julang.modulesystem.IModuleManager;
 import info.julang.modulesystem.ModuleManager;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.typesystem.JType;
@@ -73,12 +81,6 @@ import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 import info.julang.util.Box;
 import info.julang.util.OneOrMoreList;
-
-import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class MappedTypeLoader {
 
@@ -114,6 +116,10 @@ public class MappedTypeLoader {
 
 				// We only care about one particular annotation: System.Mapped on a class type definition.
 				if (anno.getAttributeType().getName().equals(HostedAttributeUtil.MAPPED)) {
+					// 0) Check policy setting
+					IModuleManager mm = context.getModManager();
+					mm.getEnginePolicyEnforcer().checkAccess(PACON.Interop.Name, PACON.Interop.Op_map);
+					
 					// 1) Check annotation target: cannot map to interface, enum, or attribute
 					JInterfaceTypeBuilder cbuilder = (JInterfaceTypeBuilder)builder;
 					boolean isClass = typ.isClassType();
@@ -158,7 +164,7 @@ public class MappedTypeLoader {
 					// 4) Collect members from the platform type
 					MappedHostedAttribute hattr = (MappedHostedAttribute)
 						HostedAttributeUtil.makeHostedAttribute(HostedAttributeType.MAPPED, av, null);
-					HostedMethodManager hmm = ((ModuleManager)context.getModManager()).getHostedMethodManager();
+					HostedMethodManager hmm = mm.getHostedMethodManager();
 					FQName pfqName = new FQName(cname);
 					MappedTypeInfo mti = hmm.mapPlatformType(pfqName, isClass, hattr, av);
 

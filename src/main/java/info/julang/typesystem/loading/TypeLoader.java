@@ -464,7 +464,14 @@ public class TypeLoader {
 		// Add attribute values to the class type's type value
 		VariableTable vt = new VariableTable(null);
 		MethodContext ctxt = MethodContext.duplicateContext(
-			context, rt.getStackMemory(), vt, typ.getNamespacePool(), rt.getThreadManager(), typ, true, ExecutionContextType.InAnnotation);
+			context,
+			rt.getStackMemory(),
+			vt,
+			typ.getNamespacePool(),
+			context.getStandardIO(),
+			typ,
+			true, // treat as static
+			ExecutionContextType.InAnnotation);
 		
 		if (MetaAnnotation.AttributeTypeName.equals(typ.getName())){
 			// Special handling: for System.AttributeType, we need initialize it internally since it cannot annotate itself.

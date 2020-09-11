@@ -25,6 +25,7 @@ class Module {
 	/*
 	 * Find the module with the specified name.
 	 *
+	 * [access] System.Reflection/load
 	 * [param: name] The full module name, which may contain multiple sections separated by dot (.)
 	 * [param: throwOnError] If true, will throw instead of returning null upon any error.
 	 * [return] A [Module] instance representing the found module; or null if the module couldn't be found. 

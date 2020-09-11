@@ -1,0 +1,4 @@
+Console.print("abc");
+Console.print(123);
+Console.print(false);
+Console.print('z');

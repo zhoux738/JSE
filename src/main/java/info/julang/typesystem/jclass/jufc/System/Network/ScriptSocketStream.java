@@ -27,6 +27,7 @@ package info.julang.typesystem.jclass.jufc.System.Network;
 import info.julang.execution.Argument;
 import info.julang.execution.Executable;
 import info.julang.execution.Result;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.IOThreadHandle;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.EngineInvocationError;
@@ -97,6 +98,10 @@ public class ScriptSocketStream extends JFileStream implements ISocketEventListe
 	// Promise readAsync(byte[] buffer, int offset);
 	protected static class ReadArrayAsyncExecutor extends IOInstanceNativeExecutor<ScriptSocketStream> {
 		
+		ReadArrayAsyncExecutor() {
+			super(PACON.Socket.Name, PACON.Socket.Op_read);
+		}
+    	
 		@Override
 		protected JValue apply(ThreadRuntime rt, ScriptSocketStream sss, Argument[] args) throws Exception {
 			ArrayValue array = getArray(args, 0);
@@ -119,6 +124,10 @@ public class ScriptSocketStream extends JFileStream implements ISocketEventListe
     // Promise readToEndAsync(byte[] buffer, Function callback);
     protected static class ReadArrayToEOFAsyncExecutor extends IOInstanceNativeExecutor<ScriptSocketStream> {
         
+    	ReadArrayToEOFAsyncExecutor() {
+			super(PACON.Socket.Name, PACON.Socket.Op_read);
+		}
+		
         @Override
         protected JValue apply(ThreadRuntime rt, ScriptSocketStream sss, Argument[] args) throws Exception {
             ArrayValue array = getArray(args, 0);
@@ -141,6 +150,10 @@ public class ScriptSocketStream extends JFileStream implements ISocketEventListe
     //Promise writeAsync(byte[] buffer, int offset, int length){
     protected static class WriteArrayAsyncExecutor extends IOInstanceNativeExecutor<ScriptSocketStream> {
         
+    	WriteArrayAsyncExecutor() {
+			super(PACON.Socket.Name, PACON.Socket.Op_write);
+		}
+    	
         @Override
         protected JValue apply(ThreadRuntime rt, ScriptSocketStream sss, Argument[] args) throws Exception {
             ArrayValue array = getArray(args, 0);

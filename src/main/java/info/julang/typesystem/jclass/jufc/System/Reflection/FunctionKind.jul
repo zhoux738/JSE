@@ -9,7 +9,7 @@ import System;
  * The kind of a function object.
  *
  * In Julian, a function can be defined in different ways - as a global function, 
- * a class member method, a lamba, etc. When holding the function object, calling
+ * a class member method, a lambda, etc. When holding the function object, calling
  * ```getFunctionKind()``` will return a value of this type.
  */
 enum FunctionKind {

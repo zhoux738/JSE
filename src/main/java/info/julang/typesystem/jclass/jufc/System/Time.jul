@@ -31,6 +31,7 @@ class DateTime {
 	/*
 	 * Get the current local time.
 	 *
+	 * [access] System.Environment/read
 	 * [return] The current local time.
 	 */
 	[Bridged(name="getNow")]

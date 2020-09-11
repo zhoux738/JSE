@@ -24,13 +24,13 @@ SOFTWARE.
 
 package info.julang.interpretation.context;
 
+import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.symboltable.RestrictedTypeTable;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.execution.threading.JThread;
-import info.julang.execution.threading.JThreadManager;
 import info.julang.interpretation.resolving.IMemberNameResolver;
 import info.julang.interpretation.resolving.InstanceMethodNameResolver;
 import info.julang.interpretation.resolving.StaticMethodNameResolver;
@@ -52,7 +52,7 @@ public class MethodContext extends Context {
 		InternalTypeResolver typResolver,
 		IModuleManager mm,
 		NamespacePool nsPool, 
-		JThreadManager tm,
+		StandardIO io,
 		JThread jthread,
 		ICompoundType containingType,
 		boolean isStatic,
@@ -72,7 +72,7 @@ public class MethodContext extends Context {
 			isStatic ? 
 				new StaticMethodNameResolver(varTable, typTable, containingType, memResolver) : 
 				new InstanceMethodNameResolver(varTable, typTable, containingType, memResolver),
-			tm,
+			io,
 			jthread,
 			exeContextTyp
 		);
@@ -91,7 +91,7 @@ public class MethodContext extends Context {
 	 * @param frame the memory frame
 	 * @param vt variable table
 	 * @param nsPool namespace pool
-	 * @param tm thread manager
+	 * @param io standard IO
 	 * @param containingType
 	 * @param isStatic
 	 * @param exeContextType
@@ -102,7 +102,7 @@ public class MethodContext extends Context {
 		MemoryArea frame, 
 		VariableTable vt, 
 		NamespacePool nsPool,  
-		JThreadManager tm,
+		StandardIO io,
 		ICompoundType containingType, 
 		boolean isStatic,
 		ExecutionContextType exeContextType){
@@ -115,7 +115,7 @@ public class MethodContext extends Context {
 			context.getInternalTypeResolver(),
 			context.getModManager(),
 			nsPool,
-			tm,
+			io,
 			context.getJThread(),
 			containingType,
 			isStatic,

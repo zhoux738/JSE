@@ -24,7 +24,13 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc.System;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
 import info.julang.hosting.HostedMethodProviderFactory;
@@ -50,10 +56,6 @@ import info.julang.typesystem.jclass.MemberType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 import info.julang.typesystem.jclass.jufc.System.IO.JSEIOException;
 import info.julang.util.OneOrMoreList;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 /**
  * The native implementation of <font color="green">System.Console</font>.
@@ -87,13 +89,17 @@ public class JConsole {
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
 			JValue val = args[0].getValue();
 			printValue(rt, val);
-			println();
+			println(rt.getStandardIO().getOut());
 			return VoidValue.DEFAULT;
 		}
 	}
 	
 	private static class ReadLineExecutor extends StaticNativeExecutor<JConsole> {
 
+		ReadLineExecutor(){
+			super(PACON.Console.Name, PACON.Console.Op_read);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
 			return readLine(rt);
@@ -111,6 +117,10 @@ public class JConsole {
 	}
 	
 //	private static class ReadExecutor extends StaticNativeExecutor<JConsole> {
+//
+//		ReadExecutor(){
+//			super(PACON.Console.Name, PACON.Console.Op_read);
+//		}
 //
 //		@Override
 //		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
@@ -146,38 +156,38 @@ public class JConsole {
 		JValue res = exec.invokeFunction(member.getMethodType(), JObjectType.MethodNames.toString.name(), Argument.CreateThisOnlyArguments(ov));
 		res = res.deref();
 		if(res == RefValue.NULL){
-			System.out.print("null");
+			rt.getStandardIO().getOut().print("null");
 		} else if(res instanceof StringValue){
 			StringValue sv = (StringValue)res;
-			System.out.print(sv.getStringValue());
+			rt.getStandardIO().getOut().print(sv.getStringValue());
 		} else {
 			// If toString() didn't return a string or null, it should have thrown error.
 			throw new JSEError("Expected a string, but saw null.", JConsole.class);
 		}
 	}
 	
-	private static void printString(String str){
-		System.out.print(str);
+	private static void printString(PrintStream ps, String str){
+		ps.print(str);
 	}
 	
-	private static void printInt(int i){
-		System.out.print(i);
+	private static void printInt(PrintStream ps, int i){
+		ps.print(i);
 	}
 	
-	private static void printChar(char c){
-		System.out.print(c);
+	private static void printChar(PrintStream ps, char c){
+		ps.print(c);
 	}
 	
-//	private static void printDouble(double d){
-//		System.out.print(d);
+//	private static void printDouble(PrintStream ps, double d){
+//		ps.print(d);
 //	}
 	
-	private static void printBool(boolean b){
-		System.out.print(b);
+	private static void printBool(PrintStream ps, boolean b){
+		ps.print(b);
 	}
 	
-	private static void println(){
-		System.out.println();
+	private static void println(PrintStream ps){
+		ps.println();
 	}
 
 // This doesn't really work. The terminal by default works in line-mode so it will not react to a single key press. 
@@ -203,22 +213,26 @@ public class JConsole {
 //        }
 //	}
 	
-	private static StringValue readLine(ThreadRuntime rt){
-		BufferedReader br = null;
+	private static BufferedReader s_reader;
+	
+	private static JValue readLine(ThreadRuntime rt){
         try {
-        	br = new BufferedReader(new InputStreamReader(System.in));
-            String s = br.readLine();
-            return new StringValue(rt.getStackMemory().currentFrame(), s);
+        	if (s_reader == null) {
+        		synchronized(JConsole.class) {
+        			if (s_reader == null) {
+        				s_reader = new BufferedReader(new InputStreamReader(rt.getStandardIO().getIn()));
+        			}
+        		}
+        	}
+        	
+            String s = s_reader.readLine();
+            if (s != null) {
+                return new StringValue(rt.getStackMemory().currentFrame(), s);
+            } else {
+            	return RefValue.NULL;
+            }
         } catch (IOException e) {
 			throw new JSEIOException(e);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore close error
-                }
-            }
         }
 	}
 	
@@ -226,24 +240,24 @@ public class JConsole {
 		val = UntypedValue.unwrap(val);
 		switch(val.getKind()){
 		case BOOLEAN:
-			JConsole.printBool(((BoolValue) val).getBoolValue());
+			JConsole.printBool(rt.getStandardIO().getOut(), ((BoolValue) val).getBoolValue());
 			break;
 		case BYTE:
-			JConsole.printInt(((ByteValue) val).getByteValue());
+			JConsole.printInt(rt.getStandardIO().getOut(), ((ByteValue) val).getByteValue());
 			break;
 		case CHAR:
-			JConsole.printChar(((CharValue) val).getCharValue());
+			JConsole.printChar(rt.getStandardIO().getOut(), ((CharValue) val).getCharValue());
 			break;	
 		case FLOAT:
-			JConsole.printString(((FloatValue) val).toString());
+			JConsole.printString(rt.getStandardIO().getOut(), ((FloatValue) val).toString());
 			break;			
 		case INTEGER:
-			JConsole.printInt(((IntValue) val).getIntValue());
+			JConsole.printInt(rt.getStandardIO().getOut(), ((IntValue) val).getIntValue());
 			break;
 		case REFERENCE:
 			ObjectValue derefVal = RefValue.tryDereference(val);
 			if(derefVal == RefValue.NULL){
-				JConsole.printString(derefVal.toString());
+				JConsole.printString(rt.getStandardIO().getOut(), derefVal.toString());
 			} else {
 				printObject(rt, derefVal);
 			}
@@ -252,10 +266,10 @@ public class JConsole {
 			ObjectValue ov = (ObjectValue) val;
 			switch(ov.getBuiltInValueKind()){
 			case STRING:
-				JConsole.printString(((StringValue) ov).getStringValue());
+				JConsole.printString(rt.getStandardIO().getOut(), ((StringValue) ov).getStringValue());
 				break;
 			case ENUM:
-				JConsole.printString(((EnumValue) ov).getLiteral());
+				JConsole.printString(rt.getStandardIO().getOut(), ((EnumValue) ov).getLiteral());
 				break;
 			default:
 				printObject(rt, ov);

@@ -36,6 +36,8 @@ public class HostingPlatformException extends JSERuntimeException {
 
 	private static final long serialVersionUID = 4584474815379232672L;
 
+	public static final String FullName = "System.HostingPlatformException";
+	
 	private PlatformExceptionInfo exInfo;
 	private JulianScriptException cause;
 	

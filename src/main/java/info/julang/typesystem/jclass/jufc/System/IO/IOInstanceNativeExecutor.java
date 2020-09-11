@@ -30,6 +30,14 @@ import info.julang.hosting.execution.InstanceNativeExecutor;
 
 public abstract class IOInstanceNativeExecutor<T> extends InstanceNativeExecutor<T> {
 
+	public IOInstanceNativeExecutor() {
+		super();
+	}
+	
+	public IOInstanceNativeExecutor(String category, String operation) {
+		super(category, operation);
+	}
+
 	protected Exception handleException(Exception e){
 		if (e instanceof IOException){
 			return new JSEIOException(e);

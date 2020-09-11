@@ -5,3 +5,5 @@ Console.println("");
 Console.print("abc");
 Console.print(true);
 Console.print(3);
+
+bool done = true;

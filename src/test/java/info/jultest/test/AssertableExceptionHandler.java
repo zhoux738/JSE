@@ -3,6 +3,7 @@ package info.jultest.test;
 import org.junit.Assert;
 
 import info.julang.dev.GlobalSetting;
+import info.julang.execution.StandardIO;
 import info.julang.execution.simple.DefaultExceptionHandler;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.typesystem.jclass.JClassType;
@@ -10,7 +11,7 @@ import info.julang.typesystem.jclass.JClassType;
 public class AssertableExceptionHandler extends DefaultExceptionHandler {
 
 	public AssertableExceptionHandler() {
-		super(GlobalSetting.DumpException);
+		super(new StandardIO(), GlobalSetting.DumpException);
 	}
 	
 	@Override

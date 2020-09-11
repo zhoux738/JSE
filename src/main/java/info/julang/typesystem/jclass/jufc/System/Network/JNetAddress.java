@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.typesystem.jclass.jufc.System.Network;
 
 import info.julang.execution.Argument;
+import info.julang.execution.security.PACON;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
 import info.julang.hosting.HostedMethodProviderFactory;
@@ -70,6 +71,10 @@ public class JNetAddress {
     
 	private static class ResolveExecutor extends StaticNativeExecutor<JNetAddress> {
 
+		ResolveExecutor(){
+			super(PACON.Network.Name, PACON.Network.Op_resolve);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
 			String val = this.getString(args, 0);
@@ -80,6 +85,10 @@ public class JNetAddress {
 	
 	private static class ResolveAllExecutor extends StaticNativeExecutor<JNetAddress> {
 
+		ResolveAllExecutor(){
+			super(PACON.Network.Name, PACON.Network.Op_resolve);
+		}
+		
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
 			String val = this.getString(args, 0);

@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Ming Zhou
+Copyright (c) 2017 Ming Zhou
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.ide.launcher.io;
+package info.julang.execution.security;
 
-import java.io.InputStream;
-import java.io.PrintStream;
+public class CheckResult {
 
-/**
- * Represents a collection of all the standard IO streams.
- * 
- * @author Ming Zhou
- */
-public interface IOSet {
-
-	PrintStream getOut();
+	private CheckResultKind kind;
+	private String errorMsg;
 	
-	PrintStream getErr();
+	private static final CheckResult s_allow = new CheckResult(CheckResultKind.ALLOW, "");
+	private static final CheckResult s_undefined = new CheckResult(CheckResultKind.UNDEFINED, "");
 	
-	InputStream getIn();
+	private CheckResult(CheckResultKind kind, String errorMsg) {
+		this.kind = kind;
+		this.errorMsg = errorMsg;
+	}
+	
+	public static CheckResult deny(String errorMsg) {
+		return new CheckResult(CheckResultKind.DENY, errorMsg);
+	}
+	
+	public static CheckResult allow() {
+		return s_allow;
+	}
+	
+	public static CheckResult defer() {
+		return s_undefined;
+	}
+	
+	public String getMessage() {
+		return errorMsg;
+	}
+	
+	public CheckResultKind getKind() {
+		return kind;
+	}
 }

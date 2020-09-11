@@ -31,7 +31,7 @@ import java.util.Set;
 
 public final class GlobalSetting {
 
-	public static final String PKG_PREFIX = "info.julang";
+	public static final String PKG_PREFIX = "info.julang.";
 	
 	private static Set<KnownJSException> exceptionsToSkip;
 	

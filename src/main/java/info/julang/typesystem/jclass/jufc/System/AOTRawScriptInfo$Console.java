@@ -96,7 +96,7 @@ public class AOTRawScriptInfo$Console extends RawScriptInfo {
         }
 
         public boolean isStatic() {
-            return false;
+            return true;
         }
 
         public Accessibility getAccessibility() {

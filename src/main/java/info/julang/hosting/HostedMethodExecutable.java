@@ -66,10 +66,15 @@ public class HostedMethodExecutable extends HostedExecutable {
 		if(exe == null){
 			throw new HostingPlatformException("No native method is registered in the script engine.", className, methodName);
 		}
+		
+		exe.enforcePolicy(runtime);
+		
 		JValue res = exe.execute(runtime, thisVal, args);
+		
 		if(res == null){
 			throw new HostingPlatformException("The returned value is null.", className, methodName);
 		}
+		
 		return new Result(res);
 	}
 	

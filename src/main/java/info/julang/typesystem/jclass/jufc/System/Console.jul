@@ -4,7 +4,7 @@ module System;
  * Console provides means to input from and output to character-oriented terminals of the operating system.
  */
 [Bridged(apiset="System.Console")]
-final class Console {
+final static class Console {
  	
  	/*
  	 * Print the given value to the console. If the value is an [Object], calls [Object.toString()](Object#toString())
@@ -55,6 +55,7 @@ final class Console {
 	 * Read the characters from standard input, until a line break sequence as defined by the underlying
 	 * operating system is met. This method will be blocking the thread until the line break is consumed.
 	 *
+	 * [access] System.Console/read
 	 * [return] the string comprised of the input characters, excluding the line break at the end.
 	 */ 
 	[Bridged(name="readln")]
