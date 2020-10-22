@@ -31,7 +31,7 @@ public final class ArgumentUtil {
 
 	/**
 	 * Get the <i>this</i> argument from the given array.
-	 * @param name
+	 * @param inScriptClassName
 	 * @param args
 	 * @return null if the first argument is not "this"
 	 */
@@ -45,7 +45,7 @@ public final class ArgumentUtil {
 
 	/**
 	 * Get the <i>this</i> argument's value from the given array.
-	 * @param name
+	 * @param inScriptClassName
 	 * @param args
 	 * @return
 	 */

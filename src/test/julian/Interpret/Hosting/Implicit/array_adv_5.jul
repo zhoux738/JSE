@@ -1,0 +1,8 @@
+int e1 = arr.at(1);
+arr.at(2, 20);
+
+int en = -1;
+var iter = arr.getIterator();
+while(iter.hasNext()){
+	en = (int)iter.next();
+}

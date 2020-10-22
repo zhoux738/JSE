@@ -313,7 +313,7 @@ public class JulianScriptException extends RuntimeException {
 	 */
 	public String getStandardExceptionOutput(int indent, boolean endByLineBreak){
 		StringBuilder sb = new StringBuilder();
-		generateStandardExceptionOutputInternal(sb, exception, indent, endByLineBreak, 0);
+		generateStandardExceptionOutputInternal(sb, exception, indent, endByLineBreak, 0, invokedByPlatform);
 		return sb.toString();
 	}
 	
@@ -321,20 +321,20 @@ public class JulianScriptException extends RuntimeException {
 		invokedByPlatform = true;
 	}
 	
-	//--------------------------- Non-public members ---------------------------//
-	
-	/**
-	 * Test only. Add a frame record. No source info.
-	 * 
-	 * @param funcName
-	 */
-	protected void addStackTrace(ITypeTable tt, String funcName, String[] parameters){
-		addStackTrace(tt, funcName, parameters, null, -1);
+	public static String toStandardExceptionOutput(ObjectValue exception) {
+		StringBuilder sb = new StringBuilder();
+		generateStandardExceptionOutputInternal(sb, exception, 0, false, 0, false);
+		return sb.toString();
 	}
 	
 	// If the cause chain is longer than 4, do not show the causes beyond the 4th
-	private void generateStandardExceptionOutputInternal(
-		StringBuilder sb, ObjectValue exception, int indent, boolean endByLineBreak, int recursiveCount){
+	private static void generateStandardExceptionOutputInternal(
+		StringBuilder sb,
+		ObjectValue exception,
+		int indent,
+		boolean endByLineBreak,
+		int recursiveCount,
+		boolean invokedByPlatform){
 		
 		String typName = exception.getType().getName();
 		
@@ -387,7 +387,7 @@ public class JulianScriptException extends RuntimeException {
 				sb.append("Caused by:");
 				sb.append(System.lineSeparator());
 				generateStandardExceptionOutputInternal(
-					sb, rv.getReferredValue(), indent, false, recursiveCount + 1);
+					sb, rv.getReferredValue(), indent, false, recursiveCount + 1, invokedByPlatform);
 			} else {
 				sb.append("More causes ...");
 				sb.append(System.lineSeparator());
@@ -405,7 +405,18 @@ public class JulianScriptException extends RuntimeException {
 		}
 	}
 	
-	private void addIndent(StringBuilder sb, int indent){
+	//--------------------------- Non-public members ---------------------------//
+	
+	/**
+	 * Test only. Add a frame record. No source info.
+	 * 
+	 * @param funcName
+	 */
+	protected void addStackTrace(ITypeTable tt, String funcName, String[] parameters){
+		addStackTrace(tt, funcName, parameters, null, -1);
+	}
+	
+	private static void addIndent(StringBuilder sb, int indent){
 		while(indent > 0){
 			sb.append(' ');
 			indent--;
@@ -476,23 +487,23 @@ public class JulianScriptException extends RuntimeException {
 	 * 
 	 * @return
 	 */
-	private RefValue getJStackTraceRef(ObjectValue exception){
+	private static RefValue getJStackTraceRef(ObjectValue exception){
 		RefValue rval = (RefValue) exception.getMemberValue(ex_field_stacktrace);
 		return rval;
 	}
 	
 	// Get the ref value for cause. The ref value contains a System.Exception value.
-	private RefValue getCauseRef(ObjectValue exception){
+	private static RefValue getCauseRef(ObjectValue exception){
 		RefValue rval = (RefValue) exception.getMemberValue(ex_field_cause);
 		return rval;
 	}
 	
-	private String getExceptionMessageInternal(ObjectValue exception){
+	private static String getExceptionMessageInternal(ObjectValue exception){
 		StringValue msg = StringValue.dereference(exception.getMemberValue(ex_field_message), true);
 		return msg != null ? msg.getStringValue() : "";
 	}
 	
-	private String[] getStackTraceAsArrayInternal(ObjectValue exception){
+	private static String[] getStackTraceAsArrayInternal(ObjectValue exception){
 		ArrayValue aval = getJStackTrace(exception);
 		
 		int depth = getJStackDepth(exception);
@@ -507,7 +518,7 @@ public class JulianScriptException extends RuntimeException {
 	}
 	
 	// Get the array value for stack trace.
-	private ArrayValue getJStackTrace(ObjectValue exception){
+	private static ArrayValue getJStackTrace(ObjectValue exception){
 		RefValue rval = getJStackTraceRef(exception);
 		ObjectValue oval = rval.dereference();
 		ArrayValue aval = (ArrayValue) oval;
@@ -515,12 +526,12 @@ public class JulianScriptException extends RuntimeException {
 	}
 	
 	// Get current depth of stack trace.
-	private int getJStackDepth(ObjectValue exception){
+	private static int getJStackDepth(ObjectValue exception){
 		IntValue sdepthVal = (IntValue) exception.getMemberValue(ex_field_stackdepth);
 		return sdepthVal.getIntValue();
 	}
 	
-	private String getFileNameInternal(ObjectValue exception){
+	private static String getFileNameInternal(ObjectValue exception){
 		StringValue msg = StringValue.dereference(exception.getMemberValue(ex_field_filename), true);
 		return msg != null ? msg.getStringValue() : null;
 	}
@@ -531,7 +542,7 @@ public class JulianScriptException extends RuntimeException {
 		sv.assignTo(jv);
 	}
 	
-	private int getLineNumberInternal(ObjectValue exception){
+	private static int getLineNumberInternal(ObjectValue exception){
 		IntValue ln = (IntValue)exception.getMemberValue(ex_field_lineno);
 		return ln.getIntValue();
 	}
@@ -542,7 +553,7 @@ public class JulianScriptException extends RuntimeException {
 		iv.assignTo(jv);
 	}
 	
-	private boolean isRawFormat(ObjectValue exception) {
+	private static boolean isRawFormat(ObjectValue exception) {
 		BoolValue bv = (BoolValue) exception.getMemberValue(ex_field_rawformat);
 		return bv.getBoolValue();
 	}

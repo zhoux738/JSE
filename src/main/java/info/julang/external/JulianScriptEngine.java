@@ -29,6 +29,14 @@ import java.io.OutputStream;
 
 import javax.script.ScriptException;
 
+import info.julang.external.binding.BindingKind;
+import info.julang.external.binding.BooleanBinding;
+import info.julang.external.binding.CharacterBinding;
+import info.julang.external.binding.FloatBinding;
+import info.julang.external.binding.IBinding;
+import info.julang.external.binding.IntegerBinding;
+import info.julang.external.binding.ObjectBinding;
+import info.julang.external.binding.StringBinding;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.exceptions.ExternalBindingException;
 import info.julang.external.exceptions.JSEError;
@@ -45,13 +53,6 @@ import info.julang.external.interfaces.IExtValue.IHostedVal;
 import info.julang.external.interfaces.IExtValue.IIntVal;
 import info.julang.external.interfaces.IExtValue.IObjectVal;
 import info.julang.external.interfaces.IExtValue.IStringVal;
-import info.julang.external.interop.BindingKind;
-import info.julang.external.interop.BooleanBinding;
-import info.julang.external.interop.CharacterBinding;
-import info.julang.external.interop.FloatBinding;
-import info.julang.external.interop.IBinding;
-import info.julang.external.interop.IntegerBinding;
-import info.julang.external.interop.StringBinding;
 
 /**
  * The public-facing Julian Script Engine (JSE) API.
@@ -270,6 +271,51 @@ public class JulianScriptEngine {
 	public String getString(String name, boolean throwOnError) throws ExternalBindingException {
 		try {
 			StringBinding binding = getBinding(name, BindingKind.String);
+			return binding.getValue();	
+		} catch (ExternalBindingException e) {
+			if(throwOnError) {
+				throw e;
+			}
+		}
+		
+		return null;	
+	}
+	
+	public void bindObject(String name, Object o){
+		engine.getContext().addBinding(name, new ObjectBinding(o));
+	}
+	
+	/**
+	 * Get an object binding's value.
+	 * <p/>
+	 * If an error occurs, returns null.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public Object getObject(String name) {
+		try {
+			return getObject(name, false);
+		} catch (ExternalBindingException e) {
+			// Ignore
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get an object binding's value.
+	 * <p/>
+	 * If an error occurs, returns null.
+	 * 
+	 * @param name
+	 * @param throwOnError if true, will throw null when error occurs.
+	 * @return
+	 * @throws ExternalBindingException
+	 */
+	public Object getObject(String name, boolean throwOnError) throws ExternalBindingException {
+		try {
+			ObjectBinding binding = getBinding(name, BindingKind.Object);
 			return binding.getValue();	
 		} catch (ExternalBindingException e) {
 			if(throwOnError) {

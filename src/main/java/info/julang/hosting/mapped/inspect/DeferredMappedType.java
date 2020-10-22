@@ -35,13 +35,13 @@ public class DeferredMappedType implements IMappedType {
 	private int dim;
 	private boolean sameToEnclosingType;
 	private Class<?> ocls;
-	private String name;
+	private String pname;
 	
-	public DeferredMappedType(String fullClassName, int dim, Class<?> ocls, String name){
+	public DeferredMappedType(String fullClassName, int dim, Class<?> ocls, String pName){
 		this.fullClassName = fullClassName;
 		this.dim = dim;
 		this.ocls = ocls;
-		this.name = name;
+		this.pname = pName;
 	}
 	
 	//---------------------- IMappedType ----------------------//
@@ -63,7 +63,7 @@ public class DeferredMappedType implements IMappedType {
 
 	@Override
 	public String getParamName() {
-		return name;
+		return pname;
 	}
 	
 	//---------------------- KnownMappedType ----------------------//
@@ -81,5 +81,48 @@ public class DeferredMappedType implements IMappedType {
 	 */
 	public boolean isSameToEnclosingType(){
 		return sameToEnclosingType;
+	}
+	
+	//---------------------- Object ----------------------//
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + dim;
+		result = prime * result + ((fullClassName == null) ? 0 : fullClassName.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DeferredMappedType other = (DeferredMappedType) obj;
+		if (dim != other.dim)
+			return false;
+		if (fullClassName == null) {
+			if (other.fullClassName != null)
+				return false;
+		} else if (!fullClassName.equals(other.fullClassName))
+			return false;
+		return true;
+	}
+	
+	@Override
+	public String toString() {
+		String ret = fullClassName;
+		if (dim > 0) {
+			int rank = dim;
+			while (rank > 0) {
+				ret += "[]";
+			}
+		}
+		
+		return ret;
 	}
 }

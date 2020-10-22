@@ -38,7 +38,7 @@ import info.julang.typesystem.basic.FloatType;
 import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.jclass.builtin.JStringType;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class TypeConversionTests {
 

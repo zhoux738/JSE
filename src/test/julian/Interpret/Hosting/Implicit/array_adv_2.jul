@@ -1,0 +1,11 @@
+int[] brr = arr;
+
+brr[1] = 1000;
+
+int[] fun(int[] ar){
+	ar[2] = 2000;
+	return ar;
+}
+
+int[] crr = fun(arr);
+crr[3] = 3000;

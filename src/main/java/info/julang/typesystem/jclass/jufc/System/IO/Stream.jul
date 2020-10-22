@@ -136,8 +136,9 @@ interface Stream {
  *
  * The methods declared in [Stream] are synchronous. This interface provides an alternative. Instead of
  * blocking the thread and waiting until I/O devices return, the asynchronous methods return a 
- * [promise](System.Concurrency.Promise) immediately, so that the callsite can continue to execute other
- * code. The promise wraps a continuation that will be called back upon completion of I/O operation.
+ * [promise](System.Concurrency.Promise) immediately, so that their caller may continue to execute other
+ * code and go back to check the promise anytime later. The promise wraps a continuation that will be 
+ * called back upon the completion of I/O operation.
  *
  * [see: System.Concurrency.Promise]
  * [see: System.IO.Stream]
@@ -159,7 +160,7 @@ interface AsyncStream {
 	 * process that with a continuation on the promise itself.
 	 *
 	 * This method moves forward the stream pointer by the count equal to returned value.
-	 * If [canRead()](#canReadAsync) return false, this method will throw [IOException](System.IO.IOException).
+	 * If [canRead()](#canReadAsync) returns false, this method will throw [IOException](System.IO.IOException).
 	 * 
 	 * [param: buffer] The byte buffer to hold the data which is read off of the stream.
 	 * [param: offset] The offset on buffer to start filling the data in.
@@ -170,11 +171,10 @@ interface AsyncStream {
 	Promise readAsync(byte[] buffer, int offset);
 	
 	/*
-	 * Read asynchronously from the stream to the buffer until the end of stream is hit, and invokes callback 
-	 * upon completion for evertime a chunk of data is read, which usually fills the buffer, except for the 
-	 * last time.
+	 * Read asynchronously from the stream to the buffer until the end of stream is hit, and invoke callback 
+	 * evertime a chunk of data is read, which usually fills the buffer, except for the last time.
 	 *
-	 * This method tries to read as many bytes as possible from the stream into the given buffer. Once
+	 * This method tries to read as many bytes as possible from the stream into the given buffer. Everytime
 	 * it reads a chunk of data, it will invoke the callback function, which has 
 	 * signature [func: int, System.Concurrency.PromiseHandle], with first parameter indicating the number
 	 * of bytes successfully read. If the reading failed, this callback won't be called, and the users must

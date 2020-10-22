@@ -75,6 +75,12 @@ public enum Convertibility {
 	CASTABLE(false),
 	
 	/**
+	 * The type is convertible to another without semantic change, although the two types are not grammatically related.
+	 * Only used for describing the semantic equivalence between certain platform types and JSE types.
+	 */
+	ORTHOGONAL(true),
+	
+	/**
 	 * The conversion doesn't alter the type's precision.
 	 * <pre>
 	 * Example: any type casting to itself

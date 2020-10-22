@@ -81,6 +81,7 @@ import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 import info.julang.util.Box;
 import info.julang.util.OneOrMoreList;
+import info.julang.util.Pair;
 
 public class MappedTypeLoader {
 
@@ -278,13 +279,15 @@ public class MappedTypeLoader {
 			// Filter out special members
 			boolean sta = mmi.isStatic();
 			String memberName = null;
+			boolean isSpecial = false;
 			if (!sta) {
-				Box<String> filtered = filterSepcialMember(mmi, typ, implPO);
+				Pair<String, Boolean> filtered = filterSepcialMember(mmi, typ, implPO);
 				if (filtered == null) {
 					// Skip this member
 					continue;
 				} else {
-					memberName = filtered.get();
+					memberName = filtered.getFirst();
+					isSpecial = filtered.getSecond();
 				}
 			}
 			
@@ -297,7 +300,7 @@ public class MappedTypeLoader {
 			if (memberName == null) {
 				memberName = mmi.getName();
 			} else {				
-				if (memberName.endsWith("quals")) {
+				if (isSpecial && memberName.endsWith("quals")) {
 					// SPECIAL CASE. equals/pfEquals as per interface have param type Object, but a mapped API can only
 					// generate late-binding param type, which in this case would be <platform-java.lang.Object>. Note 
 					// script type Object does NOT map to java.lang.Object. So we need insert another layer to separate 
@@ -400,7 +403,7 @@ public class MappedTypeLoader {
 		}
 	}
 	
-	private Box<String> filterSepcialMember(MappedMethodInfo mmi, ICompoundType typ, boolean implPO) {
+	private Pair<String, Boolean> filterSepcialMember(MappedMethodInfo mmi, ICompoundType typ, boolean implPO) {
 		String name = mmi.getName();
 		switch(name){
 		case "getClass":
@@ -429,7 +432,7 @@ public class MappedTypeLoader {
 		}
 		
 		// Doesn't match
-		return new Box<String>(name);
+		return new Pair<>(name, false);
 	}
 	
 	/**
@@ -438,17 +441,17 @@ public class MappedTypeLoader {
 	 *   or a box with member name if this member is deemed to be special, 
 	 *   or an empty box if this member should be treated normally. 
 	 */
-	private Box<String> checkSepcialMember(String name, Method m, Class<?>[] ptypes, boolean implPO, boolean shouldFilterOut) {
+	private Pair<String, Boolean> checkSepcialMember(String name, Method m, Class<?>[] ptypes, boolean implPO, boolean shouldFilterOut) {
 		Class<?>[] typs = m.getParameterTypes();
 		int len = typs.length;
 		if (len != ptypes.length){
 			// Do not match
-			return new Box<String>(null);
+			return new Pair<>(null, false);
 		}
 		for (int i = 0; i < len; i++){
 			if (typs[i] != ptypes[i]){ // sufficient to use == to compare since all the types involved are basic JVM types.
 				// Do not match
-				return new Box<String>(null);
+				return new Pair<>(null, false);
 			}
 		}
 		
@@ -462,7 +465,7 @@ public class MappedTypeLoader {
 			mname = "pf" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
 		}
 		
-		return new Box<String>(mname);
+		return new Pair<>(mname, true);
 	}
 
 	private JParameter[] getParamTypes(

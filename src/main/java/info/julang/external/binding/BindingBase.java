@@ -22,38 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.external.binding;
 
-import info.julang.external.interfaces.IExtValue;
-import info.julang.external.interfaces.IExtValue.IBoolVal;
-import info.julang.external.interop.ExtValue.ExtBoolValue;
+public abstract class BindingBase implements IBinding {
 
-public class BooleanBinding extends BindingBase {
-
-	private boolean value;
+	private boolean isMutable;
 	
-	public BooleanBinding(boolean value) {
-		super(true, BindingKind.Boolean);
-		this.value = value;
-	}
-
-	@Override
-	public ExtValue toInternal() {
-		return new ExtBoolValue(value);
-	}
-
-	@Override
-	public void update(IExtValue val) {
-		value = ((IBoolVal) val).getBoolValue();
+	private BindingKind kind;
+	
+	protected BindingBase(boolean isMutable, BindingKind kind){
+		this.isMutable = isMutable;
+		this.kind = kind;
 	}
 	
 	@Override
-	public Object toExternal() {
-		return value;
-	}
-	
-	public boolean getValue(){
-		return value;
+	public boolean isMutable() {
+		return isMutable;
 	}
 
+	@Override
+	public BindingKind getKind() {
+		return kind;
+	}
 }

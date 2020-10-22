@@ -1,0 +1,9 @@
+bool c1 = arr is Array;
+
+Array test(Array args){
+	args[0] = 10;
+	return args;
+}
+
+Array arr2 = test(arr);
+bool c2 = arr == arr2;

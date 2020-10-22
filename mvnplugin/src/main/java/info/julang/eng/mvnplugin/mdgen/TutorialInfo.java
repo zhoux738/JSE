@@ -159,7 +159,6 @@ public class TutorialInfo {
 							StylizedString
 							.create("CHAPTER " + i, false)
 							.addColor(Color.decode("0xC8C8C8"))
-							.setSizeByPercent(40)
 							.inTag("<p style=\"margin-bottom: 0px\">"));
 						writer.nextLine(2, false);
 						

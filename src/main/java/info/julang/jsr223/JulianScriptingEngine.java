@@ -41,21 +41,55 @@ import javax.script.SimpleBindings;
 import info.julang.execution.security.IEnginePolicy;
 import info.julang.external.EngineInitializationOption;
 import info.julang.external.JulianScriptEngine;
+import info.julang.external.binding.IBinding;
 import info.julang.external.exceptions.JSEException;
 import info.julang.external.interfaces.IExtEngineContext;
-import info.julang.external.interop.IBinding;
 import info.julang.util.Pair;
 
 /**
- * Julian scripting engine implementation as per JSR-223 (https://www.jcp.org/en/jsr/detail?id=223)
- * <p/>
- * To add module path, call {@link ScriptContext#setAttribute(String, Object, int)} with key = {@link #MODULE_PATHS}.
- * The value must be a List or an String array (<code>String[]</code>). If it is a list, only String elements in it
+ * Julian scripting engine implementation as per JSR-223 (https://www.jcp.org/en/jsr/detail?id=223).
+ * <p>
+ * To add module paths, call {@link ScriptContext#setAttribute(String, Object, int)} with key = {@link #MODULE_PATHS}.
+ * The value must be a String, List or an String array (<code>String[]</code>). If it is a list, only String elements in it
  * will be added as module path.
- * <p/>
- * The scopes that are honored by this engine is {@link ScriptContext#ENGINE_SCOPE} only.
- * <p/>
- * This engine will run in a REPL mode, meaning the state from the previous runs will be retained.
+ * <p>
+ * Only {@link ScriptContext#ENGINE_SCOPE} is honored by this engine.
+ * <p>
+ * The user may use the following attributes to control the engine's behavior:
+ * <pre><table style="text-align:left">
+ *   <tr>
+ *     <th>Key</th>
+ *     <th>Type</th>
+ *     <th>Meaning</th>
+ *     <th>When not set</th>
+ *   </tr>
+ *   <tr>
+ *     <td>"{@link #MODULE_PATHS JSE_MODULE_PATHS}"</td>
+ *     <td>String, String[] or List&lt;String&gt;</td>
+ *     <td>The paths to use as module roots.</td>
+ *     <td>No external module roots will be used.</td>
+ *   </tr>
+ *   <tr>
+ *     <td>"{@link #ALLOW_POLICIES JSE_ALLOW_POLICIES}"</td>
+ *     <td>String, String[] or List&lt;String&gt;</td>
+ *     <td>Allow platform access policies. Each string should be in the form of "CATEGORY/OPERATION(,OPERATION)*".</td>
+ *     <td>If neither this nor JSE_DENY_POLICIES is set, all policies are allowed.</td>
+ *   </tr>
+ *   <tr>
+ *     <td>"{@link #DENY_POLICIES JSE_DENY_POLICIES}"</td>
+ *     <td>String, String[] or List&lt;String&gt;</td>
+ *     <td>Deny platform access policies. Each string should be in the form of "CATEGORY/OPERATION(,OPERATION)*".</td>
+ *     <td>If neither this nor JSE_ALLOW_POLICIES is set, all policies are allowed.</td>
+ *   </tr>
+ *   <tr>
+ *     <td>"{@link #ALLOW_OBJECT_BINDING JSE_ALLOW_OBJECT_BINDING}"</td>
+ *     <td>boolean</td>
+ *     <td>Set to allow or deny arbitrary object binding. If not allowed, only a few select types can be bound.</td>
+ *     <td>Allow arbitrary object binding.</td>
+ *   </tr>
+ * </table></pre>
+ * This engine runs in REPL mode, therefore the state from the previous runs will be retained.
+ * <p>
  * 
  * @author Ming Zhou
  */
@@ -83,6 +117,16 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 	 * By default, all policies are allowed.
 	 */
 	public static final String DENY_POLICIES = "JSE_DENY_POLICIES";
+	
+
+	/** 
+	 * If set to true, allow arbitrary object binding. Otherwise, only certain primitive 
+	 * types and String can be bound. Beware of the overhead - if enabled, this will cause 
+	 * the engine to inspect the bound types and map them to internal representation.
+	 * <p>
+	 * By default, all policies are allowed.
+	 */
+	public static final String ALLOW_OBJECT_BINDING = "JSE_ALLOW_OBJECT_BINDING";
 	
 	private JulianScriptEngineInternal jse;
 	
@@ -180,6 +224,10 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 			}
 			
 			lst = processPolicies(slist);
+		} else if (obj instanceof String){
+			List<String> slist = new ArrayList<String>();
+			slist.add((String)obj);
+			lst = processPolicies(slist);
 		}
 
 		return lst.size() > 0 ? lst : null;
@@ -208,6 +256,9 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 					String modPath = (String) ele;
 					jse.addModulePath(modPath);
 				}
+			} else if (obj1 instanceof String) {
+				String modPath = (String) obj1;
+				jse.addModulePath(modPath);
 			}
 		}
 		
@@ -231,6 +282,9 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 			}
 		}
 		
+		boolean requiresObjBinding = false;
+		boolean allowObjBinding = true;
+		
 		// Convert bindings (ignore GLOBAL_SCOPE)
 		Bindings bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
 		Set<Entry<String, Object>> set = bindings.entrySet();
@@ -253,14 +307,20 @@ public class JulianScriptingEngine extends AbstractScriptEngine {
 				} else if (ov instanceof Float){
 					float value = (float) ov;
 					jse.bindFloat(key, value);
+				} else {
+					// Allow arbitrary object binding?
+					if (!requiresObjBinding) {
+						requiresObjBinding = true;
+						Object obj3 = context.getAttribute(ALLOW_OBJECT_BINDING);
+						if(obj3 != null && obj3 instanceof Boolean){
+							allowObjBinding = ((Boolean)obj3).booleanValue();
+						}
+					}
+					
+					if (allowObjBinding) {
+						jse.bindObject(key, ov);
+					}
 				}
-				// TODO: Support more binding options
-				/*
-			      else if (ov instanceof Byte){
-					byte value = (byte) ov;
-					jse.bindByte(key, value);
-				}
-				*/
 			}
 		}
 	}

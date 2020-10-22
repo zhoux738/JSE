@@ -26,7 +26,7 @@ import info.julang.memory.value.StringValue;
 import info.julang.typesystem.jclass.builtin.JStringType;
 import info.jultest.test.Commons;
 import info.jultest.test.FileSysHelper;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class System_IO_TextWriter_IOTestSuite {
 

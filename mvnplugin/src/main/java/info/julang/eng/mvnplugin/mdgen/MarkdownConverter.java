@@ -117,11 +117,17 @@ public class MarkdownConverter implements AutoCloseable {
 
 		@Override
 		public String decMemberType(String raw, TypeRef tref) {
+			if (tref.isVoid()) {
+				return raw;
+			}
+			
 			if (tref.dimension > 0) {
 				raw += tref.getArrayDimension();
 			}
-			
-			return raw;
+
+			String linkPath = resolve(tref).getLinkPath(MarkdownConverter.this.typ, null);
+			StylizedString ss = StylizedString.create(raw).toLink(linkPath);
+			return ss.toString();
 		}
 		
 	};
@@ -507,6 +513,13 @@ public class MarkdownConverter implements AutoCloseable {
 					writer.nextLine(false);
 					List<IParsedDocSection> list = SummaryConvertor.convert(mc, tut, getNamespacePool(), field.getSummary(), typ, field);
 					writer.append(list);
+					
+					if (field.references != null && field.references.size() > 0) {
+						writer.nextLine(2, false);
+						addReferences(field.references);
+						writer.nextLine(2, false);
+					}
+					
 					addLineBreakByTag(2);
 				}
 			}
@@ -605,7 +618,12 @@ public class MarkdownConverter implements AutoCloseable {
 				writer.nextLine(2, false);
 				writer.addAnchor(ctor.getAnchorName(AnchorType.Return, null));
 				List<IParsedDocSection> sum = SummaryConvertor.convert(mc, tut, getNamespacePool(), m.returnType.summary, typ, ctor);
+				
+				// A single item table
+				writer.nextLine(false);
+				writer.write("- ");
 				writer.append(sum);
+				
 				writer.nextLine(2, false);
 				hasExtra = true;
 			}

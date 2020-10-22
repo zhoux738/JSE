@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.eng.mvnplugin.docgen;
 
 import info.julang.eng.mvnplugin.docgen.DocModel.TypeRef;
+import info.julang.execution.namespace.NamespacePool;
 import info.julang.interpretation.syntax.ClassSubtype;
 import info.julang.modulesystem.prescanning.RawClassInfo;
 import info.julang.typesystem.loading.depresolving.IOrderResolvable;
@@ -40,13 +41,15 @@ import java.util.List;
  */
 public class DocumentedClassInfo extends RawClassInfo implements IOrderResolvable {
 
-	public DocumentedClassInfo(String modName, RawClassInfo rci) {
+	public DocumentedClassInfo(String modName, RawClassInfo rci, NamespacePool ns) {
 		super(rci.getName(), rci.getDeclInfo());
 		this.modName = modName;
+		this.ns = ns;
 	}
 
 	private String modName;
 	private DocModel.Type typeDoc;
+	private NamespacePool ns;
 	
 	public void setDoc(DocModel.Type typeDoc){
 		this.typeDoc = typeDoc;
@@ -58,6 +61,10 @@ public class DocumentedClassInfo extends RawClassInfo implements IOrderResolvabl
 	
 	public String getModuleName() {
 		return modName;
+	}
+	
+	public NamespacePool getNamespacePool() {
+		return ns;
 	}
 
 	//------------- IOrderResolvable -------------//

@@ -29,6 +29,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import info.julang.dev.GlobalSetting;
 import info.julang.hosting.PlatformExceptionInfo;
@@ -67,7 +71,7 @@ import info.julang.typesystem.jclass.builtin.JStringType;
  */
 public class PlatformTypeMapper {
 
-	private Class<?> clazz = null;
+	protected Class<?> clazz = null;
 	
 	/**
 	 * Map a given platform type to {@link MappedTypeInfo} object, which contains 
@@ -111,21 +115,10 @@ public class PlatformTypeMapper {
 		MappedTypeInfo mti = new MappedTypeInfo(clazz, av);
 		
 		// all public fields, including inherited
-		Field[] fields = clazz.getFields();
-		for (Field fld : fields) {
-			Class<?> cls = fld.getType();
-			IMappedType imtype = translateType("<field>", cls);
-			mti.addField(fld, imtype);
-		}
+		addFields(mti);
 
 		// all public methods, including inherited
-		Method[] methods = clazz.getMethods();
-		for (Method mtd : methods) {
-			Class<?> cls = mtd.getReturnType();
-			IMappedType rtype = translateType("<return>", cls);
-			IMappedType[] ptyps = getParamTypes(mtd.getParameters(), mtd.getParameterTypes());
-			mti.addMethod(mtd, rtype, ptyps);
-		}
+		addMethods(mti);
 		
 		// all public constructors
 		Constructor<?>[] ctors = clazz.getConstructors();
@@ -136,8 +129,37 @@ public class PlatformTypeMapper {
 		
 		return mti;
 	}
+	
+	protected void addFields(MappedTypeInfo mti) {
+		Field[] fields = clazz.getFields();
+		for (Field fld : fields) {
+			Class<?> cls = fld.getType();
+			IMappedType imtype = translateType("<field>", cls);
+			mti.addField(fld, imtype);
+		}
+	}
+	
+	protected void addMethods(MappedTypeInfo mti) {
+		// all public methods, including inherited
+		PlatformMethodCollection mcoll = new PlatformMethodCollection();
+		Method[] methods = clazz.getMethods();
+		for (Method mtd : methods) {
+			Class<?> cls = mtd.getReturnType();
+			IMappedType rtype = translateType("<return>", cls);
+			IMappedType[] ptypes = getParamTypes(mtd.getParameters(), mtd.getParameterTypes());
+			
+			// It's possible two methods of same signature appear here, due to Java's overriding 
+			// with more concrete return type. So let's only add one with the most concrete return type.
+			mcoll.addOrReplaceMethod(mtd, rtype, ptypes);
+		}
+		
+		Collection<PlatformMethodInfo> allMethods = mcoll.getAll();
+		for (PlatformMethodInfo pmi : allMethods) {
+			mti.addMethod(pmi.mtd, pmi.rtype, pmi.ptypes);
+		}
+	}
 
-	private IMappedType[] getParamTypes(Parameter[] parameters, Class<?>[] clss) {
+	protected IMappedType[] getParamTypes(Parameter[] parameters, Class<?>[] clss) {
 		Class<?> cls;
 		IMappedType ptyps[] = null;
 		ptyps = new IMappedType[clss.length];
@@ -150,7 +172,7 @@ public class PlatformTypeMapper {
 		return ptyps;
 	}
 	
-	private IMappedType translateType(String name, Class<?> cls) {
+	protected IMappedType translateType(String name, Class<?> cls) {
 		return translateType0(name, cls, cls, 0);
 	}
 
@@ -177,6 +199,102 @@ public class PlatformTypeMapper {
 			}
 			return dmt;
 		}
+	}
+
+	static class PlatformMethodCollection {
+		
+		Map<PlatformMethodInfo, PlatformMethodInfo> infos;
+		
+		PlatformMethodCollection(){
+			infos = new HashMap<>();
+		}
+		
+		void addOrReplaceMethod(Method mtd, IMappedType rtype, IMappedType[] ptypes) {
+			PlatformMethodInfo pmi = new PlatformMethodInfo(mtd, rtype, ptypes);
+			PlatformMethodInfo existing = infos.get(pmi);
+			if (existing == null || pmi.isMoreDerivedThan(existing)) {
+				infos.put(pmi, pmi);
+			}
+		}
+		
+		Collection<PlatformMethodInfo> getAll(){
+			return infos.values();
+		}
+	}
+	
+	static class PlatformMethodInfo {
+		
+		Method mtd;
+		IMappedType rtype;
+		IMappedType[] ptypes;
+		
+		public PlatformMethodInfo(Method mtd, IMappedType rtype, IMappedType[] ptypes) {
+			this.mtd = mtd;
+			this.rtype = rtype;
+			this.ptypes = ptypes;
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append(rtype.toString());
+			sb.append(" ");
+			sb.append(mtd.getName());
+			sb.append("(");
+			int max = ptypes.length - 1;
+			for (int i = 0; i <= max; i++) {
+				sb.append(ptypes[i].toString());
+				if (i != max) {
+					sb.append(", ");
+				}
+			}
+			sb.append(")");
+			return sb.toString();
+		}
+		
+		// Do not consider return type
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + mtd.getName().hashCode();
+			result = prime * result + Arrays.hashCode(ptypes);
+			return result;
+		}
+
+		// Do not consider return type
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			PlatformMethodInfo other = (PlatformMethodInfo) obj;
+			if (!this.mtd.getName().equals(other.mtd.getName()))
+				return false;
+			if (!Arrays.equals(ptypes, other.ptypes))
+				return false;
+			return true;
+		}
+
+		public boolean isMoreDerivedThan(PlatformMethodInfo another) {
+			Class<?> thisClass = this.rtype.getClass();
+			Class<?> thatClass = another.getClass();
+			if (thisClass == thatClass) {
+				// This should not happen. But if it somehow does, just ignore it.
+				return false;
+			}
+			
+			boolean thisIsHigher = thisClass.isAssignableFrom(thatClass);
+			boolean thatIsHigher = thatClass.isAssignableFrom(thisClass);
+			if (thisIsHigher && !thatIsHigher) {
+				return true;
+			}
+			
+			return false;
+		}		
 	}
 
 }

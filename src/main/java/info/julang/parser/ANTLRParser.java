@@ -54,19 +54,34 @@ import info.julang.util.OSTool;
  * script, a module file, a function body, or an expression is parseable by this class. But
  * a code snippet that doesn't constitute any of above by itself is not. For example, while
  * <code>f(1, "a")</code> is totally legitimate, <code>(1, "a")</code> is not.
- * <p/>
- * First call {@link #parse(boolean)}, then call {@link #getAstInfo()} to get the result.
+ * <p>
+ * The most common usage is to first call {@link #parse(boolean, boolean)}, then call {@link 
+ * #getAstInfo()} to get the result. However, one may also perform certain token-based 
+ * operations that only require scanning, but not parsing. Call {@link #scan(boolean)} to 
+ * scan the script, then call {@link #getDoc(Token)}, {@link #getDirectives()}, etc. to 
+ * extract various in-script info.
+ * <p>
+ * This class is not thread-safe.
  * 
  * @author Ming Zhou
  */
 public class ANTLRParser {
 
+	// Initialized in constructor
+	private String _fileName;
+	private InputStream _stream;
+	private JSEParsingHandler _handler;
+	
+	// Additional settings, pre-scanning
+	private boolean _processDirectives;
+	
+	// Available after scanning
+	private FilterableTokenStream cts;
+	
+	// Available after parsing
 	private BadSyntaxException bse;
 	private ProgramContext exeCtxt;
-	private String fileName;
-	private InputStream stream;
-	private JSEParsingHandler handler;
-	private FilterableTokenStream cts;
+	private Directives directives;
 	
 	/**
 	 * Create a new parser instance. Use a different instance for each input stream.
@@ -76,9 +91,9 @@ public class ANTLRParser {
 	 * @param shouldCanonicalize true to canonicalize the file path (making the separator consistent with the OS).
 	 */
 	public ANTLRParser(String fileName, InputStream stream, boolean shouldCanonicalize){
-		this.fileName = shouldCanonicalize ? OSTool.canonicalizePath(fileName) : fileName;
-		this.stream = stream;
-		handler = new JSEParsingHandler();
+		this._fileName = shouldCanonicalize ? OSTool.canonicalizePath(fileName) : fileName;
+		this._stream = stream;
+		_handler = new JSEParsingHandler();
 	}
 	
 	/**
@@ -92,6 +107,13 @@ public class ANTLRParser {
 		ANTLRParser ap = new ANTLRParser(fileName, bais, false);
 		return ap;
 	}
+	
+	/**
+	 * Set whether (true) or not (false) to process the script directives.
+	 */
+	public void setProcessDirectives(boolean value) {
+		this._processDirectives = value;
+	}
 
 	/**
 	 * Scan to create a lazy AST, which can be materialized into a actual tree on demand.
@@ -102,7 +124,7 @@ public class ANTLRParser {
 	public LazyAstInfo scan(boolean throwNow){
 		parse0(ParsingPhase.SCAN, throwNow);
 		
-		LazyAstInfo ainfo = new LazyAstInfo(this, fileName, bse);
+		LazyAstInfo ainfo = new LazyAstInfo(this, _fileName, bse);
 		return ainfo;
 	}
 	
@@ -119,6 +141,8 @@ public class ANTLRParser {
 	
 	/**
 	 * Get the immediately preceding documentation block for the given token.
+	 * <p>
+	 * This method will trigger scanning if the script has not been scanned.
 	 * 
 	 * @param startTok the token to its right a search will be performed.
 	 * @return the documentation block in its original form, including the enclosing 
@@ -164,8 +188,17 @@ public class ANTLRParser {
 				if (index == target) {
 					// The comment block must be the (logically) immediately preceding 
 					// token. Otherwise it's not considered to be the doc for this node.
-					String doc = tok.getText();
-					return doc != null ? doc : "";
+					
+					// Additional check: if directive processing is enabled, any comment that is 
+					// recognized as the directive is not considered doc for any node.
+					boolean isDirective = _processDirectives
+						&& Directives.asDirective(tok) != null
+						&& this.getDirectives().getLastToken() == tok;
+					
+					if (!isDirective) {
+						String doc = tok.getText();
+						return doc != null ? doc : "";
+					}
 				}
 			}
 		}
@@ -174,9 +207,27 @@ public class ANTLRParser {
 	}
 	
 	/**
+	 * Get directives embedded in this script. Call {@link #setProcessDirectives} before 
+	 * parsing to enable directives processing, otherwise this method would always return an
+	 * empty value (not null though).
+	 * <p>
+	 * This method will trigger scanning if the script has not been scanned.
+	 * 
+	 * @return Never null, but always empty if processing for directives is not turned on.
+	 */
+	public Directives getDirectives() {
+		if (_processDirectives) {
+			parse0(ParsingPhase.SCAN, true);
+			return directives;
+		} else {
+			return Directives.EMPTY;
+		}
+	}
+	
+	/**
 	 * Parse the given text to build AST. This can be called without {@link #scan(boolean)} getting called first.
 	 * 
-	 * @param stream
+	 * @param _stream
 	 * @param throwNow if true, throw the exception if parsing failed; otherwise, the exception can be demanded from the result.
 	 */
 	public void parse(boolean buildTree, boolean throwNow){
@@ -190,9 +241,9 @@ public class ANTLRParser {
 	 */
 	public AstInfo<ProgramContext> getAstInfo(){
 		if (bse != null){
-			return AstInfo.fail(bse, fileName);
+			return AstInfo.fail(bse, _fileName);
 		} else if (exeCtxt != null) {
-			return AstInfo.succ(exeCtxt, fileName);
+			return AstInfo.succ(exeCtxt, _fileName);
 		} else {
 			throw new JSEError("The AST is demanded before parsing.");
 		}
@@ -217,25 +268,31 @@ public class ANTLRParser {
 	    try {
 	    	// Scan
 	    	if (cts == null) {
-				CharStream input = new ANTLRInputStream(stream);
+				CharStream input = new ANTLRInputStream(_stream);
 				JulianLexer lexer = new JulianLexer(input);
 				if (!GlobalSetting.EnableANTLRDefaultErrorReport){
 					lexer.removeErrorListeners();
-					lexer.addErrorListener(handler);
+					lexer.addErrorListener(_handler);
 					//lexer.addErrorListener(new DiagnosticErrorListener());
 				}
-				cts = new FilterableTokenStream(lexer);    		
+				cts = new FilterableTokenStream(lexer);	
+		    	
+		    	// Directives
+		    	if (_processDirectives) {
+		    		cts.fill();
+		    		this.directives = Directives.create(cts);
+		    	}
 	    	}
 
 	    	// Parse
 			if (phase != ParsingPhase.SCAN) {
-				parse1(phase, cts, handler, throwNow);
+				parse1(phase, cts, _handler, throwNow);
 			}
 		} catch (IOException e) {
 			throw new JSEError(e);
 		} catch (RecognitionException e) {
 			throw new BadSyntaxException(
-				"Parser encountered a syntax error: " + e.getMessage(), this.fileName, e.getOffendingToken());
+				"Parser encountered a syntax error: " + e.getMessage(), this._fileName, e.getOffendingToken());
 		}
 	}
 	
@@ -292,12 +349,12 @@ public class ANTLRParser {
 				if (tok != null && tok instanceof org.antlr.v4.runtime.Token){
 					faultingTok = (org.antlr.v4.runtime.Token)tok;
 					ANTLRParser.this.bse = new BadSyntaxException(
-						"Encountered a syntax error during parsing.", fileName, faultingTok);
+						"Encountered a syntax error during parsing.", _fileName, faultingTok);
 				} else if (ex != null) {
 					faultingTok = ex.getOffendingToken();
 					if (faultingTok != null) {
 						ANTLRParser.this.bse = new BadSyntaxException(
-							"Encountered a syntax error during parsing.", fileName, faultingTok);
+							"Encountered a syntax error during parsing.", _fileName, faultingTok);
 					}
 				}
 				
@@ -307,7 +364,7 @@ public class ANTLRParser {
 							"Encountered a syntax error during parsing.", new IHasLocationInfoEx(){
 								@Override
 								public String getFileName() {
-									return fileName;
+									return _fileName;
 								}
 								@Override
 								public int getLineNumber() {
@@ -328,7 +385,7 @@ public class ANTLRParser {
 							});
 					} else {
 						ANTLRParser.this.bse = new BadSyntaxException(
-							"Encountered a syntax error during parsing.", fileName, UnknownToken.INSTANCE);
+							"Encountered a syntax error during parsing.", _fileName, UnknownToken.INSTANCE);
 					}
 				}
 			}

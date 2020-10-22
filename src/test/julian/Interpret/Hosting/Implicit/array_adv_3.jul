@@ -1,0 +1,28 @@
+class Data {
+	int[] _data;
+	
+	Data(int[] data){
+		replace(data);
+	}
+	
+	int[] get(){
+		return _data;
+	}
+	
+	void set(int index, int value){
+		_data[index] = value;
+	}
+	
+	void replace(int[] data){
+		_data = data;
+	}
+}
+
+Data data = new Data(arr);
+
+int[] r1 = data.get();
+r1[0] = 50;
+
+data.set(1, 100);
+
+data.replace(new int[] { 7, 11, 13 });

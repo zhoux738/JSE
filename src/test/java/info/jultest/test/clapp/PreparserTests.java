@@ -8,7 +8,7 @@ import info.julang.clapp.repl.REPLParsingException;
 import info.julang.clapp.repl.pparser.BlockPreparser;
 import info.julang.clapp.repl.pparser.ContinuationPreparser;
 import info.julang.clapp.repl.pparser.RegularPreparser;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class PreparserTests {
 

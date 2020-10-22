@@ -1,3 +1,4 @@
+/* $PRAGMA$ info.julang.ide.no.parsing */
 // duplicate return types
 class Item {
 	

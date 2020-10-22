@@ -385,9 +385,12 @@ public class NewJulianScriptPage extends WizardPage {
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
 			if (ext.equalsIgnoreCase("jul") == false) {
-				updateStatus("File extension must be \"jul\"");
+				updateStatus("File extension must be \".jul\"");
 				return;
 			}
+		} else {
+			updateStatus("File must end with extenion \".jul\"");
+			return;
 		}
 		
 		switch (this.getScriptType()) {

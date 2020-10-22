@@ -32,7 +32,6 @@ import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.indexable.BuiltInIndexable;
 import info.julang.memory.value.indexable.IIndexable;
-import info.julang.memory.value.indexable.JIndexableValue;
 import info.julang.memory.value.iterable.IIterator;
 import info.julang.memory.value.iterable.IndexDrivenIterator;
 import info.julang.typesystem.JType;
@@ -43,7 +42,7 @@ import info.julang.typesystem.jclass.builtin.JArrayType;
  * 
  * @author Ming Zhou
  */
-public abstract class ArrayValue extends ObjectValue implements JIndexableValue, IArrayVal {
+public abstract class ArrayValue extends ObjectValue implements IArrayValue, IArrayVal {
 	
 	private JArrayType type;
 	

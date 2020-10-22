@@ -1,0 +1,4 @@
+/* $PRAGMA$ info.julang.test.directive1 */
+var x = 3;
+/* $PRAGMA$ info.julang.test.directive2 */
+var a = 5;

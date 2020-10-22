@@ -97,8 +97,11 @@ public class HostedMethodManager {
 		
 		if (mapper == null) {
 			mapper = new PlatformTypeMapper();
-			mapped = new HashMap<String, Pair<FQName, MappedTypeInfo>>();
 		}
+		
+		if (mapped == null) {
+			mapped = new HashMap<String, Pair<FQName, MappedTypeInfo>>();
+		};
 		
 		String pcName = hattr.getClassName();
 		checkName(pcName);
@@ -114,6 +117,15 @@ public class HostedMethodManager {
 		
 		mapped.put(pcName, new Pair<FQName, MappedTypeInfo>(fqName, mti));
 		return mti;
+	}
+	
+	public void setPlatformTypeMapper(PlatformTypeMapper mapper) {
+		this.mapper = mapper;
+	}
+	
+	public void reset() {
+		this.mapper = null;
+		this.mapped = null;
 	}
 
 	public Class<?> preloadPlatformClass(String pcname) {

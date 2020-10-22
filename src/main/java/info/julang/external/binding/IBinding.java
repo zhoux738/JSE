@@ -22,37 +22,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.external.binding;
 
 import info.julang.external.interfaces.IExtValue;
-import info.julang.external.interfaces.IExtValue.IFloatVal;
-import info.julang.external.interop.ExtValue.ExtFloatValue;
 
-public class FloatBinding extends BindingBase {
+/**
+ * A binding is a pair of name and some kind of value. To the hosting environment, it represents a state of script engine.
+ * 
+ * @author Ming Zhou
+ */
+public interface IBinding {
 
-	private float value;
+	/**
+	 * Whether this binding is mutable.
+	 * 
+	 * @return true if the binding is mutable.
+	 */
+	boolean isMutable();
 	
-	public FloatBinding(float value) {
-		super(true, BindingKind.Float);
-		this.value = value;
-	}
-
-	@Override
-	public ExtValue toInternal() {
-		return new ExtFloatValue(value);
-	}
-
-	@Override
-	public void update(IExtValue val) {
-		value = ((IFloatVal) val).getFloatValue();
-	}
+	/**
+	 * Get the {@link BindingKind kind of binding}.
+	 * 
+	 * @return
+	 */
+	BindingKind getKind();
 	
-	@Override
-	public Object toExternal() {
-		return value;
-	}
+	/**
+	 * Convert this binding to an {@link ExtValue} that can be accessed
+	 * by engine internals.
+	 */
+	ExtValue toInternal();
 	
-	public float getValue(){
-		return value;
-	}
+	/**
+	 * Convert this binding to a Java Object instance.
+	 * 
+	 * @return
+	 */
+	Object toExternal();
+	
+	/**
+	 * Update the binding with a new value.
+	 * 
+	 * @param val
+	 */
+	void update(IExtValue val);
+	
 }

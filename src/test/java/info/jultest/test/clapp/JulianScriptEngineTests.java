@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import info.julang.external.JulianScriptEngine;
 import info.julang.external.exceptions.JSEException;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class JulianScriptEngineTests {
 

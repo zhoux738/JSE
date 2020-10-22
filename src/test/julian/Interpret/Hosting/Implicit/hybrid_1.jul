@@ -1,0 +1,7 @@
+[Mapped(className="info.jultest.test.hosted.ImplicitBindingTests$IBTClass3")]
+class IBTClass3 {
+
+}
+
+IBTClass3 c = new IBTClass3(5);
+a.multiply(c);

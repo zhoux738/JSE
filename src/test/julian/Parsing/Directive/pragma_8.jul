@@ -1,0 +1,5 @@
+/* $PRAGMA$ info.julang.test.directive1 */
+class C { }
+
+/* $PRAGMA$ info.julang.test.directive1 */
+class C2 { }

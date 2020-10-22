@@ -21,7 +21,7 @@ import info.julang.memory.simple.SimpleHeapArea;
 import info.julang.memory.value.StringValue;
 import info.jultest.test.Commons;
 import info.jultest.test.FileSysHelper;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class System_IO_File_IOTestSuite {
 

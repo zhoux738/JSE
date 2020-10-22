@@ -1,3 +1,4 @@
+/* $PRAGMA$ info.julang.ide.no.parsing */
 int x = 5;
 
 void fun(){

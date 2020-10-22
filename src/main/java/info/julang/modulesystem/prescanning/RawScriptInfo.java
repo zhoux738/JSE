@@ -57,18 +57,18 @@ public class RawScriptInfo implements IRawScriptInfo {
 
 	public class Option {
 		
-		private boolean allowNoModule;
+		private String presetModuleName;
 		
 		private boolean allowNameInconsistency;
 		
 		private boolean allowSystemModule;
 
-		public boolean isAllowNoModule() {
-			return allowNoModule;
+		public String getPresetModuleName() {
+			return presetModuleName;
 		}
 
-		public void setAllowNoModule(boolean allowNoModule) {
-			this.allowNoModule = allowNoModule;
+		public void setPresetModuleName(String presetModuleName) {
+			this.presetModuleName = presetModuleName;
 		}
 
 		public boolean isAllowNameInconsistency() {

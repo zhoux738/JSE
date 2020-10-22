@@ -16,7 +16,7 @@ import info.julang.interpretation.errorhandling.KnownJSException;
 import info.jultest.test.AssertHelper;
 import info.jultest.test.Commons;
 import info.jultest.test.TestExceptionHandler;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Use this class when the test case needs to throw a Julian exception yet 
@@ -41,6 +41,13 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		teh = installExceptionHandler(engine);
 		this.group = group;
 		this.feature = feature;
+	}
+	
+	/**
+	 * Get the engine instance.
+	 */
+	public SimpleScriptEngine getEngine() {
+		return engine;
 	}
 	
 	/**

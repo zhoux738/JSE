@@ -153,6 +153,7 @@ public class CastOp extends Operator {
 				} else {
 					break;
 				}
+			case ORTHOGONAL:
 			case CASTABLE:
 				if(ov instanceof JCastable){
 					JCastable jc = (JCastable) ov;

@@ -1,0 +1,9 @@
+bool b1 = false;
+string msg = "Unexpectedly failed during runtime!";
+
+try {
+	a.get();
+} catch (System.HostingPlatformException ex) {
+	b1 = ex.getMessage().contains(msg) 
+		|| ex.getCause().getMessage().contains(msg);
+}

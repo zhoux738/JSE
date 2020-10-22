@@ -27,7 +27,7 @@ package info.julang.clapp;
 import java.util.ArrayList;
 import java.util.List;
 
-import info.julang.external.interop.IBinding;
+import info.julang.external.binding.IBinding;
 
 public class CLEnvironment {
 

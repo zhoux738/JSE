@@ -1,3 +1,4 @@
+/* $PRAGMA$ info.julang.ide.no.parsing */
 module ModuleSys.SynA;
 
 class MyClass {

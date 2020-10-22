@@ -28,7 +28,7 @@ package info.julang.hosting.mapped.inspect;
  * An interface to represent the script type a platform shall be mapped to.
  * <p>
  * At the point where we inspect and filter a platform type to get all the
- * members of which we are to add to the mapped Julian type, it's possible 
+ * members thereof we are to add to the mapped Julian type, it's possible 
  * that we don't know if a platform type we encounter can be successfully 
  * mapped, so we must encapsulate the information and defer the decision 
  * to a later stage while building the class. This extra layer of wrapping
@@ -63,4 +63,19 @@ public interface IMappedType {
 	 * If the type serves as a parameter, this is the parameter's name. Otherwise undefined.
 	 */
 	String getParamName();
+	
+	/**
+	 * Requires explicit implementation of <code>java.lang.Object.hashCode()</code>.
+	 */
+	int hashCode();
+
+	/**
+	 * Requires explicit implementation of <code>java.lang.Object.equals(Object)</code>.
+	 */
+	boolean equals(Object obj);
+	
+	/**
+	 * Requires explicit implementation of <code>java.lang.Object.toString()</code>.
+	 */
+	String toString();
 }

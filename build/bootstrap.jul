@@ -1,0 +1,55 @@
+import System.IO;
+
+// 1. Prepare the pom.xml for bootstrapping
+Directory dir = new Directory(script_path + Environment.separator + ".." + Environment.separator + "..");
+File orgPom = dir.subFile("pom.xml");
+string g_suffix = DateTime.getNow().format("yyMMddHHmmssSSS");
+File tmpPom = dir.subFile("pom-" + g_suffix + ".tmp.xml");
+
+// 2. Copy from source to target, invoking special processing for hinted line 
+TextReader reader = null;
+TextWriter writer = null;
+
+try {
+	tmpPom.create();
+
+	reader = new TextReader(orgPom.getReadStream());
+	writer = new TextWriter(tmpPom.getWriteStream(false));
+	bool shouldPrint = true;
+	string oline = null;
+	int i = 0;
+	while ((oline = reader.readln()) != null) {
+		i++;
+	    var line = oline.trim();
+		var toCheck = line.startsWith("<!--") && line.endsWith("-->") && line.length > 7;
+	    if (toCheck){
+	        line = line.toLower();
+	        if (shouldPrint && line.contains("juleng:") && line.contains("start")){
+	            shouldPrint = false;
+	        }
+	    }
+	    
+	    if (shouldPrint) {
+	        writer.writeln(oline);
+	    } else if (toCheck && line.contains("juleng:") && line.contains("end")){
+	        shouldPrint = true;
+	    }
+	}
+
+	writer.close();
+	
+	JSE.setProperty("btpom", tmpPom.getPath());
+	Console.println("Created temporary pom file: " + tmpPom.getPath() + " (" + i + " lines read)");
+} catch (Exception ex) {
+    try {
+        if (writer != null) {
+            writer.close();
+        }
+    } finally {
+    	if (tmpPom.exists()) {
+    		tmpPom.delete();
+    	}
+    }
+    
+    throw ex;
+}

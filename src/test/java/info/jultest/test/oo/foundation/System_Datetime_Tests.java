@@ -13,7 +13,7 @@ import info.julang.external.exceptions.EngineInvocationError;
 import java.util.Calendar;
 import java.util.Date;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

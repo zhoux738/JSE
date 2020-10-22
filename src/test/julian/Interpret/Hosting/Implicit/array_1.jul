@@ -1,0 +1,7 @@
+int a0 = arr[0];
+arr[0] = 5;
+arr[2] = 10;
+int a2 = arr[2];
+int t = arr[4];
+arr[4] = arr[3];
+arr[3] = t;

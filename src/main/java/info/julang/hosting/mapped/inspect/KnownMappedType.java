@@ -36,7 +36,7 @@ import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
- * The mapped type is already know and resolved. Simply use {@link #getType} to get the mapped type.
+ * The mapped type is already known and resolved. Simply use {@link #getType} to get the mapped type.
  * 
  * @author Ming Zhou
  */
@@ -142,4 +142,46 @@ public class KnownMappedType implements IMappedType {
 		return tgt;
 	}
 
+	//---------------------- Object ----------------------//
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + dim;
+		result = prime * result + ((typ == null) ? 0 : typ.getName().hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		KnownMappedType other = (KnownMappedType) obj;
+		if (dim != other.dim)
+			return false;
+		if (typ == null) {
+			if (other.typ != null)
+				return false;
+		} else if (!typ.getName().equals(other.typ.getName()))
+			return false;
+		return true;
+	}
+	
+	@Override
+	public String toString() {
+		String ret = typ.getName();
+		if (dim > 0) {
+			int rank = dim;
+			while (rank > 0) {
+				ret += "[]";
+			}
+		}
+		
+		return ret;
+	}
 }

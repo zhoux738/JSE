@@ -29,7 +29,9 @@ import info.julang.external.interfaces.IExtValue.IRefVal;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.interpretation.JNullReferenceException;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.operable.JCastable;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.builtin.JStringType;
@@ -199,16 +201,13 @@ public class RefValue extends JValueBase implements IRefVal {
 		ICompoundType assigneeTyp = (ICompoundType) assigneeVal.getType();
 
 		// Special case: assign a generic null value (A ref value pointing to RefValue.NULL without type)
-		if(isGenericNull(this)){
+		if (isGenericNull(this)) {
 			assigneeVal.referred = referred;
-			//assigneeVal.setRuntimeType(null);
 			return true;			
-		} else if(referredType.equals(assigneeTyp)){
-			// (type checking)
-			// Can only assign ref a (this) to ref b if 
-			//   (1) a's type is exactly that of b, or ...
-			
-			if(referredType == JStringType.getInstance() && referred != RefValue.NULL){
+		} else if (referredType.equals(assigneeTyp)) {
+			// Type checking: can only assign ref a (this) to ref b if:
+			//   (1) a's type is exactly that of b, or ...			
+			if(referredType == JStringType.getInstance() && referred != RefValue.NULL) {
 				// Special treatment for string value: create a new one.
 				StringValue strRep = new StringValue(
 					referred.getMemoryArea(),
@@ -217,14 +216,17 @@ public class RefValue extends JValueBase implements IRefVal {
 			} else {
 				assigneeVal.referred = referred;
 			}
-			//assigneeVal.setRuntimeType(null);
 			
 			return true;
-		} else if(referredType.isDerivedFrom(assigneeTyp, false)){
-			//   (2) ... a's type is b's some subclass.
+		} else if (referredType.isDerivedFrom(assigneeTyp, false)) {
+			//   (2) ... a's type is b's some subclass. or ...
 			assigneeVal.referred = referred;
-			//assigneeVal.setRuntimeType(assigneeTyp);
 			return false; // class down-graded
+		} else if(referredType.getConvertibilityTo(assigneeTyp) == Convertibility.ORTHOGONAL
+				&& referred instanceof JCastable) {
+			//   (3) ... a's type is orthogonal to b
+			assigneeVal.referred = (ObjectValue) ((JCastable)referred).to(assigneeVal.getMemoryArea(), assigneeTyp);
+			return true;
 		}
 		
 		throw new IllegalAssignmentException(referredType, assignee.getType());

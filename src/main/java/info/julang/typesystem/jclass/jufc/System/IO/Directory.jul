@@ -37,7 +37,7 @@ class Directory : Item {
 	private hosted string _getName();
 
 	/*
-	 * Get the absolute path of this directory. This doesn't include the name.
+	 * Get the absolute path of this directory, including the name.
 	 *
 	 * [access] System.IO/stat
 	 * [return] The absolute path of this directory.
@@ -95,7 +95,7 @@ class Directory : Item {
 	private hosted bool _delete();
 	
 	/*
-	 * Get the directory this file resides in.
+	 * Get the directory this directory resides in.
 	 *
 	 * [access] System.IO/stat
 	 * [throws: System.IO.IOException] An error occurred when trying to get the parent directory.

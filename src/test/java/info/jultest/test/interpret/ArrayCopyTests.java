@@ -22,7 +22,7 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 //(Uncomment @RunWith for reliability test)
 // @RunWith(Parameterized.class)

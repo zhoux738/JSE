@@ -1,0 +1,12 @@
+// Multiple matches
+var r = /[0-9]/;
+System.Util.Match m = r.matchNext("2361");
+bool matched = m.isMatched();
+int[] results = new int[4];
+int i = 0;
+if (matched) {
+	do {
+		results[i] = (int)m.getText();
+		i++;
+	} while(m.next());
+}

@@ -20,7 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.CharBuffer;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

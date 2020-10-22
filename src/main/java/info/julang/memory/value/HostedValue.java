@@ -24,20 +24,20 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import info.julang.external.interfaces.JValueKind;
 import info.julang.external.interfaces.IExtValue.IHostedVal;
+import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
 import info.julang.typesystem.JType;
 
 /**
- * A value holding a reference to hosted object (Java's Object).
+ * A value holding a reference to hosted (JVM) object.
  * 
  * @author Ming Zhou
  */
 public class HostedValue extends ObjectValue implements IHostedVal {
 	
-	private Object obj;
-	
+	protected Object obj;
+
 	public HostedValue(MemoryArea memory, JType type) {
 		super(memory, type, false);
 	}
@@ -59,5 +59,4 @@ public class HostedValue extends ObjectValue implements IHostedVal {
 	public void setHostedObject(Object obj){
 		this.obj = obj;
 	}
-
 }

@@ -810,7 +810,7 @@ public final class DocModel {
 	
 	public interface IMemberTypeDecorator {
 		/**
-		 * Decorate the raw string representing the name of member's type, which in case of method is the retur type.
+		 * Decorate the raw string representing the name of member's type, which in case of method is the return type.
 		 * @param raw the raw string, which is a type name in either full or simple form.
 		 * @param tref the type reference corresponding to the raw type name.
 		 * @return A decorated string built on top of the raw input.
@@ -1030,10 +1030,11 @@ public final class DocModel {
 			mtype = MemberType.FIELD;
 		}
 		
-		@Override
-		protected void processDocEntries(Map<Pair<String, String>, StringBuilder> map) {
-			// Nothing special for fields
-		}
+		// (Nothing special entries for fields)
+		// @Override
+		// protected void processDocEntries(Map<Pair<String, String>, StringBuilder> map) {
+		//
+		// }
 
 		//----- Signatures derived from model information -----//
 		//IMemberTypeDecorator ICoreSignatureDecorator

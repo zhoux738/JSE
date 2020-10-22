@@ -22,7 +22,7 @@ class AttributeTarget {
 	 */
 	static const int ENUM        = 0b000100;
 	/*
-	 * The attribute may only be applied at an method declaration that occurs in either class or interface.
+	 * The attribute may only be applied at a method declaration that occurs in either class or interface.
 	 */
 	static const int METHOD      = 0b001000;
 	/*

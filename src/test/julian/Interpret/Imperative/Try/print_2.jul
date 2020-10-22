@@ -1,0 +1,23 @@
+// Test output exception stacktrace programmatically. This test is line-sensitive.
+
+int funz(){
+	throw new Exception("Root Cause");
+}
+
+int funy(){
+	funz();
+}
+
+int funx(){
+	try {
+		funy();
+	} catch (Exception ex) {
+		throw new Exception("Failed due to underlying issue", ex);
+	}
+}
+
+try {
+	funx();
+} catch (Exception ex) {
+	ex.printToError();
+}

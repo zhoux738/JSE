@@ -104,7 +104,7 @@ public class GlobalScriptExecutable extends InterpretedExecutable {
 		
 		// Load this script as module
 		ModuleManager modManager = (ModuleManager) runtime.getModuleManager();
-		ModuleInfo mod = modManager.loadScriptAsModule(runtime, lainfo, interactiveMode);
+		ModuleInfo mod = modManager.loadScriptAsModule(runtime, lainfo, ModuleInfo.DEFAULT_MODULE_NAME, interactiveMode);
 		ScriptInfo si = mod.getFirstScript();
 		pool.addNamespaceFromScriptInfo(si);
 		

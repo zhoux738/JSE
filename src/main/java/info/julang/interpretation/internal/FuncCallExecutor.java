@@ -35,6 +35,7 @@ import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.value.FuncValue;
+import info.julang.memory.value.HostedArrayValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.UntypedValue;
@@ -48,6 +49,7 @@ import info.julang.typesystem.conversion.TypeIncompatibleException;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.builtin.FunctionKind;
+import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
@@ -292,10 +294,21 @@ public class FuncCallExecutor {
 					// If we return a value with different but somewhat compatible basic type, 
 					// we must replicate it in the original frame using the declared type. 
 					break;
+				case ORTHOGONAL:
+					if (JArrayType.isArrayType(retTyp) && val.deref() instanceof HostedArrayValue) {
+						JValue arrVal = HostedArrayValue.toBasicArrayValue(
+							rt.getHeap(), rt.getTypeTable(), (HostedArrayValue)val.deref(), (JArrayType)retTyp);
+						if (arrVal != null) {
+							val = arrVal;
+							break;
+						}
+					}
+					// Fall through
 				case CASTABLE:
 					if (!looseReturn){
 						throw new TypeIncompatibleException(typ, retTyp, true);
 					}
+					// Fall through
 				case UNCONVERTIBLE:
 				case UNSAFE:
 					if (!looseReturn){

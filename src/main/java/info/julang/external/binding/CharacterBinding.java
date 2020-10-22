@@ -22,49 +22,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.external.binding;
 
+import info.julang.external.binding.ExtValue.ExtCharValue;
 import info.julang.external.interfaces.IExtValue;
+import info.julang.external.interfaces.IExtValue.ICharVal;
 
-/**
- * A binding is a pair of name and some kind of value. To the hosting environment, it represents a state of script engine.
- * 
- * @author Ming Zhou
- */
-public interface IBinding {
+public class CharacterBinding extends BindingBase {
 
-	/**
-	 * Whether this binding is mutable.
-	 * 
-	 * @return true if the binding is mutable.
-	 */
-	boolean isMutable();
+	private char value;
 	
-	/**
-	 * Get the {@link BindingKind kind of binding}.
-	 * 
-	 * @return
-	 */
-	BindingKind getKind();
+	public CharacterBinding(char value) {
+		super(true, BindingKind.Character);
+		this.value = value;
+	}
+
+	@Override
+	public ExtValue toInternal() {
+		return new ExtCharValue(value);
+	}
+
+	@Override
+	public void update(IExtValue val) {
+		value = ((ICharVal) val).getCharValue();
+	}
 	
-	/**
-	 * Convert this binding to an {@link ExtValue} that can be accessed
-	 * by engine internals.
-	 */
-	ExtValue toInternal();
+	@Override
+	public Object toExternal() {
+		return value;
+	}
 	
-	/**
-	 * Convert this binding to a Java Object instance.
-	 * 
-	 * @return
-	 */
-	Object toExternal();
-	
-	/**
-	 * Update the binding with a new value.
-	 * 
-	 * @param val
-	 */
-	void update(IExtValue val);
-	
+	public char getValue(){
+		return value;
+	}
 }

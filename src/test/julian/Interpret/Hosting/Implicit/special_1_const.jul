@@ -1,0 +1,2 @@
+System.Reflection.Field f = a.getType().getField("ConstVal");
+int cv = f.get(null);

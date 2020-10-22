@@ -29,11 +29,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import info.julang.external.interop.BooleanBinding;
-import info.julang.external.interop.CharacterBinding;
-import info.julang.external.interop.IBinding;
-import info.julang.external.interop.IntegerBinding;
-import info.julang.external.interop.StringBinding;
+import info.julang.external.binding.BooleanBinding;
+import info.julang.external.binding.CharacterBinding;
+import info.julang.external.binding.IBinding;
+import info.julang.external.binding.IntegerBinding;
+import info.julang.external.binding.StringBinding;
 
 /**
  * Parse cmdline variable in the format of name[:type][=value]. Forbid use of names which do not 

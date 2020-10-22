@@ -236,12 +236,15 @@ public class ModuleManager implements IModuleManager {
 	/**
 	 * Load a script as module.
 	 * 
-	 * @param rt
+	 * @param rt Thread runtime
 	 * @param ainfo AST info
-	 * @param interactiveMode if true, force loading all new types into the runtime immediately after module loading.
+	 * @param synModuleName a mandated module name for this script. Must be a const value from {@link ModuleInfo}, 
+	 * such as {@link ModuleInfo#DEFAULT_MODULE_NAME DEFAULT_MODULE_NAME}.
+	 * @param loadTypesNow if true, force loading all new types into the runtime immediately after module loading.
 	 * @return
 	 */
-	public ModuleInfo loadScriptAsModule(ThreadRuntime rt, LazyAstInfo ainfo, boolean interactiveMode) {
+	public ModuleInfo loadScriptAsModule(
+		ThreadRuntime rt, LazyAstInfo ainfo, String synModuleName, boolean loadTypesNow) {
 		synchronized(lock){
 			while(!secureLock()){
 				rt.getJThread().safeWait(lock, condition);
@@ -251,15 +254,18 @@ public class ModuleManager implements IModuleManager {
 		RawScriptInfo info = new RawScriptInfo(null, false);// Don't know the module name yet.
 		info.reset(ainfo.getFileName(), ainfo);
 		RawScriptInfo.Option option = info.getOption();
-		option.setAllowNoModule(true);
+		option.setPresetModuleName(synModuleName);
 		option.setAllowNameInconsistency(true);
 		CollectScriptInfoStatement csis = new CollectScriptInfoStatement(true); // Load AST now
 		csis.prescan(info);
 		
-		// We should expect default name here
+		// If the file can be pre-scanned successfully, we should expect the module to be equal to what is given, if it's given.
 		String gModName = info.getModuleName();
-		if (gModName != null && gModName != ModuleInfo.DEFAULT_MODULE_NAME) {
-			throw new IllegalModuleFileException(info, ainfo.getFileName(), 1, "A loose script file must not declare a non-default module name.");
+		if (synModuleName != null
+			&& gModName != null
+			&& !synModuleName.equals(gModName)) {
+			throw new IllegalModuleFileException(
+				info, ainfo.getFileName(), 1, "A loose script file must not declare a module name explicitly.");
 		}
 		
 		// Load each required module
@@ -299,7 +305,7 @@ public class ModuleManager implements IModuleManager {
 		cache.putAll(tempCache);
 		
 		try {
-			if (interactiveMode) {
+			if (loadTypesNow) {
 				// Get new types
 				ModuleInfo curr = cache.get(gModName);
 				List<ClassInfo> cis = curr.getClasses();
@@ -467,7 +473,7 @@ public class ModuleManager implements IModuleManager {
 			if (analyticalLoad) {
 				RawScriptInfo.Option opt = info.getOption();
 				opt.setAllowNameInconsistency(true);
-				opt.setAllowNoModule(true);
+				opt.setPresetModuleName(ModuleInfo.DEFAULT_MODULE_NAME);
 			}
 			
 			CollectScriptInfoStatement csis = new CollectScriptInfoStatement(analyticalLoad);

@@ -52,6 +52,34 @@ public class JSR223AdvancedTestSuite {
 		Assert.assertEquals(o, "stringtrue1.2c");
 	}
 	
+	public static class BTClass {
+		
+		private int a;
+		
+		public BTClass(int a) { set(a); }
+		
+		public void set(int a) {
+			this.a = a;
+		}
+		
+		public int get() {
+			return a;
+		}
+	}
+	
+	@Test
+	public void bindingTest4() throws ScriptException {
+		ScriptEngine jse = new JulianScriptingEngine();
+		BTClass bt = new BTClass(3);
+		jse.put("bt", bt);
+		jse.put("v", 0);
+		int newVal = 10;
+		Object o = jse.eval("bt.set(" + newVal + "); v = bt.get(); return bt;");
+		Assert.assertEquals(newVal, bt.get());
+		Assert.assertEquals(bt, o);
+		assertIntBinding(jse, "v", newVal);
+	}
+	
 	@Test
 	public void advTest1() throws ScriptException, FileNotFoundException {
 		ScriptEngine jse = new JulianScriptingEngine();

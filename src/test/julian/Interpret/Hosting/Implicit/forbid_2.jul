@@ -1,0 +1,13 @@
+bool b1 = false, b2 = false;
+
+try {
+	int v = a.get(); // a is nested class
+} catch (System.Lang.UndefinedSymbolException ex) {
+	b1 = ex.getMessage().contains("a.get");
+}
+
+try {
+	int v = arr.length; // arr[]'s element type is nested class
+} catch (System.Lang.UndefinedSymbolException ex) {
+	b2 = ex.getMessage().contains("arr.length");
+}

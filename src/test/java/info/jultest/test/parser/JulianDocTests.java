@@ -15,7 +15,7 @@ import info.julang.langspec.ast.JulianParser.Interface_definitionContext;
 import info.julang.langspec.ast.JulianParser.Type_declarationContext;
 import info.julang.parser.ANTLRParser;
 import info.jultest.test.Commons;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class JulianDocTests {
 	

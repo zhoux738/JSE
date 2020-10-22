@@ -22,21 +22,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.memory.value;
 
-public enum BindingKind {
+import info.julang.memory.value.indexable.IIndexable;
+import info.julang.memory.value.indexable.UnsupportedIndexTypeException;
+import info.julang.typesystem.jclass.builtin.JArrayType;
 
-	Integer,
-	
-	String,
-	
-	Boolean,
-	
-	Float,
-	
-	Character,
-	
-	// TODO: add support for binding arbitrary Java object
-	// Object
-	
+/**
+ * An indexable that is backed by a hosted array object (Java's array).
+ * 
+ * @author Ming Zhou
+ */
+public class HostedIndexable extends HostedIndexedBase implements IIndexable {
+
+	public HostedIndexable(Class<?> arrayClass, JArrayType type, Object value) {
+		super(arrayClass, type, value);
+	}
+
+	@Override
+	public JValue getByIndex(JValue index) throws UnsupportedIndexTypeException {
+		int ind = getIndex(index);	
+		return getElementValue(ind);
+	}
+
+	@Override
+	public JValue setByIndex(JValue index, JValue value) throws UnsupportedIndexTypeException {
+		int ind = getIndex(index);
+		
+		setElementValue(ind, value);
+		
+		return getElementValue(ind);
+	}
 }

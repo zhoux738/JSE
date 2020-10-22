@@ -39,6 +39,7 @@ import info.julang.hosting.execution.InstanceNativeExecutor;
 import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.BoolValue;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IArrayValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
@@ -237,7 +238,7 @@ public class JDirectory extends JItem {
 			ArrayValue av = TempValueFactory.createTemp2DArrayValue(rt.getTypeTable(), JStringType.getInstance(), files.length, 2);
 			
 			for(int i=0; i<files.length; i++){
-				ArrayValue sav = (ArrayValue) RefValue.dereference(av.getValueAt(i));
+				IArrayValue sav = (IArrayValue) RefValue.dereference(av.getValueAt(i));
 				File file = files[i];
 				
 				JValue value0 = sav.getValueAt(0);

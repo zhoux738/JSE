@@ -1,0 +1,19 @@
+// Test output exception stacktrace programmatically. This test is line-sensitive.
+
+int funz(){
+	throw new Exception("Totally Unexpected");
+}
+
+int funy(){
+	funz();
+}
+
+int funx(){
+	funy();
+}
+
+try {
+	funx();
+} catch (Exception ex) {
+	ex.printToError();
+}

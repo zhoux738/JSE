@@ -61,11 +61,9 @@ public final class JulianScriptProperties {
 	}
 
 	//---------------- MODULE_PATHS: the paths to search for modules. project-level. ----------------//
-	
 	public static final QualifiedName MODULE_PATHS_PATHARRAY_PROPERTY = new QualifiedName(Constants.PLUGIN_ID, "MODULE_PATHS");
-	
-	
 	
 	public static final QualifiedName PARSING_LEVEL_PROPERTY = new QualifiedName(Constants.PLUGIN_ID, "PARSING_LEVEL");
 
+	public static final QualifiedName PROCESS_PRAGMA_PROPERTY = new QualifiedName(Constants.PLUGIN_ID, "PROCESS_PRAGMA");
 }

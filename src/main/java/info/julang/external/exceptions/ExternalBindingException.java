@@ -31,7 +31,8 @@ public class ExternalBindingException extends JSEException {
 	public static enum Type {
 		NOT_EXIST,
 		BAD_TYPE,
-		ILLEGAL_TYPE
+		ILLEGAL_TYPE,
+		CONFLICT
 	}
 	
 	public static ExternalBindingException create(String name, Type type){
@@ -42,6 +43,8 @@ public class ExternalBindingException extends JSEException {
 			return new ExternalBindingException("Binding \"" + name + "\" is not of the expected type.");
 		case ILLEGAL_TYPE:
 			return new ExternalBindingException("Binding \"" + name + "\" is not allowed due to its native type.");
+		case CONFLICT:
+			return new ExternalBindingException("Binding to \"" + name + "\" loaded by different class loaders is not supported.");
 		default:
 			throw new JSEError("Unsupported ExternalBindingException type: " + type.name());
 		}

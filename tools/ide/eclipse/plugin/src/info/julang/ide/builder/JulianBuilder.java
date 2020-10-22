@@ -65,9 +65,11 @@ import info.julang.ide.properties.JulianScriptProperties;
 import info.julang.ide.util.ResourceUtil;
 import info.julang.interpretation.BadSyntaxException;
 import info.julang.interpretation.errorhandling.IHasLocationInfoEx;
+import info.julang.langspec.ast.JulianParser;
 import info.julang.modulesystem.ModuleManager;
 import info.julang.modulesystem.prescanning.RawScriptInfo;
 import info.julang.parser.ANTLRParser;
+import info.julang.parser.Directives;
 import info.julang.parser.LazyAstInfo;
 
 /**
@@ -84,6 +86,8 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 	public static final String MARKER_TYPE = Constants.PLUGIN_ID + ".julianProblem";
 	
 	private static final String EXTNAME = "." + Constants.FILE_EXT;
+	
+	public static final String DIRECTIVE_NO_PARSING = "info.julang.ide.no.parsing";
 	
 	@Override
 	protected IProject[] build(
@@ -161,13 +165,14 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 	 * Build a single file with maximum parsing level.
 	 * 
 	 * @param file
+	 * @param processPragmas True to process in-source directives.
 	 * @param continuation the action to perform after a successful build.
 	 */
-	public static void buildSingle(IFile file, Runnable continuation) {
+	public static void buildSingle(IFile file, boolean processPragmas, Runnable continuation) {
 		WorkspaceJob parseSingleJob = new WorkspaceJob("Parsing ...") {
 			@Override
 			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-				parse(file, ParsingLevel.ADV_SYNTAX);
+				parse(file, new JulianBuilderConfig(ParsingLevel.ADV_SYNTAX, processPragmas));
 				
 				continuation.run();
 				
@@ -180,16 +185,27 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 	
 	//--------------- Processing a Single File ---------------//
 
-	private IFile process(IResource resource, ParsingLevel lvl) {
+	private IFile process(IResource resource, JulianBuilderConfig conf) {
 		if (resource instanceof IFile 
 			&& resource.getName().endsWith("." + Constants.FILE_EXT)) {
 			IFile file = (IFile) resource;
 			
-			return parse(file, lvl);
+			return parse(file, conf);
 		}
 		
 		// Not a file
 		return null;
+	}
+	
+	// Check pragmas to determine if the parsing has been turned off.
+	private static boolean shouldParse(ANTLRParser parser) {
+		parser.setProcessDirectives(true);
+		Directives directives = parser.getDirectives();
+		if (directives.contains(DIRECTIVE_NO_PARSING)) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -204,7 +220,8 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 	 * @param lvl The parsing level.
 	 * @return
 	 */
-	private static IFile parse(IFile file, ParsingLevel lvl) {
+	private static IFile parse(IFile file, JulianBuilderConfig conf) {
+		ParsingLevel lvl = conf.getParsingLevel();
 		if (lvl != ParsingLevel.LEXICAL) {
 			deleteMarkers(file);
 
@@ -213,7 +230,10 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 					if (lvl == ParsingLevel.SYNTAX) {
 						InputStream text = file.getContents();
 						ANTLRParser parser = new ANTLRParser("<unknown>", text, false);
-						parser.parse(false, true);
+						if (!conf.shouldProcessPragma() // If no pragma is to be processed,
+							|| shouldParse(parser)) { // or no pragma turns off the parsing,
+							parser.parse(false, true);
+						}
 					} else if (lvl == ParsingLevel.ADV_SYNTAX) {
 						// We are not sure if this is a module file. So must parse without assuming the module name.
 						RawScriptInfo rsinfo = ModuleManager.loadScriptInfoFromPath(null, ResourceUtil.getAbsoluteFSPath(file));
@@ -221,7 +241,16 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 						BadSyntaxException bse = ainfo.getBadSyntaxException();
 						JulianPlugin.getASTRepository().put(file, ainfo);
 						if (bse != null) {
-							report(file, bse.getMessage(), bse, true);
+							// If failed, first try to determine if the file parsing is turned off.
+							boolean parseOn = true;
+							if (conf.shouldProcessPragma()) {
+								InputStream text = file.getContents();
+								ANTLRParser parser = new ANTLRParser("<unknown>", text, false);
+								parseOn = shouldParse(parser);
+							}
+							if (parseOn) {
+								report(file, bse.getMessage(), bse, true);
+							}
 						} else {
 							return file;
 						}
@@ -273,9 +302,9 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 
 	private void fullBuild(IProgressMonitor monitor) throws CoreException {
 		IProject project = getProject();
-		ParsingLevel lvl = ParsingLevel.loadFromProject(project, ParsingLevel.SYNTAX);
+		JulianBuilderConfig conf = JulianBuilderConfig.loadFromProject(project);
 		
-		JulianProjectVisitor jpv = new JulianProjectVisitor(lvl);
+		JulianProjectVisitor jpv = new JulianProjectVisitor(conf);
 		project.accept(jpv);
 		
 		JulianPlugin.getASTRepository().removeAllExcept(jpv.filesBuilt);
@@ -343,7 +372,7 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 		public boolean visit(IResourceDelta delta) throws CoreException {
 			IResource resource = delta.getResource();
 			IProject proj = resource.getProject();
-			ParsingLevel lvl = ParsingLevel.loadFromProject(proj, ParsingLevel.SYNTAX);
+			JulianBuilderConfig conf = JulianBuilderConfig.loadFromProject(proj);
 			switch (delta.getKind()) {
 			case IResourceDelta.REMOVED:
 				// Resource is removed.
@@ -355,7 +384,7 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 			case IResourceDelta.ADDED:
 			case IResourceDelta.CHANGED:
 				// Resource is added/changed.
-				IFile file = process(resource, lvl);
+				IFile file = process(resource, conf);
 				if (file != null) {
 					if (filesBuilt == null) {
 						filesBuilt = new ArrayList<IFile>();
@@ -374,16 +403,16 @@ public class JulianBuilder extends IncrementalProjectBuilder {
 	// Visitor for full build
 	private class JulianProjectVisitor implements IResourceVisitor {
 		
-		private ParsingLevel lvl;
+		private JulianBuilderConfig conf;
 		private Set<IFile> filesBuilt;
 		
-		private JulianProjectVisitor(ParsingLevel lvl) {
-			this.lvl = lvl;
+		private JulianProjectVisitor(JulianBuilderConfig conf) {
+			this.conf = conf;
 			this.filesBuilt = new HashSet<>();
 		}
 		
 		public boolean visit(IResource resource) {
-			IFile f = process(resource, lvl);
+			IFile f = process(resource, conf);
 			if (f != null) {
 				this.filesBuilt.add(f);
 			}

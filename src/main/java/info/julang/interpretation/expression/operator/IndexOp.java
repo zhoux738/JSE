@@ -84,6 +84,11 @@ public class IndexOp extends Operator {
 		}
 		
 		IIndexable lind = RefValue.dereference(lval).asIndexer();
+		if (lind == null) {
+			throw new IllegalOperandsException(
+				"The operator '" + this.toString() + "' can only apply on an indexable object.");
+		}
+		
 		lind.initialize(rt, new InitArgs(context, false));
 		
 		return Operand.createIndexOperand(lind, rval, lind);

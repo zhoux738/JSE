@@ -5,6 +5,7 @@ import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateBoolValue;
 import static info.jultest.test.Commons.validateStringArrayValue;
 import static info.jultest.test.Commons.validateStringValue;
+import static info.jultest.test.Commons.validateIntArrayValue;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
@@ -162,5 +163,16 @@ public class System_Util_Regex_Tests extends ExceptionTestsBase {
 		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "regex_literal_5.jul"));
 
 		validateStringValue(gvt, "s0", "def");
+	}
+	
+	@Test
+	public void regexFromLiteralTest6() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "regex_literal_6.jul"));
+
+		validateBoolValue(gvt, "matched", true);
+		validateIntArrayValue(gvt, "results", new int[] {2, 3, 6, 1});
 	}
 }

@@ -328,7 +328,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 						ainfo, pcAst, cdi, (Class_definitionContext)prc, mc, ns, modName, sname);
 					if (ct != null) { 
 						if (ct.isInherited) {
-							DocumentedClassInfo dci = new DocumentedClassInfo(modName, cinfo);
+							DocumentedClassInfo dci = new DocumentedClassInfo(modName, cinfo, ns);
 							dci.setDoc(ct);
 							postponed.add(dci);
 						} else {
@@ -341,7 +341,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 						ainfo, pcAst, cdi, (Interface_definitionContext)prc, mc, ns, modName, sname);
 					if (it != null){
 						if (it.isInherited) {
-							DocumentedClassInfo dci = new DocumentedClassInfo(modName, cinfo);
+							DocumentedClassInfo dci = new DocumentedClassInfo(modName, cinfo, ns);
 							dci.setDoc(it);
 							postponed.add(dci);
 						} else {
@@ -392,6 +392,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 
 			String modName = dci.getModuleName();
 			idoc.setModuleName(modName);
+			idoc.setNamespacePool(dci.getNamespacePool());
 			mc.setDoc(modName, idoc);
 			
 			String fname = modName + "." + idoc.name;

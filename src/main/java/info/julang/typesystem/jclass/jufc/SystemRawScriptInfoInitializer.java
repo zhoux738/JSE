@@ -16,6 +16,7 @@ public class SystemRawScriptInfoInitializer {
            info.julang.typesystem.jclass.jufc.System.Collection.JQueue.Factory,
            info.julang.typesystem.jclass.jufc.System.Collection.JList.Factory,
            info.julang.typesystem.jclass.jufc.System.JConsole.Factory,
+           info.julang.typesystem.jclass.jufc.System.ExceptionUtil.Factory,
            info.julang.typesystem.jclass.jufc.System.Util.JMath.Factory,
            info.julang.typesystem.jclass.jufc.System.Util.Match.Factory,
            info.julang.typesystem.jclass.jufc.System.Util.JRegex.Factory,

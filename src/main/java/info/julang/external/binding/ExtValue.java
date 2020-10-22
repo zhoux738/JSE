@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.external.binding;
 
 import info.julang.external.interfaces.IExtValue;
 import info.julang.external.interfaces.JValueKind;
@@ -143,5 +143,22 @@ public abstract class ExtValue implements IExtValue {
 			return JValueKind.STRING;
 		}
 	}
-	
+
+	public static class ExtHostedValue extends ExtObjValue {
+		
+		private Object value;
+		
+		public ExtHostedValue(Object value){
+			this.value = value;
+		}
+		
+		public Object getValue(){
+			return value;
+		}
+
+		@Override
+		public JValueKind getBuiltInValueKind() {
+			return JValueKind.HOSTED;
+		}
+	}
 }

@@ -22,30 +22,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.external.binding;
 
+import info.julang.external.binding.ExtValue.ExtHostedValue;
 import info.julang.external.interfaces.IExtValue;
-import info.julang.external.interfaces.IExtValue.IRefVal;
-import info.julang.external.interfaces.IExtValue.IStringVal;
-import info.julang.external.interop.ExtValue.ExtStringValue;
 
-public class StringBinding extends BindingBase {
+public class ObjectBinding extends BindingBase {
 
-	private String value;
+	private Object value;
 	
-	public StringBinding(String value) {
-		super(true, BindingKind.String);
+	public ObjectBinding(Object value) {
+		super(false, BindingKind.Object);
 		this.value = value;
 	}
 
 	@Override
 	public ExtValue toInternal() {
-		return new ExtStringValue(value);
+		return new ExtHostedValue(value);
 	}
 
 	@Override
 	public void update(IExtValue val) {
-		value = ((IStringVal) ((IRefVal)val).getReferred()).getStringValue();
+		// No-op. Hosted objected are updated by ref.
 	}
 	
 	@Override
@@ -53,7 +51,7 @@ public class StringBinding extends BindingBase {
 		return value;
 	}
 	
-	public String getValue(){
+	public Object getValue(){
 		return value;
 	}
 }

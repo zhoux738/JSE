@@ -10,7 +10,7 @@ import info.julang.clapp.repl.os.FontColor;
 import info.julang.clapp.repl.os.ITermController;
 import info.julang.clapp.repl.os.LineBuffer;
 import info.julang.util.Pair;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class Mocks {
 	

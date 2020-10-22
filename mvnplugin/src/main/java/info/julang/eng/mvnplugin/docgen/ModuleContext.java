@@ -91,7 +91,7 @@ public class ModuleContext {
 		for (RawClassInfo cinfo : cinfos) {
 			String name = cinfo.getName();
 			String fname = modName + "." + name;
-			typesByFN.put(fname, new DocumentedClassInfo(modName, cinfo));
+			typesByFN.put(fname, new DocumentedClassInfo(modName, cinfo, null));
 		}
 	}
 	

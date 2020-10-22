@@ -22,29 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.external.binding;
 
+import info.julang.external.binding.ExtValue.ExtStringValue;
 import info.julang.external.interfaces.IExtValue;
-import info.julang.external.interfaces.IExtValue.ICharVal;
-import info.julang.external.interop.ExtValue.ExtCharValue;
+import info.julang.external.interfaces.IExtValue.IRefVal;
+import info.julang.external.interfaces.IExtValue.IStringVal;
 
-public class CharacterBinding extends BindingBase {
+public class StringBinding extends BindingBase {
 
-	private char value;
+	private String value;
 	
-	public CharacterBinding(char value) {
-		super(true, BindingKind.Character);
+	public StringBinding(String value) {
+		super(true, BindingKind.String);
 		this.value = value;
 	}
 
 	@Override
 	public ExtValue toInternal() {
-		return new ExtCharValue(value);
+		return new ExtStringValue(value);
 	}
 
 	@Override
 	public void update(IExtValue val) {
-		value = ((ICharVal) val).getCharValue();
+		value = ((IStringVal) ((IRefVal)val).getReferred()).getStringValue();
 	}
 	
 	@Override
@@ -52,7 +53,7 @@ public class CharacterBinding extends BindingBase {
 		return value;
 	}
 	
-	public char getValue(){
+	public String getValue(){
 		return value;
 	}
 }

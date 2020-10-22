@@ -121,9 +121,11 @@ If this is the first time you are trying to build it, may get the latest JSE jar
 	
   <!-- Execute a Julian script file and/or inlined script code (enclose with CDATA) -->
   <!-- The script may refer to the following variables:
-       jse_version: The version of JSE 
-       script_dir: The full path of directory the script belongs to
-       script_path: The full path of the script file
+       * jse_version: The version of JSE 
+       * script_dir: The full path of directory the script belongs to
+       * script_path: The full path of the script file
+       * JSE: The Ant project model, of type org.apache.tools.ant.Project. 
+            See https://ant.apache.org/manual/api/org/apache/tools/ant/Project.html for API reference.
   -->
   <macrodef name="julian">
     <attribute name="srcFile" default="" />

@@ -1,0 +1,11 @@
+for (int i = 0; i < arr.length; i++) {
+	arr[i] = arr[i] + arr[i].length;
+}
+
+//for (int i = 0; i < arr.length; i++) {
+//	Console.println(arr[i]);
+//}
+
+bool jstr = arr[0].getType() == typeof(string); // It's Julian String
+
+int length = arr.length;

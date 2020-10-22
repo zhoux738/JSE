@@ -24,6 +24,18 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.jufc.System;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ProcessBuilder.Redirect;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+
 import info.julang.execution.Argument;
 import info.julang.execution.security.PACON;
 import info.julang.execution.symboltable.ITypeTable;
@@ -42,12 +54,14 @@ import info.julang.interpretation.internal.FuncCallExecutor;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.ArrayValueFactory;
+import info.julang.memory.value.BasicArrayValue;
 import info.julang.memory.value.EnumValue;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IArrayValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
-import info.julang.memory.value.PresetByteArrayValue;
+import info.julang.memory.value.PresetBasicArrayValueFactory;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
@@ -64,18 +78,6 @@ import info.julang.typesystem.jclass.jufc.System.Collection.JMap;
 import info.julang.typesystem.jclass.jufc.System.IO.IOInstanceNativeExecutor;
 import info.julang.typesystem.jclass.jufc.System.IO.JSEIOException;
 import info.julang.util.Pair;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.ProcessBuilder.Redirect;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The platform end for <code><font color="green">System.Process</font></code>.
@@ -238,7 +240,7 @@ public class JProcess {
 			*/
 			
 			String name = getString(args, 0);
-			ArrayValue execArgs = (ArrayValue)getObject(args, 1);
+			IArrayValue execArgs = (IArrayValue)getObject(args, 1);
 			int len = execArgs.getLength();
 			List<String> list = new ArrayList<String>(len);
 			for(int i = 0; i <len; i++){
@@ -560,7 +562,7 @@ public class JProcess {
 				// Use buffer to store contents read from the output stream, then wrap the buffer in a specialized 
 				// byte array value that can be accessed by Julian runtime. Call stream.write() with this array. 
 				byte[] buffer = new byte[MAX];
-				PresetByteArrayValue barray = new PresetByteArrayValue(mem, tt, buffer);
+				BasicArrayValue barray = PresetBasicArrayValueFactory.fromByteArray(mem, tt, buffer);
 				int read = 0, total8ks = 0; long total = 0;
 				try {
 					// If the subprocess terminated, the pipe may still contain some output. So we
@@ -629,7 +631,7 @@ public class JProcess {
 				// Use buffer to store contents read from the output stream, then wrap the buffer in a specialized 
 				// byte array value that can be accessed by Julian runtime. Call stream.write() with this array. 
 				byte[] buffer = new byte[MAX];
-				PresetByteArrayValue barray = new PresetByteArrayValue(mem, tt, buffer);
+				BasicArrayValue barray = PresetBasicArrayValueFactory.fromByteArray(mem, tt, buffer);
 				int read = 0;
 				try {
 					// If the subprocess terminated, the pipe may still contain some output. So we

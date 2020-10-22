@@ -54,6 +54,8 @@ public class ModuleInfo {
 
 	public static final String DEFAULT_MODULE_NAME = "<default>";
 	
+	public static final String IMPLICIT_MODULE_NAME = "<implicit>";
+	
 	private String name;
 	
 	protected List<ScriptInfo> scripts;

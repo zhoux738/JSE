@@ -22,26 +22,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.external.binding;
 
-public abstract class BindingBase implements IBinding {
+public enum BindingKind {
 
-	private boolean isMutable;
+	Integer,
 	
-	private BindingKind kind;
+	String,
 	
-	protected BindingBase(boolean isMutable, BindingKind kind){
-		this.isMutable = isMutable;
-		this.kind = kind;
-	}
+	Boolean,
 	
-	@Override
-	public boolean isMutable() {
-		return isMutable;
-	}
-
-	@Override
-	public BindingKind getKind() {
-		return kind;
-	}
+	Float,
+	
+	Character,
+	
+	/**
+	 * Java object that is not a String.
+	 */
+	Object
+	
 }

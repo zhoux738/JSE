@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.EngineContext;
 import info.julang.execution.EngineRuntime;
@@ -53,13 +54,20 @@ import info.julang.execution.security.IEnginePolicy;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadManager;
+import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.EngineInitializationOption;
+import info.julang.external.binding.BindingKind;
+import info.julang.external.binding.IBinding;
+import info.julang.external.binding.ObjectBinding;
 import info.julang.external.exceptions.EngineInvocationError;
+import info.julang.external.exceptions.ExternalBindingException;
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.exceptions.JSEException;
 import info.julang.external.exceptions.ScriptNotFoundException;
 import info.julang.external.interfaces.IExtEngineRuntime;
-import info.julang.external.interop.IBinding;
+import info.julang.hosting.HostedMethodManager;
+import info.julang.hosting.mapped.implicit.ImplicitPlatformTypeMapper;
+import info.julang.hosting.mapped.implicit.ObjectBindingGroup;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.ArrayValue;
@@ -68,7 +76,12 @@ import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.ValueUtilities;
 import info.julang.modulesystem.IModuleManager;
+import info.julang.modulesystem.ModuleInfo;
+import info.julang.modulesystem.ModuleManager;
+import info.julang.parser.ANTLRParser;
+import info.julang.parser.LazyAstInfo;
 import info.julang.typesystem.jclass.builtin.JStringType;
+import info.julang.typesystem.loading.ClassLoadingException;
 import info.julang.util.Pair;
 
 /**
@@ -225,21 +238,34 @@ public class SimpleScriptEngine implements IScriptEngine {
 			if(context.bindings != null){	
 				MemoryArea heap = runtime.getHeap();
 				Set<Entry<String, IBinding>> bindings = context.bindings.entrySet();
+				List<Pair<String, ObjectBinding>> objBindings = null;
 				for(Entry<String, IBinding> entry : bindings){
 					String name = entry.getKey();
 					IBinding binding = entry.getValue();
 					JValue val = gvt.getBinding(name);
 					if(val == null){
-						// Add new binding
-						gvt.addBinding(
-							name, 
-							ValueUtilities.convertFromExtValue(heap, name, binding.toInternal()));
+						if (binding.getKind() == BindingKind.Object) {
+							if (objBindings == null) {
+								objBindings = new ArrayList<>();
+							}
+							
+							objBindings.add(new Pair<String, ObjectBinding>(name, (ObjectBinding)binding));
+						} else {
+							// Add new binding
+							gvt.addBinding(
+								name, 
+								ValueUtilities.convertFromExtValue(heap, name, binding.toInternal()));
+						}
 					} else if (binding.isMutable()) {
 						// Update existing binding
 						JValue newVal = ValueUtilities.convertFromExtValue(heap, name, binding.toInternal());
 						newVal.assignTo(val);
 						heap.deallocate(newVal);
 					} // otherwise, throw an exception?
+				}
+				
+				if (objBindings != null) {
+					addObjectBindings(mainThread.getThreadRuntime(), objBindings);
 				}
 			}
 			
@@ -275,6 +301,9 @@ public class SimpleScriptEngine implements IScriptEngine {
 			if(handler != null){
 				handler.onException(jse); // the handler can decide if it needs to throw.
 			}
+		} catch (JSERuntimeException error) {
+			state = State.FAULTED;
+			throw new EngineInvocationError("A fatal error occurs when invoking script engine.", error);
 		} catch (JSEException error) {
 			state = State.FAULTED;
 			if (error instanceof EngineInvocationError){
@@ -302,6 +331,53 @@ public class SimpleScriptEngine implements IScriptEngine {
 		}
 	}
 	
+	// Translate bound objects to mapped types and create objects with the corresponding type.
+	private void addObjectBindings(
+		ThreadRuntime rt, List<Pair<String, ObjectBinding>> objBindings) throws ExternalBindingException {
+		// 1. Collect all types.
+		ObjectBindingGroup grp = new ObjectBindingGroup();
+		for (Pair<String, ObjectBinding> kvp : objBindings) {
+			grp.add(kvp.getFirst(), kvp.getSecond());
+		}
+		
+		// 2. Synthesize a script that can trigger type mapping and loading.
+		String script = grp.getLoadingScript();
+		ANTLRParser parser = ANTLRParser.createMemoryParser(script);
+		LazyAstInfo ainfo = parser.scan(true);
+		
+		// 3. Rig the mapper inside Hosted Method Manager. In the following type mapping process 
+		// the engine must use our special mapper instead of the default implementation that 
+		// loads classes using the engine loader and is detrimental to our cause.
+		ModuleManager mm = (ModuleManager)rt.getModuleManager();
+		HostedMethodManager hmm = mm.getHostedMethodManager();
+		ImplicitPlatformTypeMapper mapper = new ImplicitPlatformTypeMapper(grp);
+		hmm.setPlatformTypeMapper(mapper);
+		
+		// 4. Map all types.
+		try {
+			mm.loadScriptAsModule(rt, ainfo, ModuleInfo.IMPLICIT_MODULE_NAME, true);
+			
+			// 5. Create values wrapping the raw objects.
+			List<Pair<String, JValue>> bds = grp.getBindingValues(rt);
+			
+			// 6. Bind them into the global variable table.
+			IVariableTable gvt = runtime.getGlobalVariableTable();
+			for (Pair<String, JValue> bd : bds) {
+				gvt.addBinding(bd.getFirst(), bd.getSecond());
+			}
+		} catch (ClassLoadingException ex) {
+			JSERuntimeException jse = ex.getJSECause();
+			if (jse != null) {
+				throw jse;
+			} else {
+				throw ex;
+			}
+		} finally {
+			// Reset the mapper. All in-runtime mapping must use the default implementation.
+			hmm.reset();
+		}
+	}
+
 	@Override
 	public void run(ScriptProvider provider, String[] arguments) throws EngineInvocationError {
 		initializeContext();

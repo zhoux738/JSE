@@ -68,7 +68,7 @@ public class MappedTypeInfo {
 	
 	//---------- Builder ----------//
 	
-	void addField(Field f, IMappedType typ){ //Member
+	public void addField(Field f, IMappedType typ){ //Member
 		if (fields == null) {
 			fields = new ArrayList<MappedFieldInfo>();
 		}
@@ -77,7 +77,7 @@ public class MappedTypeInfo {
 		fields.add(info);
 	}
 	
-	void addMethod(Method m, IMappedType retTyp, IMappedType[] paramTyps){
+	public void addMethod(Method m, IMappedType retTyp, IMappedType[] paramTyps){
 		if (methods == null) {
 			methods = new ArrayList<MappedMethodInfo>();
 		}

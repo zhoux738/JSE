@@ -32,7 +32,7 @@ import info.julang.external.interfaces.IExtModuleManager;
 import info.julang.hosting.HostedMethodManager;
 
 public interface IModuleManager extends IExtModuleManager {
-
+	
 	/**
 	 * Get a list of classes info which has the given name as the not fully qualified name.
 	 * 

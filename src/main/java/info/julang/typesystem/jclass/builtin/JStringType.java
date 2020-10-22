@@ -51,6 +51,7 @@ import info.julang.memory.value.ArrayValueFactory;
 import info.julang.memory.value.BasicArrayValue;
 import info.julang.memory.value.BasicArrayValueExposer;
 import info.julang.memory.value.CharValue;
+import info.julang.memory.value.IArrayValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
@@ -607,7 +608,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
     private static HostedExecutable METHOD_fromBytes2  = new HostedExecutable(FQNAME, "fromBytes") {
         @Override
         protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
-            ArrayValue av = (ArrayValue)RefValue.dereference(args[0].getValue());
+        	IArrayValue av = (IArrayValue)RefValue.dereference(args[0].getValue());
             BasicArrayValueExposer exp = new BasicArrayValueExposer((BasicArrayValue)av);
             StringValue sv = (StringValue)RefValue.dereference(args[1].getValue());
             int offset = ((IntValue)args[2].getValue().deref()).getIntValue();
@@ -646,7 +647,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
     private static HostedExecutable METHOD_fromBytes  = new HostedExecutable(FQNAME, "fromBytes") {
         @Override
         protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
-            ArrayValue av = (ArrayValue)RefValue.dereference(args[0].getValue());
+        	IArrayValue av = (IArrayValue)RefValue.dereference(args[0].getValue());
             BasicArrayValueExposer exp = new BasicArrayValueExposer((BasicArrayValue)av);
             byte[] bytes = exp.getByteArray();
             try {
@@ -752,7 +753,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			Argument arg = args[0];
-			ArrayValue av = (ArrayValue)arg.getValue().deref();
+			IArrayValue av = (IArrayValue)arg.getValue().deref();
 			BasicArrayValueExposer exp = new BasicArrayValueExposer((BasicArrayValue)av);
 			char[] chars = exp.getCharArray();
 			String str = new String(chars);

@@ -20,7 +20,7 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

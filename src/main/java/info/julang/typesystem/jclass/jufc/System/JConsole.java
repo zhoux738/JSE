@@ -73,8 +73,7 @@ public class JConsole {
 		@Override
 		protected void implementProvider(SimpleHostedMethodProvider provider) {
 			provider
-				.add("print", new PrintExecutor())
-				.add("println", new PrintLineExecutor())
+				.add("print", new PrintAnyExecutor())
 				// .add("read", new ReadExecutor())
 				.add("readln", new ReadLineExecutor());
 		}
@@ -83,13 +82,18 @@ public class JConsole {
 	
 	//----------------- native executors -----------------//
 	
-	private static class PrintLineExecutor extends StaticNativeExecutor<JConsole> {
+	private static class PrintAnyExecutor extends StaticNativeExecutor<JConsole> {
 
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
 			JValue val = args[0].getValue();
-			printValue(rt, val);
-			println(rt.getStandardIO().getOut());
+			PrintStream ps  = ((BoolValue)args[1].getValue().deref()).getBoolValue() // true: stdout; false: stderr
+				? rt.getStandardIO().getOut() 
+				: rt.getStandardIO().getError();
+			printValue(rt, ps, val);
+			if (((BoolValue)args[2].getValue().deref()).getBoolValue()){ // true: print a new line; false; do not print a new line
+				println(ps);
+			}
 			return VoidValue.DEFAULT;
 		}
 	}
@@ -103,16 +107,6 @@ public class JConsole {
 		@Override
 		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
 			return readLine(rt);
-		}
-	}
-	
-	private static class PrintExecutor extends StaticNativeExecutor<JConsole> {
-
-		@Override
-		protected JValue apply(ThreadRuntime rt, Argument[] args) throws Exception {
-			JValue val = args[0].getValue();
-			printValue(rt, val);
-			return VoidValue.DEFAULT;
 		}
 	}
 	
@@ -130,7 +124,7 @@ public class JConsole {
 
 	//----------------- implementation at native end -----------------//
 	
-	private static void printObject(ThreadRuntime rt, ObjectValue ov){
+	private static void printObject(ThreadRuntime rt, PrintStream ps, ObjectValue ov){
 		OneOrMoreList<ClassMemberLoaded> cmls = ov.getClassType().getMembers(false).getLoadedMemberByName(JObjectType.MethodNames.toString.name());
 		JClassMethodMember member = null;
 		if (cmls.hasOnlyOne()){
@@ -156,10 +150,10 @@ public class JConsole {
 		JValue res = exec.invokeFunction(member.getMethodType(), JObjectType.MethodNames.toString.name(), Argument.CreateThisOnlyArguments(ov));
 		res = res.deref();
 		if(res == RefValue.NULL){
-			rt.getStandardIO().getOut().print("null");
+			ps.print("null");
 		} else if(res instanceof StringValue){
 			StringValue sv = (StringValue)res;
-			rt.getStandardIO().getOut().print(sv.getStringValue());
+			ps.print(sv.getStringValue());
 		} else {
 			// If toString() didn't return a string or null, it should have thrown error.
 			throw new JSEError("Expected a string, but saw null.", JConsole.class);
@@ -236,43 +230,43 @@ public class JConsole {
         }
 	}
 	
-	private static void printValue(ThreadRuntime rt, JValue val){
+	private static void printValue(ThreadRuntime rt, PrintStream ps, JValue val){
 		val = UntypedValue.unwrap(val);
 		switch(val.getKind()){
 		case BOOLEAN:
-			JConsole.printBool(rt.getStandardIO().getOut(), ((BoolValue) val).getBoolValue());
+			JConsole.printBool(ps, ((BoolValue) val).getBoolValue());
 			break;
 		case BYTE:
-			JConsole.printInt(rt.getStandardIO().getOut(), ((ByteValue) val).getByteValue());
+			JConsole.printInt(ps, ((ByteValue) val).getByteValue());
 			break;
 		case CHAR:
-			JConsole.printChar(rt.getStandardIO().getOut(), ((CharValue) val).getCharValue());
+			JConsole.printChar(ps, ((CharValue) val).getCharValue());
 			break;	
 		case FLOAT:
-			JConsole.printString(rt.getStandardIO().getOut(), ((FloatValue) val).toString());
+			JConsole.printString(ps, ((FloatValue) val).toString());
 			break;			
 		case INTEGER:
-			JConsole.printInt(rt.getStandardIO().getOut(), ((IntValue) val).getIntValue());
+			JConsole.printInt(ps, ((IntValue) val).getIntValue());
 			break;
 		case REFERENCE:
 			ObjectValue derefVal = RefValue.tryDereference(val);
 			if(derefVal == RefValue.NULL){
-				JConsole.printString(rt.getStandardIO().getOut(), derefVal.toString());
+				JConsole.printString(ps, derefVal.toString());
 			} else {
-				printObject(rt, derefVal);
+				printObject(rt, ps, derefVal);
 			}
 			break;
 		case OBJECT:
 			ObjectValue ov = (ObjectValue) val;
 			switch(ov.getBuiltInValueKind()){
 			case STRING:
-				JConsole.printString(rt.getStandardIO().getOut(), ((StringValue) ov).getStringValue());
+				JConsole.printString(ps, ((StringValue) ov).getStringValue());
 				break;
 			case ENUM:
-				JConsole.printString(rt.getStandardIO().getOut(), ((EnumValue) ov).getLiteral());
+				JConsole.printString(ps, ((EnumValue) ov).getLiteral());
 				break;
 			default:
-				printObject(rt, ov);
+				printObject(rt, ps, ov);
 				break;
 			}
 			break;

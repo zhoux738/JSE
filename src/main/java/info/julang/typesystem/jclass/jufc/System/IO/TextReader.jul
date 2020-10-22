@@ -22,6 +22,7 @@ class TextReader {
 	private int max; // The max value the index can be incremented to. Usually the end of the buffer, except for the last load off of the stream.
 	private byte[] buffer;
 	private int bufferSize; // Double itself whenever LBS is not found within the current buffer.
+	private bool eof; // Has reached end-of-file?
 	
 	private static const int s_reread = -2;
 	
@@ -60,6 +61,7 @@ class TextReader {
 		this.autoClose = autoClose;
 		this.charsetName = String.isEmpty(charset) ? "ascii" : charset;
 		this.startIndex = 0;
+		this.eof = false;
 	}
 
 	/*
@@ -108,7 +110,7 @@ class TextReader {
 		} else if (end == TextReader.s_reread) {
 			// Expanded buffer
 			return readln();
-		} else {
+		} else { // (end == -1)
 			// EOF
 			if (startIndex < max) {
 				String str = toString(max);
@@ -123,9 +125,10 @@ class TextReader {
 	
 	private int readMore(int inBufOffset) {
 		int count = stream.read(buffer, inBufOffset, bufferSize);
-		// Console.println("readMore => " + count);
 		if (count > 0) {
 			max = inBufOffset + count - 1;
+		} else if (count == -1) {
+			eof = true;
 		}
 		
 		return count;
@@ -142,7 +145,7 @@ class TextReader {
 		}
 		
 		// Reach the end of buffer but still no LBS. Expand the buffer and try again.
-		int mark25p = (max >>= 4);
+		int mark25p = (max >> 2);
 		int oldBufferSize = bufferSize;
 		
 		if (startIndex <= mark25p) {
@@ -157,29 +160,36 @@ class TextReader {
 		buffer = new byte[bufferSize];
 		
 		// Console.println("max=" + max + "; index=" + index + "; startIndex=" + startIndex + "; expand buffer size to " + bufferSize);
-		int diff = index - startIndex;
+		int diff1 = index - startIndex;
+		int diff2 = max - index;
 		Array.copy(tmpBuffer, startIndex, buffer, 0, oldBufferSize - startIndex);
 		startIndex = 0;
-		index = diff;
+		index = diff1;
+		max = index + diff2;
 		
 		int newlyRead = readMore(index);
 		if (newlyRead >= 0) {
 			return TextReader.s_reread;
 		} else {
-			max = -1;
 			return -1;
 		}
 	}
 	
 	private String toString(int endIndex){
-		int newStart = endIndex + 1;
-		if (endIndex > 0 && buffer[endIndex - 1] == '\r') {
-			endIndex--;
+		String str = null;
+		if (!eof) {
+			int newStart = endIndex + 1;
+			if (endIndex > 0 && buffer[endIndex - 1] == '\r') {
+				endIndex--;
+			}
+			str = String.fromBytes(buffer, "ascii", startIndex, endIndex - startIndex);
+			//Console.println("toString => " + str + " | " + startIndex + " ~ " + endIndex);
+			startIndex = newStart;
+		} else {
+			str = String.fromBytes(buffer, "ascii", startIndex, endIndex - startIndex + 1);
+			//Console.println("toString => " + str + " | " + startIndex + " ~ " + endIndex);
 		}
 		
-		String str = String.fromBytes(buffer, "ascii", startIndex, endIndex - startIndex);
-		// Console.println("toString => " + str + " | " + startIndex + " ~ " + endIndex);
-		startIndex = newStart;
 		return str;
 	}
 }

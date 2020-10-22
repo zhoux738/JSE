@@ -105,6 +105,66 @@ public class System_IO_TextReader_IOTestSuite {
 	}
 	
 	private void runTextReaderTest(int bufferSize, String[] lines) throws EngineInvocationError, IOException {
+		runTextReaderTestInternal(
+			bufferSize,
+			lines, 
+			new FileWriterCallback() {
+				@Override
+				public void on(FileWriter writer) throws IOException {
+			    	for (String line : lines) {
+				    	writer.append(line);
+				    	writer.append(System.lineSeparator());
+			    	}
+				} 		
+	    	});
+	}
+	
+	@Test
+	public void readlnEolTest_readAllInOneAttempt() throws EngineInvocationError, IOException {
+		runTextReaderWithEOLTest(
+			1024,
+			new String[] {
+				"abc",
+				"defgh"
+			});
+	}
+	
+	@Test
+	public void readlnEolTest_bufferGrows() throws EngineInvocationError, IOException {
+		runTextReaderWithEOLTest(
+			4,
+			new String[] {
+				"abc",
+				"defgh"
+			});
+	}
+	
+	private void runTextReaderWithEOLTest(int bufferSize, String[] lines) throws EngineInvocationError, IOException {
+		StringBuilder sb = new StringBuilder(lines[0]);
+		for(int i = 1; i<lines.length; i++) {
+			sb.append(System.lineSeparator());
+			sb.append(lines[i]); // Ends the last line with EOF
+		}
+		
+		runTextReaderTestInternal(
+			bufferSize,
+			lines,
+			new FileWriterCallback() {
+				@Override
+				public void on(FileWriter writer) throws IOException {
+			    	writer.append(sb.toString());
+				} 		
+	    	});
+	}
+	
+	//----------------- Helper functions -----------------//
+	
+	private static interface FileWriterCallback {
+		public void on(FileWriter writer) throws IOException;
+	}
+	
+	private void runTextReaderTestInternal(int bufferSize, String[] lines, FileWriterCallback callback) 
+		throws EngineInvocationError, IOException {
 		VariableTable gvt = new VariableTable(null);
 		gvt.enterScope();
 		HeapArea heap = new SimpleHeapArea();
@@ -116,10 +176,7 @@ public class System_IO_TextReader_IOTestSuite {
 			// 1) create an empty temp file		
 			temp = FileSysHelper.createTempFile();
 		    try (FileWriter writer = new FileWriter(temp)) {
-		    	for (String line : lines) {
-			    	writer.append(line);
-			    	writer.append(System.lineSeparator());
-		    	}
+		    	callback.on(writer);
 			}
 		    
 			// 2) create a global var "path" and set temp file's full path to it	

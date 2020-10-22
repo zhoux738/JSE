@@ -10,7 +10,7 @@ import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.util.OSTool;
 import info.jultest.test.Commons;
 import info.jultest.test.oo.ExceptionTestsBase;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.Test;
 

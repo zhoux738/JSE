@@ -40,6 +40,8 @@ import info.julang.memory.value.ArrayValueFactory;
 import info.julang.memory.value.BasicArrayValue;
 import info.julang.memory.value.BoolValue;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IArrayValue;
+import info.julang.memory.value.IPlatformArrayValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectArrayValue;
@@ -57,6 +59,7 @@ import info.julang.typesystem.JType;
 import info.julang.typesystem.VoidType;
 import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.basic.IntType;
+import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
 import info.julang.typesystem.jclass.ICompoundTypeBuilder;
@@ -323,30 +326,33 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
-			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
-			IntValue offsetSrc = (IntValue)args[1].getValue();
-			ArrayValue dst = (ArrayValue)(args[2].getValue().deref());
-			IntValue offsetDst = (IntValue)args[3].getValue();
-			IntValue countDst = (IntValue)args[4].getValue();
-			
-			JClassType srcType = src.getClassType();
-			JClassType dstType = dst.getClassType();
-
-			// These two checks may not be necessary
-			if (!JArrayType.isArrayType(srcType)){
+			JValue srcVal = args[0].getValue().deref();
+			if (!(srcVal instanceof IArrayValue)) {
 				throw new IllegalArgumentsException(METHOD_NAME_copy, "Value of source is not an array.");
 			}
-			if (!JArrayType.isArrayType(dstType)){
-				throw new IllegalArgumentsException(METHOD_NAME_copy, "Value of destination is not an array.");
-			}
-			if (srcType != dstType){
+			IArrayValue src = (IArrayValue)srcVal;
+
+			JValue dstVal = args[2].getValue().deref();
+			if (!(dstVal instanceof IArrayValue)) {
+				throw new IllegalArgumentsException(METHOD_NAME_copy, "Value of target is not an array.");
+			}	
+			IArrayValue dst = (IArrayValue)dstVal;
+
+			Convertibility cv = srcVal.getType().getConvertibilityTo(dstVal.getType());
+			if (cv != Convertibility.EQUIVALENT
+				&& cv != Convertibility.ORTHOGONAL
+				&& dstVal.getType().getConvertibilityTo(srcVal.getType()) != Convertibility.ORTHOGONAL){
 				throw new IllegalArgumentsException(METHOD_NAME_copy, "Values of source and destination are of different types.");
 			}
+			
 			if (src == dst){
 				// We don't allow this as of 0.1.6 (although Java does)
 				throw new IllegalArgumentsException(METHOD_NAME_copy, "Source and destination arrays must not refer to the same one.");
 			}
-			
+
+			IntValue offsetSrc = (IntValue)args[1].getValue();
+			IntValue offsetDst = (IntValue)args[3].getValue();
+			IntValue countDst = (IntValue)args[4].getValue();
 			int oss = offsetSrc.getIntValue();
 			int osd = offsetDst.getIntValue();
 			int cnt = countDst.getIntValue();
@@ -374,23 +380,19 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 			
 			// Copy the array
 			if (cnt > 0){
-				JArrayType at = (JArrayType) srcType;
-				if (at.getElementType().isBasic()){
+				if (src.isBasicArray() && dst.isBasicArray()){
 					// This is a single dimensional basic type array. We are able to perform native copy.
-					BasicArrayValue srcBav = (BasicArrayValue)src;
+					IPlatformArrayValue srcBav = (IPlatformArrayValue)src;
 					Object srcObj = srcBav.getPlatformArrayObject();
-					BasicArrayValue dstBav = (BasicArrayValue)dst;
+					IPlatformArrayValue dstBav = (IPlatformArrayValue)dst;
 					Object dstObj = dstBav.getPlatformArrayObject();
 					
 					System.arraycopy(srcObj, oss, dstObj, osd, cnt);
 				} else {
 					// Have to copy object values one by one.
-					ObjectArrayValue srcOav = (ObjectArrayValue)src;
-					ObjectArrayValue dstBav = (ObjectArrayValue)dst;
-					
 					for(int i=0; i<cnt; i++){
-						JValue vs = srcOav.getValueAt(oss + i);
-						JValue vd = dstBav.getValueAt(osd + i);
+						JValue vs = src.getValueAt(oss + i);
+						JValue vd = dst.getValueAt(osd + i);
 						vs.assignTo(vd);
 					}
 				}
@@ -419,13 +421,11 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
-			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
+			IArrayValue src = (IArrayValue)(args[0].getValue().deref());
 			JValue val = args[1].getValue();
 			val = UntypedValue.unwrap(val);
 			
-			JClassType srcType = src.getClassType();
-			JArrayType at = (JArrayType) srcType;
-			if (at.getElementType().isBasic()){
+			if (src.isBasicArray()){
 				// This is a single dimensional basic type array. We are able to perform native filling.
 				BasicArrayValue srcBav = (BasicArrayValue)src;
 				srcBav.fill(val);
@@ -470,7 +470,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
-			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
+			IArrayValue src = (IArrayValue)(args[0].getValue().deref());
 			JValue val = args[1].getValue();
 			boolean desc = ((BoolValue)val.deref()).getBoolValue();
 
@@ -583,7 +583,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
-			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
+			IArrayValue src = (IArrayValue)(args[0].getValue().deref());
 			
 			// Load ArrayIterator, an internal type that implements IIterator on top of an array
 			ITypeTable tt = runtime.getTypeTable();
@@ -622,7 +622,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
-			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
+			IArrayValue src = (IArrayValue)(args[0].getValue().deref());
 			JValue val = args[1].getValue();
 			int index = ValueUtilities.getIntValue(val, "index"); // argument exception
 			JValue ele = src.getValueAt(index); // array out-of-index exception
@@ -648,7 +648,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
-			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
+			IArrayValue src = (IArrayValue)(args[0].getValue().deref());
 			
 			// index
 			JValue val = args[1].getValue();
@@ -681,7 +681,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
-			ArrayValue src = (ArrayValue)(args[0].getValue().deref());
+			IArrayValue src = (IArrayValue)(args[0].getValue().deref());
 			JValue ele = TempValueFactory.createTempIntValue(src.getLength());
 			return new Result(ele);
 		}

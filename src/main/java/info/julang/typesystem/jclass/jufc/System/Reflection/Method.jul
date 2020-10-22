@@ -133,7 +133,7 @@ class Method : Member {
 	}
 	
 	/*
-	 * Bind this method to an instance to get an callable [Function] object. This has a similar effect to getting the
+	 * Bind this method to an instance to get a callable [Function] object. This has a similar effect to getting the
 	 * Function directly from an object with dot operator.
 	 * [code]
 	 *   class Car {

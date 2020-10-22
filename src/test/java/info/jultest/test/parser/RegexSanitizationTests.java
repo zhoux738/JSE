@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import info.julang.typesystem.jclass.jufc.System.Util.RegexSanitizer;
 import info.julang.typesystem.jclass.jufc.System.Util.UnrecognizedRegexException;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class RegexSanitizationTests {
 	

@@ -116,7 +116,7 @@ public class NamespacePool {
 	/**
 	 * For a given simple name, return a list of all the possible full names.
 	 * 
-	 * @param name
+	 * @param inScriptClassName
 	 * @return
 	 */
 	public OneOrMoreList<String> getAllPossibleFullNames(ParsedTypeName tname){

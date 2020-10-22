@@ -129,16 +129,26 @@ public class InternalTypeResolver {
 		
 		IModuleManager mm = context.getModManager();
 		
-		OneOrMoreList<String> fnames = nsPool.getAllPossibleFullNames(typeName);
-		if(fnames.hasOnlyOne()){
-			String fname = fnames.getFirst();
-			if(mm.getClassesByFQName(fname) != null){
-				JType typ = tt.getType(fname, true);
+		// There is only one potential full name to bind to if the namespace pool is not specified.
+		String singleName = nsPool == null ? typeName.getFQNameInString() : null;
+		OneOrMoreList<String> fnames = null;
+		if (singleName == null) {
+			fnames = nsPool.getAllPossibleFullNames(typeName);
+			if(fnames.hasOnlyOne()) {
+				singleName = fnames.getFirst();
+			}
+		}
+		
+		if(singleName != null){
+			// nspool can be null in this branch.
+			if(mm.getClassesByFQName(singleName) != null){
+				JType typ = tt.getType(singleName, true);
 				if(typ != null){
 					// already loaded.
 					return finishLoading(tt, typ, typeName);
 				}
-				typ = loadType(context, fname, true, reentry, initiative);
+				
+				typ = loadType(context, singleName, true, reentry, initiative);
 				return finishLoading(tt, typ, typeName);
 			}
 		} else {
@@ -167,7 +177,7 @@ public class InternalTypeResolver {
 			if(nameToLoad != null){
 				JType typ = loadType(context, nameToLoad, true, reentry, initiative);
 				if(typ != null){
-					// let's bind the name, so that the next reference by the same simple name can be resolved faster.
+					// Let's bind the name, so that the next reference by the same simple name can be resolved faster.
 					nsPool.addBinding(typeName.getFQName().toString(), nameToLoad);
 					return finishLoading(tt, typ, typeName);
 				}				

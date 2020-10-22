@@ -29,6 +29,7 @@ public class AOTRawScriptInfo$Exception extends RawScriptInfo {
         
         m_classes = new ArrayList<RawClassInfo>();
         m_classes.add(new RawClassInfo("Exception", new AOTClassDeclInfo_Exception (this)));
+        m_classes.add(new RawClassInfo("ExceptionUtil", new AOTClassDeclInfo_ExceptionUtil (this)));
         m_classes.add(new RawClassInfo("DivByZeroException", new AOTClassDeclInfo_DivByZeroException (this)));
         m_classes.add(new RawClassInfo("ArrayOutOfRangeException", new AOTClassDeclInfo_ArrayOutOfRangeException (this)));
         m_classes.add(new RawClassInfo("NullReferenceException", new AOTClassDeclInfo_NullReferenceException (this)));
@@ -124,6 +125,63 @@ public class AOTRawScriptInfo$Exception extends RawScriptInfo {
 
         public Accessibility getAccessibility() {
             return Accessibility.PUBLIC;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_ExceptionUtil extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_ExceptionUtil(RawScriptInfo minfo) {
+            super(minfo);
+            
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.ExceptionUtil");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "ExceptionUtil";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return true;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.MODULE;
         }
         
         public boolean isAccessibilitySet(){

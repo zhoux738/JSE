@@ -6,7 +6,7 @@ import System.Concurrency;
 /*
  * A constructor member defined on a type.
  *
- * A constructor plays the major role in initialization of an instance under a certain class. In source code,
+ * A constructor plays the major role in initialization of an instance of a certain class. In source code,
  * a programmer uses ```new``` operator to invoke some constructor through dynamic binding, where engine
  * will decide in runtime the appropriate constructor to call given the arguments passed along. In contrast,
  * this class allows calling against an exact constructor.

@@ -41,6 +41,7 @@ import org.eclipse.ui.themes.IThemeManager;
 
 import info.julang.ide.JulianPlugin;
 import info.julang.ide.builder.JulianBuilder;
+import info.julang.ide.builder.JulianBuilderConfig;
 import info.julang.ide.builder.ParsingLevel;
 import info.julang.ide.editors.folding.FoldingManager;
 import info.julang.ide.themes.ColorManagerFactory;
@@ -143,14 +144,16 @@ public class JulianEditor extends TextEditor {
 		// We can do this only if the file has been built successfully, with its AST stored (ParsingLevel >= ADV_SYNTAX).
 		// If the file has not been built, build it now.
 		if (ainfo == null
-			&& forceBuild
-			&& ParsingLevel.loadFromProject(file.getProject(), ParsingLevel.SYNTAX).ordinal() >= ParsingLevel.ADV_SYNTAX.ordinal()) {
-			JulianBuilder.buildSingle(file, () -> { 
-				LazyAstInfo ainfoNew = JulianPlugin.getASTRepository().get(file);
-				if (ainfoNew != null) {
-					this.foldingMgr.update(ainfoNew);
-				}
-			});
+			&& forceBuild) {
+			JulianBuilderConfig config = JulianBuilderConfig.loadFromProject(file.getProject());
+			if (config.getParsingLevel().ordinal() >= ParsingLevel.ADV_SYNTAX.ordinal()) {		
+				JulianBuilder.buildSingle(file, config.shouldProcessPragma(), () -> { 
+					LazyAstInfo ainfoNew = JulianPlugin.getASTRepository().get(file);
+					if (ainfoNew != null) {
+						this.foldingMgr.update(ainfoNew);
+					}
+				});
+			}
 		} else {
 			if (ainfo != null) {
 				this.foldingMgr.update(ainfo);

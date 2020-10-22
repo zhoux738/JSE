@@ -1,7 +1,9 @@
 module System;
 
 /*
- * Console provides means to input from and output to character-oriented terminals of the operating system.
+ * Console provides means to input from and output to the standard character-oriented terminal of the operating system,
+ * which are collectively called standard input/ouput. If the standard IO has been redirected externally to the script 
+ * engine, this class will be affected as well, so technically it's not tied to the console per se.
  */
 [Bridged(apiset="System.Console")]
 final static class Console {
@@ -9,54 +11,94 @@ final static class Console {
  	/*
  	 * Print the given value to the console. If the value is an [Object], calls [Object.toString()](Object#toString())
  	 * to get the string to output. If the value is of primitive type, prints its literal representation.
- 	 * If the value is null, prints "(null)".
+ 	 * If the value is null, prints "(null)" (quotes excluded).
  	 *
  	 * [param: value] a value to print out.
  	 */
  	static void print(var value){
  		if (value == null) {
-			_print("(null)");
+			_print("(null)", true, false);
 			return;
 		}
 		
-		if(value is Object){
-			_print(value.toString());
+		if (value is Object) {
+			_print(value.toString(), true, false);
 		} else {
-			_print(value);
+			_print(value, true, false);
 		}
 	}
 	
 	/*
-	 * Print the given value to the console, then a line break sequences as defined by the underlying
-	 * operating system. See [toString()](Object#toString()) for more details.
+ 	 * Print the given value to the standard error, which is by default output to the console as well. 
+ 	 * If the value is an [Object], calls [Object.toString()](Object#toString()) to get the string to 
+ 	 * output. If the value is of primitive type, prints its literal representation. If the value is 
+ 	 * null, prints "(null)" (quotes excluded).
  	 *
- 	 * [param: value] a value to print out.
-	 */ 
- 	static void println(var value){
-		if (value == null) {
-			_println("(null)");
+ 	 * [param: value] a value to print out to the standard error.
+ 	 */
+ 	static void error(var value){
+ 		if (value == null) {
+			_print("(null)", false, false);
 			return;
 		}
 		
-		if(value is Object){
-			_println(value.toString());
+		if (value is Object) {
+			_print(value.toString(), false, false);
 		} else {
-			_println(value);
+			_print(value, false, false);
+		}
+	}
+	
+	/*
+	 * Print the given value, converted to [String], to the console, then a [line break sequence](System.Environment#lineSeparator)
+	 * as defined by the underlying operating system. See [toString()](Object#toString()) for more details.
+ 	 *
+ 	 * [param: value] a value to print out, preceding a new line.
+	 */ 
+ 	static void println(var value){
+ 		if (value == null) {
+			_print("(null)", true, true);
+			return;
+		}
+		
+		if (value is Object) {
+			_print(value.toString(), true, true);
+		} else {
+			_print(value, true, true);
+		}
+	}
+	
+	/*
+	 * Print the given value, converted to [String], to the standard error, then a 
+	 * [line break sequence](System.Environment#lineSeparator) as defined by the 
+	 * underlying operating system. The standard error is by default output to the 
+	 * console as well. See [toString()](Object#toString()) for more details.
+ 	 *
+ 	 * [param: value] a value to print out to the standard error, preceding a new line.
+	 */ 
+ 	static void errorln(var value){
+ 		if (value == null) {
+			_print("(null)", false, true);
+			return;
+		}
+		
+		if (value is Object) {
+			_print(value.toString(), false, true);
+		} else {
+			_print(value, false, true);
 		}
 	}
 	
 	[Bridged(name="print")]
-	private hosted static void _print(var msg);
-	
-	[Bridged(name="println")]
-	private hosted static void _println(var msg);
+	private hosted static void _print(var msg, bool stdout, bool newLine);
 	
     /*
-	 * Read the characters from standard input, until a line break sequence as defined by the underlying
-	 * operating system is met. This method will be blocking the thread until the line break is consumed.
+	 * Read the characters from standard input, until a [line break sequence](System.Environment#lineSeparator)
+	 * as defined by the underlying operating system is met. This method will be blocking the thread until 
+	 * the line break is consumed.
 	 *
 	 * [access] System.Console/read
-	 * [return] the string comprised of the input characters, excluding the line break at the end.
+	 * [return] The string comprised of the input characters, excluding the line break at the end.
 	 */ 
 	[Bridged(name="readln")]
  	hosted static string readln();

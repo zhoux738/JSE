@@ -33,7 +33,7 @@ import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.memory.HeapArea;
 import info.julang.memory.simple.SimpleHeapArea;
 import info.julang.memory.value.StringValue;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 // Tests in this class run "java -version" as this executable is guaranteed to exist in dev environment.
 // Note that due to some historical reason, "java -version" outputs version info to standard error.

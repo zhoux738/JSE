@@ -13,7 +13,7 @@ import info.julang.execution.symboltable.VariableTable;
 import info.jultest.test.Commons;
 import info.jultest.test.EngineComponentSet;
 import info.jultest.test.TestSession;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class System_Network_ServerSocket_Sync_IOTestSuite {
 

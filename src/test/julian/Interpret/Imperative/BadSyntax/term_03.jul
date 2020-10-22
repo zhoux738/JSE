@@ -1,3 +1,4 @@
+/* $PRAGMA$ info.julang.ide.no.parsing */
 void f(int i){
 
 }

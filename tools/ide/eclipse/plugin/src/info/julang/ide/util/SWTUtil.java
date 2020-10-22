@@ -145,6 +145,21 @@ public final class SWTUtil {
 		setButtonDimensionHint(button);
 		return button;
 	}
+	
+	/**
+	 * Create a checkbox-style button.
+	 */
+	public static Button createCheckBox(Composite parent, String label) {
+		Button button = new Button(parent, SWT.CHECK);
+		button.setFont(parent.getFont());
+		if (label != null) {
+			button.setText(label);
+		}
+		GridData gd = new GridData();
+		button.setLayoutData(gd);
+		setButtonDimensionHint(button);
+		return button;
+	}
 
 	/**
 	 * Create a radio-style button.
@@ -163,16 +178,16 @@ public final class SWTUtil {
 	
 	private static void setButtonDimensionHint(Button button) {
 		Assert.isNotNull(button);
-		Object gd= button.getLayoutData();
+		Object gd = button.getLayoutData();
 		if (gd instanceof GridData) {
-			((GridData)gd).widthHint= getButtonWidthHint(button);
+			((GridData)gd).widthHint = getButtonWidthHint(button);
 			((GridData)gd).horizontalAlignment = GridData.FILL;
 		}
 	}
 	
 	private static int getButtonWidthHint(Button button) {
-		PixelConverter converter= new PixelConverter(button);
-		int widthHint= converter.convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
+		PixelConverter converter = new PixelConverter(button);
+		int widthHint = converter.convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
 		return Math.max(widthHint, button.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
 	}
 }

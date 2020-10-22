@@ -3,7 +3,7 @@ module System;
 /*
  * A class marked by this attribute is bridged to platform class/methods through registration.
  *
- * This approach allows an optimized performance at the price of complexity. As of current version,
+ * This approach allows an optimized performance at the price of complexity. As of the current version,
  * this attribute is reserved for system use only.
  */
 [AttributeType(
@@ -34,8 +34,9 @@ attribute Bridged {
  * platform's typing hierarchy will also be mirrored. Throughout the runtime the instance of a mapped class 
  * is essentially a wrapper of the underlying instance.
  * 
- * This approach allows a convenient and easy-to-use platform inter-operation at the price of performance.
- * As of current version, this is the only way for ordinary users to talk to JVM classes.
+ * This approach allows a convenient and easy-to-use platform inter-operation at a very small price of 
+ * performance. This attribute also makes it possible to bind arbitrary JVM objects created outside the 
+ * engine. For more details, see tutorial [here](tutorial: binding).
  *
  * To use this attribute, access policy `System.Interop/map` must be enabled.
  */

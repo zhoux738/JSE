@@ -1,0 +1,6 @@
+[Mapped(className="info.jultest.test.hosted.classes.Car")]
+class Car {
+
+}
+
+Car c = a;

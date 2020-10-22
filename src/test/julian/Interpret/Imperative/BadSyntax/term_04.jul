@@ -1,3 +1,4 @@
+/* $PRAGMA$ info.julang.ide.no.parsing */
 // common logic control - if/else
 
 bool[] bs = new bool[5];

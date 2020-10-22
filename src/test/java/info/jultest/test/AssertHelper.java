@@ -1,6 +1,6 @@
 package info.jultest.test;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public final class AssertHelper {
 

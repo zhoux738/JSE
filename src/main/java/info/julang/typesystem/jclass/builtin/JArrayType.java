@@ -26,6 +26,7 @@ package info.julang.typesystem.jclass.builtin;
 
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.external.exceptions.JSEError;
+import info.julang.hosting.mapped.implicit.ImplicitTypeNameConvertor;
 import info.julang.typesystem.BuiltinTypes;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.conversion.Convertibility;
@@ -149,7 +150,19 @@ public class JArrayType extends JArrayBaseType {
 	public Convertibility getConvertibilityTo(JType another){
 		if (isArrayType(another)){
 			JArrayType jat = (JArrayType) another;
+			if (this.covariant) {
+				// For compat between implicit platform primitive arrays and JSE basic arrays
+				JType et1 = this.getElementType();
+				JType et2 = jat.getElementType();
+				if (et2.isBasic() && !isArrayType(et1)) {
+					if (tryConvertBetweenBasicArray(et1, et2)) {
+						return Convertibility.ORTHOGONAL;
+					}
+				}
+			}
+			
 			if (jat.covariant) {
+				// For compat between platform arrays
 				JType et1 = this.getElementType();
 				JType et2 = jat.getElementType();
 				return et1.getConvertibilityTo(et2);
@@ -161,6 +174,41 @@ public class JArrayType extends JArrayBaseType {
 	
 	@Override
 	public boolean deferBuild(){
+		return false;
+	}
+	
+	private static boolean tryConvertBetweenBasicArray(JType et1, JType et2) {
+		String thisTypeName = ImplicitTypeNameConvertor.getSimpleTypeName(et1.getName());
+		if (thisTypeName != null) {
+			Class<?> expectedClass = null;
+			switch (et2.getKind()) {
+			case BOOLEAN:
+				expectedClass = int.class;
+				break;
+			case BYTE:
+				expectedClass = byte.class;
+				break;
+			case INTEGER:
+				expectedClass = int.class;
+				break;
+			case FLOAT:
+				expectedClass = float.class;
+				break;
+			case CHAR:
+				expectedClass = char.class;
+				break;
+			default:
+				break;
+			}
+			
+			if (expectedClass != null) {
+				String expectedName = ImplicitTypeNameConvertor.fromClassNameToSimpleTypeName(expectedClass);
+				if (expectedName.equals(thisTypeName)) {
+					return true;
+				}
+			}
+		}
+		
 		return false;
 	}
 }

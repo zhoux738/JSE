@@ -46,7 +46,7 @@ import java.util.Comparator;
  * 
  * @author Ming Zhou
  */
-public abstract class BasicArrayValue extends ArrayValue {
+public abstract class BasicArrayValue extends ArrayValue implements IPlatformArrayValue {
 
 	protected int length;
 	protected MemoryArea memory;
@@ -81,15 +81,6 @@ public abstract class BasicArrayValue extends ArrayValue {
 		return true;
 	}
 	
-	/**
-	 * Get the underlying Java array that stores the data. The type of this object corresponds to
-	 * the basic type of this array's element. For example, a {@link ByteArrayValue} returns an 
-	 * object of type <code>byte[]</code>.
-	 * 
-	 * @return
-	 */
-	public abstract Object getPlatformArrayObject();
-	
 	protected abstract void initializeArray(MemoryArea memory, int length);
 	
 	public abstract void fill(JValue jv);
@@ -101,7 +92,7 @@ public abstract class BasicArrayValue extends ArrayValue {
 class IntArrayValue extends BasicArrayValue {
 
 	// The underlying storage
-	private int[] array;
+	protected int[] array;
 	
 	/**
 	 * Reserved only for builder.
@@ -336,7 +327,7 @@ class ByteArrayValue extends BasicArrayValue {
 class CharArrayValue extends BasicArrayValue {
 
 	// The underlying storage
-	private char[] array;
+	protected char[] array;
 	
 	/**
 	 * Reserved only for builder.
@@ -452,7 +443,7 @@ class CharArrayValue extends BasicArrayValue {
 class FloatArrayValue extends BasicArrayValue {
 
 	// The underlying storage
-	private float[] array;
+	protected float[] array;
 
 	/**
 	 * Reserved only for builder.
@@ -568,7 +559,7 @@ class FloatArrayValue extends BasicArrayValue {
 class BoolArrayValue extends BasicArrayValue {
 
 	// The underlying storage
-	private boolean[] array;
+	protected boolean[] array;
 	
 	/**
 	 * Reserved only for builder.

@@ -253,9 +253,9 @@ static class IIterableExtension {
 	 *
 	 * [param: this] The source iterable.
 	 * [param: seed] Used as the first argument when the reducer is called for the first time.
-	 * [param: reducer] Used as the first argument when the reducer is called for the first time.
-	 * [return] A function (```T fun(T, item)```) that produces a value of arbitrary but 
+	 * [param: reducer] A function (```T fun(T, item)```) that produces a value of arbitrary but 
 	 * consistent type T.
+	 * [return] The final result of applying the funciton to each item on top of the previous result.
 	 * [throws: System.NullReferenceException] If the given iterable is null.
 	 * [throws: System.Lang.RuntimeCheckException] If the given function doesn't satisfy the required signature. 
 	 * This is a rather weak type enforcement to be performed at the beginning of this method to make it fail early.

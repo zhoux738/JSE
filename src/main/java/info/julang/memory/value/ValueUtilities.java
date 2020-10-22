@@ -25,16 +25,16 @@ SOFTWARE.
 package info.julang.memory.value;
 
 import info.julang.execution.symboltable.ITypeTable;
+import info.julang.external.binding.ExtValue;
+import info.julang.external.binding.ExtValue.ExtBoolValue;
+import info.julang.external.binding.ExtValue.ExtCharValue;
+import info.julang.external.binding.ExtValue.ExtFloatValue;
+import info.julang.external.binding.ExtValue.ExtIntValue;
+import info.julang.external.binding.ExtValue.ExtObjValue;
+import info.julang.external.binding.ExtValue.ExtStringValue;
 import info.julang.external.exceptions.ExternalBindingException;
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
-import info.julang.external.interop.ExtValue;
-import info.julang.external.interop.ExtValue.ExtBoolValue;
-import info.julang.external.interop.ExtValue.ExtCharValue;
-import info.julang.external.interop.ExtValue.ExtFloatValue;
-import info.julang.external.interop.ExtValue.ExtIntValue;
-import info.julang.external.interop.ExtValue.ExtObjValue;
-import info.julang.external.interop.ExtValue.ExtStringValue;
 import info.julang.interpretation.expression.Operator;
 import info.julang.memory.MemoryArea;
 import info.julang.typesystem.JArgumentException;

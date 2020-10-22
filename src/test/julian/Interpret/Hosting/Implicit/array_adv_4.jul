@@ -1,0 +1,5 @@
+int[] brr = new int[5];
+// Array src, int srcOffset, Array dst, int dstOffset, int count
+Array.copy(arr, 0, brr, 0, 5);
+int[] crr = new int[] { 10, 20, 30 };
+Array.copy(crr, 0, arr, 0, 3);

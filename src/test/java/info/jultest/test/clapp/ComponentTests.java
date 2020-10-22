@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import info.julang.clapp.repl.os.LineBuffer;
 import info.julang.clapp.update.WrapperScriptUpdater;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class ComponentTests {
 	

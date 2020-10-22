@@ -1,0 +1,23 @@
+int icap = 0;
+for (int i = 0; i < iarr.length; i++) {
+	for (int j = 0; j < iarr[i].length; j++) {
+		iarr[i][j] = iarr[i][j] * 2;
+		icap++;
+	}
+}
+
+int scap = 0;
+for (var strs : sarr) {
+	for (int j = 0; j < strs.length; j++) {
+		strs[j] = strs[j] + '_';
+		scap++;
+	}
+}
+
+int ocap = 0;
+for (var objs : oarr) {
+	for (var obj : objs) {
+		obj.set(obj.get() * 2);
+		ocap++;
+	}
+}

@@ -42,7 +42,7 @@ class Exception {
 	}
 	
 	/*
-	 * Create an exception with message and cause.
+	 * Create an exception with message and cause, a.k.a the inner exception.
 	 *
 	 * [param: message] The message for this exception.
 	 * [param: cause] The inner cause for this exception, which is also an exception.
@@ -72,7 +72,7 @@ class Exception {
 	}
 	
 	/*
-	 * Get the cause of this exception, if any.
+	 * Get the cause, a.k.a the inner exception, of this exception, if any.
 	 *
 	 * [return] Can be null if the cause was not specified during construction.
 	 */
@@ -80,6 +80,23 @@ class Exception {
 		return _cause;
 	}
 
+	/*
+	 * Print the full stack trace to the standard error.
+	 * 
+	 * If the stack trace is too long, it might get truncated. If it's cause chain is longer than 4,
+	 * the causes beyond the fourth will not be printed.
+	 */
+	void printToError(){
+		string text = ExceptionUtil.getStackTraceAsString(this);
+		Console.errorln(text);
+	}
+}
+
+[Bridged(apiset="System.ExceptionUtil")]
+internal static class ExceptionUtil {
+	
+	[Bridged(name="getStackTraceAsString")]
+	internal static hosted string getStackTraceAsString(Exception ex);
 }
 
 /*

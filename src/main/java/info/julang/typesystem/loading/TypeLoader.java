@@ -403,8 +403,10 @@ public class TypeLoader {
 				ICompoundType typ = pair.getFirst();
 				diag.set(typ);
 				AttrValue av = pair.getSecond().getAttributeValue();
-				TypeValue tvalue = tt.getValue(typ.getName());
-				tvalue.addClassAttrValue(av);
+				if (av != null) {
+					TypeValue tvalue = tt.getValue(typ.getName());
+					tvalue.addClassAttrValue(av);
+				}
 			}
 		}
 		

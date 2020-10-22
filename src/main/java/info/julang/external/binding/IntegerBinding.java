@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interop;
+package info.julang.external.binding;
 
+import info.julang.external.binding.ExtValue.ExtIntValue;
 import info.julang.external.interfaces.IExtValue;
 import info.julang.external.interfaces.IExtValue.IIntVal;
-import info.julang.external.interop.ExtValue.ExtIntValue;
 
 public class IntegerBinding extends BindingBase {
 

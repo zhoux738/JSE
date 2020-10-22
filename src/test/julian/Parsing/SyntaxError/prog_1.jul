@@ -1,3 +1,4 @@
+/* $PRAGMA$ info.julang.ide.no.parsing */
 int x = 5;
 int y =int;
 int z = 3;

@@ -24,7 +24,7 @@ SOFTWARE.
 
 package info.julang.clapp;
 
-import info.julang.external.interop.IBinding;
+import info.julang.external.binding.IBinding;
 import info.julang.util.Pair;
 
 public class NamedBinding extends Pair<String, IBinding> {

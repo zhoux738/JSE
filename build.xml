@@ -49,7 +49,7 @@
 	
   <target name="bootstrap" description="(Special) Create a temporary pom file excluding juleng references, then build JSE to produce binaries that building juleng itself would entail">
     <!-- Create temp pom file -->
-  	<script language="javascript" src="./build/bootstrap.js" />
+  	<julian srcFile="./build/bootstrap.jul" />
   	
     <!-- mvn clean compile -->
     <echo message="Run 'mvn clean compile' against ${btpom}"/>
@@ -93,33 +93,36 @@
           
   <!-- Build each phase as specified by phases property -->
   <target name="build-phases" depends="load-phases">
-    <script language="javascript">
+  	<julian>
         <![CDATA[
-            hasClean = false; 
-            hasTask = false;
-            phases = JSE.getProperty("phases");
-            phases = phases.match(/\d/g);
-            for(i = 0; i < phases.length; i++){
-                switch(parseInt(phases[i])){
-                case 0: hasClean = true; break;
-                case 1: hasTask = true; JSE.setProperty("taskPlugin", true); break;
-                case 2: hasTask = true; JSE.setProperty("taskMain", true); break;
-                case 3: hasTask = true; JSE.setProperty("taskIntegration", true); break;
-                default: throw new Exception("Do not recognize phase " + phases[i]);
-                }
-            }
-            
-            if (hasClean) {
-                if (hasTask) {
-                    // If we run any tasks, as part of each task
-                    JSE.setProperty("cleanBeforeRun", true);
-                } else {
-                    // If we do clean only, run it separately
-                    JSE.setProperty("taskClean", true);
-                }
-            }
-        ]]>
-    </script>
+	        bool hasClean = false; 
+    		bool hasTask = false;
+	        string phases = JSE.getProperty("phases");
+	        System.Util.Match m = /[0-9]/.matchNext(phases);
+	    	if (m.isMatched()) {
+				do {
+					int value = (int)m.getText();
+					switch(value) {
+        			case 0: hasClean = true; break;
+			        case 1: hasTask = true; JSE.setProperty("taskPlugin", "true"); break;
+			        case 2: hasTask = true; JSE.setProperty("taskMain", "true"); break;
+			        case 3: hasTask = true; JSE.setProperty("taskIntegration", "true"); break;
+			        default: throw new Exception("Do not recognize phase " + phases[i]);
+    				}
+				} while(m.next());
+    		}
+	        
+	        if (hasClean) {
+	            if (hasTask) {
+	                // If we run any tasks, as part of each task
+	                JSE.setProperty("cleanBeforeRun", "true");
+	            } else {
+	                // If we do clean only, run it separately
+	                JSE.setProperty("taskClean", "true");
+	            }
+	        }
+        ]]>	
+    </julian>
     
     <antcall target="clean-all" if:set="taskClean"></antcall>
 	

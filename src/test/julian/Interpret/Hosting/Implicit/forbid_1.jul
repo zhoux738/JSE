@@ -1,0 +1,10 @@
+import System.Reflection;
+
+Type t = a.getType();
+String fn = t.getFullName();
+//Console.println(fn);
+String str = t.getFullName().substring(0, fn.indexOf('.', 0));
+
+Constructor[] ctors = t.getConstructors();
+int len = ctors.length;
+//Console.println(len);

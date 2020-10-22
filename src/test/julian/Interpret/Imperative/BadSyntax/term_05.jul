@@ -1,3 +1,4 @@
+/* $PRAGMA$ info.julang.ide.no.parsing */
 // common logic control - for loop
 
 bool[] bs = new bool[10];

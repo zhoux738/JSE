@@ -44,6 +44,15 @@ class Type {
 	 * entire dependency closure of the required type. Otherwise the Type object will be immediately returned 
 	 * from engine's type storage. This method is thread-safe.
 	 *
+	 * Some examples:
+	 * [code]
+	 *   Type.load("int");
+	 *   Type.load("Integer");
+	 *   Type.load("byte[]");
+	 *   Type.load("MyModule.MyClass");
+	 *   Type.load("UrClass[][]");
+ 	 * [code: end] 
+ 	 *
 	 * [access] System.Reflection/load
 	 * [param: typeName] The fully qualified type name, including dimension info, written in pairs of 
 	 * square brackets, at the end. The syntax is completely same to type identifier that appears at the 
@@ -155,11 +164,12 @@ class Type {
 	[Bridged(name="getParent")]
 	hosted Type getParent();
 	
-	/**
-	 * Get the module this type belongs to. Note primitive and some built-in types such as [Object] do not 
+    /*
+     * Get the module this type belongs to. Note primitive and some built-in types such as [Object] do not
 	 * belong to any module.
 	 *
-	 * [return] The module this type belongs to. Null if the type doesn't belong to any module.
+	 * [return] The [module](System.Reflection.Module) this type belongs to. Null if the type doesn't belong 
+	 * to any module.
 	 */
 	Module getModule(){
 		string mn = getModuleName();
@@ -171,11 +181,11 @@ class Type {
 	}
 	
 	/*
-	 * Get the constructors of this type in no particular order.
+	 * Get the constructors of this type, in no particular order.
 	 *
 	 * For system types, this will only return constructors that are marked as visible to reflection. For
 	 * user-defined types, this will return all constructors, regardless of its defined visibility, unless 
-	 * it's marked as invisible. See [Reflected](System.Reflection.Reflected) for the usage of attribute.
+	 * it's marked as invisible. See [Reflected](System.Reflection.Reflected) for its detailed usage.
 	 * 
 	 * [return] All the constructors, defined explicitly or implicitly, on this type. For non-class types,
 	 * this will always return a 0-sized array.
@@ -193,7 +203,7 @@ class Type {
 	}
 
 	/*
-	 * Get the methods of this type in no particular order.
+	 * Get the methods of this type, in no particular order.
 	 *
 	 * For system types, this will only return methods that are marked as visible to reflection. For
 	 * user-defined types, this will return all methods that are visible inside this type, unless 
@@ -209,7 +219,7 @@ class Type {
 	 *    void fun2(){ }
 	 *  }
 	 *  class Child : Parent {
-	 *    void fun1(){ } // Override fun1
+	 *    void fun1(){ } // Overrides fun1
 	 *  }
 	 *
 	 *  // Returns an array of size = 2, including Parent.fun2() and Child.fun1()
@@ -232,10 +242,11 @@ class Type {
 	}
 	
 	/*
-	 * Get the methods of this type with specified name in no particular order.
+	 * Get the methods of this type with specified name, in no particular order.
 	 * 
 	 * This method applies a simple filter on top of ```getMethods()```. For more information
 	 * on the mechanic of method retrieval, refer to the documentation of [that method](#getMethods()).
+	 * For more refined lookup, recommend using IIterable's [extension API](System.Util.IIterableExtension).
 	 * 
 	 * [param: name] The name of method to search.
 	 * [return] All the methods of the specified name, defined explicitly or implicitly, on this type.
@@ -343,7 +354,7 @@ class Type {
 	}
 
 	/*
-	 * Get the fields of this type in no particular order.
+	 * Get the fields of this type, in no particular order.
 	 *
 	 * For system types, this will only return fields that are marked as visible to reflection. For
 	 * user-defined types, this will return all fields that are visible inside this type, unless 

@@ -38,9 +38,9 @@ class DateTime {
 	hosted static DateTime getNow();
 
 	/*
-	 * Convert the time to a default form (yyyy/MM/dd-hh:mm:ss.SSS).
+	 * Convert the time to a default form (<code>yyyy/MM/dd-hh:mm:ss.SSS</code>).
 	 *
-	 * [return] A string in the format of yyyy/MM/dd-hh:mm:ss.SSS
+	 * [return] A string in the format of <code>yyyy/MM/dd-hh:mm:ss.SSS</code>.
 	 */
 	public string toString(){
 		return toString0();
@@ -111,13 +111,14 @@ class DateTime {
 	/*
 	 * Convert the DateTime to a string with a format string, which may use the following 
 	 * characters as a placeholder for the corresponding data time part:
-	 *   y: (up to 4 digits) Year
-	 *   M: (up to 2 digits) Month in year (1 - 12)
-	 *   d: (up to 2 digits) Day in month (1 - 31)
-	 *   H: (up to 2 digits) Hour in day (0 - 23)
-	 *   m: (up to 2 digits) Minute in hour (0 - 59)
-	 *   s: (up to 2 digits) Second in minute (0 - 59)
-	 *   S: (up to 3 digits) Millisecond in second (000 - 999)
+	 *
+	 * &nbsp;&nbsp;&nbsp;y: (up to 4 digits) Year <br>
+	 * &nbsp;&nbsp;&nbsp;M: (up to 2 digits) Month in year (1 - 12) <br>
+	 * &nbsp;&nbsp;&nbsp;d: (up to 2 digits) Day in month (1 - 31) <br>
+	 * &nbsp;&nbsp;&nbsp;H: (up to 2 digits) Hour in day (0 - 23) <br>
+	 * &nbsp;&nbsp;&nbsp;m: (up to 2 digits) Minute in hour (0 - 59) <br>
+	 * &nbsp;&nbsp;&nbsp;s: (up to 2 digits) Second in minute (0 - 59) <br>
+	 * &nbsp;&nbsp;&nbsp;S: (up to 3 digits) Millisecond in second (000 - 999)
 	 *
 	 * Other characters are rendered literally.
 	 *

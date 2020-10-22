@@ -93,10 +93,12 @@ public class CollectScriptInfoStatement implements PrescanStatement {
 		PreambleContext preamble = pctxt.preamble();
 		Module_definitionContext module = preamble.module_definition();
 		if (module == null) {
-			if(!info.getOption().isAllowNoModule()){
+			String preModName = info.getOption().getPresetModuleName();
+			if(preModName == null){
 				throw new IllegalModuleFileException(info, preamble, "A module file must start with module declaration.");
 			} else {
-				info.setModuleName(ModuleInfo.DEFAULT_MODULE_NAME);
+				// Module name has been mandated externally.
+				info.setModuleName(preModName);
 			}
 		} else {
 			ModuleStatement ms = new ModuleStatement(ainfo.create(module));
@@ -131,10 +133,12 @@ public class CollectScriptInfoStatement implements PrescanStatement {
 		ModuleNameReader reader = new ModuleNameReader(info);
 		Token tok = stream.peek();
 		if(tok.getType() != JulianLexer.MODULE){
-			if(!info.getOption().isAllowNoModule()){
+			String preModName = info.getOption().getPresetModuleName();
+			if(preModName == null){
 				throw new IllegalModuleFileException(info, stream, "A module file must start with module declaration.");
 			} else {
-				info.setModuleName(ModuleInfo.DEFAULT_MODULE_NAME);
+				// Module name has been mandated externally.
+				info.setModuleName(preModName);
 			}
 		} else {
 			stream.next();

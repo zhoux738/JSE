@@ -24,19 +24,47 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import info.julang.execution.symboltable.ITypeTable;
-import info.julang.memory.MemoryArea;
+import info.julang.execution.threading.ThreadRuntime;
+import info.julang.memory.value.iterable.IIterator;
+import info.julang.memory.value.operable.InitArgs;
+import info.julang.typesystem.jclass.builtin.JArrayType;
 
-public class PresetByteArrayValue extends ByteArrayValue {
+/**
+ * An iterator that is backed by a hosted array object (Java's array).
+ * 
+ * @author Ming Zhou
+ */
+public class HostedIterator extends HostedIndexedBase implements IIterator {
 
-	public PresetByteArrayValue(MemoryArea memory, ITypeTable tt, byte[] barray) {
-		super(memory, tt, barray.length);
-		this.array = barray;
+	private int index;
+	private int length;
+	
+	public HostedIterator(Class<?> arrayClass, JArrayType type, Object value) {
+		super(arrayClass, type, value);
 	}
 
 	@Override
-	protected void initializeArray(MemoryArea memory, int length) {
-		// Do not create a new one
+	public void initialize(ThreadRuntime rt, InitArgs args) {
+		super.initialize(rt, args);
+		index = 0;
+		length = getLength();
 	}
-	
+
+	@Override
+	public boolean hasNext() {
+		return index < length;
+	}
+
+	@Override
+	public JValue next() {
+		JValue value = getElementValue(index);
+		index++;
+		return value;
+	}
+
+	@Override
+	public void dispose() {
+		// NO-OP
+	}
+
 }

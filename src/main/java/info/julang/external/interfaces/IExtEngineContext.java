@@ -24,7 +24,7 @@ SOFTWARE.
 
 package info.julang.external.interfaces;
 
-import info.julang.external.interop.IBinding;
+import info.julang.external.binding.IBinding;
 
 public interface IExtEngineContext {
 
@@ -82,9 +82,9 @@ public interface IExtEngineContext {
 	/**
 	 * Add an engine policy.
 	 * 
-	 * @param allowOrDeny True to allow, false deny
-	 * @param category the name of policy category
-	 * @param operations the operations to allow or deny under this category
+	 * @param allowOrDeny True to allow, false deny.
+	 * @param category the name of policy category. Choose one from {@link info.julang.execution.security.PACON}.
+	 * @param operations the operations to allow or deny under this category.
 	 */
 	void addPolicy(boolean allowOrDeny, String category, String[] operations);
 }
