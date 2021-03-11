@@ -24,11 +24,13 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass;
 
+import info.julang.execution.Argument;
 import info.julang.execution.Result;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.statement.StatementOption;
 import info.julang.langspec.ast.JulianParser.Expression_statementContext;
+import info.julang.memory.value.IFuncValue;
 import info.julang.parser.AstInfo;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -50,5 +52,10 @@ public class InitializerExecutable extends MethodExecutable implements Cloneable
 	protected Result execute(ThreadRuntime runtime, AstInfo<? extends ParserRuleContext> ainfo, StatementOption option, Context ctxt){
 		option.setPreserveStmtResult(true);
 		return super.execute(runtime, ainfo, option, ctxt);
+	}
+	
+	@Override
+	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
+		super.repliateArgsAndBindings(args, ctxt, func, false);
 	}
 }

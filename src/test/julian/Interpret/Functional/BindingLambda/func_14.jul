@@ -1,0 +1,22 @@
+var machine = (() => {
+  	int _size = 17;
+    return new {
+  	  name = "hammer",
+  	  getSize = () => {
+  		return _size; // _size is in the scope.
+  	  }
+    };
+})(); // Evaluate immediately to obtain the Dynamic object
+  
+var check(var val){
+	// Console.println(val);
+	return val;
+}
+
+int i17 = check(machine.getSize());
+
+var lm = () => { return this._size == null ? -1 : this._size; } ;
+lm = Function.bind(lm, machine);
+machine.retSize = lm;
+
+int i_1 = check(machine.retSize());

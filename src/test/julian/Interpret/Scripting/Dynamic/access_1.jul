@@ -1,0 +1,14 @@
+Dynamic dyn = new Dynamic(new { throwOnUndefined = true }) { a = "xyz", b = 10 } ;
+
+int i10 = dyn.b;
+string xyz = dyn.a;
+
+bool succ = false;
+try {
+	var c = dyn.c;
+} catch (UnknownMemberException ex){
+	succ = true;
+}
+
+dyn.c = "uvw";
+string uvw = dyn.c;

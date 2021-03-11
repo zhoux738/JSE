@@ -594,7 +594,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
                 + "\n * Create a string from an array of [bytes](type: byte) in specified encoding."
                 + "\n */",
         params = {"An array of bytes.",
-                  "The charset name. Charset names should have been registered by *RFC 2278: IANA Charset Registration Procedures*.",
+                  "The charset name. Charset names should have been registered with *RFC 2278: IANA Charset Registration Procedures*.",
                   "The offset in the array to start converting.",
                   "The total count of bytes to use."},
         paramTypes = {"[byte]", "string", "int", "int"},
@@ -694,12 +694,13 @@ public class JStringType extends JClassType implements IDeferredBuildable {
         summary =   "/*"
                 + "\n * Convert this string to an array of [bytes](type: byte) using specified charset."
                 + "\n */",
-        params = { "string" },
+        paramTypes = { "string" },
+        params = { "The charset name, which must have been registered with *RFC 2278: IANA Charset Registration Procedures*" },
         returns = "A byte array consisting of all the bytes in this string, encoded with the specified charset.",
         exceptions = {
-            	"System.ArgumentException: if charset is not recognized/supported.",
-        		"System.Lang.RuntimeCheckException: if string cannot be converted using the charset."
-        	}
+        	"System.ArgumentException: if charset is not recognized/supported.",
+    		"System.Lang.RuntimeCheckException: if string cannot be converted using the charset."
+    	}
     )
     private static HostedExecutable METHOD_toBytes2  = new HostedExecutable(FQNAME, "toBytes") {
         @Override
@@ -1367,6 +1368,7 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 	//--------------- IDeferredBuildable ---------------//
 	
 	private ICompoundTypeBuilder builder;
+	private boolean sealable;
 	
 	@Override
 	public boolean deferBuild(){
@@ -1374,8 +1376,13 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 	}
 	
 	@Override
-	public void completeBuild(Context context) {
-		if (builder != null) {
+	public void postBuild(Context context) {
+		if (!sealable) {
+			if (builder == null) {
+				sealable = true;
+				return;
+			}
+			
 			JInterfaceType jit = null;
 			ITypeResolver resolver = context.getTypeResolver();
 			jit = (JInterfaceType)resolver.resolveType(ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_IComparable));
@@ -1453,10 +1460,23 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 						METHOD_get_iterator,
 						JStringType.INSTANCE),
 				    null));
-			
+
+			sealable = true;
+		}
+	}
+	
+	@Override
+	public void seal() {
+		if (!sealable) {
+			throw new JSEError("Couldn't seal built-in type. Building was not complete.", JStringType.class);
+		}
+
+		if (builder != null) {
 			builder.seal();
 			builder = null;
 		}
+
+		sealable = false;
 	}
 
 	@Override
@@ -1467,5 +1487,10 @@ public class JStringType extends JClassType implements IDeferredBuildable {
 	@Override
 	public void preInitialize() {
 		this.initialized = true;
+	}
+	
+	@Override
+	public BuiltinTypes getBuiltinType() {
+		return BuiltinTypes.STRING;
 	}
 }

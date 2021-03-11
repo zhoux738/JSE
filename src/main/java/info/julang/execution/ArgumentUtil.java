@@ -24,8 +24,11 @@ SOFTWARE.
 
 package info.julang.execution;
 
+import info.julang.external.exceptions.JSEError;
 import info.julang.langspec.Keywords;
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.RefValue;
+import info.julang.typesystem.JArgumentException;
 
 public final class ArgumentUtil {
 
@@ -99,5 +102,34 @@ public final class ArgumentUtil {
 		} else {
 			return null;
 		}
+	}
+	
+	/**
+	 * Get value of the argument from the given array that matches the specified index.
+	 * 
+	 * @param args
+	 * @param index
+	 * @param throwOnNull If true, throw <code><font color="green">System.ArgumentException</font></code> 
+	 * if the argument is Julian's null.
+	 * @return null if the argument is Julian's null while throwOnNull == false
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends JValue> T getArgumentValue(
+		Argument[] args, int index, boolean throwOnNull){
+		if (args == null || index < 0 || index >= args.length) {
+			throw new JSEError("Trying to get argument at an index outside the range.");
+		}
+		
+		JValue val = args[index].getValue().deref();
+		
+		if (val == RefValue.NULL) {
+			if (throwOnNull) {
+				throw new JArgumentException(args[index].getName());
+			} else {
+				return null;
+			}
+		}
+		
+		return (T) val;
 	}
 }

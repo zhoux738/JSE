@@ -73,7 +73,7 @@ import info.julang.util.Pair;
 public class JMap {
 	
 	public final static String FullTypeName = "System.Collection.Map";
-	private final static String EntryTypeName = "System.Collection.Entry";
+	private final static String EntryTypeName = "System.Util.Entry";
 	
 	//----------------- IRegisteredMethodProvider -----------------//
 	

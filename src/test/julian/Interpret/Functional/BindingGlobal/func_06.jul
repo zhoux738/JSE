@@ -1,0 +1,10 @@
+// Constness
+int fun1(int i) {
+	i += 3;
+	return i;
+}
+
+var com1 = Function.bind(fun1, null, new var[] { 0 });
+
+int i1 = com1();
+int i2 = com1();

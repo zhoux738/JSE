@@ -30,7 +30,6 @@ public class AOTRawScriptInfo$Map extends RawScriptInfo {
         m_classes = new ArrayList<RawClassInfo>();
         m_classes.add(new RawClassInfo("Map", new AOTClassDeclInfo_Map (this)));
         m_classes.add(new RawClassInfo("MapIterator", new AOTClassDeclInfo_MapIterator (this)));
-        m_classes.add(new RawClassInfo("Entry", new AOTClassDeclInfo_Entry (this)));
         m_classes.add(new RawClassInfo("HashKey", new AOTClassDeclInfo_HashKey (this)));
 
         m_requirements = new ArrayList<RequirementInfo>();
@@ -65,6 +64,7 @@ public class AOTRawScriptInfo$Map extends RawScriptInfo {
             m_parentNames.add(ParsedTypeName.makeFromFullName("Container"));
             m_parentNames.add(ParsedTypeName.makeFromFullName("IIndexable"));
             m_parentNames.add(ParsedTypeName.makeFromFullName("IIterable"));
+            m_parentNames.add(ParsedTypeName.makeFromFullName("IMapInitializable"));
         }
 
         private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
@@ -166,63 +166,6 @@ public class AOTRawScriptInfo$Map extends RawScriptInfo {
 
         public Accessibility getAccessibility() {
             return Accessibility.MODULE;
-        }
-        
-        public boolean isAccessibilitySet(){
-            return true;
-        }
-
-    }
-    
-        
-    class AOTClassDeclInfo_Entry extends LazyClassDeclInfo {
-
-        public AOTClassDeclInfo_Entry(RawScriptInfo minfo) {
-            super(minfo);
-            
-        }
-
-        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
-        private FQName m_fullName = new FQName("System.Collection.Entry");
-        
-        public List<ParsedTypeName> getParentTypes(){
-            return m_parentNames;
-        }
-        
-        public FQName getFQName() {
-            return m_fullName;
-        }
-        
-        public String getName(){
-            return "Entry";
-        }
-
-        public ClassSubtype getSubtype() {
-            return ClassSubtype.CLASS;
-        }
-        
-        public boolean isFinal() {
-            return false;
-        }
-        
-        public boolean isConst() {
-            return false;
-        }
-        
-        public boolean isHosted() {
-            return false;
-        }
-        
-        public boolean isAbstract() {
-            return false;
-        }
-
-        public boolean isStatic() {
-            return false;
-        }
-
-        public Accessibility getAccessibility() {
-            return Accessibility.PUBLIC;
         }
         
         public boolean isAccessibilitySet(){

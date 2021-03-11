@@ -89,10 +89,13 @@ public class CmdLineApplication {
 		
 	}
 	
-	public static void main(String[] args) {
+	public static int runMain(String[] args) {
 		Helper helper = new Helper();
 		CLExecutor exec = new CLExecutor();
-		int res = exec.execute(helper, args);
-		System.exit(res);
+		return exec.execute(helper, args);
+	}
+	
+	public static void main(String[] args) {
+		System.exit(runMain(args));
 	}
 }

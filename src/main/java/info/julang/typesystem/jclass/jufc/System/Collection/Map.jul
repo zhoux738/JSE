@@ -44,7 +44,7 @@ import System.Util;
  * The methods of this class are **not** thread safe.
  */
 [Bridged(apiset="System.Collection.Map")]
-class Map : Container, IIndexable, IIterable {
+class Map : Container, IIndexable, IIterable, IMapInitializable {
 
 	/*
 	 * Create a new map instance.
@@ -73,6 +73,7 @@ class Map : Container, IIndexable, IIterable {
 	 *
 	 * [param: key] The key to the map.
 	 * [param: value] The value to store under this key. Can be null.
+	 * [throws: System.ArgumentException] When the key is null.
 	 */
 	void put(var key, var value){
 		var k = convert(key);
@@ -110,6 +111,7 @@ class Map : Container, IIndexable, IIterable {
 	 * [return] If the key existed, the value associated with this key; otherwise, null. Note if the value 
 	 * is null this method cannot tell if a value of null has been retrieved or the key didn't exist. If such
 	 * information is required, call [hasKey](#hasKey) beforehand.
+	 * [throws: System.ArgumentException] When the key is null.
 	 */
 	var get(var key){
 		var k = convert(key);
@@ -154,18 +156,54 @@ class Map : Container, IIndexable, IIterable {
 	
 	// IIndexable
 	
-	var at(var index){
-		return get(index);
+    /*
+	 * Get value by the specified key.
+	 *
+	 * [param: key] The key to the map.
+	 * [return] Null if not found. Thus undistinguishable from null value.
+	 * [throws: System.ArgumentException] When the key is null.
+	 */
+	var at(var key){
+		return get(key);
 	}
 	
-	void at(var index, var value){
-		put(index, value);
+	/*
+	 * Set value by the specified key.
+	 *
+	 * [param: key] The key to the map.
+	 * [param: value] The value to set.
+	 * [throws: System.ArgumentException] When the key is null.
+	 */
+	void at(var key, var value){
+		put(key, value);
 	}
 	
 	// IIterable
-	
+
+    /*
+	 * Get an iterator of this map.
+	 *
+	 * [return] An iterator which produces key-value pairs in [System.Util.Entry] type.
+	 */	
 	IIterator getIterator(){
 		return new MapIterator(this);
+	}
+	
+	// IMapInitializable
+	
+	/*
+	 * Initialize with an array of key-value pairs. Each pair adds one key to the map.
+	 * If duplicated, the last one wins. Unlike [put()](#put) where an 
+	 * [ArgumentException](System.ArgumentException) will be thrown, null key is simply skipped.
+	 *
+	 * [param: entries] The key-value pairs to be added to this map.
+	 */
+	void initByMap(Entry[] entries) {
+		if (entries != null) {
+			for (Entry entry : entries) {
+				put(entry.key, entry.value);
+			}
+		}
 	}
 }
 
@@ -203,35 +241,6 @@ internal class MapIterator : IIterator {
 		keys = map.getKeys();
 		length = keys.length;
 		index = 0;
-	}
-}
-
-/*
- * A key-value pair from the map.
- */
-class Entry {
-
-	/* 
-	 * The key to the map. If it's an Object, [hashCode()](type: Object#hashCode) will be called to get its hash;
-	 * if primitive, it will be converted to an integer as the hash.
-	 */
-	var key;
-	
-	/* 
-	 * The value stored under this key. 
-	 */
-	var value;
-	
-	/*
-	 * Create a new Entry with given key and value. While this constructor is left to open access, it's almost useless
-	 * for users since no other foundation API use this in a parameter type.
-	 *
-	 * [param: key] The key for this entry.
-	 * [param: value] The value stored in this entry.
-	 */
-	Entry(var key, var value){
-		this.key = key;
-		this.value = value;
 	}
 }
 

@@ -34,6 +34,7 @@ import info.julang.interpretation.internal.FuncCallExecutor;
 import info.julang.langspec.ast.JulianParser.BlockContext;
 import info.julang.langspec.ast.JulianParser.ExpressionContext;
 import info.julang.langspec.ast.JulianParser.Sync_statementContext;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
@@ -121,6 +122,6 @@ public class SyncStatement extends MultiBlockStatementBase {
 	
 	private void callMethod(Context context, FuncCallExecutor exe, JClassType typ, String methodName, Argument[] args){
 		JClassMethodMember jmm = (JClassMethodMember) typ.getInstanceMemberByName(methodName);
-		exe.invokeFunction(jmm.getMethodType(), methodName, args);
+		exe.invokeFunction(FuncValue.DUMMY, jmm.getMethodType(), methodName, args);
 	}
 }

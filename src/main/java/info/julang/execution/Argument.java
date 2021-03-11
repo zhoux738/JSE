@@ -85,4 +85,8 @@ public class Argument {
 		return new Argument[]{CreateThisArgument(value)};
 	}
 	
+	@Override
+	public String toString() {
+		return name + " (" + value + ")";
+	}
 }

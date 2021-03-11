@@ -53,6 +53,7 @@ import info.julang.langspec.ast.JulianParser.Simple_statementContext;
 import info.julang.langspec.ast.JulianParser.StatementContext;
 import info.julang.langspec.ast.JulianParser.Statement_listContext;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.IFuncValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
@@ -172,6 +173,7 @@ public class LambdaExecutable extends InterpretedExecutable {
 	
 	@Override
 	protected Context prepareContext(
+		IFuncValue func,
 		MemoryArea frame,
 		MemoryArea heap,
 		IVariableTable varTable, 
@@ -182,7 +184,7 @@ public class LambdaExecutable extends InterpretedExecutable {
 		StandardIO io,
 		JThread jthread){
 		return new LambdaContext(
-			frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread,
+			func, frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread,
 			display, definingContextType, containingType, exeContextType);
 	}
 	

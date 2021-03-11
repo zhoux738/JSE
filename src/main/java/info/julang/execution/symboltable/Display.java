@@ -24,14 +24,13 @@ SOFTWARE.
 
 package info.julang.execution.symboltable;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import info.julang.memory.value.JValue;
 
 /**
- * An referential environment which contains defined local variables (including arguments) at the 
+ * A referential environment which contains defined local variables (including arguments) at the 
  * time the lambda is defined.
  * <p>
  * In contrast to {@link VariableTable}, variables in Display are laid out flatly, with variables
@@ -39,10 +38,8 @@ import info.julang.memory.value.JValue;
  * 
  * @author Ming Zhou
  */
-public class Display implements IVariableTableTraverser {
+public class Display extends LocalBindingTable implements IVariableTableTraverser {
 
-	private Map<String, JValue> map;
-	
 	/**
 	 * Create a display that inherits from another, and also captures the current lexical context.
 	 * 
@@ -50,15 +47,11 @@ public class Display implements IVariableTableTraverser {
 	 * @param vt
 	 */
 	public Display(Display d, IVariableTable vt) {
-		map = new HashMap<String, JValue>();
+		super();
 		if (d != null && d.map != null) {
 			map.putAll(d.map);
 		}
 		vt.traverse(this, false);
-	}
-	
-	public JValue getVariable(String name){		
-		return map.get(name);
 	}
 
 	@Override

@@ -1,0 +1,16 @@
+// baseline: bind this and multiple arguments to a static method
+class MyVal {
+	string str = "pf";
+}
+
+class MyCls {
+	static string combine(int i, string s, char c) {
+		return (string)this.str + i + s + c;
+	}
+}
+
+var combineChar = Function.bind(MyCls.combine, new MyVal(), new var[] { 10, "-" });
+
+string res = combineChar('z');
+
+//Console.println(res);

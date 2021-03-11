@@ -18,6 +18,7 @@ import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.memory.HeapArea;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.simple.SimpleHeapArea;
+import info.julang.memory.value.FuncValue;
 import info.julang.modulesystem.ModuleManager;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.JClassType;
@@ -66,6 +67,7 @@ public class ErrorHandlingTests {
 		resolver = new InternalTypeResolver();
 		
 		context = new FunctionContext(
+			FuncValue.DUMMY, 
 			null, //(MemoryArea) 
 			memory,
 			new VariableTable(null), //(VariableTable)

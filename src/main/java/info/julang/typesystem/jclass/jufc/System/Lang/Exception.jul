@@ -12,7 +12,7 @@ import System;
 class BadSyntaxException : Exception { 
 
 	/*
-	 * Create a bad syntax exception with given message. 
+	 * Create a new instance of BadSyntaxException with given message. 
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: msg] The message for this exception.
@@ -28,7 +28,7 @@ class BadSyntaxException : Exception {
 class RuntimeCheckException : Exception { 
 
 	/*
-	 * Create a new runtime check exception with given message. 
+	 * Create a new instance of new RuntimeCheckException with given message. 
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: msg] The message for this exception.
@@ -43,7 +43,7 @@ class RuntimeCheckException : Exception {
 class DuplicateSymbolException : BadSyntaxException { 
 
 	/*
-	 * Create a duplicate symbol exception with given message. 
+	 * Create a new instance of DuplicateSymbolException with given message. 
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: msg] The message for this exception.
@@ -57,7 +57,7 @@ class DuplicateSymbolException : BadSyntaxException {
 class IllegalOperandException : RuntimeCheckException { 
 
 	/*
-	 * Create a new illegal operand exception with given message. 
+	 * Create a new instance of new IllegalOperandException with given message. 
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: msg] The message for this exception.
@@ -71,7 +71,7 @@ class IllegalOperandException : RuntimeCheckException {
 class IllegalLiteralException : BadSyntaxException { 
 
 	/*
-	 * Create a new illegal literal exception with given message. 
+	 * Create a new instance of new IllegalLiteralException with given message. 
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: msg] The message for this exception.
@@ -86,7 +86,7 @@ class IllegalLiteralException : BadSyntaxException {
 class UndefinedSymbolException : BadSyntaxException { 
 
 	/*
-	 * Create a new undefined symbol exception with given message. 
+	 * Create a new instance of new UndefinedSymbolException with given message. 
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: msg] The message for this exception.
@@ -101,7 +101,7 @@ class UndefinedSymbolException : BadSyntaxException {
 class NamespaceConflictException : RuntimeCheckException { 
 
 	/*
-	 * Create a new namespace conflict exception with given message. 
+	 * Create a new instance of new NamespaceConflictException with given message. 
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: msg] The message for this exception.
@@ -117,10 +117,28 @@ class NamespaceConflictException : RuntimeCheckException {
 class CyclicDependencyException : RuntimeCheckException { 
 
 	/*
-	 * Create a new cyclic dependency exception with given message. 
+	 * Create a new instance of new CyclicDependencyException with given message. 
 	 * While entirely legal, it's not recommended for a user to create such instances. 
 	 *
 	 * [param: msg] The message for this exception.
 	 */
 	CyclicDependencyException(String msg) : super(msg) {} 
+}
+
+/* 
+ * Attempt to [bind](Function#bind(var, var[])) a function object failed due to the reason described in the message. 
+ *
+ * Not all the functions can be bound. For example, hosted methods do not supporting binding as of [version: current].
+ * There are also certain rules regarding what can be bound to a function. If an argument is not type-compatible with 
+ * the corresponding parameter's type, this exception will be thrown as well.
+ */
+class IllegalBindingException : RuntimeCheckException { 
+
+	/*
+	 * Create a new instance of new IllegalBindingException with given message. 
+	 * While entirely legal, it's not recommended for a user to create such instances. 
+	 *
+	 * [param: msg] The message for this exception.
+	 */
+	IllegalBindingException(String msg) : super(msg) {} 
 }

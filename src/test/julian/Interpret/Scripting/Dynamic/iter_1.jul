@@ -1,0 +1,18 @@
+Dynamic dyn = new Dynamic() { a = "xyz", b = 10, c = false } ;
+
+var iter = dyn.getIterator();
+
+String str1 = "";
+while (iter.hasNext()){
+	var entry = iter.next();
+	str1 += entry.key + "=" + entry.value + ";";
+}
+
+bool succ1 = true;
+
+String str2 = "";
+int i = 0;
+for (System.Util.Entry entry : dyn){
+	str2 += entry.key + "=" + entry.value + ";";
+	i++;
+}

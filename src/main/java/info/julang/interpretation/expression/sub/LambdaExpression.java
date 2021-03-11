@@ -105,7 +105,7 @@ public class LambdaExpression extends ExpressionBase {
 		
 		Display display = new Display(pd, context.getVarTable());
 		LambdaExecutable lexe = new LambdaExecutable(context, display, declInfo);
-		JLambdaType lambTyp = new JLambdaType(paramsArray, lexe);
+		JLambdaType lambTyp = new JLambdaType(ec, paramsArray, lexe);
 		
 		FuncValue fv = LambdaValue.createLambdaValue(context.getHeap(), lambTyp, display);
 		

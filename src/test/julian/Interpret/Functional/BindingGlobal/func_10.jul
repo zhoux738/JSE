@@ -1,0 +1,16 @@
+// bind, then bind another on top of it. all three are unrelated
+
+string combine(int i, string s, char c) {
+	return "pf" + i + s + c;
+}
+
+var com1 = Function.bind(combine, null, new var[]{ 10 });
+
+var com2 = Function.bind(com1, null, new var[]{ "abc" });
+
+var com3 = Function.bind(com2, null, new var[]{ 'g' });
+
+string pf10defx = com1("def", 'x');
+string pf10abcy = com2('y');
+string pf10abcg = com3();
+string pf11ghiz = combine(11, "ghi", 'z');

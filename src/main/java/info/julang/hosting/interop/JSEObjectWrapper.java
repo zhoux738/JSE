@@ -33,6 +33,7 @@ import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.internal.FuncCallExecutor;
 import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.typesystem.JType;
@@ -150,7 +151,7 @@ public class JSEObjectWrapper {
 		String name = provider.getMethodName();
 		JMethodType mtyp = provider.provide();
 
-		JValue val = exec.invokeMethodInternal(mtyp, name, values, provider.isStatic() ? null : ov);
+		JValue val = exec.invokeMethodInternal(FuncValue.DUMMY, mtyp, name, values, provider.isStatic() ? null : ov);
 		
 		return val;
 	}

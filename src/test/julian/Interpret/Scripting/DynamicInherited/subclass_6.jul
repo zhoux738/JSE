@@ -1,0 +1,46 @@
+// ctor with config
+import System.Collection;
+import System.Util;
+import System.Lang;
+
+class MyDyn : Dynamic {
+
+	MyDyn(Dynamic conf) : super(conf) { }
+}
+
+var print(var val){
+	// Console.println(val);
+	return val;
+}
+
+bool fail(Function f, Type exTyp) {
+	try {
+		f();
+		return false;
+	} catch (Exception ex) {
+		// ex.printToError();
+		return exTyp == ex.getType();
+	}
+}
+
+var m1 = new MyDyn(new {
+	throwOnUndefined = true,
+	sealed = true
+}) { prop = "abc" };
+
+string abc = print(m1.prop);
+bool b1 = fail(() => m1.prop2 = "def", typeof(IllegalMemberAccessException)); // throws on adding new prop to sealed dynamic
+bool b2 = fail(() => m1.prop2, typeof(UnknownMemberException)); // throws on non-existing
+
+string getStr() {
+	return this.prop;
+}
+
+m1 = new MyDyn(new {
+	autobind = true
+}) { 
+	prop = "def",
+	getStr = getStr
+};
+
+string def = print(m1.getStr());

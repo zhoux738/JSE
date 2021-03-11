@@ -63,7 +63,7 @@ public class MethodGroupValue extends FuncValue implements IMethodValue {
 			if(typ.getContainingType() != containingTyp){
 				throw new JSEError("Cannot create a method group value with methods belonging to different types.");
 			}
-			if(typ.getName() != name){
+			if(!typ.getName().equals(name)){
 				throw new JSEError("Cannot create a method group value with methods of different name.");
 			}
 			if(typ.getReturnType() != retTyp){

@@ -40,11 +40,20 @@ public class IllegalMemberAccessException extends JSERuntimeException {
 		ACC_INSTANCE_MEMBER_FROM_STATIC_CONTEXT,
 		ACC_INVISIBLE_MEMBER,
 		ACC_RESERVED_FOR_SYSTEM_USE_MEMBER,
-		ACC_ATTEMPT_MEMBER_ACCESS_ON_NON_OBJECT
+		ACC_ATTEMPT_MEMBER_ACCESS_ON_NON_OBJECT,
+		ACC_ATTEMPT_OVERWRITE_SEALED_DYNAMIC
 	}
 	
 	private static final long serialVersionUID = -1921742899860918060L;
 
+	public static IllegalMemberAccessException tryToReferenceUnboundThis() {
+		throw new IllegalMemberAccessException("Cannot access to unbound 'this'.");
+	}
+	
+	private IllegalMemberAccessException(String msg) {
+		super(msg);
+	}
+	
 	/**
 	 * Create a new IllegalMemberAccessException with type and member name.
 	 * @param tName
@@ -64,6 +73,8 @@ public class IllegalMemberAccessException extends JSERuntimeException {
 			return "Cannot refer to a class member (" + mName + ") reserved for system use. Type name: " + tName;
 		case ACC_ATTEMPT_MEMBER_ACCESS_ON_NON_OBJECT:
 			return "Cannot refer to any member on type " + tName;
+		case ACC_ATTEMPT_OVERWRITE_SEALED_DYNAMIC:
+			return "Cannot overwrite a property (" + mName + ") on a sealed Dynamic object.";
 		}
 		
 		return "Illegal access to member \"" + mName + "\" of type " + tName;
@@ -110,6 +121,16 @@ public class IllegalMemberAccessException extends JSERuntimeException {
 	 */
 	public static IllegalMemberAccessException referMemberOnNonObjectEx(String tName){
 		return new IllegalMemberAccessException(tName, null, AccessExceptionType.ACC_ATTEMPT_MEMBER_ACCESS_ON_NON_OBJECT);
+	}
+	
+	/**
+	 * Make an exception about trying to write to A.B, where A is a Dynamic object that was initialized with sealed == true.
+	 * 
+	 * @param mName
+	 * @return
+	 */
+	public static IllegalMemberAccessException overwriteSealedDynamicEx(String mName){
+		return new IllegalMemberAccessException(null, mName, AccessExceptionType.ACC_ATTEMPT_OVERWRITE_SEALED_DYNAMIC);
 	}
 
 	@Override

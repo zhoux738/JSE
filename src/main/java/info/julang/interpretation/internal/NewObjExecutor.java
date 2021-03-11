@@ -24,6 +24,12 @@ SOFTWARE.
 
 package info.julang.interpretation.internal;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import info.julang.execution.Argument;
 import info.julang.execution.EngineRuntime;
 import info.julang.execution.Executable;
@@ -39,6 +45,8 @@ import info.julang.interpretation.expression.DelegatingExpression;
 import info.julang.langspec.ast.JulianParser.ArgumentContext;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.AttrValue;
+import info.julang.memory.value.DynamicValue;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.JValueBase;
@@ -53,20 +61,16 @@ import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassConstructorMember;
 import info.julang.typesystem.jclass.JClassConstructorMember.ForwardInfo;
 import info.julang.typesystem.jclass.JClassInitializerMember;
+import info.julang.typesystem.jclass.JClassProperties;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JClassTypeUtil;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.builtin.JAttributeBaseType;
 import info.julang.typesystem.jclass.builtin.JAttributeType;
 import info.julang.typesystem.jclass.builtin.JConstructorType;
+import info.julang.typesystem.jclass.builtin.JDynamicType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * A facade class that creates a new object of certain class. It allocates memory,
@@ -271,7 +275,7 @@ public class NewObjExecutor {
 			
 			// Evaluate argument expression for forward call.
 			ConstructorForwardExecutable cfexe = finfo.getExecutable();
-			MultiValueResult mvResult = (MultiValueResult) cfexe.execute(rt, args);
+			MultiValueResult mvResult = (MultiValueResult) cfexe.execute(rt, FuncValue.DUMMY, args);
 			
 			// Find the best matching constructor.
 			JValue[] mvVals = mvResult.getReturnedValues();
@@ -319,7 +323,7 @@ public class NewObjExecutor {
 				for(JClassInitializerMember initializer : initializers){
 					JMethodType mtype = initializer.getMethodType();
 					try {
-						Result res = mtype.getExecutable().execute(rt, initArgs);
+						Result res = mtype.getExecutable().execute(rt, FuncValue.DUMMY, initArgs);
 						JValue val = res.getReturnedValue(false);
 						
 						String name = initializer.getFieldName();
@@ -354,7 +358,7 @@ public class NewObjExecutor {
 		JConstructorType ctorTyp = ctor.getCtorType();
 		Executable exe = (Executable) ctorTyp.getExecutable();
 		try {
-			exe.execute(rt, args);
+			exe.execute(rt, FuncValue.DUMMY, args);
 		} catch (JulianScriptException jse){
 			// Capture JSE (step 2/2):
 			// At this point we have method's name and parameter information, so we can add a stack trace into the exception.
@@ -407,13 +411,16 @@ public class NewObjExecutor {
 			}
 		} else {
 			jat = (JClassType) type;
-			if(jat.getClassProperties().isAbstract()){
+			JClassProperties props = jat.getClassProperties();
+			if(props.isAbstract()){
 				throw new RuntimeCheckException("Cannot instantiate an abstract class: " + jat.getName());
 			}
-			if(!jat.getClassProperties().isHosted()){
-				obj = new ObjectValue(heap, type, false);
-			} else {
+			if(props.isHosted()){
 				obj = new HostedValue(heap, type);
+			} else if (JDynamicType.isDynamicType(jat)) {
+				obj = new DynamicValue(heap, type);
+			} else {
+				obj = new ObjectValue(heap, type, false);
 			}
 		}
 		

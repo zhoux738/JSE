@@ -47,8 +47,14 @@ public class ParserExecutableTests extends JulianParserRunner {
 	
 	// Object initialization.
 	@Test
-	public void parserBasicTest6() {
-	    parseFile("parser06.jul");
+	public void parserCtorTest1() {
+	    parseFile("parser_ctor_01.jul");
+	}
+	
+	// Object initialization with initializer.
+	@Test
+	public void parserCtorTest2() {
+	    parseFile("parser_ctor_02.jul");
 	}
 	
 	@Test

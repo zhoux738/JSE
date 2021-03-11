@@ -96,7 +96,7 @@ public class System_Util_IIndexable_Tests extends ExceptionTestsBase {
 			"<default>.InvalidIndexException",
 			"The index must be non-negative.",
 			new String[]{
-				"at(<default>.MyContainer,Any)  (/.../index_fault_1.jul, 22)"
+				"<default>.MyContainer.at(<default>.MyContainer,Any)  (/.../index_fault_1.jul, 22)"
 			},
 			null,
 			34);

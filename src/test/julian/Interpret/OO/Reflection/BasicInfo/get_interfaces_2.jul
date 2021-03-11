@@ -4,4 +4,8 @@ Type ti = typeof(int);
 Type ts = typeof(Array);
 
 int res0 = ti.getInterfaces().length;
+//var infs = ts.getInterfaces();
+//for (var inf : infs) {
+//	Console.println(inf);
+//}
 int res2 = ts.getInterfaces().length; // Array : System.Util.IIndexable, System.Util.IIterable

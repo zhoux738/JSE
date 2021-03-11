@@ -32,6 +32,7 @@ import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
 import info.julang.interpretation.resolving.LambdaNameResolver;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.IFuncValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.loading.InternalTypeResolver;
@@ -52,6 +53,7 @@ public class LambdaContext extends Context {
 	private Display display;
 	
 	public LambdaContext(
+		IFuncValue func,
 		MemoryArea frame, 
 		MemoryArea heap,
 		IVariableTable varTable, 
@@ -73,7 +75,8 @@ public class LambdaContext extends Context {
 			typResolver,
 			mm, 
 			nsPool,
-			new LambdaNameResolver(varTable, typTable, display, definingContextType, containingType),
+			new LambdaNameResolver(
+				varTable, typTable, func.getLocalBindings(), display, definingContextType, containingType),
 			io,
 			jthread,
 			exeContextType

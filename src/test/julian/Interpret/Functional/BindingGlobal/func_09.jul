@@ -1,0 +1,27 @@
+class MyVal {
+	private string str;
+	MyVal(string str){
+		this.str = str;
+	}
+	string getStr() {
+		return str;	
+	}
+}
+
+class UrVal : MyVal {
+	private string str2;
+	UrVal(string str, string str2) : super(str){
+		this.str2 = str2;
+	}
+	string getStr() {
+		return super.getStr() + "-" + this.str2;	
+	}
+}
+
+string fun1(MyVal val) {
+	return val.getStr();
+}
+
+UrVal val = new UrVal("abc", "xyz");
+var com1 = Function.bind(fun1, null, new var[] { val });
+String res = com1();

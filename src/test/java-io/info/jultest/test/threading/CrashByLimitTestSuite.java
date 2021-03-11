@@ -15,7 +15,7 @@ import info.jultest.test.EFCommons;
 
 //(Uncomment @RunWith for reliability test)
 //@org.junit.runner.RunWith(org.junit.runners.Parameterized.class)
-public class CarshByLimitTestSuite extends ThreadingTestBase {
+public class CrashByLimitTestSuite extends ThreadingTestBase {
 
 	private static final String FEATURE = "CrashByLimit";
 

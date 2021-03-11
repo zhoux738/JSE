@@ -24,6 +24,8 @@ SOFTWARE.
 
 package info.julang.interpretation;
 
+import java.util.Map.Entry;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
@@ -35,6 +37,7 @@ import info.julang.execution.StandardIO;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.execution.symboltable.LocalBindingTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.ThreadFrame;
 import info.julang.execution.threading.ThreadRuntime;
@@ -56,6 +59,9 @@ import info.julang.langspec.ast.JulianParser.ExpressionContext;
 import info.julang.langspec.ast.JulianParser.Expression_statementContext;
 import info.julang.langspec.ast.JulianParser.Method_bodyContext;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.IFuncValue;
+import info.julang.memory.value.JValue;
+import info.julang.memory.value.ValueUtilities;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
@@ -145,7 +151,7 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	 * {@link #prepareContext()} and before {@link #postExecute()}.
 	 */
 	@Override
-	public Result execute(ThreadRuntime runtime, Argument[] args) throws EngineInvocationError {
+	public Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) throws EngineInvocationError {
 		// IMPORTANT: per-JThread variables must be declared here as local variable instead of field member.	
 		ThreadStack stack = runtime.getThreadStack(); 
 		                           // The runtime thread stack
@@ -198,10 +204,7 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 
 		// prepare context
 		Context ctxt = prepareContext(
-			frame, heap, varTable, typTable, typResolver, mm, namespaces, io, runtime.getJThread());
-		
-		// save arguments into current context.
-		prepareArguments(args, ctxt);
+			func, frame, heap, varTable, typTable, typResolver, mm, namespaces, io, runtime.getJThread());
 		
 		try {
 			if (preExeException != null) {
@@ -214,6 +217,9 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 				
 				throw jse != null ? jse : preExeException;
 			}
+			
+			// save arguments into current context.
+			prepareArguments(args, ctxt, func);
 			
 			// call internal execute() to get a result back
 			Result res = execute(runtime, ast, option, ctxt);
@@ -238,10 +244,36 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	 * @param args
 	 * @param varTable
 	 */
-	protected void prepareArguments(Argument[] args, Context ctxt) {
+	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
+		repliateArgsAndBindings(args, ctxt, func, true);
+	}
+	
+	protected void repliateArgsAndBindings(Argument[] args, Context ctxt, IFuncValue func, boolean addLocalBindings) {
 		IVariableTable varTable = ctxt.getVarTable();
 		for(Argument arg : args){
 			varTable.addVariable(arg.getName(), arg.getValue());
+		}
+		
+		if (addLocalBindings) {
+			addLocalBindings(ctxt, func);
+		}
+	}
+	
+	protected void addLocalBindings(Context ctxt, IFuncValue func){
+		LocalBindingTable lbt = func.getLocalBindings();
+		if (lbt != null) {
+			for (Entry<String, JValue> entry : lbt.getAll().entrySet()) {
+				String key = entry.getKey();
+				if (!"this".equals(key)) { // Exclude 'this'. Name resolvers will access to LBT directly.
+					IVariableTable varTable = ctxt.getVarTable();
+					varTable.addVariable(
+						entry.getKey(),
+						ValueUtilities.replicateValue(
+							entry.getValue(),
+							null, // It might be a better idea to also carry the type info in LBT.
+							ctxt.getFrame()));
+				}
+			}
 		}
 	}
 	
@@ -249,6 +281,7 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	 * Prepare a execution context.
 	 */
 	protected Context prepareContext(
+		IFuncValue func,
 		MemoryArea frame, 
 		MemoryArea heap,
 		IVariableTable varTable, 
@@ -258,7 +291,7 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 		NamespacePool namespaces,
 		StandardIO io,
 		JThread jthread){
-		return new FunctionContext(frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread);
+		return new FunctionContext(func, frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread);
 	}
 	
 	/**

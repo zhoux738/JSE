@@ -35,6 +35,7 @@ import info.julang.interpretation.resolving.IMemberNameResolver;
 import info.julang.interpretation.resolving.InstanceMethodNameResolver;
 import info.julang.interpretation.resolving.StaticMethodNameResolver;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.IFuncValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.loading.InternalTypeResolver;
@@ -42,9 +43,11 @@ import info.julang.typesystem.loading.InternalTypeResolver;
 public class MethodContext extends Context {
 	
 	private ICompoundType containingType;
+	private IFuncValue func;
 
 	@SuppressWarnings("unchecked")
 	public MethodContext(
+		IFuncValue func,
 		MemoryArea frame, 
 		MemoryArea heap,
 		IVariableTable varTable, 
@@ -70,8 +73,8 @@ public class MethodContext extends Context {
 			mm, 
 			nsPool, 
 			isStatic ? 
-				new StaticMethodNameResolver(varTable, typTable, containingType, memResolver) : 
-				new InstanceMethodNameResolver(varTable, typTable, containingType, memResolver),
+				new StaticMethodNameResolver(varTable, typTable, func.getLocalBindings(), containingType, memResolver) : 
+				new InstanceMethodNameResolver(varTable, typTable, func.getLocalBindings(), containingType, memResolver),
 			io,
 			jthread,
 			exeContextTyp
@@ -82,6 +85,7 @@ public class MethodContext extends Context {
 		}
 		
 		this.containingType = containingType;
+		this.func = func;
 	}
 	
 	/**
@@ -99,6 +103,7 @@ public class MethodContext extends Context {
 	 */
 	public static MethodContext duplicateContext(
 		Context context, 
+		IFuncValue func,
 		MemoryArea frame, 
 		VariableTable vt, 
 		NamespacePool nsPool,  
@@ -108,6 +113,7 @@ public class MethodContext extends Context {
 		ExecutionContextType exeContextType){
 		boolean restricted = exeContextType == ExecutionContextType.InAnnotation;
 		MethodContext newContext = new MethodContext(
+			func,
 			frame,
 			context.getHeap(),
 			vt,

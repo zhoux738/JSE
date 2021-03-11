@@ -49,13 +49,14 @@ public class AssignOp extends Operator {
 	protected Operand doApply(Context context, Operand[] operands) {
 		Operand assignee = operands[0];
 		checkLeftValue(assignee);
-		JValue lval = getValue(context, assignee, false, false);// do not unwrap the left value
 		JValue rval = getValue(context, operands[1]); 
 
 		Operand res = Operand.createOperand(
-			assignee.getKind() == OperandKind.INDEX ?
-				assignToIndex((IndexOperand)assignee, lval, rval) : 
-				assign(lval, rval));
+			assignee.getKind() == OperandKind.INDEX
+				? assignToIndex((IndexOperand)assignee, rval)
+				: assign(
+					getValue(context, assignee, false, false), // do not unwrap
+					rval));
 		
 		return res;
 	}
@@ -72,7 +73,7 @@ public class AssignOp extends Operator {
 		}
 	}
 
-	private JValue assignToIndex(IndexOperand assignee, JValue lval, JValue rval){
+	private JValue assignToIndex(IndexOperand assignee, JValue rval){
 		// When the left value is index-addressable, we must assign it using the method 
 		// exposed on JIndexable. This is not only for uniformity but more importantly the 
 		// correctness. Since System.Collection.List and System.Collection.Map are indexable,
@@ -81,7 +82,7 @@ public class AssignOp extends Operator {
 		// to replication at the end of method call.
 		IIndexable base = assignee.getBase();
 		JValue index = assignee.getIndex();
-		lval = base.setByIndex(index, rval);
+		JValue lval = base.setByIndex(index, rval);
 		return lval;
 	}
 	

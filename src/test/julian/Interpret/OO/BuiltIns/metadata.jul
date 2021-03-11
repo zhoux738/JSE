@@ -1,0 +1,13 @@
+void check(Type type){
+	// Console.println(type);
+}
+
+check(new Object().getType());
+check(new Exception().getType());
+void fun() { }
+check(fun.getType());
+check(new Object().toString.getType());
+check("testtag".getType());
+check(new Object().toString.toString.getType());
+
+bool succ = true;

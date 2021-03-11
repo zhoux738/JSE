@@ -80,7 +80,7 @@ public class IOThreadWrapper extends JSEObjectWrapper implements IOThreadHandle 
 	public void post(EngineRuntime ert, Executable exec){
 		JFunctionType funcTyp = new JFunctionType("<IO-continuation>", new JParameter[0], VoidType.getInstance(), new NamespacePool(), exec);
 		MemoryArea memory = ert.getHeap();
-		FuncValue fv = FuncValue.createGlobalFuncValue(memory, funcTyp, true);
+		FuncValue fv = FuncValue.createGlobalFuncValue(memory, funcTyp);
 		
 		this.runMethod(Method_post, fv);
 	}

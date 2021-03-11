@@ -1,0 +1,7 @@
+Dynamic d = new Dynamic() {
+	"a" = 5 + 3, 
+	b = fun(), 
+	12 = this,
+	this = "xyz",
+	(this) = "aa",
+	(fun_b(2) * 10) = lol / ok };

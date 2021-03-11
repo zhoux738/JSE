@@ -87,7 +87,7 @@ public class ExpressionStatement extends StatementBase implements IHasResult {
 			} else if (s_total > 0b1111111111111) {
 				// Also check every 8K expressions
 				JThread thread = runtime.getJThread();
-				if(thread.checkTermination()){
+				if(thread != null && thread.checkTermination()){
 					throw new JThreadAbortedException(thread);
 				}
 				

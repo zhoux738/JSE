@@ -183,7 +183,7 @@ public class JArrayType extends JArrayBaseType {
 			Class<?> expectedClass = null;
 			switch (et2.getKind()) {
 			case BOOLEAN:
-				expectedClass = int.class;
+				expectedClass = boolean.class;
 				break;
 			case BYTE:
 				expectedClass = byte.class;

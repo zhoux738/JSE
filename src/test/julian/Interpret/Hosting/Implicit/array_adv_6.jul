@@ -1,0 +1,71 @@
+// boolean[]
+// platform array: true, false, false, true, false
+// 1. sort platform array asc
+Array.sort(barray, false);
+bool[] barray2 = new bool[5];
+// 2. copy to JSE array
+Array.copy(barray, 0, barray2, 0, 5);
+bool succ1a = barray[0] == false && barray[4] == true;
+// 3. sort platform array desc
+Array.sort(barray, true);
+bool succ1b = barray[4] == false;
+// 4. fill platform array
+Array.fill(barray, false);
+bool succ1c = barray[4] == false && barray[0] == false;
+// 5. copy to platform array
+Array.copy(barray2, 0, barray, 0, 5);
+bool succ1d = barray[0] == false && barray[4] == true;
+
+// char[]
+// platform array: 'a', 'b', 'c', 'z', 'm'
+// 1. sort platform array asc
+Array.sort(carray, false);
+char[] carray2 = new char[5];
+// 2. copy to JSE array
+Array.copy(carray, 0, carray2, 0, 5);
+bool succ2a = carray2[0] == 'a' && carray2[4] == 'z';
+// 3. sort platform array desc
+Array.sort(carray, true);
+bool succ2b = carray[4] == 'a';
+// 4. fill platform array
+Array.fill(carray, 'e');
+bool succ2c = carray[4] == 'e' && carray[0] == 'e';
+// 5. copy to platform array
+Array.copy(carray2, 0, carray, 0, 5);
+bool succ2d = carray[0] == 'a' && carray[4] == 'z';
+
+// float[]
+// platform array: 1.1f, 2.2f, 3.3f, 4.4f, 5.0f
+// 1. sort platform array asc
+Array.sort(farray, false);
+float[] farray2 = new float[5];
+// 2. copy to JSE array
+Array.copy(farray, 0, farray2, 0, 5);
+bool succ3a = farray2[0] == 1.1 && farray2[4] == 5.0;
+// 3. sort platform array desc
+Array.sort(farray, true);
+bool succ3b = farray[4] == 1.1;
+// 4. fill platform array
+Array.fill(farray, 99.12);
+bool succ3c = farray[4] == 99.12 && farray[0] == 99.12;
+// 5. copy to platform array
+Array.copy(farray2, 0, farray, 0, 5);
+bool succ3d = farray[0] == 1.1 && farray[4] == 5.0;
+
+// byte[]
+// platform array: -1, 127, 0, -128, 1
+// 1. sort platform array asc
+Array.sort(byarray, false);
+byte[] byarray2 = new byte[5];
+// 2. copy to JSE array
+Array.copy(byarray, 0, byarray2, 0, 5);
+bool succ4a = byarray[0] == -128 && byarray[4] == 127;
+// 3. sort platform array desc
+Array.sort(byarray, true);
+bool succ4b = byarray[4] == -128;
+// 4. fill platform array
+Array.fill(byarray, 33);
+bool succ4c = byarray[4] == 33 && byarray[0] == 33;
+// 5. copy to platform array
+Array.copy(byarray2, 0, byarray, 0, 5);
+bool succ4d = byarray[0] == -128 && byarray[4] == 127;

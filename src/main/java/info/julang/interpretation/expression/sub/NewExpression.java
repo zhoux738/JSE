@@ -24,8 +24,17 @@ SOFTWARE.
 
 package info.julang.interpretation.expression.sub;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
+import info.julang.hosting.interop.JSEObjectWrapper;
 import info.julang.interpretation.IllegalOperandsException;
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.context.Context;
@@ -46,32 +55,40 @@ import info.julang.langspec.ast.JulianParser.Class_typeContext;
 import info.julang.langspec.ast.JulianParser.Composite_idContext;
 import info.julang.langspec.ast.JulianParser.Created_type_nameContext;
 import info.julang.langspec.ast.JulianParser.CreatorContext;
+import info.julang.langspec.ast.JulianParser.E_lambdaContext;
 import info.julang.langspec.ast.JulianParser.E_newContext;
+import info.julang.langspec.ast.JulianParser.E_primaryContext;
 import info.julang.langspec.ast.JulianParser.ExpressionContext;
+import info.julang.langspec.ast.JulianParser.Kvp_initializerContext;
+import info.julang.langspec.ast.JulianParser.Map_initializerContext;
 import info.julang.langspec.ast.JulianParser.Object_creation_expressionContext;
+import info.julang.langspec.ast.JulianParser.PrimaryContext;
 import info.julang.langspec.ast.JulianParser.TypeContext;
 import info.julang.langspec.ast.JulianParser.Var_initializerContext;
+import info.julang.memory.MemoryArea;
 import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.ArrayValueFactory;
+import info.julang.memory.value.CharValue;
+import info.julang.memory.value.DynamicValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.StringValue;
+import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.basic.BasicType;
+import info.julang.typesystem.basic.CharType;
 import info.julang.typesystem.basic.NumberKind;
+import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import info.julang.typesystem.jclass.builtin.JDynamicType;
+import info.julang.typesystem.jclass.jufc.SystemTypeNames;
 
 /**
  * The expression to create a new object. There are two use cases:
- * <li>creating a new object of some class type by invoking a constructor</li>
+ * <li>creating a new object of some class type by invoking a constructor, 
+ * and optionally, <code><font color="green">System.Util.IMapInitializable.initByMap()</font></code></li>
  * <li>creating an array of some type, with or without an initializer</li>
  * <p>
  * Syntax:<br>
@@ -92,13 +109,22 @@ public class NewExpression extends ExpressionBase {
 		CreatorContext cc = nec.creator();
 		
 		// 1) type to instantiate
-		ParsedTypeName ptn = getTypeName(cc);
+		JType type = null;
+		Map_initializerContext mic = cc.map_initializer();
+		if (mic == null) {
+			ParsedTypeName ptn = getTypeName(cc);
+			type = context.getTypeResolver().resolveType(ptn);
+		}
 		
 		// 2) object or array?
 		ObjectValue ov = null;
-		JType type = context.getTypeResolver().resolveType(ptn);
 		Object_creation_expressionContext objContext = cc.object_creation_expression();
-		if (objContext != null){
+		if (mic != null) {
+			// The map initializer may come from either of the two places:
+			// 1) right after new (in the case of implicit Dynamic), or ...
+			ov = newDynamic(context, mic);
+		} else if (objContext != null){
+			// 2) ... right after the ctor's argument list.
 			ov = newObject(context, type, objContext);
 		} else {
 			Array_creation_expressionContext arrContext = cc.array_creation_expression();
@@ -108,8 +134,16 @@ public class NewExpression extends ExpressionBase {
 		return new ValueOperand(ov);
 	}
 
+	// Create an object of Dynamic type.
+	private DynamicValue newDynamic(Context context, Map_initializerContext initContext) {
+		DynamicValue dv = new DynamicValue(context.getHeap(), JDynamicType.getInstance());
+		initObject(context, dv, initContext);
+		return dv;
+	}
+
 	// Create an object of specified type.
-	private ObjectValue newObject(Context context, JType type, Object_creation_expressionContext ast){
+	private ObjectValue newObject(
+		Context context, JType type, Object_creation_expressionContext ast){
 		if (!type.isObject()){
 			throw new IllegalOperandsException("Cannot call constructor on a non-class type.");
 		}
@@ -119,7 +153,124 @@ public class NewExpression extends ExpressionBase {
 		NewObjExecutor noe = new NewObjExecutor(rt);
 		ObjectValue ov = noe.newObject(context, args, type, ec);
 		
+		Map_initializerContext initContext = ast.map_initializer();
+		if (initContext != null) {
+			initObject(context, ov, initContext);
+		}
+		
 		return ov;
+	}
+	
+	private void initObject(Context context, ObjectValue ov, Map_initializerContext initContext) {
+		JClassType ctype = ov.getClassType();
+		boolean isDynamic = JDynamicType.isDynamicType(ctype);
+		DynamicValue dv = null;
+		if (isDynamic) {
+			dv = (DynamicValue)ov;
+		}
+		
+		boolean foundInf = isDynamic;
+		if (!foundInf) {
+			foundInf = ctype.hasAncestor(SystemTypeNames.System_Util_IMapInitializable, false);
+		}
+		
+		if (!foundInf) {
+			throw new RuntimeCheckException(
+				"Cannot instantiate with map initializer as the class (" + ctype.getName()
+				+ ") doesn't implement " + SystemTypeNames.System_Util_IMapInitializable + ".");
+		}
+		
+		List<Kvp_initializerContext> kvpList = initContext.kvp_initializer();
+		if (kvpList == null || kvpList.size() == 0) {
+			return;
+		}
+		
+		NewObjExecutor newExe = new NewObjExecutor(rt);
+		MemoryArea mem = rt.getHeap();
+		JType entryTyp = rt.getTypeResolver().resolveType(
+			Context.createSystemLoadingContext(rt),
+			ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_Entry),
+			true);
+		
+		int size = kvpList.size();
+		JValue[] kvps = new JValue[size];
+		for (int i = 0; i < size; i++) {
+			Kvp_initializerContext kvpContext = kvpList.get(i);
+			JValue key = null;
+			PrimaryContext primary = kvpContext.primary();
+			TerminalNode tn = primary.STRING_LITERAL();
+			if (tn != null) {
+				// String literal
+				key = new StringValue(rt.getStackMemory().currentFrame(), ANTLRHelper.reEscapeAsString(tn.getText(), true));
+			} else if ((tn = primary.IDENTIFIER()) != null) {
+				// (By design) Treat id as string literal
+				key = new StringValue(rt.getStackMemory().currentFrame(), tn.getText());
+			} else {
+				if (isDynamic) {
+					// SPECIAL: If the type is Dynamic, the key must be either string or char.
+					ExpressionContext exprContext = null;
+					if ((tn = primary.CHAR_LITERAL()) != null) {
+						// Char literal
+						key = new StringValue(rt.getStackMemory().currentFrame(), "" + ANTLRHelper.reEscapeAsChar(tn.getText(), true));
+					} else {
+						exprContext = primary.expression();
+					}
+					
+					if (exprContext != null) {					
+						DelegatingExpression dex = new DelegatingExpression(rt, ec.create(exprContext));
+						JValue resVal = dex.getResult(context);
+						// String evaluated from expression
+						key = StringValue.dereference(resVal, false);
+						if (key == null && resVal.deref().getType() == CharType.getInstance()) {
+							// Char evaluated from expression
+							key = new StringValue(rt.getStackMemory().currentFrame(), ((CharValue)resVal.deref()).toString());
+						}
+					}
+					
+					if (key == null) {
+						throw new RuntimeCheckException(
+							"Can only create Dynamic object with a map initializer where the key is of type string or char.");
+					}
+				} else {
+					// GENERIC: evaluates all the initializers; it's up to the implementation to decide what should be done with each pair.
+					E_primaryContext syncExpr = ANTLRHelper.synthesizeDegenerateAST(primary, E_primaryContext.class);
+					DelegatingExpression dex = new DelegatingExpression(rt, ec.create(syncExpr));
+					key = dex.getResult(context);
+				}
+			}
+			
+			ExpressionContext valExprContext = kvpContext.expression();
+
+			if (dv != null && !dv.shouldBindToAnyFunction()) {
+				// If autobind is not turned on, only bind if a lambda literal is given as the value.
+				if (valExprContext instanceof E_lambdaContext) {
+					dv.addIndexToBind(i);
+				}
+			}
+			
+			DelegatingExpression dex = new DelegatingExpression(rt, ec.create(valExprContext));
+			JValue value = dex.getResult(context);
+			ObjectValue entryValue = newExe.newObject(mem, entryTyp, new JValue[] {key, value});
+			kvps[i] = entryValue;
+		}
+		
+		// With all the pairs substantiated, we can now create an array value that holds them
+		ArrayValue arrValue = ArrayValueFactory.createArrayValue(context.getHeap(), context.getTypTable(), entryTyp, size);
+		for (int i = 0; i < size; i++) {
+			kvps[i].assignTo(arrValue.getValueAt(i));
+		}
+		
+		// Now call System.Util.IMapInitializable.initByMap()
+		SysUtilIMapInitializableWrapper wrapper = new SysUtilIMapInitializableWrapper(rt, ctype.getName(), ov);
+		try {
+			wrapper.initByMap(arrValue);
+		} finally {
+			// Special treatment for Dynamic: if it's marked as sealed, do not allow overwriting from this point on.
+			// This must be done regardless of the result of initByMap(), so no second attempt by calling map initializer can be exploited.
+			if (isDynamic) {
+				dv.completeInit();
+			}
+		}
 	}
 	
 	// Create an array object, and initialize elements if initializer is specified.
@@ -169,7 +320,7 @@ public class NewExpression extends ExpressionBase {
 			int dim = arrContext.LEFT_BRACKET().size();
 			JArrayType arrType = JArrayType.createJArrayType(context.getTypTable(), type, dim);
 			
-			arrVal = newArray(context, arrType, aic);
+			arrVal = initArray(context, arrType, aic);
 		}
 		
 		return arrVal;
@@ -178,7 +329,7 @@ public class NewExpression extends ExpressionBase {
 	// We deal with two kinds of initializers: the expression or a nested array initializer. For expression
 	// a value can be evaluated and assigned to the element; for a nested array initializer we must recursively
 	// call this with the type of direct element. For example, int[][]'s direct element type is int[].
-	private ArrayValue newArray(Context context, JArrayType arrType, Array_initializerContext aic) {
+	private ArrayValue initArray(Context context, JArrayType arrType, Array_initializerContext aic) {
 		//array_initializer
 		//    :   '{' (var_initializer (',' var_initializer)* (',')? )? '}'
 		//    ;
@@ -204,7 +355,7 @@ public class NewExpression extends ExpressionBase {
 				if (!JArrayType.isArrayType(etyp)){
 					throw new RuntimeCheckException("A sub-array initializer must be used when the corresponding element type is array, but it's " + etyp.getName());
 				}
-				value = newArray(context, (JArrayType)etyp, saic);
+				value = initArray(context, (JArrayType)etyp, saic);
 			}
 			
 			values.add(value);
@@ -284,4 +435,35 @@ public class NewExpression extends ExpressionBase {
 		return ptn;
 	}
 
+	private class SysUtilIMapInitializableWrapper extends JSEObjectWrapper {
+		
+		private static final String Method_initByMap = "initByMap(System.Util.Entry[])";
+		
+		private SysUtilIMapInitializableWrapper(ThreadRuntime rt, String fullClassName, ObjectValue ov){
+			super(fullClassName, rt, ov, false);
+			
+			// entryTyp := System.Util.Entry
+			ITypeTable tt = rt.getTypeTable();
+			JType entryTyp = tt.getType(SystemTypeNames.System_Util_Entry);
+			if (entryTyp == null) {
+				entryTyp = rt.getTypeResolver().resolveType(
+					Context.createSystemLoadingContext(rt),
+					ParsedTypeName.makeFromFullName(SystemTypeNames.System_Util_Entry),
+					true);
+			}
+			
+			// arrTyp := System.Util.Entry[]
+			JArrayType arrTyp = tt.getArrayType(entryTyp);
+			if (arrTyp == null) {
+				tt.addArrayType(JArrayType.createJArrayType(tt, entryTyp, false));
+				arrTyp = tt.getArrayType(entryTyp);
+			}
+			
+			this.registerMethod(Method_initByMap, SystemTypeNames.MemberNames.INIT_BT_MAP, false, new JType[]{ arrTyp });
+		}
+		
+		private void initByMap(ArrayValue arrValue){
+			this.runMethod(Method_initByMap, arrValue);
+		}
+	}
 }

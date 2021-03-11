@@ -42,6 +42,7 @@ import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.BasicArrayValue;
 import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.TempValueFactory;
@@ -611,7 +612,7 @@ public class JFileStream {
 							new Executable(){
 
 								@Override
-								public Result execute(ThreadRuntime runtime, Argument[] args) throws EngineInvocationError {
+								public Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) throws EngineInvocationError {
 							    	try {
 							    		if (checkStreamState()) { 
 							    			return Result.Void;

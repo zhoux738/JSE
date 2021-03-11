@@ -89,4 +89,14 @@ public final class OSTool {
         
         return false;
 	}
+
+	public static String getFileSimpleName(String filePathName, boolean isCanonicalized) {
+		String fpath = isCanonicalized? filePathName : canonicalizePath(filePathName);
+		int index = fpath.lastIndexOf(isWindows() ? '\\' : '/');
+		if (index >= 0 && index + 1 < fpath.length()) {
+			return fpath.substring(index + 1);
+		} else {
+			return filePathName;
+		}
+	}
 }

@@ -1,0 +1,45 @@
+// Call bind() with variety
+class MyVal {
+	string str = "pf";
+	int number;
+}
+
+class MyCls1 : MyVal { 
+	string combine(int i, string s, char c) {
+		number += i;
+		return (string)this.str + i + s + c;
+	}
+}
+
+class MyCls2 : MyVal { 
+	MyCls2(){
+		number = 50;
+	}
+	
+	string combine(int i, string s, char c) {
+		number += i;
+		return "pf" + i + s + c;
+	}
+}
+
+// Replace 'this'
+var cls1a = new MyCls1();
+var cls1b = new MyCls1();
+var combineThis = Function.bind(cls1a.combine, cls1b);
+string res = combineThis(10, "-", 'z');
+int i0 = cls1a.number;
+int i10 = cls1b.number;
+
+// Bind arguments twice
+var cls1c = new MyCls2();
+var combine10 = Function.bind(cls1c.combine, null, new var[]{ 10 });
+var combine11 = Function.bind(cls1c.combine, null, new var[]{ 11, "_" });
+
+string res3 = combine10("-", 'z');
+int i60 = cls1c.number;
+
+string res5 = combine11('z');
+int i71 = cls1c.number;
+
+string res4 = cls1c.combine(20, "a", 'x');
+int i91 = cls1c.number;

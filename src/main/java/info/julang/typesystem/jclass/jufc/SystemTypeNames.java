@@ -33,7 +33,9 @@ public class SystemTypeNames {
 
 	public static final String System_Util_ArrayIterator = "System.Util.ArrayIterator";
 	public static final String System_Util_StringIterator = "System.Util.StringIterator";
+	public static final String System_Util_Entry = "System.Util.Entry";
 	public static final String System_Util_IIndexable = "System.Util.IIndexable";
+	public static final String System_Util_IMapInitializable = "System.Util.IMapInitializable";
 	public static final String System_Util_IComparable = "System.Util.IComparable";
 	public static final String System_Util_IIterator = "System.Util.IIterator";
 	public static final String System_Util_IIterable = "System.Util.IIterable";
@@ -42,5 +44,6 @@ public class SystemTypeNames {
 		public static final String AT = "at";
 		public static final String SIZE = "size";
 		public static final String GET_ITERATOR = "getIterator";
+		public static final String INIT_BT_MAP = "initByMap";
 	}
 }

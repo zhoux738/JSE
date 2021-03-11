@@ -62,6 +62,7 @@ public enum KnownJSException {
 	UndefinedSymbol("System.Lang.UndefinedSymbolException"),
 	NamespaceConflict("System.Lang.NamespaceConflictException"),
 	RuntimeCheck("System.Lang.RuntimeCheckException"),
+	IllegalBindingException("System.Lang.IllegalBindingException"),
 
 	IO("System.IO.IOException"),
     

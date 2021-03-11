@@ -425,13 +425,13 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 			JValue val = args[1].getValue();
 			val = UntypedValue.unwrap(val);
 			
-			if (src.isBasicArray()){
+			if (src.isBasicArray() && src instanceof BasicArrayValue){
 				// This is a single dimensional basic type array. We are able to perform native filling.
 				BasicArrayValue srcBav = (BasicArrayValue)src;
 				srcBav.fill(val);
 			} else {
 				// Have to fill out object values one by one.
-				ObjectArrayValue srcOav = (ObjectArrayValue)src;
+				IArrayValue srcOav = (IArrayValue)src;
 				int len = src.getLength();
 				for(int i=0; i<len; i++){
 					JValue vs = srcOav.getValueAt(i);
@@ -579,7 +579,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 		exceptions = { },
 		returns = "An array iterator ready to [move on](type: System.Util.IIterator#next)."
 	)
-	private static HostedExecutable METHOD_get_iterator = new HostedExecutable(FQNAME, SystemTypeNames.MemberNames.AT) {
+	private static HostedExecutable METHOD_get_iterator = new HostedExecutable(FQNAME, SystemTypeNames.MemberNames.GET_ITERATOR) {
 		@Override
 		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
 			// Extract arguments
@@ -690,6 +690,7 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 	//--------------- IDeferredBuildable ---------------//
 	
 	private BuiltinClassTypeBuilder builder;
+	private boolean sealable;
 	
 	@Override
 	public boolean deferBuild(){
@@ -697,8 +698,13 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 	}
 	
 	@Override
-	public void completeBuild(Context context) {
-		if (builder != null) {
+	public void postBuild(Context context) {
+		if (!sealable) {
+			if (builder == null) {
+				sealable = true;
+				return;
+			}
+			
 			// System.Type
 			JClassType systemType = (JClassType)context.getTypeResolver().resolveType(
 				ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME));
@@ -802,10 +808,23 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 						METHOD_get_iterator,
 						JArrayBaseType.INSTANCE),
 				    null));
-			
+
+			sealable = true;
+		}
+	}
+	
+	@Override
+	public void seal() {
+		if (!sealable) {
+			throw new JSEError("Couldn't seal built-in type. Building was not complete.", JArrayBaseType.class);
+		}
+
+		if (builder != null) {
 			builder.seal();
 			builder = null;
 		}
+
+		sealable = false;
 	}
 
 	@Override
@@ -816,5 +835,10 @@ public class JArrayBaseType extends JClassType implements IDeferredBuildable {
 	@Override
 	public void preInitialize() {
 		this.initialized = true;
+	}
+	
+	@Override
+	public BuiltinTypes getBuiltinType() {
+		return BuiltinTypes.ARRAY;
 	}
 }

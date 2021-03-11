@@ -36,6 +36,7 @@ import info.julang.execution.threading.ThreadFrame;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.resolving.INameResolver;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.FuncValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.loading.ITypeResolver;
@@ -203,6 +204,7 @@ public abstract class Context {
 
 		SystemLoadingContext(ThreadRuntime rt, MemoryArea mem, IVariableTable vt) {
 			super(
+				/* Function value */         FuncValue.DUMMY,
 				/* MemoryArea frame */       mem, 
 				/* MemoryArea heap */        rt.getHeap(), 
 				/* VariableTable varTable */ vt, 

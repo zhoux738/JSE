@@ -130,7 +130,7 @@ interface IIndexable {
  *
  * It might look confusing at the first, but it's also critical to know the difference between 
  * IIterable and [IIterator]. IIterable allows the object to return a view on the contained data, 
- * and thus its [core method](#getIterator) can be called unrestrictedly. IIterable, on the other 
+ * and thus its [core method](#getIterator) can be called unrestrictedly. IIterator, on the other 
  * hand, represents the API provided by this view, exposing the minimally necessary methods for 
  * traversing through the data set. Most importantly, IIterator is also a stateful object. The 
  * foreach statement is essentially interacting with an IIterator, not an IIterable. IIterable is
@@ -187,4 +187,89 @@ interface IIterator {
 	 * [return] The next item. 
 	 */
 	var next();
+}
+
+/*
+ * A key-value pair struct used by a few other foundation classes.
+ */
+class Entry {
+
+	/* 
+	 * The key of the entry. When used in [Systen.Collection.Map], if it's an Object, [hashCode()](type: Object#hashCode) 
+	 * will be called to get its hash; if primitive, it will be converted to an integer as the hash.
+	 */
+	var key;
+	
+	/* 
+	 * The value associated with this key. 
+	 */
+	var value;
+	
+	/*
+	 * Create a new Entry with given key and value.
+	 *
+	 * [param: key] The key for this entry.
+	 * [param: value] The value associated with this entry.
+	 */
+	Entry(var key, var value){
+		this.key = key;
+		this.value = value;
+	}
+}
+
+/*
+ * A class that implements this interface gains the ability of being instantiated with a map-like initializer
+ * trailing the constructor. For example, since [Systen.Collection.Map] implements this interface, we can 
+ * create a new Map with a bunch of preset key-value pairs:
+ * [code]
+ *   Map map = new Map() { 
+ *     "a" = "xyz",
+ *     12 = 'c',
+ *     mykey = myval + fun(var1), // Treated as string literal, "mykey"
+ *     (bar(5)) = obj2 // The outer () is required. See below.
+ *   };
+ *
+ *   // The above is equivalent to
+ *   Map map = new Map();
+ *   map.initByMap(
+ *     new Entry("a", "xyz"),
+ *     new Entry(12, 'c'),
+ *     new Entry("mykey", myval + fun(var1)),
+ *     new Entry(bar(5), obj2)
+ *    };
+ * [code: end]
+ *
+ * As demonstrated by the equivalent form, for each key-value initializer, the script engine will evaluate 
+ * the left side to a key, the right side a value, so that it can create a [System.Util.Entry] with them. 
+ * This syntax sugar, however, requires that the left side be an identifier, literal value or any expression
+ * enclosed by parentheses, as otherwise it couldn't pinpoint the position of assignment operator (=) used to
+ * demarcate the key and the value.
+ *
+ * While most keys are used as is, there is one exception. Any **identifier will be reinterpreted as a string 
+ * literal**. This rule makes it more convenient to initialize [Dyanmic](tutorial: dynamic). If the key is 
+ * indeed to be provided by a variable, enclose the variable with parentheses to force an evaluation.
+ * [code]
+ *   string country = "United States";
+ *   Map capitals = new Map() { 
+ *     country = "Washington" // A key of "country" will be added!
+ *   };
+ *
+ *   Console.println(capitals["United States"]); // (null)
+ *   Console.println(capitals["country"]); // Washington
+ *
+ *   capitals = new Map() { 
+ *     (country) = "Washington" // A key of "United States" is added instead
+ *   };
+ *   Console.println(capitals["United States"]); // Washington
+ * [code: end]
+ */
+interface IMapInitializable {
+
+	/*
+	 * Initialize the object with an array of [key-value pairs](System.Util.Entry). The implementation may decide
+	 * how to handle nullness, key duplication, the legality of key/value types, etc.
+	 *
+	 * [param: entries] The key-value pairs.
+	 */
+	void initByMap(Entry[] entries);
 }

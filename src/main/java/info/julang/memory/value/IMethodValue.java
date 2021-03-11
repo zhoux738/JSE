@@ -24,14 +24,12 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import info.julang.external.interfaces.JValueKind;
-
 /**
  * The value is a method or method group.
  * 
  * @author Ming Zhou
  */
-public interface IMethodValue {
+public interface IMethodValue extends IFuncValue {
 
 	/**
 	 * If this method is static.
@@ -46,12 +44,4 @@ public interface IMethodValue {
 	 * @return null if this method is static (see {@link #isStatic()}).
 	 */
 	JValue getThisValue();
-	
-	/**
-	 * The function kind. Either {@link JValueKind#METHOD METHOD} or 
-	 * {@link JValueKind#METHOD_GROUP METHOD_GROUP}.
-	 * 
-	 * @return
-	 */
-	JValueKind getFuncValueKind();
 }

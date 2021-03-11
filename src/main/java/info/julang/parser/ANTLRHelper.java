@@ -37,6 +37,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import com.sun.org.apache.xalan.internal.extensions.ExpressionContext;
+
 public class ANTLRHelper {
 
 	public static String getRuleName(ParserRuleContext prt){
@@ -353,8 +355,14 @@ public class ANTLRHelper {
 		org.antlr.v4.runtime.Token start,
 		org.antlr.v4.runtime.Token stop) {
 		try {
-			Constructor<T> ctor = nodeType.getDeclaredConstructor(ParserRuleContext.class, int.class);
-			T t = ctor.newInstance(parent, 0);
+			T t = null;
+			if (nodeType.getSuperclass() == JulianParser.ExpressionContext.class) {
+				Constructor<T> ctor = nodeType.getDeclaredConstructor(JulianParser.ExpressionContext.class);
+				t = ctor.newInstance(new JulianParser.ExpressionContext());
+			} else {
+				Constructor<T> ctor = nodeType.getDeclaredConstructor(ParserRuleContext.class, int.class);
+				t = ctor.newInstance(parent, 0);
+			}
 			
 			t.start = start;
 			t.stop = stop;
@@ -365,7 +373,7 @@ public class ANTLRHelper {
 			return t;
 		} catch (IllegalArgumentException  | InstantiationException | NoSuchMethodException | 
 				 InvocationTargetException | IllegalAccessException | SecurityException e){
-			throw new JSEError("Cannot synthesize an syntax tree: " + e.getMessage());
+			throw new JSEError("Cannot synthesize a syntax tree: " + e.getMessage());
 		}
 	}
 	

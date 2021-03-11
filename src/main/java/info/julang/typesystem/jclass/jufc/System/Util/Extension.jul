@@ -472,7 +472,7 @@ static class IIterableExtension {
 			// If it's a map, create an array of Entry and copy the entries over.
 			var src = this.getEntries();
 			int len = src.size();
-			tgt = new System.Collection.Entry[len];
+			tgt = new Entry[len];
 			Array.copy(src, 0, tgt, 0, len);
 		} else {
 			// Otherwise, create an untyped array with the same length and copy the items one by one.

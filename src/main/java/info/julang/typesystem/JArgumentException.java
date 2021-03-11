@@ -28,7 +28,7 @@ import info.julang.JSERuntimeException;
 import info.julang.interpretation.errorhandling.KnownJSException;
 
 /**
- * The exception thrown when calling a function or method with illegal arguments. This is usual
+ * The exception thrown when calling a function or method with illegal arguments.
  * 
  * @author Ming Zhou
  */

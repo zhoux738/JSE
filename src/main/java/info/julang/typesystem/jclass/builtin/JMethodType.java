@@ -24,7 +24,10 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.builtin;
 
+import info.julang.execution.Executable;
+import info.julang.external.exceptions.JSEError;
 import info.julang.hosting.HostedExecutable;
+import info.julang.hosting.mapped.exec.MappedExecutableBase;
 import info.julang.langspec.Keywords;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.ExecutableType;
@@ -61,15 +64,6 @@ public class JMethodType extends JFunctionType implements ExecutableType {
 	 */
 	public JMethodType(String name, JParameter[] params, JType returnType, MethodExecutable executable, JType containingType, boolean untyped) {
 		super(name, params, returnType, executable); //set parent to be default function (used to be JObjectType.getInstance())
-		//TODO: add methods in future after the inheritance system is complete, and Type type is available
-		/*
-		 * equalsTo
-		 * toString
-		 * getType
-		 * getParameters()
-		 * getReturnType()
-		 */
-		
 		this.containingType = containingType;
 		this.typed = !untyped;
 	}
@@ -79,19 +73,22 @@ public class JMethodType extends JFunctionType implements ExecutableType {
 	}
 	
 	public JMethodType(String name, JParameter[] params, JType returnType, HostedExecutable executable, JType containingType, boolean untyped) {
-		super(name, params, returnType, executable); //set parent to be default function (used to be JObjectType.getInstance())
-		//TODO: add methods in future after the inheritance system is complete, and Type type is available
-		/*
-		 * equalsTo
-		 * toString
-		 * getType
-		 * getParameters()
-		 * getReturnType()
-		 */
-		
+		super(name, params, returnType, executable); //set parent to be default function (used to be JObjectType.getInstance())		
 		this.containingType = containingType;
 		this.hosted = true;
 		this.typed = !untyped;
+	}
+	
+	@Override
+	public JMethodType bindParams(JType[] paramTypesToRemove) {
+		JParameter[] params = removeParams(paramTypesToRemove, !this.getMethodExecutable().isStatic());
+		if (hosted) {
+			// This should be already avoided at an upper layer. Hitting here is a bug.
+			throw new JSEError("Cannot bind a hosted method.");
+		} else {
+			return new JMethodType(
+				getName(), params, getReturnType(), (MethodExecutable)getExecutable(), containingType, !typed);
+		}
 	}
 	
 	/**
@@ -103,11 +100,29 @@ public class JMethodType extends JFunctionType implements ExecutableType {
 	}
 	
 	/**
-	 * If this method is hosted (implemented by platform language, not Julian).
-	 * @return true if hosted
+	 * If this method is a bridged implementation on the hosting platform (implemented by platform language, not Julian).
+	 * @return true if bridged
 	 */
-	public boolean isHosted(){
+	public boolean isBridged(){
 		return hosted;
+	}
+	
+	/**
+	 * If this method is mapped to an implementation on the hosting platform (implemented by platform language, not Julian).
+	 * @return true if mapped
+	 */
+	public boolean isMapped(){
+		return this.getExecutable() instanceof MappedExecutableBase;
+	}
+	
+	/**
+	 * If this method is implemented on the hosting platform, a.k.a. "hosted".
+	 * There are two ways a method can be hosted in JSE: by bridging or mapping.
+	 * 
+	 * @return true of it's hosted, whether bridged or mapped.
+	 */
+	public boolean isHosted() {
+		return isBridged() || isMapped();
 	}
 	
 	/**
@@ -146,7 +161,44 @@ public class JMethodType extends JFunctionType implements ExecutableType {
 	public String getSignature() {
 		JParameter[] params = this.getParams();
 		boolean skipFirst = params != null && params.length > 0 && params[0].getName().equals(Keywords.THIS);
-		return getName() + "(" + JParameter.getSignature(this.getParams(), skipFirst) + ")";
+		String fn = super.getName();
+		String sn = "(" + JParameter.getSignature(this.getParams(), skipFirst) + ")";
+		// System.out.println("getSignature: " + fn + " - " + sn);
+		return fn + sn;
+	}
+	
+	/**
+	 * Get the fully qualified method name. Use double colon to represent a static method.
+	 */
+	@Override
+	public String getFullFunctionName(boolean includeParams) {
+		boolean isSta = false;
+		if (this.isHosted()) {
+			HostedExecutable exe = this.getHostedExecutable();
+			if (exe != null && exe.isStatic()) {
+				isSta = true;
+			}
+		} else {
+			MethodExecutable exe = this.getMethodExecutable();
+			if (exe != null && exe.isStatic()) {
+				isSta = true;
+			}
+		}
+		
+		String name = this.containingType.getName() 
+			+ (isSta ? "::" : ".")
+			+ (includeParams ? getSignature() : super.getName());
+		
+		// System.out.println("getFullFunctionName: " + name);
+		return name;
+	}
+	
+	/**
+	 * The type name of a method is its full function name (FQ containing type name + signature)
+	 */
+	@Override
+	public String getName() {
+		return getFullFunctionName(true);
 	}
 
 	/**

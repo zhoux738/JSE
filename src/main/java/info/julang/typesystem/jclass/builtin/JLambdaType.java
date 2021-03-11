@@ -25,9 +25,13 @@ SOFTWARE.
 package info.julang.typesystem.jclass.builtin;
 
 import info.julang.execution.Executable;
+import info.julang.interpretation.errorhandling.IHasLocationInfoEx;
+import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.ExecutableType;
 import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.JReturn;
+import info.julang.util.Crypto;
+import info.julang.util.OSTool;
 
 /**
  * The lambda type is for lambda defined in script.
@@ -36,13 +40,65 @@ import info.julang.typesystem.jclass.JReturn;
  */
 public class JLambdaType extends JFunctionType implements ExecutableType {
 
-	public JLambdaType(JParameter[] params, Executable executable) {
+	private IHasLocationInfoEx locInfo;
+	private String uniqueName;
+	
+	public JLambdaType(IHasLocationInfoEx locInfo, JParameter[] params, Executable executable) {
 		super("<Lambda>", params, null, executable);
 		this.ret = JReturn.UntypedReturn;
+		this.locInfo = locInfo;
+	}
+	
+	@Override
+	public JLambdaType bindParams(JType[] paramTypesToRemove) {
+		JParameter[] params = removeParams(paramTypesToRemove, false);
+		return new JLambdaType(locInfo, params, this.getExecutable());
 	}
 
 	@Override
 	public FunctionKind getFunctionKind(){
 		return FunctionKind.LAMBDA;
+	}
+	
+	@Override
+	public String getFullFunctionName(boolean includeParams) {
+		if (!includeParams) {
+			return super.getName();
+		}
+		
+		if (uniqueName == null) {
+			synchronized (JLambdaType.class) {
+				if (uniqueName == null) {
+					uniqueName = createName();
+				}
+			}
+		}
+		
+		return uniqueName;
+	}
+	
+	/**
+	 * The type name of a lambda is its full function name (simplified location info + full location info hash)
+	 */
+	@Override
+	public String getName() {
+		return getFullFunctionName(true);
+	}
+	
+	/**
+	 * Create a name in <code>format: filename:linenumber:sha256{filepath}</code>
+	 */
+	private String createName() {
+		String fpath = OSTool.canonicalizePath(locInfo.getFileName());
+		String fname = OSTool.getFileSimpleName(fpath, true);
+		
+		int ln = locInfo.getLineNumber();
+		int cn = locInfo.getColumnNumber();
+		String lncn = ":" + ln + ":" + cn + ":";
+		String hash = Crypto.sha256(fpath + lncn, 8);
+		
+		String combined = fname + lncn + hash;
+		
+		return combined;
 	}
 }

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Random;
 
 import info.julang.interpretation.internal.FuncCallExecutor;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.typesystem.jclass.JClassMethodMember;
@@ -125,6 +126,7 @@ public class IOThreadPool {
         JClassMethodMember method = jct.getStaticMethodMembersByName(IOThreadWrapper.MethodName_createIOThread).getFirst();
         FuncCallExecutor func = new FuncCallExecutor(rt);
         ObjectValue ov = (ObjectValue)func.invokeMethodInternal(
+        	FuncValue.DUMMY,
             method.getMethodType(), 
             IOThreadWrapper.MethodName_createIOThread, 
             new JValue[0], 

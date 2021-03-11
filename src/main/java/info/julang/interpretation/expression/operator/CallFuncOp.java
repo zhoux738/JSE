@@ -42,6 +42,7 @@ import info.julang.interpretation.expression.operand.OperandKind;
 import info.julang.interpretation.expression.operand.StaticMemberOperand;
 import info.julang.interpretation.internal.FuncCallExecutor;
 import info.julang.memory.value.FuncValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.IMethodValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.MethodGroupValue;
@@ -129,11 +130,12 @@ public class CallFuncOp extends Operator {
 						throw new IllegalArgumentsException(calleeAsName, "No overloaded method matches the arguments.");
 					}
 					
-					return callMethod(context, mt, thisVal, calleeAsName, operands, false);
+					return callMethod(context, fv, mt, thisVal, calleeAsName, operands, false);
 				case FUNCTION:
 					// 1.2) a global function
 					return callFunction(
-						context, 
+						context,
+						fv,
 						(JFunctionType)fv.getType(), 
 						calleeAsName != null ? calleeAsName : "<function unknown>", 
 						operands);
@@ -208,11 +210,18 @@ public class CallFuncOp extends Operator {
 						} else {
 							atyp = aval.deref().getType();
 						}
-					} 
-
-					Convertibility conv = atyp.getConvertibilityTo(ptyp);
-					if(conv.isSafe()){
-						continue;
+					}
+					
+					if (atyp == null) {
+						if (ptyp == AnyType.getInstance() || ptyp.isObject()) {
+							// null matches any object type.
+							continue;
+						}
+					} else {
+						Convertibility conv = atyp.getConvertibilityTo(ptyp);
+						if(conv.isSafe()){
+							continue;
+						}
 					}
 					
 					found = false;
@@ -232,8 +241,8 @@ public class CallFuncOp extends Operator {
 	private Operand callMethodValue(
 		Context context, 
 		ObjectValue methodVal,
-		MethodGroupValue extMethodVals, // null if it's static (but not extension) method
-		JValue thisObj,  				// null if it's static (but not extension) method
+		FuncValue extMethodVals, // null if it's static (but not extension) method
+		JValue thisObj,  		 // null if it's static (but not extension) method
 		String methodName, 
 		Operand[] operands){
 		
@@ -279,13 +288,20 @@ public class CallFuncOp extends Operator {
 		// DESIGN NOTE: Extension methods do not participate in regular overloading resolution. If a member of 
 		// the same name is already defined, either directly or by inheritance, on the object's type, no 
 		// extension methods will be tried. 
+		MethodValue mv = null;
 		if (mTyp == null && emptyOverloaded && extMethodVals != null) {
 			if (args == null) {
 				args = retrieveArgumentValues(context, operands);
 			}
 			
 			// Extension method is indeed static, but we prepare the arguments as if it were instance-scoped.
-			MethodValue mv = selectOverloadedMethod(extMethodVals.getMethodValues(), args, /* isStatic */ false);
+			if (extMethodVals.getFuncValueKind() == JValueKind.METHOD_GROUP) {
+				mv = selectOverloadedMethod(
+					((MethodGroupValue)extMethodVals).getMethodValues(), args, /* isStatic */ false);
+			} else if (extMethodVals.getFuncValueKind() == JValueKind.METHOD) {
+				mv = (MethodValue)extMethodVals;
+			}
+			
 			if (mv != null){
 				mTyp = mv.getMethodType();
 			}
@@ -294,6 +310,7 @@ public class CallFuncOp extends Operator {
 		if (mTyp != null) {
 			return callMethod(
 				context,
+				mv != null ? mv : FuncValue.DUMMY,
 				mTyp,
 				thisObj, // Used for both instance and extension methods
 				methodName,
@@ -334,6 +351,7 @@ public class CallFuncOp extends Operator {
 	
 	private Operand callMethod(
 		Context context, 
+		IFuncValue func,
 		JMethodType mTyp, 
 		JValue thisObj, 
 		String methodName,
@@ -341,12 +359,13 @@ public class CallFuncOp extends Operator {
 		boolean looseTyping){
 		if(mTyp != null){
 			// Special handling for invoke()
-			if (thisObj instanceof FuncValue && JFunctionType.MethodName_invoke.equals(mTyp.getName())){
+			if (thisObj instanceof FuncValue 
+				&& JFunctionType.MethodName_invoke_FULL.equals(mTyp.getFullFunctionName(false))){
 				return invokeDynamic(context, (FuncValue)thisObj, operands, methodName);
 			}
 			
 			Argument[] args = prepareArguments(context, operands, mTyp, thisObj, methodName);
-			Operand res = Operand.createOperand(exec.invokeFunction(mTyp, methodName, args));
+			Operand res = Operand.createOperand(exec.invokeFunction(func, mTyp, methodName, args));
 			return res;
 		}
 		return null;
@@ -354,6 +373,7 @@ public class CallFuncOp extends Operator {
 
 	private Operand callFunction(
 		Context context, 
+		IFuncValue func,
 		JFunctionType funcType, 
 		String funcName, 
 		Operand[] operands){
@@ -361,7 +381,7 @@ public class CallFuncOp extends Operator {
 		Argument[] args = prepareArguments(context, operands, funcType, null, funcName);
 
 		Operand res = Operand.createOperand(
-			exec.invokeFunction(funcType, funcName, args));
+			exec.invokeFunction(func, funcType, funcName, args));
 		
 		return res;
 	}
@@ -376,21 +396,21 @@ public class CallFuncOp extends Operator {
 		switch(funcObj.getFuncValueKind()){
 		case FUNCTION:
 			JFunctionType jtp = (JFunctionType)funcObj.getType();
-			return callFunction(context, jtp, methodName, operands);
+			return callFunction(context, funcObj, jtp, methodName, operands);
 		case METHOD:
 			JMethodType jmtp = (JMethodType)funcObj.getType();
 			boolean sta = false;
-			if (jmtp.isHosted()){
+			if (jmtp.isBridged()){
 				sta = jmtp.getHostedExecutable().isStatic();
 			} else {
 				sta = jmtp.getMethodExecutable().isStatic();
 			}
 			
 			if (sta){
-				return callMethod(context, jmtp, null, jmtp.getName(), operands, true);
+				return callMethod(context, funcObj, jmtp, null, jmtp.getName(), operands, true);
 			} else {
 				MethodValue mv = (MethodValue)funcObj;
-				return callMethod(context, jmtp, mv.getThisValue(), jmtp.getName(), operands, true);
+				return callMethod(context, funcObj, jmtp, mv.getThisValue(), jmtp.getName(), operands, true);
 			}
 		case METHOD_GROUP:
 			// Matching rule for dynamic invocation on overloaded methods. Guideline - use as few default values as possible.

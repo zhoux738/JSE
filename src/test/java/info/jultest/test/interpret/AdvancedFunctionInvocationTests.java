@@ -107,12 +107,14 @@ public class AdvancedFunctionInvocationTests {
 
 	@Test
 	public void nonFunctionTest() throws EngineInvocationError {
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.IMPERATIVE, FEATURE, "fun_adv_06.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		Commons.resetTypeSystem();
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "fun_adv_06.jul"));
 		
-		EFCommons.validateBoolValue(gvt, "b0", true);
-		EFCommons.validateBoolValue(gvt, "b1", true);
-		EFCommons.validateBoolValue(gvt, "b2", true);
+		Commons.validateBoolValue(gvt, "b0", true);
+		Commons.validateBoolValue(gvt, "b1", true);
+		Commons.validateBoolValue(gvt, "b2", true);
 	}
 	
 	@Test

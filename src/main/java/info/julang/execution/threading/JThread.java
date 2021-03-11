@@ -42,6 +42,7 @@ import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.StackArea;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.jufc.SystemTypeUtility;
@@ -61,6 +62,7 @@ public class JThread {
 	private int id;
 	private String name;
 	private JThreadProperties props;
+	private IFuncValue func;
 	private Executable exec;
 	
 	// Thread runtime objects
@@ -86,7 +88,7 @@ public class JThread {
 	}
 	
 	public static JThread createNewThread(
-		int id, String name, StackAreaFactory stackFactory, EngineRuntime engineRt, Executable exec, NamespacePool nsPool, JThreadProperties props){
+		int id, String name, StackAreaFactory stackFactory, EngineRuntime engineRt, IFuncValue func, Executable exec, NamespacePool nsPool, JThreadProperties props){
 		JThread thread = new JThread();
 		thread.id = id;
 		thread.name = name;
@@ -94,6 +96,7 @@ public class JThread {
 		if (nsPool != null) {
 			thread.tstack.setNamespacePool(nsPool);
 		}
+		thread.func = func;
 		thread.exec = exec;
 		thread.engineRt = engineRt;
 		thread.props = props;
@@ -128,7 +131,7 @@ public class JThread {
 
 		// execute the thread in blocking mode
 		try {
-			Result result = exec.execute(threadRt, args);
+			Result result = exec.execute(threadRt, func, args);
 			if(!result.isSuccess()){
 				faulted = true;
 			}

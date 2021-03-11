@@ -35,6 +35,7 @@ import info.julang.interpretation.expression.Operator;
 import info.julang.interpretation.expression.operand.ValueOperand;
 import info.julang.interpretation.internal.FuncCallExecutor;
 import info.julang.memory.value.BasicValue;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
@@ -136,7 +137,7 @@ public class CastOp extends Operator {
 					JClassMethodMember jcmm = (JClassMethodMember)jct.getInstanceMemberByName(name);
 					JMethodType jmt = jcmm.getMethodType();
 					FuncCallExecutor fce = new FuncCallExecutor(rt);
-					JValue result = fce.invokeMethodInternal(jmt, name, new JValue[0], ov);
+					JValue result = fce.invokeMethodInternal(FuncValue.DUMMY, jmt, name, new JValue[0], ov);
 					return new ValueOperand(result);
 				}
 			}

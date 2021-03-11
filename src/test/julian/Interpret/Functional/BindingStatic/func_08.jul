@@ -1,0 +1,16 @@
+// Bind with N - 1, N, N + 1 args
+
+class MyCls {
+	static string combine(string s1, string s2) {
+		return s1 + s2;
+	}
+}
+
+var com1 = Function.bind(MyCls.combine, null, new var[]{ "a" });
+string ab = com1("b");
+
+var com2 = Function.bind(MyCls.combine, null, new var[]{ "m", "n" });
+string mn = com2();
+
+var com3 = Function.bind(MyCls.combine, null, new var[]{ "x", "y", "z" });
+string xy = com3();

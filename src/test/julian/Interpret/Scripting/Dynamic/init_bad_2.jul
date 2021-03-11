@@ -1,0 +1,21 @@
+bool f1 = false;
+
+try {
+  Dynamic dyn = new Dynamic() { 
+	10 = "abc"
+  };
+} catch (Exception ex) {
+  if (ex.getMessage().contains("create Dynamic object with a map initializer where the key is of type string")) {
+  	f1 = true;
+  }
+}
+
+string hello = "yo";
+
+Dynamic dyn = new Dynamic() { 
+  hello = "world", // key is "hello"
+  (hello) = "all" // key is "yo"
+};
+
+string world = dyn["hello"];
+string all = dyn["yo"];

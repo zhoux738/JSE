@@ -27,17 +27,21 @@ package info.julang.typesystem.jclass.builtin;
 import info.julang.execution.Argument;
 import info.julang.execution.ArgumentUtil;
 import info.julang.execution.Result;
+import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.JSEError;
 import info.julang.hosting.HostedExecutable;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.syntax.ParsedTypeName;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
+import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.TypeValue;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
+import info.julang.typesystem.JType;
 import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.jclass.Accessibility;
@@ -365,17 +369,46 @@ public class JObjectType extends JClassType implements IDeferredBuildable {
 			// Extract arguments
 			ObjectValue thisVal = ArgumentUtil.<ObjectValue>getThisValue(args);
 			
-			TypeValue tv = runtime.getTypeTable().getValue(thisVal.getType().getName());
-			ObjectValue ov = tv.getScriptTypeObject(runtime);
+			ObjectValue ov = null;
+			JType type = thisVal.getType();
 			
-			// Convert the result to Julian type
-			return new Result(TempValueFactory.createTempRefValue(ov));
+			JFunctionType ftyp = null;
+			String typeName = type instanceof JFunctionType 
+				? (ftyp = (JFunctionType)type).getFullFunctionName(true) 
+				: type.getName();
+			
+			ITypeTable tt = runtime.getTypeTable();
+			TypeValue tv = tt.getValue(typeName);
+			if (tv == null && ftyp != null) {
+				// Type for certain functions are added on demand.
+				FunctionKind fkind = ftyp.getFunctionKind();
+				switch (fkind) {
+				case METHOD:
+				case LAMBDA:
+					tt.addType(typeName, ftyp);
+					tv = tt.getValue(typeName);
+					break;
+				default:
+					break;
+				}
+			}
+			
+			if (tv != null) {
+				ov = tv.getScriptTypeObject(runtime);
+				// Convert the result to Julian type
+				return new Result(TempValueFactory.createTempRefValue(ov));
+			} else {
+				JClassType typ = (JClassType)runtime.getTypeTable().getType(ScriptType.FQCLASSNAME);
+				return new Result(RefValue.makeNullRefValue(
+					runtime.getStackMemory().currentFrame(), typ));
+			}
 		}
 	};
 	
 	//--------------- IDeferredBuildable ---------------//
 	
 	private ICompoundTypeBuilder builder;
+	private boolean sealable;
 	
 	@Override
 	public boolean deferBuild(){
@@ -383,26 +416,51 @@ public class JObjectType extends JClassType implements IDeferredBuildable {
 	}
 	
 	@Override
-	public void completeBuild(Context context) {
-		if (builder != null) {
-			JClassType jct = (JClassType)context.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME));	
+	public void postBuild(Context context) {
+		if (!sealable) {
+			
+			// The separation of sealable and builder check is mainly for unit tests, in which multiple tests run
+			// in the same class loader, essentially sharing the class prototypes. 
+			if (builder == null) {
+				sealable = true;
+				return;
+			}
+			
 			// getType()
+			// JClassType jct = (JClassType)context.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME));
+			JMethodType mt = null;
 			builder.addInstanceMember(
 				new JClassMethodMember(
 					builder.getStub(), MethodNames.getType.name(), Accessibility.PUBLIC, false, false,
-					new JMethodType(
+					mt = new JMethodType(
 						MethodNames.getType.name(),
 						new JParameter[]{
 							new JParameter("this", INSTANCE)
 						}, 
-						jct, 
+						AnyType.getInstance(), 
 					    METHOD_getType, 
 					    INSTANCE), 
 					null));
 			
+			JClassType jct = (JClassType)context.getTypeResolver().resolveType(ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME));	
+			mt.setReturnType(jct);
+			
+			sealable = true;
+		}
+	}
+	
+	@Override
+	public void seal() {
+		if (!sealable) {
+			throw new JSEError("Couldn't seal built-in type. Building was not complete.", JObjectType.class);
+		}
+		
+		if (builder != null) {
 			builder.seal();
 			builder = null;
 		}
+
+		sealable = false;
 	}
 
 	@Override
@@ -413,5 +471,10 @@ public class JObjectType extends JClassType implements IDeferredBuildable {
 	@Override
 	public void preInitialize() {
 		this.initialized = true;
+	}
+	
+	@Override
+	public BuiltinTypes getBuiltinType() {
+		return BuiltinTypes.OBJECT;
 	}
 }

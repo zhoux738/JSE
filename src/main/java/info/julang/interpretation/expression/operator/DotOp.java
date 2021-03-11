@@ -26,10 +26,13 @@ package info.julang.interpretation.expression.operator;
 
 import static info.julang.langspec.Operators.DOT;
 
+import java.util.List;
+
 import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
 import info.julang.external.interfaces.JValueKind;
+import info.julang.interpretation.IllegalOperandsException;
 import info.julang.interpretation.JNullReferenceException;
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.context.Context;
@@ -58,6 +61,8 @@ import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.TypeValue;
 import info.julang.memory.value.UntypedValue;
+import info.julang.memory.value.indexable.IIndexable;
+import info.julang.memory.value.operable.InitArgs;
 import info.julang.typesystem.IllegalMemberAccessException;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.JTypeKind;
@@ -66,6 +71,7 @@ import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.JClassMember;
 import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.MemberType;
+import info.julang.typesystem.jclass.builtin.JDynamicType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
 import info.julang.util.OneOrMoreList;
 
@@ -137,6 +143,7 @@ public class DotOp extends Operator {
 			break;
 		case TYPE:
 			lval = ((TypeOperand) lop).getValue();
+			break;
 		default:
 			throw new JSEError("Cannot apply '.' operator on a left opeand of type \"" + lop.getKind().toString() + "\".");
 		}
@@ -162,7 +169,8 @@ public class DotOp extends Operator {
 					String memberName = ((NameOperand)rop).getName();
 					ObjectValue lov = (ObjectValue) lval;
 					JValue mvalue = null; // Method value to be resolved
-					MethodGroupValue evalues = null; // Extension method values to be resolved
+					FuncValue evalues = null; // Extension method values to be resolved
+					boolean shouldReturnIndexOd = false;
 					
 					if(NameOperand.SUPER == lop){
 						// SPECIAL: super.fun()
@@ -178,17 +186,7 @@ public class DotOp extends Operator {
 									if(mvs.size() > 0){
 										mvalue = mvs.getFirst().getValue();
 									} else {
-										// Only query extension methods if there is no inherent members found.
-										//
-										// DESIGN NOTE: Extension methods do not participate in regular overloading resolution. If a member 
-										// of the same name is already defined, either directly or by inheritance, on the object's type, no 
-										// extension methods will be tried. 
-										OneOrMoreList<ObjectMember> extensions = 
-											((TypeTable)context.getTypTable()).getExtensionMethodsByClass(memberName, superType);
-										int exSize = extensions != null ? extensions.size() : 0;
-										if (exSize > 0) {
-											evalues = TempValueFactory.createTempMethodGroupValue(extensions);
-										}
+										evalues = getExtenionFuncValue(context, superType, memberName); 
 									}
 								} else if (thisType == JObjectType.getInstance()){
 									throw new RuntimeCheckException(
@@ -211,10 +209,14 @@ public class DotOp extends Operator {
 							leftDeclaredType = lov.getClassType();
 						}
 						
-						checkAccessibility(leftDeclaredType, memberName, context, false);
-
+						boolean isDynamic = JDynamicType.isDynamicType(lval);
+						
+						if (!isDynamic) {
+							checkAccessibility(leftDeclaredType, memberName, context, false);
+						}
+						
 						// Special. If we are accessing a member of method group, 
-						//   (1) assume the member is a non-overloaded instance method
+						//   (1) assume the member is a non-overloaded (but potentially overridden) instance method
 						//   (2) create another group that contains the method for each member. 
 						if (JValueKind.FUNCTION == lov.getBuiltInValueKind()){
 							FuncValue fv = (FuncValue)lov;
@@ -224,12 +226,21 @@ public class DotOp extends Operator {
 								MethodValue[] ims = new MethodValue[mvs.length]; // instance members of same name
 								for (int i = 0; i < ims.length; i++){
 									OneOrMoreList<ObjectMember> overloads = mvs[i].getMemberValueByClass(memberName, null, true);
-									if (overloads.size() == 1){
-										JValue tempVal = overloads.getFirst().getValue().deref();
-										if (tempVal != null && tempVal instanceof MethodValue){
-											ims[i] = (MethodValue)tempVal;
-											continue;
+									JValue tempVal = null;
+									int olSize = overloads.size();
+									if (olSize == 1){
+										tempVal = overloads.getFirst().getValue().deref();
+									} else if (olSize > 1) {
+										List<ObjectMember> ovList = overloads.getList();
+										ObjectMember firstOm = ovList.get(0);
+										if (firstOm.getClassRank() < ovList.get(1).getClassRank()) {
+											tempVal = firstOm.getValue().deref();
 										}
+									}
+
+									if (tempVal != null && tempVal instanceof MethodValue){
+										ims[i] = (MethodValue)tempVal;
+										continue;
 									}
 									
 									throw new UnknownMemberException(mvs[i].getType(), memberName, false);
@@ -256,34 +267,43 @@ public class DotOp extends Operator {
 							} else if (olSize > 1) {
 								mvalue = TempValueFactory.createTempMethodGroupValue(overloads);
 							}
-
+							
 							// DESIGN NOTE: Extension methods do not participate in regular overloading resolution. If a member 
 							// of the same name is already defined, either directly or by inheritance, on the object's type, no 
 							// extension methods will be tried. 
 							if (mvalue == null) {
-								OneOrMoreList<ObjectMember> extensions = 
-									((TypeTable)context.getTypTable()).getExtensionMethodsByClass(memberName, leftDeclaredType);
-								int exSize = extensions != null ? extensions.size() : 0;
-								if (exSize > 0) {
-									evalues = TempValueFactory.createTempMethodGroupValue(extensions);
-								}
+								evalues = getExtenionFuncValue(context, leftDeclaredType, memberName); 
+							}
+							
+							if (isDynamic && mvalue == null && evalues == null) {
+								// If we don't have either regular members or extension members, try to resolve it as
+								// dynamic property. This applies only when the type is, or inherits from, Dynamic.
+								shouldReturnIndexOd = true;
 							}
 						}
 						
 						// [END] REGULAR: id.fun()
 					}
 					
-					if(mvalue == null && evalues == null){
-						throw new UnknownMemberException(
-							superType != null ? superType : lval.getType(), memberName, false);
+					if (shouldReturnIndexOd) {
+						// For Dynamic object, create an index operand, effectively converting expression << dyn.a >> to << dyn["a"] >>
+						IIndexable lind = lval.asIndexer();
+						lind.initialize(rt, new InitArgs(context, false));
+						return Operand.createIndexOperand(
+							lind, TempValueFactory.createTempStringValue(memberName));
+					} else {
+						if(mvalue == null && evalues == null){
+							throw new UnknownMemberException(
+								superType != null ? superType : lval.getType(), memberName, false);
+						}
+						
+						return new InstMemberOperand(
+							mvalue,
+							superType != null ? superType :leftDeclaredType,
+							evalues,
+							lov,
+							memberName);			
 					}
-					
-					return new InstMemberOperand(
-						mvalue,
-						superType != null ? superType :leftDeclaredType,
-						evalues,
-						lov,
-						memberName);
 				} else if (lval.getKind() == JValueKind.TYPE){
 					ICompoundType typ = null;
 					
@@ -328,5 +348,20 @@ public class DotOp extends Operator {
 		}
 		
 		throw new JSEError("Cannot evaluate '.' operator.");
+	}
+
+	private FuncValue getExtenionFuncValue(Context context, ICompoundType type, String memberName) {
+		FuncValue evalues = null;
+		
+		OneOrMoreList<ObjectMember> extensions = 
+			((TypeTable)context.getTypTable()).getExtensionMethodsByClass(memberName, type);
+		int exSize = extensions != null ? extensions.size() : 0;
+		if (exSize == 1) {
+			evalues = (FuncValue)extensions.getFirst().getValue();
+		} else if (exSize > 1) {
+			evalues = TempValueFactory.createTempMethodGroupValue(extensions);
+		}
+		
+		return evalues;
 	}
 }

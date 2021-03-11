@@ -31,6 +31,7 @@ import info.julang.execution.Result;
 import info.julang.execution.security.UnderprivilegeException;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.memory.StackArea;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ValueUtilities;
 import info.julang.modulesystem.naming.FQName;
@@ -66,7 +67,8 @@ public abstract class HostedExecutable implements Executable {
 		this.isStatic = isStatic;
 	}
 	
-	public Result execute(ThreadRuntime runtime, Argument[] args){
+	// Func value is not used.
+	public Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args){
 		try {
 			// Replicate arguments in the current stack frame.
 			// (We do not have a dedicated memory area for platform frames)

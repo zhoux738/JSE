@@ -65,6 +65,7 @@ public final class Commons {
 	
 	public static class Groups {
 		public static final String APPLICATION = "Application";
+		public static final String SCRIPTING   = "Scripting";
 		public static final String FUNCTIONAL  = "Functional";
 		public static final String HOSTING     = "Hosting";
 		public static final String IMPERATIVE  = "Imperative";

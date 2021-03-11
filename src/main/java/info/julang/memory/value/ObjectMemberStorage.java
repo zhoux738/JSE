@@ -24,7 +24,14 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import info.julang.execution.symboltable.TypeTable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import info.julang.external.exceptions.JSEError;
 import info.julang.memory.MemoryArea;
 import info.julang.typesystem.JType;
@@ -39,14 +46,6 @@ import info.julang.typesystem.jclass.MemberType;
 import info.julang.typesystem.jclass.builtin.JConstructorType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.util.OneOrMoreList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * A class for hierarchically storing member values of an object.

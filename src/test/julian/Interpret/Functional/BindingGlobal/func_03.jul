@@ -1,0 +1,14 @@
+// baseline: bind this and multiple arguments to a global function
+class MyVal {
+	string str = "pf";
+}
+
+string combine(int i, string s, char c) {
+	return (string)this.str + i + s + c;
+}
+
+var combineChar = Function.bind(combine, new MyVal(), new var[] { 10, "-" });
+
+string res = combineChar('z');
+
+//Console.println(res);

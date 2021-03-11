@@ -36,6 +36,7 @@ public class AOTRawScriptInfo$Exception extends RawScriptInfo {
         m_classes.add(new RawClassInfo("UndefinedSymbolException", new AOTClassDeclInfo_UndefinedSymbolException (this)));
         m_classes.add(new RawClassInfo("NamespaceConflictException", new AOTClassDeclInfo_NamespaceConflictException (this)));
         m_classes.add(new RawClassInfo("CyclicDependencyException", new AOTClassDeclInfo_CyclicDependencyException (this)));
+        m_classes.add(new RawClassInfo("IllegalBindingException", new AOTClassDeclInfo_IllegalBindingException (this)));
 
         m_requirements = new ArrayList<RequirementInfo>();
         m_requirements.add(new RequirementInfo("System", null));
@@ -487,6 +488,64 @@ public class AOTRawScriptInfo$Exception extends RawScriptInfo {
         
         public String getName(){
             return "CyclicDependencyException";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.PUBLIC;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_IllegalBindingException extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_IllegalBindingException(RawScriptInfo minfo) {
+            super(minfo);
+            
+            m_parentNames.add(ParsedTypeName.makeFromFullName("RuntimeCheckException"));
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.Lang.IllegalBindingException");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "IllegalBindingException";
         }
 
         public ClassSubtype getSubtype() {

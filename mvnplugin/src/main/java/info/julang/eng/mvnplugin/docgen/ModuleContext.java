@@ -178,6 +178,7 @@ public class ModuleContext {
 	public TypeInfo getTypeInfo(String simpleName, int dimension, NamespacePool ns){
 		// 1) check built-in
 		switch(simpleName){
+		// primitive
 		case "int": 
 		case "byte": 
 		case "float": 
@@ -185,14 +186,17 @@ public class ModuleContext {
 		case "char": 
 		case "void":
 			return new TypeInfo("", simpleName, dimension, null, builtInTyps.get(simpleName), null);
+		// compound
 		case "Function": 
 		case "Object":
 		case "Array": 
 		case "Enum":
 		case "Attribute":
 		case "Any":
+		case "Dynamic":
 		case "string": 
 			return new TypeInfo("", simpleName, dimension, ClassSubtype.CLASS, builtInTyps.get(simpleName.toLowerCase()), null);
+		// aliases
 		case "String":
 		case "Byte":
 		case "Float":

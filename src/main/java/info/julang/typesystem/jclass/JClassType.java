@@ -26,8 +26,15 @@ package info.julang.typesystem.jclass;
 
 import java.util.List;
 
+import info.julang.execution.Argument;
 import info.julang.execution.namespace.NamespacePool;
+import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.interfaces.JValueKind;
+import info.julang.interpretation.context.Context;
+import info.julang.interpretation.internal.NewObjExecutor;
+import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.ObjectValue;
 import info.julang.typesystem.IMapped;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.PlatformType;
@@ -35,6 +42,7 @@ import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.builtin.JAttributeType;
 import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
+import info.julang.typesystem.jclass.jufc.System.ScriptType;
 import info.julang.util.OneOrMoreList;
 
 /*
@@ -415,4 +423,31 @@ public class JClassType extends JInterfaceType implements IMapped {
 		return res;
 	}
 
+	/**
+	 * Create a <code><font color="green">System.Type</font></code> object wrapping the given type.
+	 * 
+	 * @param runtime
+	 * @param type The type inside JSE internals.
+	 * @return an object value of type <code><font color="green">System.Type</font></code> that represents the specified type in Julian scripting environment.
+	 */
+	public static ObjectValue createScriptTypeObject(ThreadRuntime runtime, JType type) {
+		JClassType typeClassType = (JClassType) runtime.getTypeTable().getType(ScriptType.FQCLASSNAME);
+		if (typeClassType == null) {
+			Context context = Context.createSystemLoadingContext(runtime);
+			runtime.getTypeResolver().resolveType(context, ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME), true);
+			typeClassType = (JClassType) runtime.getTypeTable().getType(ScriptType.FQCLASSNAME);
+		}
+		
+		JClassConstructorMember typeClassCtor = typeClassType.getClassConstructors()[0];
+		
+		NewObjExecutor noe = new NewObjExecutor(runtime);
+		ObjectValue ov = noe.newObjectInternal(typeClassType, typeClassCtor, new Argument[0]);
+		
+		ScriptType st = new ScriptType();
+		st.setType(type);
+		HostedValue hv = (HostedValue)ov;
+		hv.setHostedObject(st);
+		
+		return ov;
+	}
 }

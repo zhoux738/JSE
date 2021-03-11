@@ -182,7 +182,6 @@ PRIVATE :      'private';
 PROTECTED :    'protected';
 PUBLIC :       'public';
 RETURN :       'return';
-SEALED:        'sealed';         // RESERVED
 STATIC :       'static';
 STRING :       'string';
 SUPER:         'super';
@@ -428,7 +427,6 @@ builtin_type
     | CHAR           // char
     | VAR            // var
     | VOID           // void
-    | ANY            // any
     ;
   
 class_type 
@@ -566,6 +564,7 @@ function_call
 
 creator // We cannot reuse type here because of ambiguity it creates with DOT rule, so we replicate it as created_type_name
     : created_type_name ( object_creation_expression | array_creation_expression )
+    | map_initializer // the syntax shortcut for creating dynamic object, i.e. "new { ... }"
     ;
 
 created_type_name
@@ -588,9 +587,19 @@ assignment_operator
     ;
 
 object_creation_expression
-    : LEFT_PAREN argument_list? RIGHT_PAREN
+    : LEFT_PAREN argument_list? RIGHT_PAREN map_initializer?
     ;
-    
+
+// For object creation, may also provide a map initializer. However, the instantiated class
+// must have implemented System.Util.IMapInitializable interface to support this convenience.
+map_initializer
+    :   '{' (kvp_initializer (',' kvp_initializer)* (',')? )? '}'
+    ;
+
+kvp_initializer
+    :   primary '=' expression
+    ;
+        
 // For array creation, either leave no length within brackets and use an initializer, 
 // or specify dimensions for all the dimensions. For multi-dimensional array, the 
 // length at last dimension can be left undefined.

@@ -1,0 +1,10 @@
+// without autobind == true, can still bind a lambda literal
+var dyn = new { 
+	a = "xyz", 
+	f = () => this.a,
+	g = (i) => { this.a += ("_" + i); }
+};
+
+string xyz = dyn.f();
+dyn.g(1);
+string xyz_1 = dyn.a;

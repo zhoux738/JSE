@@ -1,0 +1,26 @@
+class My {
+	char c;
+}
+
+My m = new My();
+m.c = 'z';
+
+int _i = 10;
+char _c = 'c';
+string _xyz = "xyz";
+
+string getPropName() {
+	return "d";
+}
+
+Dynamic dyn = new Dynamic() { 
+	a = _i,
+	"b" = _c,
+	'c' = m,
+	(getPropName()) = "xy" + "z"
+};
+
+int i10 = dyn.a;
+char c = dyn.b;
+char z = dyn.c.c;
+string xyz = dyn.d;

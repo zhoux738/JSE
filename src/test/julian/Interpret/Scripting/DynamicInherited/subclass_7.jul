@@ -1,0 +1,47 @@
+// ctor with config
+import System.Collection;
+import System.Util;
+import System.Lang;
+
+class GDyn : Dynamic {
+	GDyn() : super() { 
+		this.gval = "abc";
+	}
+	
+	void addProp(string key, var value) {
+		at(key, value);
+	}
+}
+
+class MDyn : GDyn {
+	MDyn() : super() {
+		this.mval = "def";
+	}
+}
+
+class CDyn : MDyn {
+	CDyn() : super() { 
+		this.cval = "ghi";
+	}
+	
+	void addProp() {
+		addProp("key", "xyz"); // call impl from a grandparent
+	}
+}
+
+var m1 = new CDyn() { 
+	attr = 10
+};
+
+int i4 = 0;
+for (var entry : m1) {
+	// Console.println(entry.key + "=" + entry.value);
+	if (entry.key != null) {
+		i4++;
+	}
+}
+
+string abc = m1.gval;
+string def = m1.mval;
+string ghi = m1.cval;
+int i10 = m1.attr;

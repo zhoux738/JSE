@@ -25,6 +25,7 @@ SOFTWARE.
 package info.julang.typesystem.jclass.builtin;
 
 import info.julang.interpretation.context.Context;
+import info.julang.typesystem.BuiltinTypes;
 import info.julang.typesystem.jclass.ICompoundTypeBuilder;
 
 /**
@@ -39,6 +40,11 @@ import info.julang.typesystem.jclass.ICompoundTypeBuilder;
 public interface IDeferredBuildable {
 	
 	/**
+	 * The built-in type. This is the type token used before the formal establishment of runtime type system.
+	 */
+	BuiltinTypes getBuiltinType();
+	
+	/**
 	 * Set the type builder.
 	 * 
 	 * @param builder
@@ -46,15 +52,20 @@ public interface IDeferredBuildable {
 	void setBuilder(ICompoundTypeBuilder builder);
 
 	/**
-	 * Complete type building.
+	 * Perform deferred type building.
 	 * 
 	 * @param context
 	 */
-	void completeBuild(Context context);
+	void postBuild(Context context);
 
 	/**
 	 * To be called after the type is sealed.
 	 */
 	void preInitialize();
+	
+	/**
+	 * Complete type building.
+	 */
+	void seal();
 	
 }

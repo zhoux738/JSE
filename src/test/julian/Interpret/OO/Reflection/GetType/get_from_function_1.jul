@@ -1,0 +1,25 @@
+class DEF {
+	void fun(){
+		
+	}
+}
+
+DEF d = new DEF();
+Function f = d.fun;
+Type t = f.getType();
+bool hasType = t != null && t.toString().contains("DEF.fun");
+
+int methodCnt = 0;
+bool hasBind = false;
+System.Reflection.Method[] methods = t.getMethods();
+for (var m : methods) {
+	if (m.getName().equals("getParameters")){
+		methodCnt++;
+	} else if (m.getName().equals("invoke")){
+		methodCnt++;
+	} else if (m.getName().equals("hashCode")){
+		methodCnt++;
+	} else if (m.getName().equals("bind")){
+		hasBind = true;
+	}
+}

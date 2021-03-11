@@ -1,0 +1,35 @@
+// map initializer
+class MyDyn : Dynamic {
+	string prop;
+	
+	MyDyn(string prop){
+		this.prop = prop;
+	}
+	
+	MyDyn() : this("none") { 
+	}
+}
+
+var print(var val){
+	// Console.println(val);
+	return val;
+}
+
+String abc, def, ghi, xyz;
+bool succ1 = false;
+int i10;
+
+MyDyn m1 = new MyDyn("abc"){ a = 10 };
+i10 = m1.a;
+abc = m1.prop;
+try {
+	MyDyn m2 = new MyDyn("abc"){ 5 = 10 }; // Invalid key type
+} catch (System.Lang.RuntimeCheckException ex) {
+	// Can only create Dynamic object with a map initializer where the key is of type string or char.
+	succ1 = ex.getMessage().contains("initializer");
+}
+MyDyn m3 = new MyDyn(){ x = 10, x = "def" }; // Last write wins
+def = print(m3.x);
+MyDyn m4 = new MyDyn("xyz"){ prop = "ghi" }; // Here we are adding a property "prop"
+xyz = print(m4.prop); // This will be accessing the member
+ghi = print(m4["prop"]); // Since the name is hidden, must access the property by indexer syntax

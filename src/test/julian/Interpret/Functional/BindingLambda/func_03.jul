@@ -1,0 +1,36 @@
+// baseline: bind this and multiple arguments to a lambda.
+// In particular, we want to see that the bound 'this' hides the resident 'this'.
+class MyVal {
+	string prefix = "pf";
+	string _str = "";
+	string str(string s) {
+		_str += s;
+		return prefix;
+	}
+	Function getCombine() {
+		return (int i, string s, char c) => this.str(s) + i + s + c;
+	}
+}
+
+Function getCombine(){
+	return (int i, string s, char c) => this.str(s) + i + s + c;
+}
+
+MyVal mv = new MyVal();
+
+// lambda from instance method
+var combineChar = Function.bind(new MyVal().getCombine(), mv, new var[] { 10, "-" });
+string res1 = combineChar('z');
+
+// lambda from function
+var combineChar2 = Function.bind(getCombine(), mv, new var[] { 11, "_" });
+string res2 = combineChar2('y');
+
+// lambda inline
+var combineChar3 = Function.bind(
+	(int i, string s, char c) => this.str(s) + i + s + c,
+	mv,
+	new var[] { 12, "%" });
+string res3 = combineChar3('x');
+
+string acc = mv._str;

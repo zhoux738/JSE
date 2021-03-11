@@ -41,6 +41,7 @@ import info.julang.memory.value.BasicArrayValue;
 import info.julang.memory.value.BoolValue;
 import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.VoidValue;
@@ -379,7 +380,7 @@ public class ScriptSocketStream extends JFileStream implements ISocketEventListe
 				new Executable(){
 
 					@Override
-					public Result execute(ThreadRuntime runtime, Argument[] args) throws EngineInvocationError {
+					public Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) throws EngineInvocationError {
 				    	try {
 				    		// System.out.println("Read " + read);
 				    		

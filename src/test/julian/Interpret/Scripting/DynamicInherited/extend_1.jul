@@ -1,0 +1,39 @@
+// type inspection
+import System.Collection;
+import System.Util;
+import System.Lang;
+
+static class MyDynExt {
+
+	static var getValue(MyDyn this) {
+		return this.value;
+	}
+
+	static var foo(MyDyn this) {
+		return this["bar"];
+	}
+	
+}
+class MyDyn : Dynamic, MyDynExt {
+
+}
+
+var m1 = new MyDyn() { 
+	value = 10
+};
+
+var print(var val){
+	// Console.println(val);
+	return val;
+}
+
+int i10 = print(m1.getValue());
+m1.bar = "abc";
+string abc = print(m1.foo());
+
+bool succ1 = false;
+try {
+	m1.foo = "xyz"; // Can't do this, since 'foo' is already present as a member function, not a property.
+} catch (IllegalAssignmentException ex) {
+	succ1 = true;
+}

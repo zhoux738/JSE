@@ -42,6 +42,7 @@ import info.julang.memory.value.ByteValue;
 import info.julang.memory.value.CharValue;
 import info.julang.memory.value.EnumValue;
 import info.julang.memory.value.FloatValue;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
@@ -147,7 +148,8 @@ public class JConsole {
 		}
 
 		FuncCallExecutor exec = new FuncCallExecutor(rt);
-		JValue res = exec.invokeFunction(member.getMethodType(), JObjectType.MethodNames.toString.name(), Argument.CreateThisOnlyArguments(ov));
+		JValue res = exec.invokeFunction(
+			FuncValue.DUMMY, member.getMethodType(), JObjectType.MethodNames.toString.name(), Argument.CreateThisOnlyArguments(ov));
 		res = res.deref();
 		if(res == RefValue.NULL){
 			ps.print("null");

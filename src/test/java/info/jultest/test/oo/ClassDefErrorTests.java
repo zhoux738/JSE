@@ -35,17 +35,17 @@ public class ClassDefErrorTests extends ExceptionTestsBase {
 	
 	@Test
 	public void duplicateReturnTypesTest() throws EngineInvocationError {
-		validateSyntaxException("item_04.jul", 4);
+		validateSyntaxException("item_04.jul", 5);
 	}
 	
 	@Test
 	public void duplicateReturnTypesTest2() throws EngineInvocationError {
-		validateSyntaxException("item_05.jul", 4);
+		validateSyntaxException("item_05.jul", 5);
 	}
 	
 	@Test
 	public void illegalOrderOfModifiersTest() throws EngineInvocationError {
-		validateSyntaxException("item_06.jul", 4);
+		validateSyntaxException("item_06.jul", 5);
 	}
 	
 	@Test
@@ -60,7 +60,7 @@ public class ClassDefErrorTests extends ExceptionTestsBase {
 	
 	@Test
 	public void badSyntaxTest() throws EngineInvocationError {
-		validateSyntaxException("item_09.jul", 4);
+		validateSyntaxException("item_09.jul", 5);
 	}
 	
 	@Test

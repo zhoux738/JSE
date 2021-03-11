@@ -24,6 +24,7 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.builtin;
 
+import info.julang.external.exceptions.JSEError;
 import info.julang.hosting.HostedExecutable;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.VoidType;
@@ -65,6 +66,12 @@ public class JConstructorType extends JFunctionType implements ExecutableType {
 		super(name, params, null, executable);
 		hosted = true;
 		this.containingType = containingType;
+	}
+	
+	@Override
+	public JFunctionType bindParams(JType[] paramTypesToRemove) {
+		// JFunctionType.bind() should have already avoided calling this.
+		throw new JSEError("Should never bind a constructor");
 	}
 	
 	/**
@@ -125,5 +132,13 @@ public class JConstructorType extends JFunctionType implements ExecutableType {
 	@Override
 	public String getSignature() {
 		return containingType.getName() + "(" + JParameter.getSignature(this.getParams(), true) + ")";
+	}
+	
+	/**
+	 * Get the fully qualified ctor name.
+	 */
+	@Override
+	public String getFullFunctionName(boolean includeParams) {
+		return includeParams ? getSignature() : containingType.getName();
 	}
 }

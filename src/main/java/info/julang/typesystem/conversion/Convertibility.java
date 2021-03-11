@@ -89,7 +89,7 @@ public enum Convertibility {
 	EQUIVALENT(true),
 	
 	/**
-	 * After conversion, the type is downgraded in terms of functionality.
+	 * After conversion, the type appears higher in the hierarchy, but most likely is downgraded in terms of functionality.
 	 * <pre>
 	 * Example: class A -> class B, where A derives from (is a subclass of) B
 	 * </pre>

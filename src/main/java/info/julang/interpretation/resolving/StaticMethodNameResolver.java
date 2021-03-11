@@ -26,6 +26,7 @@ package info.julang.interpretation.resolving;
 
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.execution.symboltable.LocalBindingTable;
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.langspec.Keywords;
 import info.julang.memory.value.JValue;
@@ -47,30 +48,43 @@ public class StaticMethodNameResolver implements INameResolver {
 	
 	private ITypeTable tt;
 	
+	private LocalBindingTable lbt;
+	
 	private ICompoundType type;
 	
 	private TypeValue tvalue;
 	
 	private IMemberNameResolver memResolver;
 	
-	public StaticMethodNameResolver(IVariableTable vt, ITypeTable tt, ICompoundType type, IMemberNameResolver memResolver){
+	public StaticMethodNameResolver(
+		IVariableTable vt, ITypeTable tt, LocalBindingTable lbt, ICompoundType type, IMemberNameResolver memResolver){
 		this.vt = vt;
 		this.tt = tt;
+		this.lbt = lbt;
 		this.type = type;
 		this.memResolver = memResolver != null ? memResolver : NoCacheMemberNameResolver.INSTANCE;
 	}
 	
 	@Override
 	public JValue resolve(String id){
-		// 1) try as variable; but do not query global variable table.
+		// 1) try pre-bindings 
+		boolean isThis = "this".equals(id);
+		if (isThis && lbt != null) {
+			JValue v = lbt.getVariable(id);
+			if(v != null){
+				return v;
+			}
+		}
+		
+		// 2) try as variable; but do not query global variable table.
 		JValue v = vt.getVariable(id, false);
 		if(v != null){
 			return v;
-		} else if (Keywords.THIS.equals(id)) {
+		} else if (isThis) {
 			throw new RuntimeCheckException("'this' cannot be used in non-extension static method, which must name the first parameter as 'this'.");
 		}
 		
-		// 2) static member?
+		// 3) static member?
 		v = memResolver.resolve(id);
 		if (v == null) {
 			// Havn't resolved this id before
@@ -85,13 +99,11 @@ public class StaticMethodNameResolver implements INameResolver {
 			return v;
 		}
 		
-		// 3) try as type
+		// 4) try as type
 		v = tt.getValue(id);
 		if(v != null){
 			return v;
 		}
-		
-		// throw new UndefinedVariableNameException(id);
 		
 		return null;
 	}	

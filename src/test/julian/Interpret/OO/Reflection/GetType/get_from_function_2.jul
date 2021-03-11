@@ -1,0 +1,22 @@
+// WARNING: This test is sensitive to the position (file name, line/column #) where the lambda is defined.
+Function f = () => {};
+Type t = f.getType();
+
+// Console.println(t);
+
+bool hasType = t != null && t.toString().contains("get_from_function_2.jul:2:14");
+
+int methodCnt = 0;
+bool hasBind = false;
+System.Reflection.Method[] methods = t.getMethods();
+for (var m : methods) {
+	if (m.getName().equals("getParameters")){
+		methodCnt++;
+	} else if (m.getName().equals("invoke")){
+		methodCnt++;
+	} else if (m.getName().equals("hashCode")){
+		methodCnt++;
+	} else if (m.getName().equals("bind")){
+		hasBind = true;
+	}
+}

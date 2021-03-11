@@ -244,9 +244,9 @@ public class BuiltInClassDocParser extends BuiltInDocParserBase {
 				if (leng == jpms.length - offset){ // JClassMethodMember contains 'this' as 0th arg; doc doesn't.
 					boolean matched = true;
 					for(int i = 0; i < leng; i++) {
-						String nameFromDoc = typNames[i];
+						String nameFromDoc = formalize(typNames[i]);
 						String nameFromRuntime = jpms[i + offset].getType().getName();
-						if (!nameFromDoc.equals(nameFromRuntime)){
+						if (!nameFromDoc.equalsIgnoreCase(nameFromRuntime)){
 							matched = false;
 							break;
 						}
@@ -283,4 +283,13 @@ public class BuiltInClassDocParser extends BuiltInDocParserBase {
 		}
 	}
 
+	private String formalize(String name) {
+		if (name.equalsIgnoreCase("int")){
+			return "Integer";
+		} else if (name.contains("[int]")) {
+			return name.replace("[int]", "[Integer]");
+		} else{
+			return name;
+		}
+	}
 }

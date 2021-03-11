@@ -66,7 +66,7 @@ public class System_Util_IIterator_Tests extends ExceptionTestsBase {
 			"System.ArrayOutOfRangeException",
 			"Access to array out of range. Index=3, Max=2.",
 			new String[]{
-				"next(<default>.MyStream)  (/.../iter_fault_1.jul, 18)"
+				"<default>.MyStream.next(<default>.MyStream)  (/.../iter_fault_1.jul, 18)"
 			},
 			"iter_fault_1.jul",
 			28);

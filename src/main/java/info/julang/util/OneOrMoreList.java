@@ -155,6 +155,11 @@ public class OneOrMoreList<T> implements Iterable<T> {
 		// Replicate references in a new list.
 		return new ArrayList<T>(this.list);
 	}
+	
+	@Override
+	public String toString() {
+		return "[" + (preListSize != LIST_INITIALIZED ? preListSize : (list != null ? list.size() : "")) + "]";
+	}
 
 	private void init() {
 		if(preListSize != LIST_INITIALIZED){

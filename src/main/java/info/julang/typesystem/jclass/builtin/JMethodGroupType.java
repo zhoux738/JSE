@@ -77,4 +77,15 @@ public class JMethodGroupType extends JFunctionType {
 	public JParameter[] getParams() {
 		throw new JSEError("Cannot demand parameters from a method group directly.");
 	}
+	
+	@Override
+	public JFunctionType bindParams(JType[] paramTypesToRemove) {
+		// JFunctionType.bind() should have already avoided calling this.
+		throw new JSEError("Should never bind a constructor");
+	}
+	
+	@Override
+	public String getFullFunctionName(boolean includeParams) {
+		throw new JSEError("Cannot demand full function name from a method group directly.");
+	}
 }

@@ -43,6 +43,7 @@ import info.julang.interpretation.resolving.IMemberNameResolver;
 import info.julang.interpretation.statement.StatementOption;
 import info.julang.langspec.Keywords;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.JValueBase;
 import info.julang.memory.value.ObjectValue;
@@ -146,6 +147,7 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 	
 	@Override
 	protected Context prepareContext(
+		IFuncValue func,
 		MemoryArea frame, 
 		MemoryArea heap,
 		IVariableTable varTable, 
@@ -159,7 +161,7 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 		// because the instance members are held in distinct storage.
 		MethodMemberNameResolver mres = isStatic ? this.staticResolver : new MethodMemberNameResolver();
 		return new MethodContext(
-			frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread, 
+			func, frame, heap, varTable, typTable, typResolver, mm, namespaces, io, jthread, 
 			containingType, isStatic, ExecutionContextType.InMethodBody, mres); 
 			// Technically setting exe-context type to InMethodBody is not correct. We should
 			// deduce this value from the context/runtime. But it's fine so far because 
@@ -168,7 +170,7 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 	}
 	
 	@Override
-	protected void prepareArguments(Argument[] args, Context ctxt) {
+	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
 		IVariableTable varTable = ctxt.getVarTable();
 		
 		// Add the first argument
@@ -178,19 +180,13 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 			JValue firstVal = firstArg.getValue();
 			
 			if (Keywords.THIS.equals(firstName) && this.isStatic) { // TODO: Consider always creating reference wrapping this value.
-				// Special treatment for 'this' arg
-				// (1) Wrap it in a ref value stored in the current frame
+				// Special treatment for 'this' arg in extension method (which is static):
+				// Wrap it in a ref value stored in the current frame
 				JValue firstValDeref = firstVal.deref();
 				JValueBase val = new RefValue(
 					ctxt.getFrame(),
-					(ObjectValue)firstValDeref.deref(),
+					(ObjectValue)firstValDeref,
 					(ICompoundType)firstValDeref.getType());
-				
-				// TODO: Consider always creating reference wrapping this value.
-//				// (2) Set to const unless it's a static method.
-//				if (!this.isStatic) {
-//					val.setConst(true);
-//				}
 				
 				firstVal = val;
 			}
@@ -203,6 +199,8 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 			Argument arg = args[i];
 			varTable.addVariable(arg.getName(), arg.getValue());
 		}
+		
+		super.addLocalBindings(ctxt, func);
 	}
 	
 	//---------------------------- IStackFrameInfo ----------------------------//

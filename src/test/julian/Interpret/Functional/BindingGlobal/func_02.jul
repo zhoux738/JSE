@@ -1,0 +1,10 @@
+// baseline: bind one argument to a global function
+int get(int i) {
+	return i;
+}
+
+var get3 = Function.bind(get, null, new var[] { 3 });
+
+int res = get3();
+
+// Console.println(res);

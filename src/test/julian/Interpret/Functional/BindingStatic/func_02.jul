@@ -1,0 +1,12 @@
+// baseline: bind one argument to a static method
+class MyCls {
+	static int get(int i) {
+		return i;
+	}
+}
+
+var get3 = Function.bind(MyCls.get, null, new var[] { 3 });
+
+int res = get3();
+
+// Console.println(res);

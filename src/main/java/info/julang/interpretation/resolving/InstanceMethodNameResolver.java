@@ -26,9 +26,11 @@ package info.julang.interpretation.resolving;
 
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.execution.symboltable.LocalBindingTable;
 import info.julang.interpretation.context.ContextType;
 import info.julang.interpretation.context.IContextAware;
 import info.julang.interpretation.context.MethodContext;
+import info.julang.memory.value.DynamicValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectMember;
 import info.julang.memory.value.ObjectValue;
@@ -49,17 +51,22 @@ public class InstanceMethodNameResolver implements INameResolver, IContextAware<
 	
 	private ITypeTable tt;
 	
+	private LocalBindingTable lbt;
+	
 	private ICompoundType type;
 	
 	private ObjectValue thisValue;
+	
+	// private JValue thisValueRef;
 	
 	private MethodContext context;
 	
 	private IMemberNameResolver memResolver;
 	
-	public InstanceMethodNameResolver(IVariableTable vt, ITypeTable tt, ICompoundType type, IMemberNameResolver memResolver){
+	public InstanceMethodNameResolver(IVariableTable vt, ITypeTable tt, LocalBindingTable lbt, ICompoundType type, IMemberNameResolver memResolver){
 		this.vt = vt;
 		this.tt = tt;
+		this.lbt = lbt;
 		this.type = type;
 		this.memResolver = memResolver != null ? memResolver : NoCacheMemberNameResolver.INSTANCE;
 	}
@@ -71,21 +78,30 @@ public class InstanceMethodNameResolver implements INameResolver, IContextAware<
 	
 	@Override
 	public JValue resolve(String id){
-		// 1) "this" or "super"?
-		if("this".equals(id) || "super".equals(id)){
+		// 1) try pre-bindings 
+		boolean isThis = "this".equals(id);
+		if (isThis && lbt != null) {
+			JValue v = lbt.getVariable(id);
+			if(v != null){
+				return v;
+			}
+		}
+		
+		// 2) "this" or "super"?
+		if(isThis || "super".equals(id)){
 			//KnownTokens.THIS_T.getLiteral()
 			//KnownTokens.SUPER_T.getLiteral()
 			initThisValue();
-			return thisValue;
+			return thisValue; // TODO: Return thisValueRef instead.
 		}
 		
-		// 2) try as variable; but do not query global variable table.
+		// 3) try as variable; but do not query global variable table.
 		JValue v = vt.getVariable(id, false);
 		if(v != null){
 			return v;
 		}
 		
-		// 3) instance member?
+		// 4) instance member?
 		v = memResolver.resolve(id);
 		if (v == null) {
 			// Havn't resolved this id before
@@ -100,7 +116,7 @@ public class InstanceMethodNameResolver implements INameResolver, IContextAware<
 			return v;
 		}
 		
-		// 4) try as type
+		// 5) try as type
 		v = tt.getValue(id);
 		if(v != null){
 			return v;
@@ -111,12 +127,22 @@ public class InstanceMethodNameResolver implements INameResolver, IContextAware<
 	
 	private void initThisValue() {
 		if(thisValue == null) {
-			thisValue = (ObjectValue) vt.getVariable("this", false).deref();
+			// For instance method, most time 'this' refers to the resident one, which will be replaced by bind().
+			thisValue = (ObjectValue) (/*thisValueRef = */vt.getVariable("this", false)).deref();
+			
+			// However, if bind() binds a Dynamic object to an instance method, 'this' will appear in the local bindings.
+			if (lbt != null) {
+				JValue v = lbt.getVariable("this");
+				if(v != null){
+					// LBT 'this' overwrites the resident 'this'
+					thisValue = (DynamicValue) v.deref();
+				}
+			}
 		}
 	}
 
 	private JValue getMember(String name){
-		initThisValue();		
+		initThisValue();
 		
 		ICompoundType jct = Accessibility.checkMemberAccess(thisValue.getClassType(), name, type, context, ContextType.IMETHOD, false, false);
 		

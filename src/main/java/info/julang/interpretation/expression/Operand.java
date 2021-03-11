@@ -94,8 +94,8 @@ public abstract class Operand {
 		return new NameOperand(name, true);
 	}
 	
-	public static Operand createIndexOperand(IIndexable base, JValue index, IIndexable iind){
-		return new IndexOperand(base, index, iind);
+	public static Operand createIndexOperand(IIndexable base, JValue index){
+		return new IndexOperand(base, index, base);
 	}
 	
 	public final static ValueOperand NullOperand = 

@@ -1,0 +1,38 @@
+// re-bind in a loop
+import System.Collection;
+
+class MyCls {
+	static int a = 37;
+	static int h(int i) { 
+		if (this.a == null) {
+			this.a = 0;
+		}
+		return this.a += i; 
+	}
+}
+
+List l = new List();
+for (int i = 1; i <= 10; i++) {
+	l.add(
+		new Dynamic(
+			new { autobind = true } // Second bind
+		) {
+			h = Function.bind( // First bind
+				MyCls.h,
+				null,
+				new var[] { i }) 
+		}
+	);
+}
+
+for (var d : l) {
+	d.h();
+}
+
+int i55 = 0;
+for (var d : l) {
+	// Console.println(d.a);
+	i55 += d.a;
+}
+
+int i37 = MyCls.a;

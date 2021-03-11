@@ -1,0 +1,31 @@
+// Call bind() with variety
+class MyVal {
+	string str = "pf";
+}
+
+string combine(int i, string s, char c) {
+	return (string)this.str + i + s + c;
+}
+
+var combineThis = Function.bind(combine, new MyVal());
+
+string res = combineThis(10, "-", 'z');
+
+var combineThis2 = Function.bind(combine, new MyVal(), new var[0]);
+
+string res2 = combineThis2(10, "-", 'z');
+
+string combine3(int i, string s, char c) {
+	return "pf" + i + s + c;
+}
+
+var combine10 = Function.bind(combine3, null, new var[]{ 10 });
+
+string res3 = combine10("-", 'z');
+
+var combine11 = Function.bind(combine3, null, new var[]{ 11, "_" });
+
+// after binding, the original function remains same
+string res4 = combine3(20, "a", 'x');
+
+string res5 = combine11('z');

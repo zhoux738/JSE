@@ -13,3 +13,24 @@ for(int i = 0; i < saa.length; i++) {
 		cc += saa[i][j]; // "35711"
 	}
 }
+
+String cc2 = "";
+for(int i = 0; i < caa.length; i++) {
+	for(int j = 0; j < caa[i].length; j++) {
+		cc2 += caa[i][j]; // "abzm"
+	}
+}
+
+String cc3 = "";
+for(int i = 0; i < baa.length; i++) {
+	for(int j = 0; j < baa[i].length; j++) {
+		cc3 += (string)baa[i][j]; // "truefalsefalsetrue"
+	}
+}
+
+float ftotal = 0.0;
+for(int i = 0; i < faa.length; i++) {
+	for(int j = 0; j < faa[i].length; j++) {
+		ftotal += faa[i][j]; // 11.0
+	}
+}

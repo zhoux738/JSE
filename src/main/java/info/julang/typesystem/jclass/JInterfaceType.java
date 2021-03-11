@@ -26,8 +26,10 @@ package info.julang.typesystem.jclass;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import info.julang.execution.namespace.NamespacePool;
@@ -102,6 +104,8 @@ public class JInterfaceType implements ICompoundType {
 	private JAnnotation[] annotationArray;
 	
 	private JClassType[] allExtensions;
+	
+	private Map<String, Boolean> ancestorSet; // key = FQN of type, value = true (class), false (interface)
 	
 	//----------------------- Constructors -----------------------//
 	
@@ -315,6 +319,36 @@ public class JInterfaceType implements ICompoundType {
 		
 		return interfaces;
 	}
+	
+	/**
+	 * Check whether a type with name = <code>fullTypeName</code> is the ancestor of this one 
+	 * (a class or interface appearing at an upper tier of the type hierarchy).
+	 * 
+	 * @param fullTypeName
+	 * @param isClassOrInterface true to search ancestor class, false ancestor interface
+	 * @return true if the given type is an ancestor. 
+	 */
+	public boolean hasAncestor(String fullTypeName, boolean isClassOrInterface) {
+		if (ancestorSet == null) {
+		    synchronized(this){
+		        if(ancestorSet == null){
+					JInterfaceType[] ancTyps = initAncestors();
+		        	ancestorSet = new HashMap<>();
+			        for (int i = 1; i < ancTyps.length; i++) { // Skip the 1st type, which is itself.
+			        	JInterfaceType typ = ancTyps[i];
+			        	ancestorSet.put(typ.getName(), typ.isClassType());
+			        }
+		        }
+		    }
+		}
+		
+		Boolean res = ancestorSet.get(fullTypeName);
+		if (res == null) {
+			return false;
+		} else {
+			return !(isClassOrInterface ^ res.booleanValue());
+		}
+	}
 
 	@Override
 	public OneOrMoreList<JClassType> getExtensionClasses() {
@@ -402,19 +436,34 @@ public class JInterfaceType implements ICompoundType {
 	public JInterfaceType[] getAncestors(boolean includeThis) {
 		if (ancestors == null) {
 		    synchronized(this){
-		        if(ancestors == null){
-		        	TypePrioritySorter sorter = new TypePrioritySorter();
-		    		Stack<JInterfaceType> stack = new Stack<JInterfaceType>();
-		    		stack.push(this);
-		    		
-		    		populateAncestors(sorter, stack, 0);
-
-		        	ancestors = sorter.toArray(JInterfaceType.class, includeThis);
-		        }
+	        	ancestors = initAncestors();
 		    }
 		}
 		
-		return ancestors;
+		if (includeThis) {
+			return ancestors;
+		} else {
+			JInterfaceType[] ancestorsWithoutSelf = new JInterfaceType[ancestors.length - 1];
+			System.arraycopy(ancestors, 1, ancestorsWithoutSelf, 0, ancestorsWithoutSelf.length);
+			return ancestorsWithoutSelf;
+		}
+	}
+	
+	/**
+	 * Not synchronized.
+	 */
+	private JInterfaceType[] initAncestors() {
+        if(ancestors == null){
+        	TypePrioritySorter sorter = new TypePrioritySorter();
+    		Stack<JInterfaceType> stack = new Stack<JInterfaceType>();
+    		stack.push(this);
+    		
+    		populateAncestors(sorter, stack, 0);
+
+        	ancestors = sorter.toArray(JInterfaceType.class, true);
+        }
+
+    	return ancestors;
 	}
 
 	private void populateAncestors(TypePrioritySorter sorter, Stack<JInterfaceType> stack, int rank) {

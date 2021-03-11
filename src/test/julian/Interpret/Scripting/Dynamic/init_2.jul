@@ -1,0 +1,28 @@
+class My {
+	char c;
+}
+
+My m = new My();
+m.c = 'z';
+
+int _i = 7;
+char _c = 'c';
+string _xyz = "xyz";
+
+Dynamic dyn = new Dynamic() { a = _i + 3, b = _c, c = m, d = _xyz } ;
+
+int i10 = dyn.a;
+char c = dyn.b;
+string xyz = dyn.d;
+
+// Change on-heap value
+dyn.c.c = 'x';
+char x = m.c;
+
+// Won't change primitive or string value
+_i = 20;
+_c = 'y';
+_xyz = "omn";
+int i10_2 = dyn.a;
+char c_2 = dyn.b;
+string xyz_2 = dyn.d;

@@ -26,9 +26,11 @@ public class ExtensionFailureTests {
 	@Test
 	public void callExtWhilePassingThisTest() throws EngineInvocationError {
 		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.OO, FEATURE);
-		// As of 0.1.28, this message is:
+		// 0.1.28 message
 		// Cannot find an overloaded version that accepts arguments of type (<default>.MyCls) (occurred when calling method "getVal")
-		runner.executeAndExpect("extfail_03.jul", KnownJSException.RuntimeCheck, null, "overloaded", "argument", "MyCls", "getVal");
+		// 0.1.32 message
+		// Wrong number of arguments when calling getVal.
+		runner.executeAndExpect("extfail_03.jul", KnownJSException.RuntimeCheck, null, "Wrong number of arguments", "getVal");
 	}
 	
 	@Test

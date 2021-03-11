@@ -24,26 +24,20 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
-import info.julang.execution.Argument;
-import info.julang.execution.threading.ThreadRuntime;
-import info.julang.external.exceptions.JSEError;
-import info.julang.external.interfaces.JValueKind;
-import info.julang.interpretation.context.Context;
-import info.julang.interpretation.internal.NewObjExecutor;
-import info.julang.interpretation.syntax.ParsedTypeName;
-import info.julang.memory.MemoryArea;
-import info.julang.typesystem.JType;
-import info.julang.typesystem.JTypeKind;
-import info.julang.typesystem.jclass.JClassConstructorMember;
-import info.julang.typesystem.jclass.JClassType;
-import info.julang.typesystem.jclass.MemberKey;
-import info.julang.typesystem.jclass.builtin.JTypeStaticDataType;
-import info.julang.typesystem.jclass.jufc.System.ScriptType;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.JSEError;
+import info.julang.external.interfaces.JValueKind;
+import info.julang.memory.MemoryArea;
+import info.julang.typesystem.JType;
+import info.julang.typesystem.JTypeKind;
+import info.julang.typesystem.jclass.JClassType;
+import info.julang.typesystem.jclass.MemberKey;
+import info.julang.typesystem.jclass.builtin.JTypeStaticDataType;
 
 /**
  * A value holding per-class data of class type, namely static fields.
@@ -197,25 +191,8 @@ public class TypeValue extends ObjectValue {
 	public ObjectValue getScriptTypeObject(ThreadRuntime runtime) {
 		if (typeObject == null) {
 			synchronized(TypeValue.class){
-				if (typeObject == null) {
-					JClassType typeClassType = (JClassType) runtime.getTypeTable().getType(ScriptType.FQCLASSNAME);
-					if (typeClassType == null) {
-						Context context = Context.createSystemLoadingContext(runtime);
-						runtime.getTypeResolver().resolveType(context, ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME), true);
-						typeClassType = (JClassType) runtime.getTypeTable().getType(ScriptType.FQCLASSNAME);
-					}
-					
-					JClassConstructorMember typeClassCtor = typeClassType.getClassConstructors()[0];
-					
-					NewObjExecutor noe = new NewObjExecutor(runtime);
-					ObjectValue ov = noe.newObjectInternal(typeClassType, typeClassCtor, new Argument[0]);
-					
-					ScriptType st = new ScriptType();
-					st.setType(this.type);
-					HostedValue hv = (HostedValue)ov;
-					hv.setHostedObject(st);
-					
-					typeObject = ov;
+				if (typeObject == null) {					
+					typeObject = JClassType.createScriptTypeObject(runtime, this.type);
 				}
 			}
 		}

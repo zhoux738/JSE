@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import info.julang.execution.Argument;
 import info.julang.execution.MultiValueResult;
 import info.julang.execution.Result;
 import info.julang.execution.threading.ThreadRuntime;
@@ -38,6 +39,7 @@ import info.julang.interpretation.statement.StatementOption;
 import info.julang.langspec.ast.JulianParser.ArgumentContext;
 import info.julang.langspec.ast.JulianParser.Argument_listContext;
 import info.julang.langspec.ast.JulianParser.Function_callContext;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.parser.AstInfo;
 
@@ -91,4 +93,8 @@ public class ConstructorForwardExecutable extends MethodExecutable implements Cl
 		return res;
 	}
 	
+	@Override
+	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
+		super.repliateArgsAndBindings(args, ctxt, func, false);
+	}
 }

@@ -24,8 +24,29 @@ SOFTWARE.
 
 package info.julang.typesystem;
 
+/**
+ * A token of type used before the runtime type system comes into being. 
+ * If a type needs to be created before the script can run, it must have an entry here.
+ * <p>
+ * <b>IMPORTANT</b>: The order in this enum is critical, as the completion of deferred 
+ * building must happen at a certain order.
+ * 
+ * @author Ming Zhou
+ */
 public enum BuiltinTypes {
 
+	INTEGER,
+	
+	BOOLEAN,
+	
+	CHAR,
+	
+	FLOAT,
+	
+	BYTE,
+	
+	ANY,
+	
 	OBJECT,
 	
 	FUNCTION,
@@ -36,18 +57,10 @@ public enum BuiltinTypes {
 	
 	ATTRIBUTE,
 	
-	TYPE,
-	
 	STRING,
 	
-	INTEGER,
+	DYNAMIC,
 	
-	BOOLEAN,
-	
-	CHAR,
-	
-	FLOAT,
-	
-	BYTE,
+	TYPE
 	
 }

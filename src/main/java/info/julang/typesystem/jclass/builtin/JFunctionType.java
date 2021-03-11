@@ -24,6 +24,9 @@ SOFTWARE.
 
 package info.julang.typesystem.jclass.builtin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import info.julang.execution.Argument;
 import info.julang.execution.ArgumentUtil;
 import info.julang.execution.Executable;
@@ -40,6 +43,8 @@ import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.ArrayValueFactory;
 import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IFuncValue;
+import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
@@ -49,6 +54,7 @@ import info.julang.typesystem.AnyType;
 import info.julang.typesystem.BuiltinTypes;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.VoidType;
+import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.BuiltinTypeBootstrapper.TypeFarm;
 import info.julang.typesystem.jclass.ExecutableType;
@@ -107,6 +113,8 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 	
 	public static FQName FQNAME = new FQName("Function");
 	public static String MethodName_invoke = "invoke";
+	public static String MethodName_invoke_FULL = FQNAME.toString() + "." + MethodName_invoke;
+	public static String MethodName_bind = "bind";
 	public static String MethodName_getReturnType = "getReturnType";
 	public static String MethodName_getParameters = "getParameters";
 	public static String MethodName_getFunctionKind = "getFunctionKind";
@@ -136,7 +144,7 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 			if(proto == null){
 				proto = new JFunctionType("<Function>", new JParameter[0], VoidType.getInstance(), new Executable(){
 					@Override
-					public Result execute(ThreadRuntime runtime, Argument[] args) throws EngineInvocationError {
+					public Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) throws EngineInvocationError {
 						return Result.Void;
 					}
 				});
@@ -182,6 +190,39 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 						new JParameter[0], 
 						AnyType.getInstance(), 
 						METHOD_invoke, 
+						functionType),
+				    null));
+			
+			//Function.bind(var, var[])
+			builder.addStaticMember(
+				new JClassMethodMember(
+					builder.getStub(), 
+					MethodName_bind, Accessibility.PUBLIC, true, false,
+					new JMethodType(
+						MethodName_bind,
+						new JParameter[] {
+							new JParameter("func", builder.getStub()),
+							new JParameter("thisObj", AnyType.getInstance()),
+							new JParameter("args", farm.getArrayType(BuiltinTypes.ANY))
+						},
+						functionType, 
+						METHOD_bind, 
+						functionType),
+				    null));
+
+			//Function.bind(var)
+			builder.addStaticMember(
+				new JClassMethodMember(
+					builder.getStub(), 
+					MethodName_bind, Accessibility.PUBLIC, true, false,
+					new JMethodType(
+						MethodName_bind,
+						new JParameter[] {
+							new JParameter("func", builder.getStub()),
+							new JParameter("thisObj", AnyType.getInstance())
+						},
+						functionType, 
+						METHOD_bind2, 
 						functionType),
 				    null));
 			
@@ -328,7 +369,7 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 				
 			case METHOD:
 				JMethodType jmt = (JMethodType)funcTyp;
-				boolean sta = jmt.isHosted() ? jmt.getHostedExecutable().isStatic() : jmt.getMethodExecutable().isStatic();
+				boolean sta = jmt.isBridged() ? jmt.getHostedExecutable().isStatic() : jmt.getMethodExecutable().isStatic();
 				if (sta) {
 					enumName = "STATIC_METHOD";
 					break;
@@ -468,6 +509,115 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 		}
 	};
 	
+	// bind(var, var[]) : Function
+	@JulianDoc(
+		name = "bind",
+		isStatic = true,
+		summary =   "/*"
+				+ "\n * Bind the function with `this` object and new arguments to create a new function object."
+				+ "\n * "
+				+ "\n * The first argument is the new `this` object to be referenced from inside the resultant function."
+				+ "\n * The second argument, an array, can contain arbitrary number of arguments in an order corresponding"
+				+ "\n * to the current function's argument list, excluding the implicit `this` argument. Both of the"
+				+ "\n * arguments are optional."
+				+ "\n * "
+				+ "\n * The function returned is a completely new one that is independent from the current function."
+				+ "\n * "
+				+ "\n * The new function may have a new `this` reference, even if the current one doesn't have a `this`"
+				+ "\n * reference:"
+				+ "\n * [code]"
+				+ "\n * void foo() { this.bar(); }"
+				+ "\n * foo.bind(new Bar(), null);"
+				+ "\n * foo(); // If we didn't bind this would throw."
+				+ "\n * [code: end]"
+				+ "\n * "
+				+ "\n * The new function may have a reduced list of arguments. Calling it, therefore, may require"
+				+ "\n * less arguments, as illustrated by this example:"
+				+ "\n * [code]"
+				+ "\n * void fun(int i, string s, char c) { ... }"
+				+ "\n * var newFun = fun.bind(null, new var[]{10});"
+				+ "\n * newFun(\"hello\", 'x'); // Notice that we don't provide the integer argument anymore."
+				+ "\n * [code: end]"
+				+ "\n * "
+				+ "\n * Not all Function objects can be bound, and not binding of arbitrary `this` object is allowed. "
+				+ "\n * As of [version: current], this method cannot be called against hosted functions and method groups."
+				+ "\n * "
+				+ "\n * Even if the Function is bindable, this method may fail and throw for a varierty of reasons, including: "
+				+ "\n * binding a `this` object to an instance method where the type of new `this` object differs from the defined one;"
+				+ "\n * providing arguments that do not align with the defined parameter list in terms of the compatibility."
+				+ "\n */",
+		paramTypes = {
+				"Function",
+				"Any",
+				"[Any]"
+				},
+		params = {
+				"The function to bind `this` and other arguments to.",
+				"The new `this` object. Provide `null` to skip binding (therefore cannot bind `null` to it).",
+				"The first N arguments to bind to this function's first N parameters. Provide an empty array or `null` to skip binding arguments." 
+				},
+		returns = "A new function object that potentially has new `this` reference and a reduced parameter list."
+	)
+	private static HostedExecutable METHOD_bind = new HostedExecutable(FQNAME, MethodName_bind) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			FuncValue funcValue = ArgumentUtil.<FuncValue>getArgumentValue(args, 0, true);
+			JValue thisToBindVal = ArgumentUtil.<JValue>getArgumentValue(args, 1, false);
+			ArrayValue argsToBindVal = ArgumentUtil.<ArrayValue>getArgumentValue(args, 2, false);
+			
+			FuncValue result = FunctionBinder.bind(runtime, funcValue, thisToBindVal, argsToBindVal);
+			
+			return new Result(result);
+		}
+	};
+	
+	// bind(var) : Function
+	@JulianDoc(
+		name = "bind",
+		isStatic = true,
+		summary =   "/*"
+				+ "\n * Bind the function with a new reference to `this` to create a new function object."
+				+ "\n * "
+				+ "\n * The sole argument is the new `this` object to be referenced from inside the resultant function."
+				+ "\n * Unlike [the overloaded version](#bind(Function, var)) of this method, it must be not null."
+				+ "\n * "
+				+ "\n * The new function will always have a `this` reference, even if the current one doesn't have a `this`"
+				+ "\n * reference:"
+				+ "\n * [code]"
+				+ "\n * void foo() { this.bar(); }"
+				+ "\n * foo.bind(new Bar());"
+				+ "\n * foo(); // If we didn't bind this would throw."
+				+ "\n * [code: end]"
+				+ "\n * "
+				+ "\n * Not all Function objects can be bound, and not binding of arbitrary `this` object is allowed. "
+				+ "\n * As of [version: current], this method cannot be called against hosted functions and method groups."
+				+ "\n * "
+				+ "\n * Even if the Function is bindable, this method may fail and throw for a varierty of reasons. For"
+				+ "\n * example, it's not allowd to bind a `this` object to an instance method where the type of new `this`"
+				+ "\n * object differs from the defined one."
+				+ "\n */",
+		paramTypes = {
+				"Function",
+				"Any"
+				},
+		params = { 
+				"The function to bind `this` and other arguments to.",
+				"The new `this` object. Must not be null.",
+				},
+		returns = "A new function object that has new `this` reference."
+	)
+	private static HostedExecutable METHOD_bind2 = new HostedExecutable(FQNAME, MethodName_bind) {
+		@Override
+		protected Result executeOnPlatform(ThreadRuntime runtime, Argument[] args) {
+			FuncValue funcValue = ArgumentUtil.<FuncValue>getArgumentValue(args, 0, true);
+			JValue thisToBindVal = ArgumentUtil.<JValue>getArgumentValue(args, 1, true);
+			
+			FuncValue result = FunctionBinder.bind(runtime, funcValue, thisToBindVal, null);
+			
+			return new Result(result);
+		}
+	};
+	
 	private JParameter[] params;
 	
 	protected JReturn ret;
@@ -485,10 +635,57 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 	public JType getReturnType() {
 		return ret.getReturnType();
 	}
+	
+	protected void setReturnType(JType returnType) {
+		if(returnType != null && returnType != AnyType.getInstance()){
+			this.ret = new JReturn(returnType);
+		} else {
+			this.ret = JReturn.UntypedReturn;
+		}
+	}
 
 	@Override
 	public Executable getExecutable() {
 		return executable;
+	}
+	
+	/**
+	 * Remove the leading parameter types to create a new function type.
+	 * 
+	 * For example, calling <code>bindParams(IntType)</code> against a JFunctionType with parameter types [IntType, JStringType, CharType] 
+	 * will create a new JFunctionType with [JStringType, CharType] as the parameter types.
+	 * 
+	 * @param paramTypesToRemove
+	 * @return
+	 */
+	public JFunctionType bindParams(JType[] paramTypesToRemove) {
+		JParameter[] params = removeParams(paramTypesToRemove, false);
+		return new JFunctionType(getName(), params, getReturnType(), getNamespacePool(), executable);
+	}
+	
+	protected JParameter[] removeParams(JType[] argTypesToRemove, boolean skipFirst) {
+		List<JParameter> newParams = new ArrayList<JParameter>();
+		for (int i = 0; i < params.length; i++) {
+			JParameter p = params[i];
+			if (i == 0 && skipFirst) {
+				newParams.add(p);
+				continue;
+			}
+			
+			int index = skipFirst ? i - 1 : i;
+			if (index < argTypesToRemove.length) {
+				JType typ = argTypesToRemove[index];
+				Convertibility conv = typ.getConvertibilityTo(p.getType());
+				if (!conv.isSafe()) {
+					throw IllegalBindingException.cannotBindArgument(index, typ, p);
+				}
+			} else {
+				newParams.add(p);
+			}
+		}
+		
+		JParameter[] nps = new JParameter[newParams.size()];
+		return newParams.toArray(nps);
 	}
 	
 	public boolean isTyped(){
@@ -519,11 +716,7 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 	public JFunctionType(String name, JParameter[] params, JType returnType, NamespacePool nsPool, Executable executable) {
 		super(name, PROTO, null); //set parent to be default function (used to be JObjectType.getInstance())
 		this.params = params;
-		if(returnType != null && returnType != AnyType.getInstance()){
-			this.ret = new JReturn(returnType);
-		} else {
-			this.ret = JReturn.UntypedReturn;
-		}
+		setReturnType(returnType);
 		this.executable = executable;
 		if (nsPool != null){
 			this.setNamespacePool(nsPool);
@@ -566,6 +759,7 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 	//--------------- IDeferredBuildable ---------------//
 	
 	private ICompoundTypeBuilder builder;
+	private boolean sealable;
 	
 	@Override
 	public boolean deferBuild(){
@@ -573,8 +767,13 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 	}
 	
 	@Override
-	public void completeBuild(Context context) {
-		if (builder != null) {
+	public void postBuild(Context context) {
+		if (!sealable) {
+			if (builder == null) {
+				sealable = true;
+				return;
+			}
+			
 			// System.Type
 			JClassType systemType = (JClassType)context.getTypeResolver().resolveType(
 				ParsedTypeName.makeFromFullName(ScriptType.FQCLASSNAME));
@@ -583,7 +782,6 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 			JClassType systemReflectionParameter = (JClassType)context.getTypeResolver().resolveType(
 				ParsedTypeName.makeFromFullName(ScriptParam.FQCLASSNAME));
 			
-
 			// System.Reflection.Parameter
 			JClassType systemReflectionFunctionKind = (JClassType)context.getTypeResolver().resolveType(
 				ParsedTypeName.makeFromFullName(System_Reflection_FunctionKind));
@@ -633,10 +831,23 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 						METHOD_getParameters, 
 						builder.getStub()), 
 					null));
-			
+
+			sealable = true;
+		}
+	}
+	
+	@Override
+	public void seal() {
+		if (!sealable) {
+			throw new JSEError("Couldn't seal built-in type. Building was not complete.", JFunctionType.class);
+		}
+
+		if (builder != null) {
 			builder.seal();
 			builder = null;
 		}
+
+		sealable = false;
 	}
 
 	@Override
@@ -647,5 +858,39 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 	@Override
 	public void preInitialize() {
 		this.initialized = true;
+	}
+	
+	@Override
+	public BuiltinTypes getBuiltinType() {
+		return BuiltinTypes.FUNCTION;
+	}
+	
+	/**
+	 * Get the fully qualified function name.
+	 */
+	public String getFullFunctionName(boolean includeParams) {
+		return super.getName();
+	}
+	
+	//--------------------- storage of System.Type instance ---------------------//
+
+	private ObjectValue typeObject;
+	
+	/**
+	 * Get <font color="green"><code>System.Type</code></font> object for this function type. 
+	 * This object will be created the first time this method is called.
+	 * 
+	 * @param runtime
+	 */
+	public ObjectValue getScriptTypeObject(ThreadRuntime runtime) {
+		if (typeObject == null) {
+			synchronized(TypeValue.class){
+				if (typeObject == null) {					
+					typeObject = JClassType.createScriptTypeObject(runtime, this);
+				}
+			}
+		}
+		
+		return typeObject;
 	}
 }

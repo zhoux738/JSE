@@ -106,6 +106,10 @@ public final class ValueUtilities {
 					return val;
 				}
 			}
+			
+			if (val == RefValue.NULL) {
+				return RefValue.NULL;
+			}
 			throw new JSEError("Unable to convert value without type.");
 		} else if (typ.isBasic()){
 			BasicValue bval = (BasicValue) val;

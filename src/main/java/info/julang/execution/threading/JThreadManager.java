@@ -47,7 +47,9 @@ import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.exceptions.JSEError;
 import info.julang.memory.StackArea;
 import info.julang.memory.simple.SimpleStackArea;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.typesystem.jclass.jufc.System.Network.AsyncSocketSession;
 import info.julang.util.Pair;
 
@@ -169,6 +171,7 @@ public class JThreadManager {
 	 * 
 	 * @param name if null or empty, will assign a unique name.
 	 * @param engineRt engine runtime
+	 * @param func function value
 	 * @param exec the executable
 	 * @param nsPool namespace pool
 	 * @param threadObjInJulian script thread object
@@ -178,6 +181,7 @@ public class JThreadManager {
 	public JThread createBackground(
 		String name, 
 		EngineRuntime engineRt, 
+		IFuncValue func, 
 		Executable exec, 
 		NamespacePool nsPool, 
 		HostedValue threadObjInJulian, 
@@ -194,7 +198,7 @@ public class JThreadManager {
 		props.setIOThread(isIOThread);
 		
 		JThread jt = JThread.createNewThread(
-			id, name, sfactory, engineRt, exec, nsPool, props);
+			id, name, sfactory, engineRt, func, exec, nsPool, props);
 		jt.setScriptThreadObject(threadObjInJulian);
 		
 		return jt;
@@ -253,7 +257,7 @@ public class JThreadManager {
 		    String name = idName.getSecond();
 		        
 			JThread t = JThread.createNewThread(
-			    id, name, sfactory, engineRt, exec, null, props);
+			    id, name, sfactory, engineRt, FuncValue.DUMMY, exec, null, props);
 			
 			main = t;
 		}

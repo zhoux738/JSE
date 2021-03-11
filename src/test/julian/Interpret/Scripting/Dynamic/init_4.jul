@@ -1,0 +1,5 @@
+var dyn = new { a = "xyz", b = 10, c = 'z' } ;
+
+string xyz = dyn.a;
+int i10 = dyn.b;
+char z = dyn.c;

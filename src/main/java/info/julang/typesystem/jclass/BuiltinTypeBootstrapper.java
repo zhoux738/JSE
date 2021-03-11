@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.typesystem.AnyType;
@@ -43,6 +44,7 @@ import info.julang.typesystem.jclass.builtin.BuiltinClassTypeBuilder;
 import info.julang.typesystem.jclass.builtin.JArrayBaseType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.jclass.builtin.JAttributeBaseType;
+import info.julang.typesystem.jclass.builtin.JDynamicType;
 import info.julang.typesystem.jclass.builtin.JEnumBaseType;
 import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
@@ -138,7 +140,7 @@ public final class BuiltinTypeBootstrapper {
 		TypeBootstrapper[] bootstrappers = new TypeBootstrapper[total];
 		BuiltinClassTypeBuilder[] builders = new BuiltinClassTypeBuilder[total];
 		int i = 0;
-		Map<BuiltinTypes, TypeSuite> suiteMap = new HashMap<BuiltinTypes, TypeSuite>();
+		Map<BuiltinTypes, TypeSuite> suiteMap = new TreeMap<BuiltinTypes, TypeSuite>();
 		for(BuiltinTypeBuilder entry : bootstrapperList){
 			BuiltinTypes typeName = entry.type;
 			TypeBootstrapper bs = entry.builder;
@@ -160,6 +162,7 @@ public final class BuiltinTypeBootstrapper {
 		// Some primitive array types - add more if needed in future
 		addArrayType(suites, BuiltinTypes.CHAR, CharType.getInstance());
         addArrayType(suites, BuiltinTypes.BYTE, ByteType.getInstance());
+        addArrayType(suites, BuiltinTypes.ANY, AnyType.getInstance());
 		for(BuiltinTypeBuilder entry : bootstrapperList){
 			TypeBootstrapper bs = entry.builder;
 			if (bs.initiateArrayType()) {
@@ -189,15 +192,17 @@ public final class BuiltinTypeBootstrapper {
 	private static Map<String, JClassType> allTypes;
 	private static JClassType arrayType; 
 	
-	private static int createBootstrappers(List<BuiltinTypeBuilder> map){
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.OBJECT, new JObjectType.BootstrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.STRING, new JStringType.BootstrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.ARRAY, new JArrayBaseType.BootstrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.TYPE, new JTypeStaticDataType.BootstrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.ENUM, new JEnumBaseType.BootstrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.ATTRIBUTE, new JAttributeBaseType.BootstrapingBuilder()));
-		map.add(new BuiltinTypeBuilder(BuiltinTypes.FUNCTION, JFunctionType.PrototypeBuilder));	
-		return map.size();
+	private static int createBootstrappers(List<BuiltinTypeBuilder> list){
+		list.add(new BuiltinTypeBuilder(BuiltinTypes.OBJECT, new JObjectType.BootstrapingBuilder()));
+		list.add(new BuiltinTypeBuilder(BuiltinTypes.STRING, new JStringType.BootstrapingBuilder()));
+		list.add(new BuiltinTypeBuilder(BuiltinTypes.ARRAY, new JArrayBaseType.BootstrapingBuilder()));
+		list.add(new BuiltinTypeBuilder(BuiltinTypes.TYPE, new JTypeStaticDataType.BootstrapingBuilder()));
+		list.add(new BuiltinTypeBuilder(BuiltinTypes.ENUM, new JEnumBaseType.BootstrapingBuilder()));
+		list.add(new BuiltinTypeBuilder(BuiltinTypes.ATTRIBUTE, new JAttributeBaseType.BootstrapingBuilder()));
+		list.add(new BuiltinTypeBuilder(BuiltinTypes.FUNCTION, JFunctionType.PrototypeBuilder));	
+		list.add(new BuiltinTypeBuilder(BuiltinTypes.DYNAMIC, new JDynamicType.BootstrapingBuilder()));
+		
+		return list.size();
 	}
 	
 	/**

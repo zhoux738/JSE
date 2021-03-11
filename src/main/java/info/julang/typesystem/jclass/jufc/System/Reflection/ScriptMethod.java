@@ -38,6 +38,7 @@ import info.julang.interpretation.context.Context;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.interpretation.internal.FuncCallExecutor;
 import info.julang.memory.value.ArrayValue;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.MethodValue;
@@ -457,7 +458,7 @@ public class ScriptMethod extends ScriptMemberBase {
 		ThreadRuntime rt, JClassMethodMember methodMem, FuncCallExecutor fcall, ArrayValue args, JValue thisVal){
 		try {
 			JValue val = fcall.invokeMethodInternal(
-				methodMem.getMethodType(), methodMem.getName(), toValueArray(args, thisVal != null), thisVal);
+				FuncValue.DUMMY, methodMem.getMethodType(), methodMem.getName(), toValueArray(args, thisVal != null), thisVal);
 			return val;
 		} catch (JSERuntimeException jrt) {
 			Context context = Context.createSystemLoadingContext(rt);

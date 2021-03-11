@@ -32,7 +32,7 @@ import info.julang.memory.value.JValue;
  * <p>
  * Since the types loaded into Julian's runtime are immutable for their life cycle, it's pointless to resolve the same id
  * more than once within the same executable context. This resolver is in fact a cache of what have been resolved - its implementation
- * of {@link #resolve(String)} simply returns what is set through {@link #save(String, JValue)}. It it returns null, no value
+ * of {@link #resolve(String)} simply returns what is set through {@link #save(String, JValue)}. If it returns null, no value
  * has been set for the given id and the caller must continue with the regular resolution routine; if it returns {@link info.julang.memory.value.VoidValue#DEFAULT},
  * the id has been resolved without a match; otherwise the value that represents the resolved is returned.
  * 

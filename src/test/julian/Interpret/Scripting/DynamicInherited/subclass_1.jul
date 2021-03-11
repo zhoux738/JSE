@@ -1,0 +1,40 @@
+class MyDyn : Dynamic {
+	string prop;
+	
+	MyDyn(string prop){
+		this.prop = prop; // access to member from ctor
+		this.attr = "def"; // access to property from ctor
+	}
+}
+
+void print(var val){
+	// Console.println(val);
+}
+
+String abc, def, xyz;
+char z;
+bool succ1 = false;
+int i10;
+
+MyDyn m = new MyDyn("abc");
+// read from member (ok)
+print(abc = m.prop);
+
+// new property (ok)
+m.c = 'z';
+print(z = m.c);
+
+// write to member (ok)
+m.prop = "xyz";
+print(xyz = m.prop);
+
+// overwrite property (ok)
+print(def = m.attr);
+print(i10 = m.attr = 10);
+
+try {
+	// overwrite member (error)
+	m.prop = 10;
+} catch (System.IllegalAssignmentException ex) {
+	succ1 = true;
+}

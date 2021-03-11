@@ -1,0 +1,89 @@
+//      +---- U
+// I ---+---- P -+-- M ---- C
+//               +-- S
+import System.Lang;
+
+interface I {
+	string getStr();
+}
+
+class P : I {
+	private string _val = "p";
+	
+	string getStr() {
+		return this._val;	
+	}
+}
+
+class U : I {
+	private string _val = "u";
+	
+	string getStr() {
+		return this._val;	
+	}
+}
+
+class M : P {
+	private string _val = "m";
+
+	string getStr() {
+		return this._val;	
+	}
+}
+
+class S : P {
+	private string _val = "s";
+
+	string getStr() {
+		return this._val;	
+	}
+}
+
+class C : M {
+	private string _val = "c";
+
+	string getStr() {
+		return this._val;	
+	}
+}
+
+bool shouldThrow(Function f, Type exType){
+	try {
+		f();
+	} catch (Exception ex) {
+		if (ex.getType() == exType) {
+			return true;
+		} else {
+			ex.printToError();
+		}
+	}
+	
+	return false;
+}
+
+bool shouldPass(Function f, string expected){
+	try {
+		if ( f()() == expected ) {
+			return true;
+		} else {
+			Console.println("Expected " + expected + "; saw " + f()());
+		}
+	} catch (Exception ex) {
+		ex.printToError();
+		return false;
+	}
+	
+	return false;
+}
+
+P p = new P(); // Parent
+U u = new U(); // Uncle
+M m = new M(); // Me
+I i = new S(); // Sibling
+S s = new S(); // Sibling
+C c = new C(); // Child
+
+bool succ1 = shouldThrow(() => Function.bind(p.getStr, u), typeof(IllegalBindingException)); // sidecast disallowed
+bool succ2 = shouldThrow(() => Function.bind(m.getStr, p), typeof(IllegalBindingException)); // downcast disallowed
+bool succ3 = shouldThrow(() => Function.bind(m.getStr, c), typeof(IllegalBindingException)); //   upcast disallowed
+bool succ4 = shouldPass(() => Function.bind(s.getStr, i), "s"); // ref to interface allowed if the instance is of the same type

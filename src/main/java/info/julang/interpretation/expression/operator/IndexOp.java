@@ -91,6 +91,6 @@ public class IndexOp extends Operator {
 		
 		lind.initialize(rt, new InitArgs(context, false));
 		
-		return Operand.createIndexOperand(lind, rval, lind);
+		return Operand.createIndexOperand(lind, rval);
 	}
 }

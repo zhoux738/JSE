@@ -46,6 +46,7 @@ import info.julang.langspec.ast.JulianParser.Statement_listContext;
 import info.julang.langspec.ast.JulianParser.TypeContext;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.FuncValue;
+import info.julang.modulesystem.ModuleInfo;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.VoidType;
@@ -158,12 +159,17 @@ public class FunctionDeclarationStatement extends StatementBase {
 		JParameter[] paramsArray = new JParameter[params.size()];
 		params.toArray(paramsArray);	
 		NamespacePool nsPool = context.getNamespacePool();
+		String tname = /* ModuleInfo.DEFAULT_MODULE_NAME + "." + */funcName;
 		JFunctionType funcTyp = new JFunctionType(
-			funcName, paramsArray, retType, nsPool, new GlobalFunctionExecutable(ainfo.create(bodyAst), nsPool));
+			tname, paramsArray, retType, nsPool, new GlobalFunctionExecutable(ainfo.create(bodyAst), nsPool));
+		
+		// Add type, with name same to the function itself, to type table
+		// The name uniqueness is guaranteed by enforcing variable name.
+		context.getTypTable().addType(tname, funcTyp);
 		
 		// Add a variable holding function value to global variable table
 		MemoryArea memory = context.getHeap();
-		FuncValue fv = FuncValue.createGlobalFuncValue(memory, funcTyp, true);
+		FuncValue fv = FuncValue.createGlobalFuncValue(memory, funcTyp);
 		
 		return fv;
 	}

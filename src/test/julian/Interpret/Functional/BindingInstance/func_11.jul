@@ -1,0 +1,22 @@
+// bind null
+
+class My {
+	string combine(string s) {
+		return this.str + s;
+	}
+	
+	string combine2(string s) {
+		return s != null ? "abc" : "xyz";
+	}
+}
+
+My m = new My();
+bool succ1 = false;
+try {
+	var com1 = Function.bind(m.combine, null);
+} catch (ArgumentException ex) {
+	succ1 = true;
+}
+
+var com2 = Function.bind(m.combine2, null, new var[] { null });
+string res = com2();

@@ -36,6 +36,8 @@ import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.statement.StatementOption;
 import info.julang.memory.value.CustomizedInternalValue;
+import info.julang.memory.value.FuncValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.MethodExecutable;
@@ -56,7 +58,7 @@ public class ForwardingMethodExecutable extends MethodExecutable {
 	}
 
 	@Override
-	protected void prepareArguments(Argument[] args, Context ctxt) {
+	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
 		IVariableTable varTable = ctxt.getVarTable();
 		ArgumentsValue av = new ArgumentsValue(args);
 		varTable.addVariable(PARAM_VAR_NAME, av);
@@ -68,7 +70,7 @@ public class ForwardingMethodExecutable extends MethodExecutable {
 		Argument[] args = av.getArguments();
 
 		try {
-			return fexec.execute(runtime, args);
+			return fexec.execute(runtime, FuncValue.DUMMY, args);
 		} catch (IllegalArgumentsException ae){
 			return resultUponArgumentException;
 		} catch (EngineInvocationError e) {

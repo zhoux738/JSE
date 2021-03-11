@@ -26,6 +26,7 @@ package info.julang.execution;
 
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.EngineInvocationError;
+import info.julang.memory.value.IFuncValue;
 
 /**
  * An executable represents a script function that can be invoked by engine.
@@ -38,10 +39,11 @@ public interface Executable {
 	 * Execute in the context of given thread runtime. 
 	 * 
 	 * @param runtime thread runtime.
+	 * @param func the function value to invoke against.
 	 * @param args the provided arguments. It is intentionally undefined whether the values in these arguments 
 	 * are stored or not. The implementation of this method thus must assume that they are not stored.
 	 * @return the result of execution.
 	 */
-	Result execute(ThreadRuntime runtime, Argument[] args) throws EngineInvocationError;
+	Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) throws EngineInvocationError;
 	
 }

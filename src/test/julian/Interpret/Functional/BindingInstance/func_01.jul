@@ -1,0 +1,16 @@
+// baseline: bind 'this' to an instance method
+class MyVal {
+	int val;
+	MyVal(int val) {
+		this.val = val;
+	}
+	int add(int i) {
+		return this.val + i;
+	}
+}
+
+var get3 = Function.bind((new MyVal(1)).add, new MyVal(3), null);
+
+int res = get3(5);
+
+//Console.println(res);

@@ -1,0 +1,40 @@
+// Bind Dynamic
+int val = 10;
+
+int getVal(int val) {
+	this.val += val; // Refer to val on the bound 'this'
+	return val;
+}
+
+void multiply(int v) {
+	val *= v; // Refer to global val
+}
+
+void addprop(int v) {
+	this.prop = v; // Add new property to Dynamic. Direct member access syntax.
+}
+
+void index(string name, string val) {
+	this[name] = val; // Add new property to Dynamic. Index-based access syntax.
+}
+
+var v = null;
+var gv = Function.bind(getVal, v = new { val = 500 });
+int i7 = gv(7);
+//Console.println(i7);
+int i10 = val; // no change to the global since the method was referring to this.val
+int i507 = v.val;
+
+var mult = Function.bind(multiply, v);
+mult(100); // changed the global
+int i1000 = val;
+
+var ap = Function.bind(addprop, v);
+ap(31);
+int i31 = v.prop;
+var nl = v.al;
+
+var indfun = Function.bind(index, v, new var[] { "thekey" });
+indfun("theval");
+
+string theval = v.thekey;

@@ -72,6 +72,8 @@ public enum JValueKind {
 	
 	ATTRIBUTE,
 	
+	DYNAMIC,
+	
 	//--------- Class member object ---------//
 	
 	METHOD,

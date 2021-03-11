@@ -140,7 +140,7 @@ public class RefValue extends JValueBase implements IRefVal {
 		}
 		referred = objValue;
 	}
-	
+
 	@Override
 	protected void initialize(JType type, MemoryArea memory) {
 		referredType = (ICompoundType) type;

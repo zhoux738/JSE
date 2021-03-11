@@ -113,6 +113,24 @@ public class System_Collection_Map_Tests {
 		validateStringValue(gvt, "val", "obj2");
 	}
 	
+	// new Map() { ... }
+	@Test
+	public void initByMapTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "map_9.jul"));
+		
+		validateIntValue(gvt, "i37", 37);
+		validateIntValue(gvt, "i37_2", 37);
+		validateIntValue(gvt, "i41", 41);
+		validateIntValue(gvt, "i100", 100);
+		validateIntValue(gvt, "i123", 123);
+		validateIntValue(gvt, "i150", 150);
+		validateStringValue(gvt, "xyz", "xyz");
+		validateStringValue(gvt, "abc", "abc");
+	}
+	
 	@Test
 	public void nullKeyTest() throws EngineInvocationError {
 		VariableTable gvt = new VariableTable(null);

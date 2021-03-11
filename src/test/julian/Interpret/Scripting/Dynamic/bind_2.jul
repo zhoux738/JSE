@@ -1,0 +1,41 @@
+// without autobind == true, won't bind any function except for lambda literal
+class MyCls {
+	int i = 10;
+	int h() { i *= 2; return i; }
+}
+
+var f = () => this.a;
+
+var g() {
+	return this.a;
+}
+
+MyCls mc = new MyCls();
+
+var dyn = new { 
+	a = "xyz", 
+	f = f,
+	g = g,
+	h = mc.h
+};
+
+bool check(Function f, bool failAtThis){
+	try {
+		f();
+		if (!failAtThis) {
+			return true;
+		}
+	} catch (Exception ex) {
+		// ex.printToError();
+		if (failAtThis && ex.getMessage().contains("this")) {
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+bool b1 = check(() => { dyn.f(); }, true);
+bool b2 = check(() => { dyn.g(); }, true);
+bool b3 = check(() => { dyn.h(); }, false);
+int i20 = mc.i;

@@ -1,0 +1,72 @@
+// map initializer
+import System.Collection;
+import System.Util;
+
+class MyDyn : Dynamic {
+	static int hashesCnt = 0;
+	static int equalsCnt = 0;
+
+	string prop;
+	
+	MyDyn(string prop){
+		this.prop = prop;
+	}
+	
+	String toString() {
+		return prop;
+	}
+	
+	int hashCode() {
+		// Console.println("hashCode called");
+		MyDyn.hashesCnt++;
+		int code = 0;
+		for (char c : prop) {
+			code += (int)c;
+		}
+		
+		return code;
+	}
+	
+	bool equals(var another) {
+		// Console.println("equals called");
+		MyDyn.equalsCnt++;
+		return this.prop == another.prop;
+	}
+	
+	int _count = 0;
+	
+	void initByMap(Entry[] entries) {
+		super.initByMap(entries);
+		_count += entries.length;
+	}
+}
+
+var print(var val){
+	// Console.println(val);
+	return val;
+}
+
+var m1 = new MyDyn("none");
+var m2 = new MyDyn("none");
+
+String abc, xyz;
+int i432, i1, i2, i3, i4;
+bool succ1 = false;
+
+abc = m1.toString(); // abc
+i432 = print(m1.hashCode()); // none.map(c => (int)c).sum() = 432
+succ1 = print(m1.equals(m2)); // true
+
+i1 = print(MyDyn.hashesCnt); 
+Map map = new Map();
+map.put(m1, "m1");
+
+map.put(m1, "m1");
+i2 = print(MyDyn.equalsCnt); 
+i3 = print(MyDyn.hashesCnt); 
+
+var m3 = new MyDyn("xyz") { prop = "abc", attr = "def", trai = "ghi", feat = "xyz" };
+i4 = print(m3._count); 
+
+abc = print(m3["prop"]); 
+xyz = print(m3.prop); 

@@ -54,6 +54,7 @@ import info.julang.interpretation.expression.sub.PrimaryExpression;
 import info.julang.interpretation.expression.sub.TertiaryExpression;
 import info.julang.interpretation.expression.sub.TypeofExpression;
 import info.julang.interpretation.expression.sub.UnaryExpression;
+import info.julang.langspec.ast.JulianParser.E_primaryContext;
 import info.julang.langspec.ast.JulianParser.ExpressionContext;
 import info.julang.memory.value.BoolValue;
 import info.julang.memory.value.ByteValue;
@@ -94,7 +95,7 @@ public abstract class ExpressionBase implements IExpression {
 	
 	protected IExpression getExpression(AstInfo<ExpressionContext> subAst){
 		// By using labels in ANTLR definition, all sub expressions have a corresponding class
-		IExpression expr = null;
+		IExpression expr = null;		
 		String name = subAst.getAST().getClass().getSimpleName();
 		switch(name) {
 		case "E_primaryContext":

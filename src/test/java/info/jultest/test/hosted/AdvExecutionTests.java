@@ -34,6 +34,7 @@ public class AdvExecutionTests {
 	@Test
 	public void throwExceptionFromPlatformTest() throws EngineInvocationError {
 		ExceptionTestRunner runner = new ExceptionTestRunner(Commons.Groups.HOSTING, FEATURE);
+		//runner.executeOnly("exec_adv_2_exception.jul");
 		runner.executeAndExpect(
 			"exec_adv_2_exception.jul", 
 			"System.HostingPlatformException", 

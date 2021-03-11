@@ -31,6 +31,7 @@ import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
 import info.julang.interpretation.resolving.GlobalFunctionNameResolver;
 import info.julang.memory.MemoryArea;
+import info.julang.memory.value.IFuncValue;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.typesystem.loading.InternalTypeResolver;
 
@@ -42,10 +43,11 @@ import info.julang.typesystem.loading.InternalTypeResolver;
 public class FunctionContext extends Context {
 
 	public FunctionContext(
+		IFuncValue func,
 		MemoryArea frame, 
 		MemoryArea heap,
 		IVariableTable varTable, 
-		ITypeTable typTable, 
+		ITypeTable typTable,
 		InternalTypeResolver typResolver,
 		IModuleManager mm,
 		NamespacePool nsPool, 
@@ -59,7 +61,7 @@ public class FunctionContext extends Context {
 			typResolver,
 			mm, 
 			nsPool,
-			new GlobalFunctionNameResolver(varTable, typTable),
+			new GlobalFunctionNameResolver(varTable, func.getLocalBindings(), typTable),
 			io,
 			jthread,
 			ExecutionContextType.InMethodBody

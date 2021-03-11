@@ -231,11 +231,13 @@ class HostedIndexedBase implements JulianObjectAdaptor {
 			this.index = index;
 			this.arrayValue = arrayValue;
 		}
-		
+
+		@Override
 		protected void setValueInternal(int value){
 			Array.setInt(this.arrayValue, index, value);
 		}
-		
+
+		@Override
 		protected int getValueInternal(){
 			return Array.getInt(this.arrayValue, index);
 		}
@@ -252,10 +254,12 @@ class HostedIndexedBase implements JulianObjectAdaptor {
 			this.arrayValue = arrayValue;
 		}
 		
-		protected void setValueInternal(int value){
+		@Override
+		protected void setValueInternal(float value){
 			Array.setFloat(this.arrayValue, index, value);
 		}
-		
+
+		@Override
 		protected float getValueInternal(){
 			return Array.getFloat(this.arrayValue, index);
 		}
@@ -271,11 +275,13 @@ class HostedIndexedBase implements JulianObjectAdaptor {
 			this.index = index;
 			this.arrayValue = arrayValue;
 		}
-		
+
+		@Override
 		protected void setValueInternal(byte value){
 			Array.setByte(this.arrayValue, index, value);
 		}
-		
+
+		@Override
 		protected byte getValueInternal(){
 			return Array.getByte(this.arrayValue, index);
 		}
@@ -291,11 +297,13 @@ class HostedIndexedBase implements JulianObjectAdaptor {
 			this.index = index;
 			this.arrayValue = arrayValue;
 		}
-		
+
+		@Override
 		protected void setValueInternal(char value){
 			Array.setChar(this.arrayValue, index, value);
 		}
-		
+
+		@Override
 		protected char getValueInternal(){
 			return Array.getChar(this.arrayValue, index);
 		}
@@ -311,11 +319,13 @@ class HostedIndexedBase implements JulianObjectAdaptor {
 			this.index = index;
 			this.arrayValue = arrayValue;
 		}
-		
+
+		@Override
 		protected void setValueInternal(boolean value){
 			Array.setBoolean(this.arrayValue, index, value);
 		}
-		
+
+		@Override
 		protected boolean getValueInternal(){
 			return Array.getBoolean(this.arrayValue, index);
 		}

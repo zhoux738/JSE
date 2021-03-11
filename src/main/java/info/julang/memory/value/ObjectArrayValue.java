@@ -238,7 +238,7 @@ public class ObjectArrayValue extends ArrayValue {
 			JMethodType jmt = findMethod(v1);
 			if (jmt != null) {
 				FuncCallExecutor fcall = new FuncCallExecutor(rt);
-				JValue jv = fcall.invokeMethodInternal(jmt, method_compare, new JValue[]{ v2 }, v1);
+				JValue jv = fcall.invokeMethodInternal(FuncValue.DUMMY, jmt, method_compare, new JValue[]{ v2 }, v1);
 				int r = ((IntValue)jv).getIntValue();
 				if (r != 0 || 
 				   !(JStringType.getInstance() == v1.getType() && JStringType.getInstance() != v2.getType())){
@@ -251,7 +251,7 @@ public class ObjectArrayValue extends ArrayValue {
 			jmt = findMethod(v2);
 			if (jmt != null) {
 				FuncCallExecutor fcall = new FuncCallExecutor(rt);
-				JValue jv = fcall.invokeMethodInternal(jmt, method_compare, new JValue[]{ v1 }, v2);
+				JValue jv = fcall.invokeMethodInternal(FuncValue.DUMMY, jmt, method_compare, new JValue[]{ v1 }, v2);
 				return -((IntValue)jv).getIntValue();
 			}
 			

@@ -1,0 +1,61 @@
+// baseline: bind one argument to a lambda or method member
+class MyCls {
+	static int stabase = 10;
+	int insbase = 100;
+
+	static int getSta(int i) {
+		i *= 10;
+		stabase += i;
+		return i;
+	}
+	
+	int getIns(int i) {
+		i *= 100;
+		insbase += i;
+		return i;
+	}
+	
+	static Function getStaFunLamb() {
+		return (int i) => MyCls.getSta(i);
+	}
+	
+	static Function getStaFunFcf() {
+		return MyCls.getSta;
+	}
+	
+	Function getInsFunLamb() {
+		return (int i) => getIns(i);
+	}
+	
+	Function getInsFunFcf() {
+		return getIns;
+	}
+}
+
+var g1 = Function.bind(MyCls.getStaFunLamb(), null, new var[] { 3 });
+int i30 = g1();
+var g2 = Function.bind(MyCls.getStaFunFcf(), null, new var[] { 5 });
+int i50 = g2();
+
+MyCls mc = new MyCls();
+var g3 = Function.bind(mc.getInsFunLamb(), null, new var[] { 3 });
+int i300 = g3();
+var g4 = Function.bind(mc.getInsFunLamb(), null, new var[] { 5 });
+int i500 = g4();
+
+int i90 = MyCls.stabase;
+int i900 = mc.insbase;
+
+// Bind to function member directly
+var g5 = Function.bind(MyCls.getSta, null, new var[] { 7 });
+int i70 = g5();
+int i160 = MyCls.stabase;
+
+// Recall the bound function
+g1();
+int i190 = MyCls.stabase;
+
+//Console.println(i30);
+//Console.println(i50);
+//Console.println(i300);
+//Console.println(i500);

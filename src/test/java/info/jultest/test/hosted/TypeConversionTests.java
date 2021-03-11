@@ -5,10 +5,11 @@ import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntArrayValue;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
+import static info.jultest.test.Commons.validateFloatValue;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import info.jultest.test.Commons;
 import info.julang.execution.Argument;
 import info.julang.execution.EngineRuntime;
 import info.julang.execution.Executable;
@@ -26,6 +27,7 @@ import info.julang.memory.MemoryArea;
 import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.ArrayValueBuilder;
 import info.julang.memory.value.ArrayValueBuilderHelper;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.StringValue;
@@ -38,7 +40,7 @@ import info.julang.typesystem.basic.FloatType;
 import info.julang.typesystem.basic.IntType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.jclass.builtin.JStringType;
-import org.junit.Assert;
+import info.jultest.test.Commons;
 
 public class TypeConversionTests {
 
@@ -162,16 +164,25 @@ public class TypeConversionTests {
 		
 		JValue iaa = toValue(ctxt, new int[][]{{3,5},{7,11}});
 		JValue saa = toValue(ctxt, new String[][]{{"3","5"},{"7","11"}});
+		JValue caa = toValue(ctxt, new char[][]{{'a','b'},{'z','m'}});
+		JValue baa = toValue(ctxt, new boolean[][]{{true,false},{false,true}});
+		JValue faa = toValue(ctxt, new float[][]{{1.1f,2.2f},{3.3f,4.4f}});
 		
 		ctxt.getJThread().getThreadRuntime().getThreadStack().popFrame();
 		
 		gvt.addVariable("iaa", iaa);
 		gvt.addVariable("saa", saa);
+		gvt.addVariable("caa", caa);
+		gvt.addVariable("baa", baa);
+		gvt.addVariable("faa", faa);
 		
 		engine.run(getScriptFile(Commons.Groups.HOSTING, FEATURE, "conversion_01.jul"));
 
 		validateIntValue(gvt, "total", 26);
 		validateStringValue(gvt, "cc", "35711");
+		validateStringValue(gvt, "cc2", "abzm");
+		validateStringValue(gvt, "cc3", "truefalsefalsetrue");
+		validateFloatValue(gvt, "ftotal", 11.0f);
 	}
 	
 	private void validateType(Context ctxt, Class<?> clazz, JType expected) throws MappedTypeConversionException {
@@ -187,7 +198,7 @@ public class TypeConversionTests {
 		JThread jt = rt.getThreadManager().createMain(rt, new Executable(){
 
 			@Override
-			public Result execute(ThreadRuntime runtime, Argument[] args) throws EngineInvocationError {
+			public Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) throws EngineInvocationError {
 				return null;
 			}
 			

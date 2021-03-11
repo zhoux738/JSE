@@ -76,7 +76,7 @@ public class HostedArrayValue extends HostedValue implements JCastable, IHostedV
 	public void setHostedObject(Object obj){
 		Class<?> clazz = obj.getClass();
 		if (!clazz.isArray()) {
-			throw new JSEError("Cannot set a hosted object ");
+			throw new JSEError("Cannot set a hosted object.");
 		}
 		
 		super.setHostedObject(obj);

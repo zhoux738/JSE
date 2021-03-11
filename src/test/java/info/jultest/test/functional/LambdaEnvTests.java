@@ -162,12 +162,13 @@ public class LambdaEnvTests {
 	
 	@Test
 	public void lambdaMetadataTest() throws EngineInvocationError {
-		IExtEngineRuntime rt = runViaFactory(
-			Commons.Groups.FUNCTIONAL, FEATURE, "lambda_meta.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		Commons.resetTypeSystem();
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		engine.run(getScriptFile(Commons.Groups.FUNCTIONAL, FEATURE, "lambda_meta.jul"));
 		
-		EFCommons.validateBoolValue(gvt, "plist", true);
-		EFCommons.validateBoolValue(gvt, "kind", true);
-		EFCommons.validateBoolValue(gvt, "ret", true);
+		Commons.validateBoolValue(gvt, "plist", true);
+		Commons.validateBoolValue(gvt, "kind", true);
+		Commons.validateBoolValue(gvt, "ret", true);
 	}
 }

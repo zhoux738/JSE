@@ -1,0 +1,16 @@
+class My {
+	char c;
+}
+
+My m = new My();
+m.c = 'z';
+
+Dynamic dyn = new Dynamic() { a = "xyz", b = 10, c = m } ;
+
+string xyz = dyn.a;
+int i10 = dyn.b;
+dyn.a = "uvw";
+string uvw = dyn.a;
+char z = dyn.c.c;
+m.c = 'x';
+char x = dyn.c.c;

@@ -1,0 +1,30 @@
+// with autobind == true, bind functions of all form, unless it's really unbindable (not shown in this test case)
+class MyCls {
+	int a = 100;
+	int h() { return (this.a *= 2); }
+}
+
+var f = () => this.a;
+
+var g(int i) {
+	this.a += i;
+	return this.a;
+}
+
+MyCls mc = new MyCls();
+
+var dyn = new Dynamic(new { autobind = true }) { 
+	a = 10, 
+	f = f,
+	g = g,
+	h = mc.h,
+	k = val => { this.b = val; }
+};
+
+int i10 = dyn.f();
+int i15 = dyn.g(5);
+int i30 = dyn.h();
+int i100 = mc.a;
+
+dyn.k("xyz");
+string xyz = dyn.b;

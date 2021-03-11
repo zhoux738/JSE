@@ -81,7 +81,7 @@ class TypePrioritySorter {
 		Object[] rawArr = all.toArray();
 		int len = rawArr.length - offset;
         final T[] arr = (T[]) Array.newInstance(c, len);
-    	for (int i = offset; i < len; i++) {
+    	for (int i = offset; i < rawArr.length; i++) {
     		TypePriority ep = (TypePriority)rawArr[i];
     		arr[i - offset] = (T)ep.getType();
     	}

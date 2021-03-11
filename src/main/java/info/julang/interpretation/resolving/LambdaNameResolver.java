@@ -27,12 +27,14 @@ package info.julang.interpretation.resolving;
 import info.julang.execution.symboltable.Display;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.execution.symboltable.LocalBindingTable;
 import info.julang.interpretation.context.ContextType;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectMember;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.TypeValue;
+import info.julang.typesystem.IllegalMemberAccessException;
 import info.julang.typesystem.jclass.Accessibility;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.util.OneOrMoreList;
@@ -48,6 +50,8 @@ public class LambdaNameResolver implements INameResolver {
 	
 	private ITypeTable tt;
 	
+	private LocalBindingTable lbt;
+	
 	private Display display;
 	
 	private ObjectValue thisValue;
@@ -59,9 +63,10 @@ public class LambdaNameResolver implements INameResolver {
 	private ContextType definingContextType;
 	
 	public LambdaNameResolver(
-		IVariableTable vt, ITypeTable tt, Display display, ContextType definingContextType, ICompoundType containingType){
+		IVariableTable vt, ITypeTable tt, LocalBindingTable lbt, Display display, ContextType definingContextType, ICompoundType containingType){
 		this.vt = vt;
 		this.tt = tt;
+		this.lbt = lbt;
 		this.display = display;
 		this.definingContextType = definingContextType;
 		this.containingType = containingType;
@@ -69,39 +74,50 @@ public class LambdaNameResolver implements INameResolver {
 	
 	@Override
 	public JValue resolve(String id){
+		// 1) try pre-bindings 
+		boolean isThis = "this".equals(id);
+		if (isThis && lbt != null) {
+			JValue v = lbt.getVariable(id);
+			if(v != null){
+				return v;
+			}
+		}
+		
 		if(definingContextType == ContextType.IMETHOD){
-			// 1) "this"?
-			if("this".equals(id)){//KnownTokens.THIS_T.getLiteral())
+			// 2) "this"?
+			if(isThis){//KnownTokens.THIS_T.getLiteral())
 				initThisValue();
 				return thisValue;
 			}
 		}
 		
-		// 2) try as variable; query global variable table only if the lambda is defined in global context.
+		// 3) try as variable; query global variable table only if the lambda is defined in global context.
 		JValue v = vt.getVariable(id, definingContextType == ContextType.FUNCTION);
 		if(v != null){
 			return v;
 		}
 		
-		// 3) try from display
+		// 4) try from display
 		v = display.getVariable(id);
 		if(v != null){
 			return v;
 		}
 		
-		// 4) class member
+		if(isThis && thisValue == null){
+			throw IllegalMemberAccessException.tryToReferenceUnboundThis();
+		}
+		
+		// 5) class member
 		v = getMember(id);
 		if(v != null){
 			return v;
 		}
 		
-		// 5) try as type
+		// 6) try as type
 		v = tt.getValue(id);
 		if(v != null){
 			return v;
 		}
-		
-		// throw new UndefinedVariableNameException(id);
 		
 		return null;
 	}
@@ -109,6 +125,20 @@ public class LambdaNameResolver implements INameResolver {
 	private void initThisValue() {
 		if(thisValue == null) {
 			thisValue = (ObjectValue) display.getVariable("this");
+
+			// For instance method, 'this' refers to the resident one by default, 
+			// but can be hidden by the one found in local bindings.
+			if (lbt != null) {
+				JValue v = lbt.getVariable("this");
+				if(v != null){
+					// LBT 'this' overwrites the resident 'this'
+					thisValue = (ObjectValue) v.deref();
+				}
+			}
+			
+			if (thisValue == null) {
+				throw IllegalMemberAccessException.tryToReferenceUnboundThis();
+			}
 		}
 	}
 

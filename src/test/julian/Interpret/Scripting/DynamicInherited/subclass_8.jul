@@ -1,0 +1,36 @@
+// type inspection
+import System.Collection;
+import System.Util;
+import System.Lang;
+
+class MyDyn : Dynamic {
+	MyDyn() : super() {
+	}
+}
+
+var m1 = new MyDyn() { 
+	attr = 10
+};
+
+bool[] checks = new bool[5];
+var type = m1.getType();
+if (type == typeof(MyDyn)){
+	checks[0] = true;
+}
+
+for (var m : type.getMethods()) {
+	//Console.println(m);
+	if (m.getName() == "initByMap") {
+	 checks[1] = true;
+	} else if (m.getName() == "getIterator") {
+	 checks[2] = true;
+	} else if (m.getName() == "at") {
+	 checks[3] = true;
+	} 
+}
+
+if (type.getParent() == typeof(Dynamic)){
+	checks[4] = true;
+}
+
+// Console.println(type.getParent());

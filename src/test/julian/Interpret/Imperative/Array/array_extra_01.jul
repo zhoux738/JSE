@@ -1,0 +1,36 @@
+byte[] barray = new byte[5];
+Array.fill(barray, (byte)10);
+barray[4] = 5;
+Array.sort(barray, false);
+byte[] barray2 = new byte[5];
+Array.copy(barray, 0, barray2, 0, 5);
+bool succ1 = barray2[0] == 5 && barray2[1] == 10 && barray2[4] == 10;
+Array.sort(barray2, true);
+bool succ1a = barray2[4] == 5;
+
+char[] carray = new char[5];
+Array.fill(carray, 'z');
+carray[4] = 'a';
+Array.sort(carray, false);
+char[] carray2 = new char[5];
+Array.copy(carray, 0, carray2, 0, 5);
+bool succ2 = carray2[0] == 'a' && carray2[1] == 'z' && carray2[4] == 'z';
+Array.sort(carray2, true);
+bool succ2a = carray2[4] == 'a';
+
+float[] farray = new float[5];
+Array.fill(farray, 3.7);
+farray[4] = 1.2;
+Array.sort(farray, false);
+float[] farray2 = new float[5];
+Array.copy(farray, 0, farray2, 0, 5);
+bool succ3 = farray[0] == 1.2 && farray2[1] == 3.7 && farray2[4] == 3.7; // This comparison may be not accurate.
+Array.sort(farray2, true);
+bool succ3a = farray2[4] == 1.2;
+
+bool succ4 = false;
+try {
+  Array.copy(carray2, 0, farray2, 0, 5);
+} catch (System.Lang.RuntimeCheckException ex) {
+	succ4 = ex.getMessage().contains("source and destination are of different types");
+}

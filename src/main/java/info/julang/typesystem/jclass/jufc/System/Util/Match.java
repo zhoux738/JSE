@@ -39,6 +39,7 @@ import info.julang.hosting.SimpleHostedMethodProvider;
 import info.julang.hosting.execution.InstanceNativeExecutor;
 import info.julang.interpretation.internal.FuncCallExecutor;
 import info.julang.memory.value.ArrayIndexOutOfRangeException;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.TempValueFactory;
@@ -134,7 +135,7 @@ public class Match {
 		
 		Argument[] args = getArguments(ov, matcher, res, !res);
 		
-		exec.invokeFunction(sysUtilMatchUpdate.getMethodType(), "update", args);
+		exec.invokeFunction(FuncValue.DUMMY, sysUtilMatchUpdate.getMethodType(), "update", args);
 		return res;
 	}
 	

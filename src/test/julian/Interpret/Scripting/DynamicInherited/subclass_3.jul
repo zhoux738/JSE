@@ -1,0 +1,48 @@
+// map initializer
+import System.Collection;
+
+class Dyn : Dynamic {
+	string prop;
+	
+	Dyn(string prop){
+		this.prop = prop;
+	}
+}
+
+class MyDyn : Dyn {
+	MyDyn() : super("pater") { 
+	}
+}
+
+var print(var val){
+	// Console.println(val);
+	return val;
+}
+
+var m1 = new MyDyn();
+
+String abc, def, ghi, abcdefghi;
+bool succ1 = false;
+
+print(m1);
+print(m1.equals(m1));
+print(m1.hashCode());
+
+succ1 = true;
+
+abc = m1["key1"] = "abc";
+def = m1.key2 = "def";
+m1.at("key3", "ghi");
+ghi = m1.at("key3");
+
+List lst = new List();
+for (var v : m1) {
+	lst.add(print(v.value));
+}
+
+string acc = "";
+lst.sort(false);
+for (var v : lst) {
+	acc += v;
+}
+abcdefghi = print(acc);

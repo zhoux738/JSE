@@ -31,6 +31,7 @@ import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadStack;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.statement.StatementOption;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.VoidValue;
 import info.julang.modulesystem.ModuleInfo;
@@ -118,9 +119,9 @@ public class GlobalScriptExecutable extends InterpretedExecutable {
 	}
 	
 	@Override
-	protected void prepareArguments(Argument[] args, Context ctxt) {
+	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
 		if (!interactiveMode){
-			super.prepareArguments(args, ctxt);
+			super.repliateArgsAndBindings(args, ctxt, func, false);
 		}
 		
 		// Do not store variables in the interactive mode.

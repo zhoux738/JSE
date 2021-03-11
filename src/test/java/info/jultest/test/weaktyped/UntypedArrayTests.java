@@ -1,4 +1,4 @@
-package info.jultest.test.oo;
+package info.jultest.test.weaktyped;
 
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;

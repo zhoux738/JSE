@@ -1,0 +1,25 @@
+[Mapped(className="info.jultest.test.hosted.classes.Node")]
+class Node {	
+	
+}
+
+class Nexus {
+	int getVal(int i) { return i; }
+	int getVal() { return getVal(5); }
+}
+
+bool succ1, succ2;
+
+Node mc = new Node(1, null);
+try {
+	Function.bind(mc.getValue, mc, new var[0]);
+} catch (System.Lang.IllegalBindingException ex) {
+	succ1 = ex.getMessage().contains("hosted");
+}
+
+
+try {
+	Function.bind(new Nexus().getVal, null, new var[0]);
+} catch (System.Lang.IllegalBindingException ex) {
+	succ2 = ex.getMessage().contains("METHOD_GROUP");
+}

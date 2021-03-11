@@ -1,0 +1,43 @@
+// type inspection
+import System.Collection;
+import System.Util;
+import System.Lang;
+
+static class MyDynExt {
+
+	static int count = 0;
+
+	static var foo(MyDyn this) {
+		if (count < 30) {
+			count++;
+			return this.foo(); // without the condition, this will overflow
+		}
+		
+		return null;
+	}
+	
+	static var bar(MyDyn this) {
+		return this.bar; //
+	}
+	
+}
+class MyDyn : Dynamic, MyDynExt {
+
+	void test() {}
+
+}
+
+var m1 = new MyDyn() { 
+	foo = 10,
+	bar = "abc"
+};
+
+var print(var val){
+	// Console.println(val);
+	return val;
+}
+
+bool b1 = print(MyDynExt.foo).toString().startsWith("<default>.MyDynExt::foo(");
+var nl = print(m1.foo());
+int i30 = print(MyDynExt.count);
+bool b2 = print(m1.bar()).toString().startsWith("<default>.MyDynExt::bar(");

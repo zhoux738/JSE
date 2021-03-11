@@ -1,0 +1,26 @@
+class MyVal {
+	string str;
+	MyVal(string str){
+		this.str = str;
+	}
+}
+
+string fun1(MyVal val) {
+	// Assigning to local doesn't affect the bound value.
+	val = new MyVal("foo");
+	return val.str;
+}
+
+string fun2(MyVal val) {
+	// Modifying the local does affect the bound value.
+	val.str = "bar";
+	return val.str;
+}
+
+MyVal val = new MyVal("abc");
+var com1 = Function.bind(fun1, null, new var[] { val });
+String foo = com1();
+String abc = val.str; // not changed
+var com2 = Function.bind(fun2, null, new var[] { val });
+String bar1 = com2();
+String bar2 = val.str; // changed

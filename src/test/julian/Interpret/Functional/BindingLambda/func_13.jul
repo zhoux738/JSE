@@ -1,0 +1,60 @@
+// Bind Dynamic
+class MyCls {
+	int val;
+	
+	Function getVal() {
+		return (int val) => {
+			this.val += val;
+			return val;
+		};
+	}
+	
+	Function multiply() {
+		return (int v) => {
+			val *= v; // Cannot refer to 'this' of Dynamic this way
+		};
+	}
+	
+	Function addprop() {
+		return (int v) => {
+			this.prop = v;
+	
+		};
+	}
+	
+	Function index() {
+		return (string name, string val) => {
+			this[name] = val;
+	
+		};
+	}
+}
+
+MyCls mc = new MyCls();
+mc.val = 10;
+
+var v = null;
+var gv = Function.bind(mc.getVal(), v = new { val = 500 });
+int i7 = gv(7);
+//Console.println(i7);
+int i10 = mc.val; // no change to mc since it's replaced
+int i507 = v.val;
+
+bool succ1 = false;
+try {
+	var mult = Function.bind(mc.multiply(), v);
+	mult(100);
+	// Console.println(v.val);
+} catch (System.Lang.UndefinedSymbolException ex) {
+	succ1 = true;
+}
+
+var ap = Function.bind(mc.addprop(), v);
+ap(31);
+int i31 = v.prop;
+var nl = v.al;
+
+var indfun = Function.bind(mc.index(), v, new var[] { "thekey" });
+indfun("theval");
+
+string theval = v.thekey;

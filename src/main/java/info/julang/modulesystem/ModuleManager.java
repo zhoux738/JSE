@@ -473,6 +473,7 @@ public class ModuleManager implements IModuleManager {
 			if (analyticalLoad) {
 				RawScriptInfo.Option opt = info.getOption();
 				opt.setAllowNameInconsistency(true);
+				opt.setAllowSystemModule(true); // So that we can use this for developing Julian itself.
 				opt.setPresetModuleName(ModuleInfo.DEFAULT_MODULE_NAME);
 			}
 			
@@ -486,7 +487,8 @@ public class ModuleManager implements IModuleManager {
 	/**
 	 * Try to load script info from the specified path. This will cause some generation of AST for each type.
 	 * <p>
-	 * This method is completely stateless. It won't cause any change to the global environment and it doesn't use any contextual object either.
+	 * This method is completely stateless. It won't cause any change to the global environment and 
+	 * it doesn't use any contextual object either. Its main use is for external tools such as IDE.
 	 * 
 	 * @param modName The module's name. The file at the specified path is expected to start with 
 	 * "<code>import {modName};</code>", otherwise this method will throw.

@@ -1,0 +1,27 @@
+// initByMap
+import System.Collection;
+
+int calc(){
+	return 100;
+}
+
+int _i37 = 37;
+string name = "nm";
+Map m = new Map(){
+	"a" = 123,
+	50 = "xyz",
+	(name) = _i37, // (name) is evaluated as expression, producing "nm"
+	"fun" = calc,
+	name = "abc", // name treated as string literal ("name")
+	fun2 = () => calc() + 50
+};
+
+int i123 = m["a"];
+string xyz = m[50];
+int i37 = m["nm"];
+_i37 = 41;
+int i37_2 = m["nm"];
+int i41 = _i37;
+int i100 = m["fun"]();
+string abc = m["name"];
+int i150 = m["fun2"]();

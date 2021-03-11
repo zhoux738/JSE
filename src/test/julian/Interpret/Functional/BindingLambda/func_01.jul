@@ -1,0 +1,19 @@
+// baseline: bind 'this' to a lambda created by an instance method
+class MyVal {
+	int val;
+	MyVal(int val) {
+		this.val = val;
+	}
+	var getAddFunc(int i) {
+		return () => { return this.val + i; }; // i is value-copied when producing the lambda
+	}
+}
+
+MyVal mv = new MyVal(3);
+var func = mv.getAddFunc(5);
+int i8 = func(); // 3 + 5
+
+var func2 = Function.bind(func, new MyVal(10), null);
+int i15 = func2(); // 10 + 5;
+
+// Console.println(res);

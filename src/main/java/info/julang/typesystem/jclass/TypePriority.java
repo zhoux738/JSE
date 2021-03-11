@@ -80,5 +80,10 @@ class TypePriority implements Comparable<TypePriority> {
 		if (torder > o.torder) return 1;
 		
 		return 0;
-	}		
+	}
+	
+	@Override
+	public String toString() {
+		return typ.getName() + " [rank=" + rank + ", in-rank order=" + order + ", total order=" + torder + "]";
+	}
 }

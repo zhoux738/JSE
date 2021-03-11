@@ -1,0 +1,36 @@
+
+
+// Constness
+class MyVal {
+	string str;
+	MyVal(string str){
+		this.str = str;
+	}
+	
+	void fun1(MyVal val, int i) {
+		this = val; // This should fail
+	}
+
+	void fun2(string nv) {
+		this.str = nv;
+	}
+}
+
+MyVal mv = new MyVal("***");
+//mv.fun1(mv, 1);
+
+var com1 = Function.bind(mv.fun1, new MyVal("abc"));
+
+//com1(new MyVal("def"), 10);
+
+bool succ1 = false;
+try {
+	com1(new MyVal("def"), 10);
+} catch (IllegalAssignmentException ex) {
+	succ1 = true; // ex.getMessage().contains("constant");
+}
+
+MyVal v = new MyVal("abc");
+var com2 = Function.bind(mv.fun2, v);
+com2("xyz"); // modifying this.str
+string xyz = v.str;

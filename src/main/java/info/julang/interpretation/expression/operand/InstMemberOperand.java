@@ -24,6 +24,7 @@ SOFTWARE.
 
 package info.julang.interpretation.expression.operand;
 
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.MethodGroupValue;
 import info.julang.memory.value.TempValueFactory;
@@ -37,7 +38,7 @@ import info.julang.typesystem.JType;
 public class InstMemberOperand extends MemberOperand {
 	
 	private JValue ofObject;
-	private MethodGroupValue extMethods;
+	private FuncValue extMethods;
 	
 	/**
 	 * The object whose member is wrapped by this operand.
@@ -50,13 +51,16 @@ public class InstMemberOperand extends MemberOperand {
 	
 	/**
 	 * The extension methods for the same name.
-	 * @return null if no extension is installed to the type of this object.
+	 * 
+	 * @return could be {@link info.julang.memory.value.MethodValue MethodValue} or 
+	 * {@link info.julang.memory.value.MethodGroupValue MethodGroupValue};
+	 * null if no extension is installed to the type of this object.
 	 */
-	public MethodGroupValue getExtensionMethods() {
+	public FuncValue getExtensionMethods() {
 		return extMethods;
 	}
 	
-	public InstMemberOperand(JValue value, JType type, MethodGroupValue extMethodGroup, JValue ofObject, String memberName){
+	public InstMemberOperand(JValue value, JType type, FuncValue extMethodGroup, JValue ofObject, String memberName){
 		super(value != null // Create an empty method group value since operand must hold a non-null value.
 				? value 
 				: TempValueFactory.createEmptyMethodGroupValue(memberName, type),

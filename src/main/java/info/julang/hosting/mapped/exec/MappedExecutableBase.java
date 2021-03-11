@@ -38,6 +38,7 @@ import info.julang.hosting.PlatformExceptionInfo;
 import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.statement.StatementOption;
+import info.julang.memory.value.IFuncValue;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.jclass.ICompoundType;
 import info.julang.typesystem.jclass.MethodExecutable;
@@ -77,6 +78,11 @@ public abstract class MappedExecutableBase extends MethodExecutable {
 		} catch (IllegalAccessException e) {
 			throw new JSEError("Failed to call a mapped platform " + getCalleeType() + ": " + e.getMessage());
 		}
+	}
+	
+	@Override
+	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
+		super.repliateArgsAndBindings(args, ctxt, func, false);
 	}
 
 	protected abstract Result executeInternal(ThreadRuntime runtime, Context ctxt) throws InvocationTargetException, IllegalAccessException;

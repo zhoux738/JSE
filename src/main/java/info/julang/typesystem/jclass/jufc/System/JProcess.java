@@ -56,6 +56,7 @@ import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.ArrayValueFactory;
 import info.julang.memory.value.BasicArrayValue;
 import info.julang.memory.value.EnumValue;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedValue;
 import info.julang.memory.value.IArrayValue;
 import info.julang.memory.value.IntValue;
@@ -581,14 +582,14 @@ public class JProcess {
 								TempValueFactory.createTempIntValue(0),
 								TempValueFactory.createTempIntValue(read),
 							};
-							fc.invokeMethodInternal(writeMethod, WriteMethodName, values, streamObj);
+							fc.invokeMethodInternal(FuncValue.DUMMY, writeMethod, WriteMethodName, values, streamObj);
 							
 							// Flush every 8K bytes
 							total += read;
 							int newTotal8ks = (int)(total >> 13); // right-shift by 13 is same to divide by 8192
 							if (newTotal8ks > total8ks){
 								total8ks = newTotal8ks;
-								fc.invokeMethodInternal(flushMethod, FlushMethodName, new JValue[0], streamObj);
+								fc.invokeMethodInternal(FuncValue.DUMMY, flushMethod, FlushMethodName, new JValue[0], streamObj);
 							}
 						} else if (read < 0){
 							break;
@@ -599,7 +600,7 @@ public class JProcess {
 				} finally {
 					try{
 						// Flush at the end (best efforts)
-						fc.invokeMethodInternal(flushMethod, FlushMethodName, new JValue[0], streamObj);
+						fc.invokeMethodInternal(FuncValue.DUMMY, flushMethod, FlushMethodName, new JValue[0], streamObj);
 					} catch (Exception e) {
 						// Ignore
 					}
@@ -645,7 +646,7 @@ public class JProcess {
 							TempValueFactory.createTempIntValue(MAX),
 						};
 						
-						JValue val = fc.invokeMethodInternal(readMethod, ReadMethodName, values, streamObj);
+						JValue val = fc.invokeMethodInternal(FuncValue.DUMMY, readMethod, ReadMethodName, values, streamObj);
 						read = ((IntValue) val).getIntValue();
 						
 						// Redirect

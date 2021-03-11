@@ -1,0 +1,34 @@
+interface Inf {
+	string getStr();
+}
+
+class MyVal : Inf {
+	string getStr() {
+		return "m";	
+	}
+}
+
+class UrVal : MyVal {
+	string getStr() {
+		return "u";
+	}
+}
+
+class MyCls {
+	string fun1(Inf inf, MyVal v1, MyVal v2, Inf inf2) {
+		return inf.getStr() + v1.getStr() + "-" + v2.getStr() + inf2.getStr();
+	}
+}
+
+MyCls mc = new MyCls();
+var myval, urval;
+var com1 = Function.bind(
+	mc.fun1, 
+	null, 
+	new var[] { 
+		myval = new MyVal(),// match direct interface
+		urval = new UrVal(),// match base
+		myval,  			// match exact
+		urval,				// match indirect interface
+	});
+String res = com1();

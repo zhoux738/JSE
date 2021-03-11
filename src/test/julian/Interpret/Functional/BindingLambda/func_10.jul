@@ -1,0 +1,28 @@
+// bind, then bind another on top of it. all three are unrelated
+
+class MyCls {
+	int i = 0;
+	var combine() { 
+		return (string s, char c, int i) => {
+			this.i += i;
+			return "pf" + i + s + c;
+		}; 
+	}
+}
+
+MyCls mc = new MyCls();
+
+var com1 = Function.bind(mc.combine(), null, new var[]{ "abc" });
+
+var com2 = Function.bind(com1, null, new var[]{ 'g' });
+
+var com3 = Function.bind(com2, null, new var[]{ 5 });
+
+string pf2abcx = com1('x', 2);
+int i2 = mc.i;
+string pf3abcg = com2(3);
+int i5 = mc.i;
+string pf5abcg = com3();
+int i10 = mc.i;
+string pf7ghiz = mc.combine()("ghi", 'z', 7);
+int i17 = mc.i;

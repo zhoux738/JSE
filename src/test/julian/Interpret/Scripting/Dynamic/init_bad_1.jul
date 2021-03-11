@@ -1,0 +1,5 @@
+/* $PRAGMA$ info.julang.ide.no.parsing */
+Dynamic dyn = new Dynamic() { 
+	getPropName() = "abc"
+};
+

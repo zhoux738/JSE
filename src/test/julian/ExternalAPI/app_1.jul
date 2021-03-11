@@ -1,0 +1,6 @@
+int result = trueBool ? (
+	sevenInt + 					// 7
+	((int)zChar - (int)'z') + 	// 0
+	helloStr.length) 			// 5
+: -1;
+return result;					// 12

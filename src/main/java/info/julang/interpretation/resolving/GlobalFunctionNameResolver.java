@@ -26,6 +26,8 @@ package info.julang.interpretation.resolving;
 
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.execution.symboltable.LocalBindingTable;
+import info.julang.interpretation.RuntimeCheckException;
 import info.julang.memory.value.JValue;
 
 /**
@@ -39,26 +41,42 @@ public class GlobalFunctionNameResolver implements INameResolver {
 	
 	private ITypeTable tt;
 	
-	public GlobalFunctionNameResolver(IVariableTable vt, ITypeTable tt){
+	private LocalBindingTable lbt;
+	
+	public GlobalFunctionNameResolver(IVariableTable vt, LocalBindingTable lbt, ITypeTable tt){
 		this.vt = vt;
+		this.lbt = lbt;
 		this.tt = tt;
 	}
 	
 	@Override
 	public JValue resolve(String id){
-		// First try as variable 
+		// 1) try pre-bindings for 'this', which is only available if the function has been explicitly bound.
+		boolean isThis = "this".equals(id);
+		if (isThis) {
+			if (lbt != null) {
+				JValue v = lbt.getVariable(id);
+				if(v != null){
+					return v;
+				}
+			}
+		}
+		
+		// 2) try as local variable 
 		JValue v = vt.getVariable(id);
 		if(v != null){
 			return v;
 		}
 		
-		// Then try as type
+		// 3) try as type
 		v = tt.getValue(id);
 		if(v != null){
 			return v;
 		}
 		
-		//throw new UndefinedVariableNameException(id);
+		if (isThis) {
+			throw new RuntimeCheckException("'this' cannot be used in script or global function unless it's been explicitly bound.");
+		}
 		
 		return null;
 	}

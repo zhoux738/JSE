@@ -1,0 +1,20 @@
+Dynamic dyn = new Dynamic(new { sealed = true }) { a = "xyz", b = 10 } ;
+
+int i10 = dyn.b;
+string xyz = dyn.a;
+
+bool succ1 = false;
+try {
+	dyn.anotherprop = "uvw";
+} catch (IllegalMemberAccessException ex){
+	string msg = ex.getMessage();
+	succ1 = msg.contains("anotherprop") && msg.contains("sealed");
+}
+
+bool succ2 = false;
+try {
+	dyn.at("yetanotherprop", "uvw");
+} catch (IllegalMemberAccessException ex){
+	string msg = ex.getMessage();
+	succ2 = msg.contains("yetanotherprop") && msg.contains("sealed");
+}

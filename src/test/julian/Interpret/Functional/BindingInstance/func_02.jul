@@ -1,0 +1,12 @@
+// baseline: bind one argument to an instance method
+class MyCls {
+	int get(int i) {
+		return i;
+	}
+}
+
+var get3 = Function.bind(new MyCls().get, null, new var[] { 3 });
+
+int res = get3();
+
+// Console.println(res);

@@ -24,6 +24,7 @@ SOFTWARE.
 
 package info.julang.memory.value;
 
+import info.julang.execution.symboltable.LocalBindingTable;
 import info.julang.external.interfaces.JValueKind;
 import info.julang.memory.MemoryArea;
 import info.julang.typesystem.JType;
@@ -38,9 +39,11 @@ import info.julang.typesystem.jclass.builtin.JFunctionType;
  * 
  * @author Ming Zhou
  */
-public class FuncValue extends ObjectValue {
+public class FuncValue extends ObjectValue implements IFuncValue {
 	
 	private JValueKind funcKind;
+	
+	private LocalBindingTable lbindings;
 	
 	/**
 	 * Create a function value that stores a global function.
@@ -49,8 +52,8 @@ public class FuncValue extends ObjectValue {
 	 * @param funcType
 	 * @return
 	 */
-	public static FuncValue createGlobalFuncValue(MemoryArea memory, JFunctionType funcType, boolean initFuncMembers){
-		return new FuncValue(memory, funcType, JValueKind.FUNCTION, initFuncMembers);
+	public static FuncValue createGlobalFuncValue(MemoryArea memory, JFunctionType funcType){
+		return new FuncValue(memory, funcType, JValueKind.FUNCTION, true);
 	}
 	
 	@Override
@@ -68,6 +71,7 @@ public class FuncValue extends ObjectValue {
 		if(memory != null){
 			memory.allocate(this);
 		}
+		
 		funcKind = kind;
 	}
 	
@@ -75,21 +79,56 @@ public class FuncValue extends ObjectValue {
 	public JValueKind getBuiltInValueKind(){
 		return JValueKind.FUNCTION;
 	}
-
-	/**
-	 * Get the kind of this func value. The kind can be 
-	 * {@link JValueKind#FUNCTION FUNCTION}, 
-	 * {@link JValueKind#METHOD METHOD} or 
-	 * {@link JValueKind#METHOD_GROUP METHOD_GROUP} or
-	 * {@link JValueKind#CONSTRUCTOR CONSTRUCTOR}.
-	 * @return
-	 */
-	public JValueKind getFuncValueKind(){
-		return funcKind;
-	}
 	
 	@Override
 	public boolean isConst(){
 		return true;
+	}
+	
+	/**
+	 * Set a local binding table. This will replace the old one.
+	 * 
+	 * @param lbt
+	 */
+	public void setLocalBindingTable(LocalBindingTable lbt) {
+		this.lbindings = lbt;
+	}
+	
+	//-------------- IFuncValue --------------//
+
+	public JValueKind getFuncValueKind(){
+		return funcKind;
+	}
+
+	@Override
+	public LocalBindingTable getLocalBindings() {
+		return lbindings;
+	}
+	
+	/**
+	 * A dummy function value that can be used where a real function value is not necessary.
+	 * <p>
+	 * As of 0.1.32, the sole purpose of having a function value available to the executable 
+	 * is for getting the local bindings. If such bindings are not possible, then there is 
+	 * no need for passing the func value.
+	 */
+	public static final IFuncValue DUMMY = BogusFunction.INSTANCE;
+	
+	private static class BogusFunction implements IFuncValue {
+
+		private static final BogusFunction INSTANCE = new BogusFunction();
+		
+		private BogusFunction() {}
+		
+		@Override
+		public JValueKind getFuncValueKind() {
+			return JValueKind.FUNCTION;
+		}
+
+		@Override
+		public LocalBindingTable getLocalBindings() {
+			return null;
+		}
+		
 	}
 }

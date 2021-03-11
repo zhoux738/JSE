@@ -41,6 +41,7 @@ import info.julang.hosting.execution.StaticNativeExecutor;
 import info.julang.memory.StackArea;
 import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.StringValue;
@@ -112,7 +113,7 @@ public class ScriptThread {
 			boolean isIOThread = this.getBool(args, 1);
 			int pri = getEnumAsOrdinal(args, 2);			
 			
-			thread.init(rt, hvalue, funTyp, name, isIOThread, pri);
+			thread.init(rt, fv, hvalue, funTyp, name, isIOThread, pri);
 			
 			setOverwrittenReturnValue(VoidValue.DEFAULT);
 		}
@@ -213,7 +214,7 @@ public class ScriptThread {
 		this.runnable = runnable;
 	}
 	
-	private void init(ThreadRuntime rt, HostedValue hvalue, JFunctionType funTyp, String name, boolean isIOThread, int pri){
+	private void init(ThreadRuntime rt, IFuncValue func, HostedValue hvalue, JFunctionType funTyp, String name, boolean isIOThread, int pri){
 		Executable exec = funTyp.getExecutable();
 		NamespacePool np = funTyp.getNamespacePool();
 		
@@ -222,7 +223,7 @@ public class ScriptThread {
 		// ScriptThread object. ScriptThread (wrapped in Julian type "System.Concurrency.Thread") and 
 		// JThread are two objects referring to the same thread, with the former used in the script 
 		// and the latter in the engine internals.
-		thread = rt.getThreadManager().createBackground(name, rt, exec, np, hvalue, isIOThread, priority);
+		thread = rt.getThreadManager().createBackground(name, rt, func, exec, np, hvalue, isIOThread, priority);
 	}
 	
 	private JValue getName(ThreadRuntime rt) {

@@ -1,0 +1,14 @@
+// bind incompitable type
+
+class My {
+	static Function combine() { return (string s) => {
+		return s;
+	}; }
+}
+
+bool succ1 = false;
+try {
+	var com1 = Function.bind(My.combine(), null, new var[] { 1 });
+} catch (System.Lang.IllegalBindingException ex) {
+	succ1 = true;
+}

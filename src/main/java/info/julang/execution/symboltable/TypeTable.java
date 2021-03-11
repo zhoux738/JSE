@@ -26,6 +26,7 @@ package info.julang.execution.symboltable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -324,10 +325,20 @@ public class TypeTable implements ITypeTable {
 			PreRunningThreadRuntime tr = new PreRunningThreadRuntime(ert);
 			mmg.loadModule(tr.getJThread(), "System.Util");
 			Context context = Context.createSystemLoadingContext(tr);
+			
+			Collections.sort(deferred, new Comparator<IDeferredBuildable>() {
+				@Override
+				public int compare(IDeferredBuildable d1, IDeferredBuildable d2) {
+					return d1.getBuiltinType().compareTo(d2.getBuiltinType());
+				}
+			});
 			for(IDeferredBuildable bd : deferred){
-				bd.completeBuild(context);
+				bd.postBuild(context);
 			}
-
+			for(IDeferredBuildable bd : deferred){
+				bd.seal();
+			}
+			
 			// Create type values now
 			for (TypeInfo ti : builtinTypeInfos) {
 				ti.value = new TypeValue(heap, ti.type);

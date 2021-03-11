@@ -39,7 +39,7 @@ public class SyntaxErrorTests extends ExceptionTestsBase {
 			null,
 			new String[0], // No stacktrace for a syntax error.
 			fsp.getFilePathName(true),
-			3);
+			4);
 	}
 	
 	@Test
@@ -61,7 +61,7 @@ public class SyntaxErrorTests extends ExceptionTestsBase {
 			null,
 			new String[0], // No stacktrace for a syntax error.
 			fsp.getFilePathName(true),
-			2);
+			3);
 	}
 	
 
@@ -84,7 +84,7 @@ public class SyntaxErrorTests extends ExceptionTestsBase {
 			null,
 			new String[0], // No stacktrace for a syntax error.
 			fsp.getFilePathName(true),
-			4);
+			5);
 	}
 	
 	// The syntax error is found in another module, but it doesn't prevent the module from being detected.
@@ -115,7 +115,7 @@ public class SyntaxErrorTests extends ExceptionTestsBase {
 			null,
 			new String[0],
 			null,
-			4);
+			5);
 	}
 	
 	// Multiple syntax errors are found in another module, but they don't prevent the modules from being detected.
@@ -160,7 +160,7 @@ public class SyntaxErrorTests extends ExceptionTestsBase {
 			null,
 			new String[0],
 			null,
-			7);
+			8);
 	}
 	
 }

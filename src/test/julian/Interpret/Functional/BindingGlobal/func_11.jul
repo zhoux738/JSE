@@ -1,0 +1,19 @@
+// bind null
+
+string combine(string s) {
+	return this.str + s;
+}
+
+bool succ1 = false;
+try {
+	var com1 = Function.bind(combine, null);
+} catch (ArgumentException ex) {
+	succ1 = true;
+}
+
+string combine2(string s) {
+	return s != null ? "abc" : "xyz";
+}
+
+var com2 = Function.bind(combine2, null, new var[] { null });
+string res = com2();

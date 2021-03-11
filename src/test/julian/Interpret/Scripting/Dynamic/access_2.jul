@@ -1,0 +1,15 @@
+Dynamic dyn1 = new Dynamic(new { throwOnUndefined = true }) { a = "xyz", "b" = false } ;
+bool succ1 = false;
+try {
+	var c = dyn1.c;
+} catch (UnknownMemberException ex){
+	succ1 = ex.getMessage().contains("a, b");
+}
+
+Dynamic dyn2 = new Dynamic(new { throwOnUndefined = true }) { /* empty */ } ;
+bool succ2 = false;
+try {
+	var c = dyn2.c;
+} catch (UnknownMemberException ex){
+	succ2 = ex.getMessage().contains("doesn't contain any");
+}

@@ -36,7 +36,9 @@ import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedArrayValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
+import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.UntypedValue;
 import info.julang.memory.value.ValueUtilities;
@@ -115,17 +117,18 @@ public class FuncCallExecutor {
 	 * The caller is responsible for providing arguments that match the signature of executable.
 	 * In particular, <b>it must set up an argument for <i>this</i> at index 0</b> if it's an instance method.
 	 * 
+	 * @param func the function value
 	 * @param funcType the function declaration
 	 * @param funcName the function's simple name
 	 * @param args Actual arguments passed in
 	 * @return
 	 */
 	public JValue invokeFunction(
+		IFuncValue func,
 		JFunctionType funcType, 
 		String funcName, 
-		Argument[] args){
-		
-		return invoke(funcType, funcType.getExecutable(), funcName, args, funcType.getParams());
+		Argument[] args) {
+		return invoke(func, funcType, funcType.getExecutable(), funcName, args, funcType.getParams());
 	}
 	
 	/**
@@ -133,6 +136,7 @@ public class FuncCallExecutor {
 	 * <p>
 	 * This method is reserved for calls by engine internals.
 	 * 
+	 * @param func
 	 * @param methodType
 	 * @param methodName
 	 * @param values doesn't contain 'this' object
@@ -140,12 +144,13 @@ public class FuncCallExecutor {
 	 * @return
 	 */
 	public JValue invokeMethodInternal(
+		IFuncValue func,
 		JMethodType methodType,
 		String methodName,
 		JValue[] values, 
 		JValue instance){
 		Argument[] args = prepareArguments(methodName, methodType, values, instance, false);
-		return invokeFunction(methodType, methodName, args);
+		return invokeFunction(func, methodType, methodName, args);
 	}
 	
 	/**
@@ -170,7 +175,7 @@ public class FuncCallExecutor {
 			throw new JSEError("Overloaded methods cannot be invoked by FuncCallExecutor.");
 		}
 		Argument[] args = prepareArguments(funcName, funcType, values, instance, instance != null);
-		return invoke(funcType, funcType.getExecutable(), funcName, args, funcType.getParams());
+		return invoke(funcVal, funcType, funcType.getExecutable(), funcName, args, funcType.getParams());
 	}
 	
 	/**
@@ -198,6 +203,15 @@ public class FuncCallExecutor {
 		Argument[] args = new Argument[params.length];
 		int start = 0;
 		if(instance != null){
+			/* TODO: Wrap 'this' into a reference
+			if (instance.getKind() == JValueKind.OBJECT) {
+				// Wrap 'this' in a const reference
+				RefValue ref = new RefValue(rt.getStackMemory().currentFrame(), (ObjectValue) instance);
+				ref.setConst(true);
+				instance = ref;
+			}
+			*/
+			
 			args[0] = Argument.CreateThisArgument(instance);
 			start = 1;
 		}
@@ -250,6 +264,7 @@ public class FuncCallExecutor {
 	 * @return the returned value now sitting in current frame.
 	 */
 	private JValue invoke(
+		IFuncValue func,
 		JFunctionType funcType, 
 		Executable exec, 
 		String funcName, 
@@ -263,7 +278,7 @@ public class FuncCallExecutor {
 		
 		try {
 			// 2) Execute
-			Result result = exec.execute(rt, args);
+			Result result = exec.execute(rt, func, args);
 			
 			// 3) Get the returned value
 			JValue val = result.getReturnedValue(false);
@@ -338,7 +353,7 @@ public class FuncCallExecutor {
 			// At this point we have method's name and parameter information, so we can add a stack trace into the exception.
 			String fn = jse.getFileName();
 			int lineNo = jse.getLineNumber();
-			jse.addStackTrace(rt.getTypeTable(), funcType.getName(), JParameter.getParamNames(params), fn, lineNo);
+			jse.addStackTrace(rt.getTypeTable(), funcType.getFullFunctionName(false), JParameter.getParamNames(params), fn, lineNo);
 			throw jse;
 		} catch (EngineInvocationError e) {
 			throw new JSEError("An error occurs while invoking " + funcType.getName());
@@ -392,12 +407,18 @@ public class FuncCallExecutor {
 	 */
 	private static void checkConvertibility(JValue val, JType typ){
 		JType argTyp = val.getType();
-		Convertibility conv = argTyp.getConvertibilityTo(typ);
-		if(conv == Convertibility.UNCONVERTIBLE){
-			throw new TypeIncompatibleException(argTyp, typ);
-		} else if (conv == Convertibility.UNSAFE && argTyp == AnyType.getInstance()){
-			UntypedValue uv = (UntypedValue) val;
-			checkConvertibility(uv.getActual(), typ);
+		if (argTyp == null) {
+			if (!(typ == AnyType.getInstance() || typ.isObject())) {
+				throw new TypeIncompatibleException(JObjectType.getInstance(), typ);
+			}
+		} else {
+			Convertibility conv = argTyp.getConvertibilityTo(typ);
+			if(conv == Convertibility.UNCONVERTIBLE){
+				throw new TypeIncompatibleException(argTyp, typ);
+			} else if (conv == Convertibility.UNSAFE && argTyp == AnyType.getInstance()){
+				UntypedValue uv = (UntypedValue) val;
+				checkConvertibility(uv.getActual(), typ);
+			}
 		}
 	}
 }

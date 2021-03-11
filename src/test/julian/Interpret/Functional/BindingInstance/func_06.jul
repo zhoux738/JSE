@@ -1,0 +1,17 @@
+// Constness
+class MyCls {
+	int total = 0;
+	int fun1(int i) {
+		total += 3; // property preserves
+		i += 3; // local doesn't preserve
+		return i;
+	}
+}
+
+var mc = new MyCls();
+var com1 = Function.bind(mc.fun1, null, new var[] { 0 });
+
+int i3a = com1();
+int t3  = mc.total;
+int i3b = com1();
+int t6  = mc.total;

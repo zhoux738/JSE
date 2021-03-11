@@ -259,13 +259,10 @@ public class NewJulianScriptPage extends WizardPage {
 		
 		// 2. For those which don't have a recent choice, try to default to something reasonable
 		
-		// Directory for non-module file
-		// Default: the selected directory
-		if (userChoices.getContainerDir() == null) {
-			IFolder folder = fromSelection(IFolder.class);
-			if (folder != null) {
-				userChoices.setContainerDir(folder);
-			}
+		// Always prefer the selected directory, even if there is a recent choice.
+		IFolder folder = fromSelection(IFolder.class);
+		if (folder != null) {
+			userChoices.setContainerDir(folder);
 		}
 		
 		// Module path directory

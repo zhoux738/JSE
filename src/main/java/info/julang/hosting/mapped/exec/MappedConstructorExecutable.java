@@ -40,6 +40,7 @@ import info.julang.hosting.mapped.PlatformConversionUtil;
 import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.interpretation.context.Context;
 import info.julang.memory.value.HostedValue;
+import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.typesystem.jclass.ICompoundType;
 
@@ -64,7 +65,7 @@ public class MappedConstructorExecutable extends MappedExecutableBase {
 	}
 	
 	@Override
-	protected void prepareArguments(Argument[] args, Context context) {
+	protected void prepareArguments(Argument[] args, Context context, IFuncValue func) {
 		IVariableTable varTable = context.getVarTable();
 		ITypeTable tt = context.getTypTable();
 		HostedMethodManager hmm = context.getModManager().getHostedMethodManager();

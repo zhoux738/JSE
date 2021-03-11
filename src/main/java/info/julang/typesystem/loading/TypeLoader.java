@@ -24,6 +24,13 @@ SOFTWARE.
 
 package info.julang.typesystem.loading;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
 import info.julang.execution.Result;
@@ -57,6 +64,7 @@ import info.julang.langspec.ast.JulianParser.Atrribute_initializationContext;
 import info.julang.langspec.ast.JulianParser.ExpressionContext;
 import info.julang.langspec.ast.JulianParser.ProgramContext;
 import info.julang.memory.value.AttrValue;
+import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.JValue;
 import info.julang.memory.value.JValueBase;
 import info.julang.memory.value.TempValueFactory;
@@ -86,13 +94,6 @@ import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.util.Box;
 import info.julang.util.Pair;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * The type loader which actually loads the type from modules.
@@ -423,7 +424,7 @@ public class TypeLoader {
 			for(JClassInitializerMember initializer : initializers){
 				JMethodType mtype = initializer.getMethodType();
 				try {
-					Result res = mtype.getExecutable().execute(rt, initArgs);
+					Result res = mtype.getExecutable().execute(rt, FuncValue.DUMMY, initArgs);
 					JValue val = res.getReturnedValue(true);
 					if (val != VoidValue.DEFAULT){ // enum field initializer returns void
 						val.assignTo(tvalue.getMemberValue(initializer.getFieldName()));
@@ -450,7 +451,7 @@ public class TypeLoader {
 			if (staCtor != null){
 				try {
 					JMethodType mtype = staCtor.getMethodType();
-					mtype.getExecutable().execute(rt, initArgs);
+					mtype.getExecutable().execute(rt, FuncValue.DUMMY, initArgs);
 				} catch (EngineInvocationError e) {
 					throw new JSEError(
 						"An error occurs while invoking static constructor of class " + typ.getName());
@@ -467,6 +468,7 @@ public class TypeLoader {
 		VariableTable vt = new VariableTable(null);
 		MethodContext ctxt = MethodContext.duplicateContext(
 			context,
+			FuncValue.DUMMY,
 			rt.getStackMemory(),
 			vt,
 			typ.getNamespacePool(),
@@ -533,7 +535,7 @@ public class TypeLoader {
 				if(mtype == MemberType.METHOD){
 					JClassMethodMember mmember = (JClassMethodMember) member;
 					JMethodType methodType = mmember.getMethodType();
-					if(methodType.isHosted()){
+					if(methodType.isBridged()){
 						// This casting is safe for now but needs more refactoring.
 						HostedMethodExecutable hexec = (HostedMethodExecutable) methodType.getHostedExecutable();
 						registerBridgedMethod(hexec, ha, hmm);

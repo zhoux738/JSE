@@ -286,12 +286,7 @@ public class ObjectValue extends JValueBase implements IObjectVal {
 	private boolean hasInterface(String interfaceName){
 		if (type.isObject()) {
 			JClassType jct = (JClassType)type;
-			JInterfaceType[] intfs = jct.getInterfaces();
-			for(JInterfaceType intf : intfs) {
-				if (interfaceName.equals(intf.getName())){
-					return true;
-				}
-			}
+			return jct.hasAncestor(interfaceName, false);
 		}
 		
 		return false;

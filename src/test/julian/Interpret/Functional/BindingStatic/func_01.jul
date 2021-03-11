@@ -1,0 +1,16 @@
+// baseline: bind 'this' to a static method
+class MyVal {
+	int val = 3;
+}
+
+class MyCls {
+	static int get(int i) {
+		return this.val + i;
+	}
+}
+
+var get3 = Function.bind(MyCls.get, new MyVal(), null);
+
+int res = get3(5);
+
+//Console.println(res);

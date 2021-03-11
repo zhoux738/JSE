@@ -2,24 +2,23 @@ package info.jultest.test.oo.foundation;
 
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
+import static info.jultest.test.Commons.resetTypeSystem;
 import static info.jultest.test.Commons.validateBoolArrayValue;
 import static info.jultest.test.Commons.validateNullValue;
 import static info.jultest.test.Commons.validateStringValue;
-import static info.jultest.test.EFCommons.runViaFactory;
+
+import java.io.IOException;
+
+import org.junit.Test;
+
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
-import info.julang.external.interfaces.IExtEngineRuntime;
-import info.julang.external.interfaces.IExtVariableTable;
 import info.julang.typesystem.AnyType;
 import info.jultest.test.Commons;
 import info.jultest.test.EFCommons;
 import info.jultest.test.TestExceptionHandler;
 import info.jultest.test.oo.ExceptionTestsBase;
-
-import java.io.IOException;
-
-import org.junit.Test;
 
 public class System_Type_ReflTestSuite extends ExceptionTestsBase {
 
@@ -29,27 +28,23 @@ public class System_Type_ReflTestSuite extends ExceptionTestsBase {
 	
 	@Test
 	public void getFromObjectTest1() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "GetType/get_from_object_1.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("GetType/get_from_object_1.jul");
 
-//		EFCommons.validateHostedValue(gvt, "t1", ScriptType.class);	
-		EFCommons.validateBoolValue(gvt, "bt0", true);
-		EFCommons.validateBoolValue(gvt, "bt1", true);
-		EFCommons.validateBoolValue(gvt, "bt2", true);
-		EFCommons.validateBoolValue(gvt, "bt3", true);
+		Commons.validateBoolValue(gvt, "bt0", true);
+		Commons.validateBoolValue(gvt, "bt1", true);
+		Commons.validateBoolValue(gvt, "bt2", true);
+		Commons.validateBoolValue(gvt, "bt3", true);
 	}	
 	
 	@Test
 	public void getFromTypeTest1() throws EngineInvocationError, IOException {
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "GetType/get_from_type_1.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("GetType/get_from_type_1.jul");
 
-//		EFCommons.validateHostedValue(gvt, "t1", ScriptType.class);	
-		EFCommons.validateBoolValue(gvt, "bt0", true);
-		EFCommons.validateBoolValue(gvt, "bt1", true);
-		EFCommons.validateBoolValue(gvt, "bt2", true);
-		EFCommons.validateBoolValue(gvt, "bt3", true);
-		EFCommons.validateBoolValue(gvt, "bt4", true);
+		Commons.validateBoolValue(gvt, "bt0", true);
+		Commons.validateBoolValue(gvt, "bt1", true);
+		Commons.validateBoolValue(gvt, "bt2", true);
+		Commons.validateBoolValue(gvt, "bt3", true);
+		Commons.validateBoolValue(gvt, "bt4", true);
 	}
 	
 	@Test
@@ -72,11 +67,28 @@ public class System_Type_ReflTestSuite extends ExceptionTestsBase {
 	
 	@Test
 	public void getFromBuiltInTest() throws EngineInvocationError, IOException {
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "GetType/get_from_builtin.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("GetType/get_from_builtin.jul");
 
-		EFCommons.validateBoolValue(gvt, "b0", true);
-		EFCommons.validateBoolValue(gvt, "b1", true);
+		Commons.validateBoolValue(gvt, "b0", true);
+		Commons.validateBoolValue(gvt, "b1", true);
+	}
+	
+	@Test
+	public void getFromFunctionTest1() throws EngineInvocationError, IOException {
+		VariableTable gvt = resetAndRun("GetType/get_from_function_1.jul");
+
+		Commons.validateBoolValue(gvt, "hasType", true);
+		Commons.validateBoolValue(gvt, "hasBind", true);
+		Commons.validateIntValue(gvt, "methodCnt", 3);
+	}
+	
+	@Test
+	public void getFromFunctionTest2() throws EngineInvocationError, IOException {
+		VariableTable gvt = resetAndRun("GetType/get_from_function_2.jul");
+
+		Commons.validateBoolValue(gvt, "hasType", true);
+		Commons.validateBoolValue(gvt, "hasBind", true);
+		Commons.validateIntValue(gvt, "methodCnt", 3);
 	}
 	
 	//-------- Reflection/BasicInfo --------//
@@ -134,98 +146,99 @@ public class System_Type_ReflTestSuite extends ExceptionTestsBase {
 	}
 	
 	@Test
-	public void getParentTest() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "BasicInfo/get_parent.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+	public void getParentTest() throws EngineInvocationError, IOException {
+		VariableTable gvt = resetAndRun("BasicInfo/get_parent.jul");
 
-		EFCommons.validateStringValue(gvt, "sc", "[TYPE|<default>.C]");
-		EFCommons.validateStringValue(gvt, "so", "[TYPE|Object]");
-		EFCommons.validateBoolValue(gvt, "b1", true);
-		EFCommons.validateBoolValue(gvt, "b2", true);
+		Commons.validateStringValue(gvt, "sc", "[TYPE|<default>.C]");
+		Commons.validateStringValue(gvt, "so", "[TYPE|Object]");
+		Commons.validateBoolValue(gvt, "b1", true);
+		Commons.validateBoolValue(gvt, "b2", true);
 	}
 	
 	@Test
 	public void getInterfacesTest1() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "BasicInfo/get_interfaces_1.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("BasicInfo/get_interfaces_1.jul");
 
-		EFCommons.validateBoolValue(gvt, "res1", true);
-		EFCommons.validateBoolValue(gvt, "res2", true);
-		EFCommons.validateBoolValue(gvt, "res3", true);
-		EFCommons.validateBoolValue(gvt, "res4", true);
+		Commons.validateBoolValue(gvt, "res1", true);
+		Commons.validateBoolValue(gvt, "res2", true);
+		Commons.validateBoolValue(gvt, "res3", true);
+		Commons.validateBoolValue(gvt, "res4", true);
 	}
 	
 	@Test
 	public void getInterfacesTest2() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "BasicInfo/get_interfaces_2.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("BasicInfo/get_interfaces_2.jul");
 
-		EFCommons.validateIntValue(gvt, "res0", 0);
-		EFCommons.validateIntValue(gvt, "res2", 2);
+		Commons.validateIntValue(gvt, "res0", 0);
+		Commons.validateIntValue(gvt, "res2", 2);
 	}
 	
 	@Test
 	public void getExtensionsTest1() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "BasicInfo/get_extensions_1.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
-
-		EFCommons.validateBoolValue(gvt, "res1", true);
-		EFCommons.validateBoolValue(gvt, "res2", true);
+		VariableTable gvt = resetAndRun("BasicInfo/get_extensions_1.jul");
+		
+		Commons.validateBoolValue(gvt, "res1", true);
+		Commons.validateBoolValue(gvt, "res2", true);
 	}
 	
 	// Type loading
 	
 	@Test
-	public void loadTypeTest1() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "Loading/load_1.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+	public void loadTypeTest1() throws EngineInvocationError, IOException {
+		VariableTable gvt = resetAndRun("Loading/load_1.jul");
 
-		EFCommons.validateIntValue(gvt, "i0", 10);
-		EFCommons.validateIntValue(gvt, "i1", 0);
-		EFCommons.validateIntValue(gvt, "i2", 5);
+		Commons.validateIntValue(gvt, "i0", 10);
+		Commons.validateIntValue(gvt, "i1", 0);
+		Commons.validateIntValue(gvt, "i2", 5);
 	}
 	
 	// Load twice
 	@Test
 	public void loadTypeTest2() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "Loading/load_2.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("Loading/load_2.jul");
 
-		EFCommons.validateIntValue(gvt, "v", 10);
+		Commons.validateIntValue(gvt, "v", 10);
 	}
 	
 	// Built-int and array types
 	@Test
 	public void loadTypeTest3() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "Loading/load_3.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("Loading/load_3.jul");
 
-		EFCommons.validateIntValue(gvt, "i0", 1);
-		EFCommons.validateIntValue(gvt, "i1", 0);
-		EFCommons.validateIntValue(gvt, "i2", 0);
-		EFCommons.validateIntValue(gvt, "i3", 0);
-		EFCommons.validateBoolValue(gvt, "b0", true);
-		EFCommons.validateBoolValue(gvt, "b1", true);
-		EFCommons.validateStringValue(gvt, "s0", AnyType.getInstance().getName());
+		Commons.validateIntValue(gvt, "i0", 1);
+		Commons.validateIntValue(gvt, "i1", 0);
+		Commons.validateIntValue(gvt, "i2", 0);
+		Commons.validateIntValue(gvt, "i3", 0);
+		Commons.validateBoolValue(gvt, "b0", true);
+		Commons.validateBoolValue(gvt, "b1", true);
+		Commons.validateStringValue(gvt, "s0", AnyType.getInstance().getName());
 	}
 	
 	// Wrong syntax
 	@Test
 	public void loadTypeTest4() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "Loading/load_4.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("Loading/load_4.jul");
 
-		EFCommons.validateBoolValue(gvt, "b0", true);
-		EFCommons.validateBoolValue(gvt, "b1", true);
-		EFCommons.validateBoolValue(gvt, "b2", true);
+		Commons.validateBoolValue(gvt, "b0", true);
+		Commons.validateBoolValue(gvt, "b1", true);
+		Commons.validateBoolValue(gvt, "b2", true);
 	}
 	
 	// Type not exists
 	@Test
 	public void loadTypeTest5() throws EngineInvocationError, IOException {		
-		IExtEngineRuntime rt = runViaFactory(Commons.Groups.OO, FEATURE, "Loading/load_5.jul", Commons.SRC_REPO_ROOT);
-		IExtVariableTable gvt = rt.getGlobalVariableTable();
+		VariableTable gvt = resetAndRun("Loading/load_5.jul");
 		
 		EFCommons.validateBoolValue(gvt, "b", true);
+	}
+	
+	private VariableTable resetAndRun(String script) throws EngineInvocationError {
+		resetTypeSystem();
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, script));
+		
+		return gvt;
 	}
 }

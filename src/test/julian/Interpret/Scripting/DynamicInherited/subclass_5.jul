@@ -1,0 +1,79 @@
+// map initializer
+import System.Collection;
+import System.Util;
+
+class MyDyn : Dynamic {
+
+	MyDyn(){}
+	
+	Entry[] kvps;
+	
+	void initByMap(Entry[] entries) {
+		kvps = entries;
+	}
+}
+
+class UrDyn : Dynamic {
+
+	Map map;
+	int indexSet = 0;
+	int indexGet = 0;
+
+	UrDyn(bool enable){
+		if (enable) {
+			map = new Map();
+		}
+	}
+	
+	// IIndexable
+	
+	void at(var key, var value) {
+		indexSet++;
+		// Console.println("at(k, v) called with k == " + key);
+		if (map != null) {
+			map.put(key, value);
+		}
+	}
+	
+	var at(var key) {
+		indexGet++;
+		// Console.println("at(k) called with k == " + key);
+		if (map != null) {
+			return map.get(key);
+		}
+		
+		return null;
+	}
+	
+	void initByMap(Entry[] entries) {
+		if (map != null && entries != null) {
+			for (var entry : entries) {
+				at(entry.key, entry.value);
+			}
+		}
+	}
+}
+
+var print(var val){
+	// Console.println(val);
+	return val;
+}
+
+var m1 = new MyDyn() { prop = "abc" };
+
+String abc, def;
+
+var result1 = print(m1.prop); // it's null
+var result2 = print(m1["prop"]); // it's null
+abc = print(m1.kvps[0].value);
+
+UrDyn u1 = new UrDyn(true) { prop = "def" };
+def = print(u1.prop);
+
+UrDyn u2 = new UrDyn(false) { prop = "def" }; // no set happens since map is null
+var result3 = print(u2.prop); // get++
+u2.attr = "xyz"; // set++
+var result4 = print(u2.attr); // get++
+
+int inset = print(u2.indexSet);
+int inget = print(u2.indexGet);

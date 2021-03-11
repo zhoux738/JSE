@@ -50,7 +50,7 @@ public interface IExtValue {
 	/**
 	 * Whether this value is NULL.
 	 * <p/>
-	 * Basic values always return false; reference value returns true if it point to null.
+	 * Basic values always return false; reference value returns true if it points to null.
 	 * @return true if it is null.
 	 */
 	boolean isNull();
