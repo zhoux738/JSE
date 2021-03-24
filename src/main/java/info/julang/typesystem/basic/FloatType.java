@@ -26,6 +26,7 @@ package info.julang.typesystem.basic;
 
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
+import info.julang.util.OSTool;
 
 @JulianDoc(
 alias = "float",
@@ -73,5 +74,10 @@ public class FloatType extends BasicType {
 	@Override
 	public NumberKind getNumberKind() {
 		return NumberKind.FRACTION;
+	}
+	
+	@Override
+	public int getSize() {
+		return OSTool.WordSize;
 	}
 }

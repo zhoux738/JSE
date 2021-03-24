@@ -1,0 +1,220 @@
+bool check(Function f, bool succ) {
+	try {
+		//Console.println("succ!");
+		return f() && succ;
+	} catch (System.Lang.IllegalOperandException ex) {
+		//Console.println("fail!");
+		return !succ;
+	}
+}
+
+bool succ(Function f){
+	return check(f, true);
+}
+
+bool fail(Function f){
+	return check(f, false);
+}
+
+// int > ...
+bool b0 = true;
+b0 = b0 && fail(() => 1 > 'a');
+b0 = b0 && fail(() => 1 > "abc");
+b0 = b0 && succ(() => 1 > (byte)-1);
+b0 = b0 && succ(() => 1 > 0.99);
+b0 = b0 && fail(() => 0 > true);
+b0 = b0 && fail(() => 1 >= 'a');
+b0 = b0 && fail(() => 1 >= "abc");
+b0 = b0 && succ(() => 1 >= (byte)-1);
+b0 = b0 && succ(() => 1 >= 0.99);
+b0 = b0 && fail(() => 0 >= true);
+b0 = b0 && fail(() => !(1 < 'a'));
+b0 = b0 && fail(() => !(1 < "abc"));
+b0 = b0 && succ(() => !(1 < (byte)-1));
+b0 = b0 && succ(() => !(1 < 0.99));
+b0 = b0 && fail(() => !(0 < true));
+b0 = b0 && fail(() => !(1 <= 'a'));
+b0 = b0 && fail(() => !(1 <= "abc"));
+b0 = b0 && succ(() => !(1 <= (byte)-1));
+b0 = b0 && succ(() => !(1 <= 0.99));
+b0 = b0 && fail(() => !(0 <= true));
+b0 = b0 && succ(() => !(1 == '1'));
+b0 = b0 && succ(() => !(1 == "1"));
+b0 = b0 && succ(() => 1 == (byte)1);
+b0 = b0 && succ(() => !(1 == 0.99));
+b0 = b0 && succ(() => !(0 == false));
+b0 = b0 && succ(() => (1 != '1'));
+b0 = b0 && succ(() => (1 != "1"));
+b0 = b0 && succ(() => !(1 != (byte)1));
+b0 = b0 && succ(() => (1 != 0.99));
+b0 = b0 && succ(() => (0 != false));
+
+// bool > ...
+bool b1 = true;
+b1 = b1 && fail(() => true > 'a');
+b1 = b1 && fail(() => true > "abc");
+b1 = b1 && fail(() => true > false);
+b1 = b1 && fail(() => false > 10);
+b1 = b1 && fail(() => true > (byte)-1);
+b1 = b1 && fail(() => true > -0.99);
+b1 = b1 && fail(() => true >= 'a');
+b1 = b1 && fail(() => true >= "abc");
+b1 = b1 && fail(() => true >= false);
+b1 = b1 && fail(() => false >= 10);
+b1 = b1 && fail(() => true >= (byte)-1);
+b1 = b1 && fail(() => true >= -0.99);
+b1 = b1 && fail(() => true < 'a');
+b1 = b1 && fail(() => true < "abc");
+b1 = b1 && fail(() => true < false);
+b1 = b1 && fail(() => false < 10);
+b1 = b1 && fail(() => true < (byte)-1);
+b1 = b1 && fail(() => true < -0.99);
+b1 = b1 && fail(() => true <= 'a');
+b1 = b1 && fail(() => true <= "abc");
+b1 = b1 && fail(() => true <= false);
+b1 = b1 && fail(() => false <= 10);
+b1 = b1 && fail(() => true <= (byte)-1);
+b1 = b1 && fail(() => true <= -0.99);
+b1 = b1 && succ(() => !(true == 'a'));
+b1 = b1 && succ(() => !(false == 'a')); // neither true nor false equals to 'a'
+b1 = b1 && succ(() => !(true == "abc"));
+b1 = b1 && succ(() => !(false == 10));
+b1 = b1 && succ(() => !(true == (byte)-1));
+b1 = b1 && succ(() => !(true == -0.99));
+b1 = b1 && succ(() => (true != 'a'));
+b1 = b1 && succ(() => (true != "abc"));
+b1 = b1 && succ(() => (false != 10));
+b1 = b1 && succ(() => (true != (byte)-1));
+b1 = b1 && succ(() => (true != -0.99));
+
+// float > ...
+bool b2 = true;
+b2 = b2 && fail(() => 1.0 > 'a');
+b2 = b2 && fail(() => 1.0 > "abc");
+b2 = b2 && succ(() => 1.0 > -1);
+b2 = b2 && succ(() => 1.0 > (byte)-1);
+b2 = b2 && fail(() => 0.0 > true);
+b2 = b2 && fail(() => 1.0 >= 'a');
+b2 = b2 && fail(() => 1.0 >= "abc");
+b2 = b2 && succ(() => 1.0 >= -1);
+b2 = b2 && succ(() => 1.0 >= (byte)-1);
+b2 = b2 && fail(() => 0.0 >= true);
+b2 = b2 && fail(() => !(1.0 < 'a'));
+b2 = b2 && fail(() => !(1.0 < "abc"));
+b2 = b2 && succ(() => !(1.0 < -1));
+b2 = b2 && succ(() => !(1.0 < (byte)-1));
+b2 = b2 && fail(() => !(0.0 < true));
+b2 = b2 && fail(() => !(1.0 <= 'a'));
+b2 = b2 && fail(() => !(1.0 <= "abc"));
+b2 = b2 && succ(() => !(1.0 <= -1));
+b2 = b2 && succ(() => !(1.0 <= (byte)-1));
+b2 = b2 && fail(() => !(0.0 <= true));
+b2 = b2 && succ(() => !(1.0 == '1'));
+b2 = b2 && succ(() => !(1.0 == "1"));
+b2 = b2 && succ(() => 1.0 == 1);
+b2 = b2 && succ(() => 1.0 == (byte)1);
+b2 = b2 && succ(() => !(0.0 == false));
+b2 = b2 && succ(() => (1.0 != '1'));
+b2 = b2 && succ(() => (1.0 != "1"));
+b2 = b2 && succ(() => !(1.0 != 1));
+b2 = b2 && succ(() => !(1.0 != (byte)1));
+b2 = b2 && succ(() => (0.0 != false));
+
+// byte > ...
+bool b3 = true;
+b3 = b3 && fail(() => (byte)1 > 'a');
+b3 = b3 && fail(() => (byte)1 > "abc");
+b3 = b3 && succ(() => (byte)1 > -1);
+b3 = b3 && succ(() => (byte)1 > 0.99);
+b3 = b3 && fail(() => (byte)0 > true);
+b3 = b3 && fail(() => (byte)1 >= 'a');
+b3 = b3 && fail(() => (byte)1 >= "abc");
+b3 = b3 && succ(() => (byte)1 >= -1);
+b3 = b3 && succ(() => (byte)1 >= 0.99);
+b3 = b3 && fail(() => (byte)0 >= true);
+b3 = b3 && fail(() => !((byte)1 < 'a'));
+b3 = b3 && fail(() => !((byte)1 < "abc"));
+b3 = b3 && succ(() => !((byte)1 < -1));
+b3 = b3 && succ(() => !((byte)1 < 0.99));
+b3 = b3 && fail(() => !((byte)0 < true));
+b3 = b3 && fail(() => !((byte)1 <= 'a'));
+b3 = b3 && fail(() => !((byte)1 <= "abc"));
+b3 = b3 && succ(() => !((byte)1 <= -1));
+b3 = b3 && succ(() => !((byte)1 <= 0.99));
+b3 = b3 && fail(() => !((byte)0 <= true));
+b3 = b3 && succ(() => !((byte)1 == '1'));
+b3 = b3 && succ(() => !((byte)1 == "1"));
+b3 = b3 && succ(() => (byte)1 == 1);
+b3 = b3 && succ(() => !((byte)1 == 0.99));
+b3 = b3 && succ(() => !((byte)0 == false));
+b3 = b3 && succ(() => ((byte)1 != '1'));
+b3 = b3 && succ(() => ((byte)1 != "1"));
+b3 = b3 && succ(() => !((byte)1 != 1));
+b3 = b3 && succ(() => ((byte)1 != 0.99));
+b3 = b3 && succ(() => ((byte)0 != false));
+
+// char > ...
+bool b4 = true;
+b4 = b4 && succ(() => 'z' > 'a');
+b4 = b4 && succ(() => 'z' > "aa");
+b4 = b4 && fail(() => 'z' > 1);
+b4 = b4 && fail(() => 'z' > 1.1);
+b4 = b4 && fail(() => 'z' > (byte)2);
+b4 = b4 && succ(() => 'z' >= 'a');
+b4 = b4 && succ(() => 'z' >= "aa");
+b4 = b4 && fail(() => 'z' >= 1);
+b4 = b4 && fail(() => 'z' >= 1.1);
+b4 = b4 && fail(() => 'z' >= (byte)2);
+b4 = b4 && succ(() => 'a' < 'z');
+b4 = b4 && succ(() => 'a' < "zz");
+b4 = b4 && fail(() => 'z' < 1);
+b4 = b4 && fail(() => 'z' < 1.1);
+b4 = b4 && fail(() => 'z' < (byte)2);
+b4 = b4 && succ(() => 'a' <= 'z');
+b4 = b4 && succ(() => 'a' <= "zz");
+b4 = b4 && fail(() => 'z' <= 1);
+b4 = b4 && fail(() => 'z' <= 1.1);
+b4 = b4 && fail(() => 'z' <= (byte)2);
+b4 = b4 && succ(() => 'a' == 'a');
+b4 = b4 && succ(() => 'a' == "a");
+b4 = b4 && !succ(() => 'z' == 1);
+b4 = b4 && !succ(() => 'z' == 1.1);
+b4 = b4 && !succ(() => 'z' == (byte)2);
+b4 = b4 && !succ(() => 'a' != 'a');
+b4 = b4 && !succ(() => 'a' != "a");
+b4 = b4 && succ(() => 'z' != 1);
+b4 = b4 && succ(() => 'z' != 1.1);
+b4 = b4 && succ(() => 'z' != (byte)2);
+
+// string > ...
+bool b5 = true;
+b5 = b5 && succ(() => "z" > 'a');
+b5 = b5 && succ(() => "z" > "aa");
+b5 = b5 && fail(() => "z" > 1);
+b5 = b5 && fail(() => "z" > 1.1);
+b5 = b5 && fail(() => "z" > (byte)2);
+b5 = b5 && succ(() => "z" >= 'a');
+b5 = b5 && succ(() => "z" >= "aa");
+b5 = b5 && fail(() => "z" >= 1);
+b5 = b5 && fail(() => "z" >= 1.1);
+b5 = b5 && fail(() => "z" >= (byte)2);
+b5 = b5 && succ(() => "a" < 'z');
+b5 = b5 && succ(() => "a" < "zz");
+b5 = b5 && fail(() => "z" < 1);
+b5 = b5 && fail(() => "z" < 1.1);
+b5 = b5 && fail(() => "z" < (byte)2);
+b5 = b5 && succ(() => "a" <= 'z');
+b5 = b5 && succ(() => "a" <= "zz");
+b5 = b5 && fail(() => "z" <= 1);
+b5 = b5 && fail(() => "z" <= 1.1);
+b5 = b5 && fail(() => "z" <= (byte)2);
+b5 = b5 && succ(() => "a" == 'a');
+b5 = b5 && succ(() => "a" == "a");
+b5 = b5 && !succ(() => "z" == 1);
+b5 = b5 && !succ(() => "z" == 1.1);
+b5 = b5 && !succ(() => "z" == (byte)2);
+b5 = b5 && !succ(() => "a" != 'a');
+b5 = b5 && !succ(() => "a" != "a");
+b5 = b5 && succ(() => "z" != 1);
+b5 = b5 && succ(() => "z" != 1.1);
+b5 = b5 && succ(() => "z" != (byte)2);

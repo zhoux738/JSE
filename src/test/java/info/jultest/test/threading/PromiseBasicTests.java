@@ -4,7 +4,6 @@ import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.getStringValue;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateBoolValue;
-import static info.jultest.test.Commons.validateBoolValueEx;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
 
@@ -70,7 +69,7 @@ public class PromiseBasicTests extends ThreadingTestBase {
 		
 		engine.run(getScriptFile(Commons.Groups.THREADING, FEATURE, "prom_5.jul"));
 
-		validateBoolValueEx(gvt, "result", true);
+		validateBoolValue(gvt, "result", true);
 	}
 	
 	@Test

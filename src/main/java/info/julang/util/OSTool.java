@@ -99,4 +99,21 @@ public final class OSTool {
 			return filePathName;
 		}
 	}
+	
+	/**
+	 * The word size of the running computer.
+	 */
+	public static final int WordSize;
+	
+	static {
+		// Unless we are sure about it being 32 bits, always assume 64 bits.
+		if ("32".equals(System.getProperty(
+			"sun.arch.data.model", // Oracle HotSpot
+			"com.ibm.vm.bitmode")) // IBM J9
+			|| "x86".equals(System.getProperty("os.arch"))) {
+			WordSize = 4;
+		} else {
+			WordSize = 8;
+		}
+	}
 }

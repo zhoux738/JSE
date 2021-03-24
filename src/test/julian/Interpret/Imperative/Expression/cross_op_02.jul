@@ -1,0 +1,47 @@
+bool check(Function f) {
+	try {
+		f();
+		return false;
+	} catch (System.Lang.IllegalOperandException ex) {
+		return true;
+	}
+}
+
+// int - ...
+var b0 = check(() => 1 - 'a');
+var f2_1 = 4 - 1.9;
+var b1 = check(() => 1 + true);
+var b2 = check(() => 1 - "xyz");
+var i100 = 199 - (byte)99;
+
+// bool - ...
+bool b3 = true;
+b3 = b3 && check(() => true - (byte)1);
+b3 = b3 && check(() => true - 1);
+b3 = b3 && check(() => true - true);
+b3 = b3 && check(() => true - 1.2);
+b3 = b3 && check(() => true - "xyz");
+b3 = b3 && check(() => true - 'a');
+
+// byte - ...
+byte b = 39;
+var b7 = check(() => b - 'a');
+var f38_1 = b - 0.9;
+var b8 = check(() => b - true);
+var b9 = check(() => b - "xyz");
+var i37 = b - 2;
+
+// char - ...
+bool b10 = true;
+b10 = b10 && check(() => 'a' - 2);
+b10 = b10 && check(() => 'a' - 1.1);
+b10 = b10 && check(() => 'a' - false);
+b10 = b10 && check(() => 'a' - "xyz");
+b10 = b10 && check(() => 'a' - (byte)99);
+
+// float - ...
+float f = 6.2;
+var f4_2 = f - 2;
+var f9_2 = f - (byte)-3;
+bool b11 = check(() => f - 'a');
+bool b12 = check(() => f - "xyz");

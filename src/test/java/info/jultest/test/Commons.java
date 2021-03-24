@@ -324,53 +324,36 @@ public final class Commons {
 	public static void validateBoolValue(VariableTable vt, String varName, boolean v){
 		JValue value = vt.getVariable(varName);
 		assertNotNull("Variable " + varName + " not defined?", value);
-		BoolValue bvalue = (BoolValue) value;
+		BoolValue bvalue = (BoolValue) value.deref();
 		assertEquals(v, bvalue.getBoolValue());
 	}
 	
 	public static void validateCharValue(VariableTable vt, String varName, char v){
 		JValue value = vt.getVariable(varName);
 		assertNotNull("Variable " + varName + " not defined?", value);
-		assertEquals(CharValue.class, value.getClass());
-		CharValue bvalue = (CharValue) value;
+		CharValue bvalue = (CharValue) value.deref();
 		assertEquals(v, bvalue.getCharValue());
 	}
 	
 	public static String getStringValue(VariableTable vt, String varName){
 		JValue value = vt.getVariable(varName);
 		assertNotNull("Variable " + varName + " not defined?", value);
-		value = value.deref();
-		StringValue svalue = (StringValue) value;
+		StringValue svalue = (StringValue) value.deref();
 		return svalue.getStringValue();
 	}
 	
 	public static void validateStringValue(VariableTable vt, String varName, String v){
 		JValue value = vt.getVariable(varName);
 		assertNotNull("Variable " + varName + " not defined?", value);
-		value = value.deref();
-		StringValue svalue = (StringValue) value;
+		StringValue svalue = (StringValue) value.deref();
 		assertEquals(v, svalue.getStringValue());
 	}
 	
 	public static void validateIntValue(VariableTable vt, String varName, int v){
 		JValue value = vt.getVariable(varName);
 		assertNotNull("Variable " + varName + " not defined?", value);
-		IntValue ivalue = (IntValue) value;
+		IntValue ivalue = (IntValue) value.deref();
 		assertEquals(v, ivalue.getIntValue());
-	}
-	
-	/** can validate both int and var with RT type = int. */
-	public static void validateIntValueEx(VariableTable vt, String varName, int v){
-		JValue value = getValue(vt, varName);
-		IntValue ivalue = (IntValue) value;
-		assertEquals(v, ivalue.getIntValue());
-	}
-	
-	/** can validate both bool and var with RT type = bool. */
-	public static void validateBoolValueEx(VariableTable vt, String varName, boolean v){
-		JValue value = getValue(vt, varName);
-		BoolValue bvalue = (BoolValue) value;
-		assertEquals(v, bvalue.getBoolValue());
 	}
 	
 	/** range in format of [1,2) */
@@ -394,7 +377,7 @@ public final class Commons {
 	public static void validateFloatValue(VariableTable vt, String varName, float v){
 		JValue value = vt.getVariable(varName);
 		assertNotNull("Variable " + varName + " not defined?", value);
-		FloatValue fvalue = (FloatValue) value;
+		FloatValue fvalue = (FloatValue) value.deref();
 		org.junit.Assert.assertEquals(v, fvalue.getFloatValue(), 0.001f);
 	}
 	
@@ -466,16 +449,4 @@ public final class Commons {
 		assertEquals(1, ciXa.size());
 		assertEquals(fullName, ciXa.get(0).getFQName());
 	}
-	
-	private static JValue getValue(VariableTable vt, String varName){
-		JValue value = vt.getVariable(varName);
-		assertNotNull("Variable " + varName + " not defined?", value);
-		assertEquals(UntypedValue.class, value.getClass());
-		if (value instanceof UntypedValue){
-			UntypedValue uvalue = (UntypedValue) value;
-			value = uvalue.getActual();
-		}
-		return value;
-	}
-	
 }

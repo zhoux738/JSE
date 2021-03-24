@@ -26,6 +26,7 @@ package info.julang.typesystem.basic;
 
 import info.julang.typesystem.JTypeKind;
 import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
+import info.julang.util.OSTool;
 
 @JulianDoc(
 alias = "char",
@@ -82,5 +83,10 @@ public class CharType extends BasicType {
 	@Override
 	public NumberKind getNumberKind() {
 		return NumberKind.NONE;
+	}
+	
+	@Override
+	public int getSize() {
+		return 1;
 	}
 }

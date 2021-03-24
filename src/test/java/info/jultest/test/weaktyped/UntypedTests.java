@@ -26,7 +26,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_1.jul"));
 		
 		JValue a = validateUntypedValue(gvt, "a");
 		JValue b = validateUntypedValue(gvt, "b");
@@ -40,7 +40,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_2.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_2.jul"));
 		
 		JValue a = validateUntypedValue(gvt, "a");
 		JValue b = validateUntypedValue(gvt, "b");
@@ -55,7 +55,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "fun_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "fun_1.jul"));
 		
 		validateIntValue(gvt, "a", 3);
 	}
@@ -67,7 +67,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "fun_2.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "fun_2.jul"));
 		
 		validateIntValue(gvt, "a", 3);
 		validateStringValue(gvt, "b", "xyz");
@@ -80,7 +80,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "fun_3.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "fun_3.jul"));
 		
 		JValue v = validateUntypedValue(gvt, "a");
 		validateStringValue(v, "xyz");
@@ -93,7 +93,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "fun_4.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "fun_4.jul"));
 		
 		JValue z1 = validateUntypedValue(gvt, "z1");
 		validateStringValue(z1, "abc");
@@ -108,7 +108,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "ifield_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "ifield_1.jul"));
 		
 		validateIntValue(gvt, "z", 5);
 		validateStringValue(gvt, "s", "abc");		
@@ -122,7 +122,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "imethod_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "imethod_1.jul"));
 		
 		validateIntValue(gvt, "a", 3);
 		validateStringValue(gvt, "b", "xyz");		
@@ -135,7 +135,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "imethod_2.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "imethod_2.jul"));
 		
 		validateIntValue(gvt, "a", 3);
 		validateStringValue(gvt, "b", "xyz");
@@ -148,7 +148,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "smethod_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "smethod_1.jul"));
 		
 		validateIntValue(gvt, "a", 3);
 		validateStringValue(gvt, "b", "xyz");
@@ -161,7 +161,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "smethod_2.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "smethod_2.jul"));
 		
 		JValue a = validateUntypedValue(gvt, "a");
 		JValue b = validateUntypedValue(gvt, "b");
@@ -175,7 +175,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_assign_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_assign_1.jul"));
 		
 		validateIntValue(gvt, "a", 3);
 		validateStringValue(gvt, "b", "xyz");
@@ -187,7 +187,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_assign_2.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_assign_2.jul"));
 		
 		JValue v0 = validateUntypedValue(gvt, "v0");
 		JValue v1 = validateUntypedValue(gvt, "v1");
@@ -201,7 +201,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_assign_3.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_assign_3.jul"));
 		
 		JValue v1 = validateUntypedValue(gvt, "v1");
 		JValue v2 = validateUntypedValue(gvt, "v2");
@@ -218,7 +218,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_assign_4.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_assign_4.jul"));
 		
 		validateIntValue(gvt, "a1", 3);
 		validateIntValue(gvt, "a2", 4);
@@ -232,7 +232,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_assign_5.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_assign_5.jul"));
 		
 		validateIntValue(gvt, "v0a", 1);
 		validateIntValue(gvt, "v0b", 10);
@@ -249,7 +249,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "null_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "null_1.jul"));
 		
 		validateBoolValue(gvt, "v", true);
 	}
@@ -260,7 +260,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "null_2.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "null_2.jul"));
 		
 		validateBoolValue(gvt, "v", true);
 	}
@@ -271,7 +271,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "array_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "array_1.jul"));
 
 		validateIntValue(gvt, "i", 10);
 	}
@@ -282,7 +282,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "array_2.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "array_2.jul"));
 
 		validateIntValue(gvt, "i", 10);
 	}
@@ -293,7 +293,7 @@ public class UntypedTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "array_3.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "array_3.jul"));
 
 		validateBoolValue(gvt, "b1", true);
 		validateBoolValue(gvt, "b2", true);

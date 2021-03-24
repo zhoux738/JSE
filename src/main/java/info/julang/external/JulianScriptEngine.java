@@ -26,6 +26,11 @@ package info.julang.external;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.script.ScriptException;
 
@@ -44,6 +49,7 @@ import info.julang.external.exceptions.JSEException;
 import info.julang.external.interfaces.IExtResult;
 import info.julang.external.interfaces.IExtScriptEngine;
 import info.julang.external.interfaces.IExtValue;
+import info.julang.external.interfaces.ResetPolicy;
 import info.julang.external.interfaces.IExtValue.IBoolVal;
 import info.julang.external.interfaces.IExtValue.IByteVal;
 import info.julang.external.interfaces.IExtValue.ICharVal;
@@ -93,6 +99,157 @@ public class JulianScriptEngine {
 		this.option = option;
 	}
 	
+	//--------------------------- Builder API ----------------------------//
+	
+	/**
+	 * A class that can build an instance of {@link JulianScriptEngine} with customized settings.
+	 * 
+	 * @author Ming Zhou
+	 */
+	public static class Builder {
+		
+		private EngineInitializationOption option;
+		
+		// Staged settings
+		private Set<String> modulePaths;
+		private Map<String, String[]> allowPolicies;
+		private Map<String, String[]> denyPolicies;
+		private Map<String, Integer> limits;
+		private InputStream stdin;
+		private OutputStream stdout;
+		private OutputStream stderr;
+		
+		private Builder() {
+			option = new EngineInitializationOption();
+		}
+		
+		public static Builder create() {
+			return new Builder();
+		}
+		
+		public Builder setIn(InputStream in) {
+			stdin = in;
+			return this;
+		}
+	
+		public Builder setOut(OutputStream out) {
+			stdout = out;
+			return this;
+		}
+	
+		public Builder setError(OutputStream err) {
+			stderr = err;
+			return this;
+		}
+		
+		public Builder addModulePath(String mpath) {
+			if (modulePaths == null) {
+				modulePaths = new HashSet<>();
+			}
+			
+			modulePaths.add(mpath);
+			
+			return this;
+		}
+		
+		public Builder setLimit(String name, int limit) {
+			if (limits == null) {
+				limits = new HashMap<>();
+			}
+			
+			limits.put(name, limit);
+			
+			return this;
+		}
+		
+		public Builder allow(String category, String... operations) {
+			if (allowPolicies == null) {
+				allowPolicies = new HashMap<>();
+			}
+			
+			allowPolicies.put(category, operations);
+			
+			return this;
+		}
+		
+		public Builder deny(String category, String... operations) {
+			if (denyPolicies == null) {
+				denyPolicies = new HashMap<>();
+			}
+			
+			denyPolicies.put(category, operations);
+			
+			return this;
+		}
+		
+		public Builder setAllowReentry(boolean value) {
+			option.allowReentry = value;
+			return this;
+		}
+	
+		public Builder setUseExceptionDefaultHandler(boolean value) {
+			option.useExceptionDefaultHandler = value;
+			return this;
+		}
+		
+		public Builder setInteractiveMode(boolean value) {
+			option.interactiveMode = value;
+			return this;
+		}
+
+		public Builder setClearUserDefinedTypesOnReentry(boolean value) {
+			option.clearUserDefinedTypesOnReentry = value;
+			return this;
+		}
+
+		public Builder setClearUserBindingsOnExit(boolean value) {
+			option.clearUserBindingsOnExit = value;
+			return this;
+		}
+		
+		public JulianScriptEngine build() {
+			JulianScriptEngine instance = new JulianScriptEngine(option);
+			
+			if (modulePaths != null && modulePaths.size() > 0) {
+				for (String mpath : modulePaths) {
+					instance.addModulePath(mpath);
+				}
+			}
+			
+			if (allowPolicies != null && allowPolicies.size() > 0) {
+				for (Entry<String, String[]> entry : allowPolicies.entrySet()) {
+					instance.allow(entry.getKey(), entry.getValue());
+				}
+			}
+	
+			if (denyPolicies != null && denyPolicies.size() > 0) {
+				for (Entry<String, String[]> entry : denyPolicies.entrySet()) {
+					instance.allow(entry.getKey(), entry.getValue());
+				}
+			}
+			
+			if (limits != null && limits.size() > 0) {
+				for (Entry<String, Integer> entry : limits.entrySet()) {
+					instance.setLimit(entry.getKey(), entry.getValue());
+				}
+			}
+			
+			if (stdin != null) {
+				instance.setInput(stdin);
+			}
+			
+			if (stdout != null) {
+				instance.setOutput(stdout);
+			}
+			
+			if (stderr != null) {
+				instance.setError(stderr);
+			}
+			
+			return instance;
+		}
+	}
+	
 	//--------------------------- Environment Settings ----------------------------//
 	
 	/**
@@ -105,9 +262,10 @@ public class JulianScriptEngine {
 	
 	/**
 	 * Reset the engine. Wipe out all the variables and types.
+	 * @param pol
 	 */
-	public void reset(){
-		engine.reset();
+	public void reset(ResetPolicy pol){
+		engine.reset(pol);
 	}
 	
 	/**
@@ -170,6 +328,20 @@ public class JulianScriptEngine {
 	 */
 	public void setError(OutputStream error) {
 		this.error = error;
+	}
+	
+	/**
+	 * Set resource utilization limit to the engine.
+	 * <p>
+	 * Supported names:<br>
+	 * <code>max.threads</code>
+	 * <code>max.used.memory.in.byte</code>
+	 *
+	 * @param name
+	 * @param value
+	 */
+	public void setLimit(String name, int value) {
+		this.engine.setLimit(name, value);
 	}
 	
 	//----------------------------- External Bindings -----------------------------//
@@ -474,7 +646,7 @@ public class JulianScriptEngine {
 			String fileName = result.getExceptionFileName();
 			int lineNo = result.getExceptionLineNumber();
 			if (!option.isInteractiveMode() && // If we are running in interactive mode, do not throw. The exception has been printed out, and the console must continue as usual.
-				option.useExceptionDefaultHandler()){
+				option.shouldUseExceptionDefaultHandler()){
 				throw new ScriptException(
 					error != null ? System.lineSeparator() + error : "<Error Unavailable>", 
 					fileName, 

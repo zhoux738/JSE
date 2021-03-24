@@ -42,6 +42,7 @@ import info.julang.typesystem.jclass.annotation.JAnnotation;
 import info.julang.typesystem.jclass.builtin.JAttributeType;
 import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
+import info.julang.util.OSTool;
 import info.julang.util.OneOrMoreList;
 
 /**
@@ -556,6 +557,21 @@ public class JInterfaceType implements ICompoundType {
 	@Override
 	public boolean isBuiltIn() {
 		return false;
+	}
+	
+	@Override
+	public int getSize() {
+		int sz = 0;
+		JClassMember[] mems = this.getClassInstanceMembers();
+		for (JClassMember mem : mems) {
+			if (mem.getMemberType() == MemberType.FIELD) {
+				sz += mem.getType().getSize();
+			} else if (mem.getMemberType() == MemberType.METHOD) {
+				sz += OSTool.WordSize;
+			}
+		}
+		
+		return sz;
 	}
 	
 	//-------------------- IAnnotated --------------------//

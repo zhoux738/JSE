@@ -79,5 +79,9 @@ public class VoidType implements JType {
 	public boolean isBuiltIn() {
 		return true;
 	}
-	
+
+	@Override
+	public int getSize() {
+		return 0;
+	}	
 }

@@ -95,4 +95,8 @@ public class ExtMethodCache {
 		stor.methodsByName.put(methodName, members);
 		
 	}
+
+	public void clear(String name) {
+		extCache.remove(name);
+	}
 }

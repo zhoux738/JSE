@@ -1,7 +1,7 @@
 import System.IO;
 
 // 1. Prepare the pom.xml for bootstrapping
-Directory dir = new Directory(script_path + Environment.separator + ".." + Environment.separator + "..");
+Directory dir = new Directory(script_path + Environment.separator + ".."  + Environment.separator + ".." + Environment.separator + "..");
 File orgPom = dir.subFile("pom.xml");
 string g_suffix = DateTime.getNow().format("yyMMddHHmmssSSS");
 File tmpPom = dir.subFile("pom-" + g_suffix + ".tmp.xml");

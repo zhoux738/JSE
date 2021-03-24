@@ -2,10 +2,13 @@ package info.jultest.test.interpret;
 
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
-import static info.jultest.test.Commons.validateBoolValue;
 import static info.jultest.test.Commons.validateIntArrayValue;
+import static info.jultest.test.Commons.validateBoolValue;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
+import static info.jultest.test.Commons.validateFloatValue;
+import static info.jultest.test.Commons.validateCharValue;
+import static info.jultest.test.Commons.validateByteValue;
 import info.julang.dev.GlobalSetting;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
@@ -358,5 +361,101 @@ public class ExpressionTests {
 		validateBoolValue(gvt, "b0", true);
 		validateBoolValue(gvt, "b1", true);
 		validateBoolValue(gvt, "b2", true);
+	}
+	
+	@Test
+	public void crossAddTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "cross_op_01.jul"));
+		
+		// Invalid cases
+		validateBoolValue(gvt, "b0", true);
+		validateBoolValue(gvt, "b1", true);
+		validateBoolValue(gvt, "b2", true);
+		validateBoolValue(gvt, "b3", true);
+		validateBoolValue(gvt, "b4", true);
+		validateBoolValue(gvt, "b5", true);
+		
+		// int + ...
+		validateStringValue(gvt, "s1a", "1a");
+		validateStringValue(gvt, "s1xyz", "1xyz");
+		validateFloatValue(gvt, "f2_1", 2.1f);
+		validateIntValue(gvt, "i100", 100);
+		
+		// bool + ...
+		validateStringValue(gvt, "struexyz", "truexyz");
+		validateStringValue(gvt, "struea", "truea");
+		
+		// byte + ...
+		validateStringValue(gvt, "s37a", "37a");
+		validateStringValue(gvt, "s37xyz", "37xyz");
+		validateFloatValue(gvt, "f38_1", 38.1f);
+		validateIntValue(gvt, "i137", 137);
+		
+		// char + ...
+		validateStringValue(gvt, "sa2", "a2");
+		validateStringValue(gvt, "sa1_1", "a1.1");
+		validateStringValue(gvt, "safalse", "afalse");
+		validateStringValue(gvt, "saxyz", "axyz");
+		validateStringValue(gvt, "sa99", "a99");
+		
+		// float + ...
+		validateFloatValue(gvt, "f4_2", 4.2f);
+		validateFloatValue(gvt, "f9_2", 9.2f);
+		validateStringValue(gvt, "s2_2a", "2.2a");
+		validateStringValue(gvt, "s2_2xyz", "2.2xyz");
+	}
+	
+	@Test
+	public void crossSubTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "cross_op_02.jul"));
+		
+		// Invalid cases
+		validateBoolValue(gvt, "b0", true);
+		validateBoolValue(gvt, "b1", true);
+		validateBoolValue(gvt, "b2", true);
+		validateBoolValue(gvt, "b3", true);
+		validateBoolValue(gvt, "b7", true);
+		validateBoolValue(gvt, "b8", true);
+		validateBoolValue(gvt, "b9", true);
+		validateBoolValue(gvt, "b10", true);
+		validateBoolValue(gvt, "b11", true);
+		validateBoolValue(gvt, "b12", true);
+		
+		// int + ...
+		validateFloatValue(gvt, "f2_1", 2.1f);
+		validateIntValue(gvt, "i100", 100);
+		
+		// bool + ...
+		
+		// byte + ...
+		validateFloatValue(gvt, "f38_1", 38.1f);
+		validateIntValue(gvt, "i37", 37);
+		
+		// char + ...
+		
+		// float + ...
+		validateFloatValue(gvt, "f4_2", 4.2f);
+		validateFloatValue(gvt, "f9_2", 9.2f);
+	}
+	
+	@Test
+	public void crossCompTest() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);		
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.IMPERATIVE, FEATURE, "cross_op_03.jul"));
+		
+		validateBoolValue(gvt, "b0", true);
+		validateBoolValue(gvt, "b1", true);
+		validateBoolValue(gvt, "b2", true);
+		validateBoolValue(gvt, "b3", true);
+		validateBoolValue(gvt, "b4", true);
+		validateBoolValue(gvt, "b5", true);
 	}
 }

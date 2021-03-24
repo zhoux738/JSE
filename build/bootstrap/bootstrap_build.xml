@@ -1,0 +1,53 @@
+<project name="JSE" default="bootstrap" basedir="." xmlns:if="ant:if" xmlns:unless="ant:unless">
+
+  <description>
+    A local bootstrap alternative. Always use "ant bootstrap -Dlocal=true" to invoke this script.
+  </description>
+  
+  <property environment="env"/>
+  <property name="maven.home" value="${env.MAVEN_HOME}"/>
+  
+  <!-- Call Maven from Ant. Originally from http://maven.apache.org/ant-tasks/examples/mvn.html -->
+  <macrodef name="maven">
+    <attribute name="goal" />
+    <attribute name="basedir" />
+    <attribute name="pomfile" default="pom.xml" />
+    <attribute name="resultproperty" default="maven.result" />
+    <element name="args" implicit="true" optional="true" />
+    <sequential>
+      <java classname="org.codehaus.classworlds.Launcher" fork="true"
+            dir="@{basedir}" resultproperty="@{resultproperty}">
+        <jvmarg value="-Xmx512m" />
+        <jvmarg value="-Dmaven.multiModuleProjectDirectory" />
+        <classpath>
+          <fileset dir="${maven.home}/boot">
+            <include name="*.jar" />
+          </fileset>
+          <fileset dir="${maven.home}/lib">
+            <include name="*.jar" />
+          </fileset>
+        </classpath>
+        <sysproperty key="classworlds.conf" value="${maven.home}/bin/m2.conf" />
+        <sysproperty key="maven.home" value="${maven.home}" />
+        <arg line="--batch-mode -f @{pomfile} @{goal}" />
+      </java>
+    </sequential>
+  </macrodef>
+  
+  <target name="antlr">
+    <!-- mvn -f bootstrap_pom.xml.tmp antlr4:antlr4 -->
+    <echo message="Run 'antlr4:antlr4' to generate parser source files."/>
+    <maven basedir="${basedir}"
+           pomfile="bootstrap_pom.xml.tmp"
+           goal="antlr4:antlr4"
+           resultproperty="maven.build.result"/>
+  </target>
+  
+  <target name="bootstrap" depends="antlr">
+    <!-- mvn -f mvnplugin/pom.xml install -->
+    <echo message="Run 'mvn clean install' against mvnplugin/pom.xml"/>
+    <maven basedir="${basedir}/mvnplugin"
+           goal="clean install"
+           resultproperty="maven.build.result"/>
+  </target>
+</project>

@@ -24,24 +24,21 @@ SOFTWARE.
 
 package info.julang.external.interfaces;
 
-import java.util.List;
-
-public interface IExtTypeTable {
+/**
+ * Defines policies that can be used when resetting a Julian engine instance.
+ * 
+ * @author Ming Zhou
+ */
+public enum ResetPolicy {
 
 	/**
-	 * Initialize this type table with Julian's built-in class types.
-	 * 
-	 * @param rt engine runtime
-	 * @return true if it's initialized as result of this invocation; 
-	 * false if the initialization was skipped since it's already done.
-	 * Either way, the initialization is done after this method returns.
+	 * Clear all variables and types. 
 	 */
-	public boolean initialize(IExtEngineRuntime rt);
+	FULL,
 	
 	/**
-	 * Finalize the given types.
-	 * 
-	 * @param typeNames The list of fully qualifies names of types.
+	 * Clear all variables; clear only types that are defined by user scripts.
 	 */
-	public void finalizeTypes(List<String> typeNames);
+	USER_DEFINED_ONLY
+	
 }

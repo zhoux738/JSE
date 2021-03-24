@@ -27,6 +27,7 @@ package info.julang.typesystem;
 import info.julang.hosting.HostedMethodManager;
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.typesystem.conversion.Convertibility;
+import info.julang.util.OSTool;
 
 /**
  * A type placeholder used by the script engine to represent a mapped type. 
@@ -134,5 +135,9 @@ public class PlatformType implements JType, IMapped {
 	public boolean isBuiltIn() {
 		return false;
 	}
-	
+
+	@Override
+	public int getSize() {
+		return 0;
+	}
 }

@@ -32,11 +32,12 @@ import static info.julang.langspec.Operators.LTEQ;
 import static info.julang.langspec.Operators.NEQ;
 
 import info.julang.external.interfaces.JValueKind;
+import info.julang.interpretation.IllegalOperandsException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.expression.Operand;
 import info.julang.interpretation.expression.Operator;
-import info.julang.memory.value.BoolValue;
 import info.julang.memory.value.ByteValue;
+import info.julang.memory.value.CharValue;
 import info.julang.memory.value.FloatValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
@@ -126,13 +127,48 @@ public abstract class CompareOp extends Operator {
 			default:
 			}
 			break;
-		case STRING:
-			if(rval.getKind() == JValueKind.STRING){
+		case CHAR:
+			switch(rval.getKind()){
+			case OBJECT:
+				StringValue rvalstr = StringValue.dereference(rval, false);
+				if (rvalstr != null) {
+					boolean result = compareStringToString(
+						String.valueOf(((CharValue) lval).getCharValue()), 
+						rvalstr.getStringValue());
+					return TempValueFactory.createTempBoolValue(result);
+				}
+				break;
+			case CHAR:
 				boolean result = compareStringToString(
-					((StringValue) lval).getStringValue(), 
-					((StringValue) rval).getStringValue());
+					String.valueOf(((CharValue) lval).getCharValue()), 
+					String.valueOf(((CharValue) rval).getCharValue())); 
 				return TempValueFactory.createTempBoolValue(result);
+			default:
 			}
+			break;
+		case OBJECT:
+			StringValue lvalstr = StringValue.dereference(lval, false);
+			if (lvalstr != null) {
+				switch(rval.getKind()){
+				case OBJECT:
+					StringValue rvalstr = StringValue.dereference(rval, false);
+					if (rvalstr != null) {
+						boolean result = compareStringToString(
+							lvalstr.getStringValue(),
+							rvalstr.getStringValue());
+						return TempValueFactory.createTempBoolValue(result);
+					}
+					
+					break;
+				case CHAR:
+					boolean result = compareStringToString(
+						lvalstr.getStringValue(),
+						String.valueOf(((CharValue) rval).getCharValue())); 
+					return TempValueFactory.createTempBoolValue(result);
+				default:
+				}
+			}
+			break;
 		default:
 		}
 
@@ -146,14 +182,10 @@ public abstract class CompareOp extends Operator {
 	protected abstract boolean compareDoubleToDouble(double lvalue, double rvalue);
 	
 	protected boolean compareSpecialTypes(JValue lval, JValue rval){
-		return lval.isEqualTo(rval);
+		throw new IllegalOperandsException(
+		"The operator '" + this.toString() + "' cannot apply on operands of type " + 
+		lval.getType() + " and " + rval.getType());
 	}
-
-//	private void throwException(JValue lval, JValue rval){
-//		throw new IllegalOperandsException(
-//			"The operator '" + this.toString() + "' cannot apply on operands of type " + 
-//			lval.getType() + " and " + rval.getType());
-//	}
 	
 	//------------- Implementation for the following operators -------------//
 	//  Less Than or Equal(<=), 
@@ -355,13 +387,7 @@ public abstract class CompareOp extends Operator {
 		
 		@Override
 		protected boolean compareSpecialTypes(JValue lval, JValue rval) {
-			JValueKind lkind = lval.getKind();
-			JValueKind rkind = rval.getKind();
-			if(lkind == JValueKind.BOOLEAN && rkind == JValueKind.BOOLEAN){
-				return ((BoolValue) lval).getBoolValue() == ((BoolValue) rval).getBoolValue();
-			}
-			
-			return super.compareSpecialTypes(lval, rval);
+			return lval.isEqualTo(rval);
 		}
 	}
 	
@@ -388,7 +414,7 @@ public abstract class CompareOp extends Operator {
 		
 		@Override
 		protected boolean compareSpecialTypes(JValue lval, JValue rval) {
-			return !super.compareSpecialTypes(lval, rval);
+			return !lval.isEqualTo(rval);
 		}
 	}
 }

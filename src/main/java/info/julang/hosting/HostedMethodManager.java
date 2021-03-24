@@ -79,6 +79,12 @@ public class HostedMethodManager {
 	private Map<String, PlatformType> platformTypes; 
 	private PlatformTypeMapper mapper;
 	
+	public synchronized void clearAllMappedTypes() {
+		mapped = null;
+		platformTypes = null;
+		mapper = null;
+	}
+	
 	/**
 	 * Load a platform type into the system, and register it with the given script type name.
 	 * <p>

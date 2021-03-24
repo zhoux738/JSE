@@ -73,4 +73,9 @@ public class ByteType extends BasicType {
 	public NumberKind getNumberKind() {
 		return NumberKind.WHOLE;
 	}
+	
+	@Override
+	public int getSize() {
+		return 1;
+	}
 }

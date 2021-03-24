@@ -28,9 +28,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import info.julang.execution.EngineRuntime;
 import info.julang.execution.StandardIO;
@@ -291,7 +293,7 @@ public class TypeTable implements ITypeTable {
 	 * 
 	 * @param rt
 	 */
-	public synchronized void initialize(IExtEngineRuntime rt) {
+	public synchronized boolean initialize(IExtEngineRuntime rt) {
 		if(!initialized){
 			// Build built-in class types
 			Map<String, JClassType> builtinTypes = BuiltinTypeBootstrapper.bootstrapClassTypes();
@@ -348,6 +350,10 @@ public class TypeTable implements ITypeTable {
 			}
 			
 			initialized = true;
+			
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
@@ -421,6 +427,54 @@ public class TypeTable implements ITypeTable {
 			//TypeInfo tinfo = types.get(getInnerMostElementType(arrayType));
 			//tinfo.addArrayType(arrayType);
 		}
+	}
+
+	/**
+	 * Clear all user-defined types. Built-in types and JuFC types will be preserved.
+	 */
+	public synchronized void clearAllUserDefinedTypes() {
+		Set<String> names = new HashSet<>(types.size());
+		List<String> aNames = new ArrayList<>(arrayTypes.size());
+		
+		for (String name : types.keySet()) {
+			if (!isSystemType(name)) {
+				names.add(name);
+			}
+		}
+
+		for (Entry<String, ArrayTypeInfo> entry : arrayTypes.entrySet()) {
+			JType eleType = entry.getValue().type.getElementType();
+			while (JArrayType.isArrayType(eleType)) {
+				eleType = ((JArrayType)eleType).getElementType();
+			}
+			
+			String tname = eleType.getName();
+			if (!isSystemType(tname)) {
+				names.add(tname);
+				aNames.add(entry.getKey());
+			}
+		}
+		
+		for (String name : names) {
+			extMethodCache.clear(name);
+			types.remove(name);
+		}
+		
+		for (String name : aNames) {
+			arrayTypes.remove(name);
+		}
+	}
+	
+	public static boolean isSystemType(String name) {
+		if (!name.contains(".")) {
+			return true;
+		}
+		
+		if (name.startsWith("System.")) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**

@@ -27,20 +27,41 @@
       <version>4.5</version>
     </dependency>
     <dependency>
-	  <groupId>org.codehaus.mojo</groupId>
-	  <artifactId>properties-maven-plugin</artifactId>
-	  <version>1.0.0</version>
-	</dependency>
-	<!-- JULENG: START -->
-	<dependency>
-	  <groupId>info.julang.eng</groupId>
-	  <artifactId>juleng-maven-plugin</artifactId>
-	  <version>0.0.3</version>
-	</dependency>
-	<!-- JULENG: END -->
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>properties-maven-plugin</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <!-- JULENG: START -->
+    <dependency>
+      <groupId>info.julang.eng</groupId>
+      <artifactId>juleng-maven-plugin</artifactId>
+      <version>0.0.3</version>
+    </dependency>
+    <!-- JULENG: END -->
   </dependencies>
   
-  <build>	
+  <profiles>
+    <profile>
+      <id>jdk8OrBelow</id>
+      <activation>
+        <jdk>(, 1.9)</jdk>
+      </activation>
+      <properties>
+        <test.argline></test.argline>
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk9OrUp</id>
+      <activation>
+        <jdk>[1.9,)</jdk>
+      </activation>
+      <properties>
+        <test.argline>--illegal-access=permit --add-opens java.base/java.lang.invoke=ALL-UNNAMED</test.argline>
+      </properties>
+    </profile>
+  </profiles>
+  
+  <build>    
     <plugins>
       <!-- [1] Read properties -->
       <plugin>
@@ -49,7 +70,7 @@
         <version>1.0.0</version>
         <executions>
           <execution>
-          	<phase>initialize</phase>
+              <phase>initialize</phase>
             <goals>
               <goal>read-project-properties</goal>
             </goals>
@@ -61,12 +82,12 @@
           </execution>
         </executions>
       </plugin>
-	
+    
       <!-- JULENG: START -->
       <!-- [2.a] Generate source code for JuFC classes -->
-	  <plugin>
-		<groupId>info.julang.eng</groupId>
-		<artifactId>juleng-maven-plugin</artifactId>
+      <plugin>
+        <groupId>info.julang.eng</groupId>
+        <artifactId>juleng-maven-plugin</artifactId>
         <executions>
           <execution>
             <goals>
@@ -84,8 +105,8 @@
            mvn clean generate-resources -Djuleng.codegen.disable=true -Djuleng.docgen.enable=true -Djuleng.docgen.clean=false -Djuleng.docgen.format=md -Djuleng.docgen.pattern=*
            Legal values for -Djuleng.docgen.format: json, md, html -->
       <plugin>
-		<groupId>info.julang.eng</groupId>
-		<artifactId>juleng-maven-plugin</artifactId>
+        <groupId>info.julang.eng</groupId>
+        <artifactId>juleng-maven-plugin</artifactId>
         <executions>
           <execution>
             <goals>
@@ -100,7 +121,7 @@
           </execution>
         </executions>
       </plugin>
-	  <!-- JULENG: END -->
+      <!-- JULENG: END -->
         
       <!-- [3] Generate ANTLR parser/lexer. -->
       <!-- Alternatively one can run 'mvn antlr4:antlr4' to invoke it independently. -->
@@ -131,7 +152,7 @@
         </configuration>
         <executions>
             <execution>
-	            <id>compile-main</id>
+                <id>compile-main</id>
             </execution>
         </executions>
       </plugin>
@@ -146,10 +167,8 @@
             <include>**/*Test.java</include>
             <include>**/*Tests.java</include>
           </includes>
-	      <skipTests>${skip.surefire.tests}</skipTests>  
-	      <argLine>
-	         --illegal-access=permit --add-opens java.base/java.lang.invoke=ALL-UNNAMED
-	      </argLine>
+          <skipTests>${skip.surefire.tests}</skipTests>
+          <argLine>${test.argline}</argLine>
         </configuration>
       </plugin>
       
@@ -177,7 +196,7 @@
                 </goals>
                 <configuration>
                     <sources>
-	                    <source>src/test/java-io</source>
+                        <source>src/test/java-io</source>
                     </sources>
                 </configuration>
             </execution>
@@ -193,17 +212,17 @@
         </configuration>
         <executions>
             <execution>
-	            <id>compile-io-tests</id>
-	            <phase>integration-test</phase>
-	            <goals>
-	               <goal>testCompile</goal>
-	            </goals>
-	            <configuration>
-			        <testIncludes>
-			            <include>**/*.java</include>
-			            <include>**/*.jul</include>
-	                </testIncludes>
-	            </configuration>
+                <id>compile-io-tests</id>
+                <phase>integration-test</phase>
+                <goals>
+                   <goal>testCompile</goal>
+                </goals>
+                <configuration>
+                    <testIncludes>
+                        <include>**/*.java</include>
+                        <include>**/*.jul</include>
+                    </testIncludes>
+                </configuration>
             </execution>
         </executions>
       </plugin>
@@ -213,8 +232,8 @@
         <version>3.0.0-M4</version>
         <executions>
             <execution>
-	            <id>run-io-tests</id>
-	            <phase>integration-test</phase>
+                <id>run-io-tests</id>
+                <phase>integration-test</phase>
                 <goals>
                     <goal>integration-test</goal>
                     <goal>verify</goal>
@@ -222,19 +241,17 @@
             </execution>
         </executions>
         <configuration>
-        	<!-- classesDirectory is defaulted to project artifact, which in our case is CI-{VER}.jar 
-        	     (although it really should be JSE-{VER}.jar, but that's another story). The problem is
-        	     adding jars to class path will cause severe class loading issue if we still want to run 
-        	     it in the fashion of unit tests. So we replace jar with the raw class directory. -->
-        	<classesDirectory>${project.build.outputDirectory}</classesDirectory>
+            <!-- classesDirectory is defaulted to project artifact, which in our case is CI-{VER}.jar 
+                 (although it really should be JSE-{VER}.jar, but that's another story). The problem is
+                 adding jars to class path will cause severe class loading issue if we still want to run 
+                 it in the fashion of unit tests. So we replace jar with the raw class directory. -->
+            <classesDirectory>${project.build.outputDirectory}</classesDirectory>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <testSourceDirectory>src/test/java-io</testSourceDirectory>
             <includes>
                 <include>**/*TestSuite.*</include>
             </includes>
-          	<argLine>
-	          --illegal-access=permit --add-opens java.base/java.lang.invoke=ALL-UNNAMED
-	        </argLine>
+            <argLine>${test.argline}</argLine>
         </configuration>
       </plugin>
       
@@ -251,20 +268,20 @@
               <goal>attached</goal>
             </goals>
             <configuration>
-	          <finalName>JSE-${project.version}</finalName>
-	          <appendAssemblyId>false</appendAssemblyId>
-	          <descriptors>
-	            <descriptor>./build/assembly.xml</descriptor>
-	          </descriptors>
-	          <archive>
-				 <manifest>
-				   <mainClass>info.julang.CmdLineApplication</mainClass>
-				 </manifest>
-				 <manifestEntries>
-				   <JSE-Version>${version}</JSE-Version>
-				 </manifestEntries>
-	          </archive>
-	        </configuration>
+              <finalName>JSE-${project.version}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptors>
+                <descriptor>./build/assembly.xml</descriptor>
+              </descriptors>
+              <archive>
+                 <manifest>
+                   <mainClass>info.julang.CmdLineApplication</mainClass>
+                 </manifest>
+                 <manifestEntries>
+                   <JSE-Version>${version}</JSE-Version>
+                 </manifestEntries>
+              </archive>
+            </configuration>
           </execution>
           <!-- Jar #2: CI executable for containerized testing -->
           <execution>
@@ -274,21 +291,21 @@
               <goal>attached</goal>
             </goals>
             <configuration>
-	          <finalName>CI-${project.version}</finalName>
-	          <appendAssemblyId>false</appendAssemblyId>
-	          <classifier>SNAPSHOT</classifier>
-	          <descriptors>
-	            <descriptor>./build/ci-assembly.xml</descriptor>
-	          </descriptors>
-	          <archive>
-				 <manifest>
-				   <mainClass>info.jultest.ci.CITestRunner</mainClass>
-				 </manifest>
-				 <manifestEntries>
-				   <JSE-Version>${version}</JSE-Version>
-				 </manifestEntries>
-	          </archive>
-	        </configuration>
+              <finalName>CI-${project.version}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <classifier>SNAPSHOT</classifier>
+              <descriptors>
+                <descriptor>./build/ci-assembly.xml</descriptor>
+              </descriptors>
+              <archive>
+                 <manifest>
+                   <mainClass>info.jultest.ci.CITestRunner</mainClass>
+                 </manifest>
+                 <manifestEntries>
+                   <JSE-Version>${version}</JSE-Version>
+                 </manifestEntries>
+              </archive>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -314,69 +331,69 @@
     </resources>
 
     <pluginManagement>
-    	<plugins>
-    		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-    		<plugin>
-    			<groupId>org.eclipse.m2e</groupId>
-    			<artifactId>lifecycle-mapping</artifactId>
-    			<version>1.0.0</version>
-    			<configuration>
-    				<lifecycleMappingMetadata>
-    					<pluginExecutions>
-    						<pluginExecution>
-    							<pluginExecutionFilter>
-    								<groupId>
-    									info.julang.eng
-    								</groupId>
-    								<artifactId>
-    									juleng-maven-plugin
-    								</artifactId>
-    								<versionRange>
-    									[0.0.3,)
-    								</versionRange>
-    								<goals>
-    									<goal>generate</goal>
-    									<goal>docgen</goal>
-    								</goals>
-    							</pluginExecutionFilter>
-    							<action>
-    								<ignore></ignore>
-    							</action>
-    						</pluginExecution>
-    					</pluginExecutions>
-    				</lifecycleMappingMetadata>
-    			</configuration>
-    		</plugin>
-    	
-	    	<!-- Putting a variable in version property (jse.version) causes an error 
-	    	     when executing lifecycle-mapping plug-in inside Eclipse, but running 
-	    	     Maven from cmdline is not affected. This plug-in is therefore commented out.
-		    <plugin>
-		     <groupId>org.eclipse.m2e</groupId>
-		     <artifactId>lifecycle-mapping</artifactId>
-		     <version>1.0.0</version>
-		     <configuration>
-		       <lifecycleMappingMetadata>
-		         <pluginExecutions>
-		           <pluginExecution>
-		             <pluginExecutionFilter>
-					    <groupId>org.codehaus.mojo</groupId>
-					    <artifactId>properties-maven-plugin</artifactId>
-					    <version>1.0.0</version>
-			            <goals>
-			              <goal>read-project-properties</goal>
-			            </goals>
-		             </pluginExecutionFilter>
-		             <action>
-		               <ignore/>
-		             </action>
-		           </pluginExecution>
-		         </pluginExecutions>
-		       </lifecycleMappingMetadata>
-		     </configuration>
-		    </plugin>
-	    	-->
-    	</plugins>
+        <plugins>
+            <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+            <plugin>
+                <groupId>org.eclipse.m2e</groupId>
+                <artifactId>lifecycle-mapping</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                    <lifecycleMappingMetadata>
+                        <pluginExecutions>
+                            <pluginExecution>
+                                <pluginExecutionFilter>
+                                    <groupId>
+                                        info.julang.eng
+                                    </groupId>
+                                    <artifactId>
+                                        juleng-maven-plugin
+                                    </artifactId>
+                                    <versionRange>
+                                        [0.0.3,)
+                                    </versionRange>
+                                    <goals>
+                                        <goal>generate</goal>
+                                        <goal>docgen</goal>
+                                    </goals>
+                                </pluginExecutionFilter>
+                                <action>
+                                    <ignore></ignore>
+                                </action>
+                            </pluginExecution>
+                        </pluginExecutions>
+                    </lifecycleMappingMetadata>
+                </configuration>
+            </plugin>
+        
+            <!-- Putting a variable in version property (jse.version) causes an error 
+                 when executing lifecycle-mapping plug-in inside Eclipse, but running 
+                 Maven from cmdline is not affected. This plug-in is therefore commented out.
+            <plugin>
+             <groupId>org.eclipse.m2e</groupId>
+             <artifactId>lifecycle-mapping</artifactId>
+             <version>1.0.0</version>
+             <configuration>
+               <lifecycleMappingMetadata>
+                 <pluginExecutions>
+                   <pluginExecution>
+                     <pluginExecutionFilter>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>properties-maven-plugin</artifactId>
+                        <version>1.0.0</version>
+                        <goals>
+                          <goal>read-project-properties</goal>
+                        </goals>
+                     </pluginExecutionFilter>
+                     <action>
+                       <ignore/>
+                     </action>
+                   </pluginExecution>
+                 </pluginExecutions>
+               </lifecycleMappingMetadata>
+             </configuration>
+            </plugin>
+            -->
+        </plugins>
     </pluginManagement>
   </build>
 </project>

@@ -30,24 +30,33 @@ import java.util.Map;
 /**
  * The various limits enforced by the engine during runtime.
  * Exceeding these limits will cause <font color="green">System.UnderprivilegeExcetion</font>.
+ * <p>
+ * This class can be partially used by the JSE Java programmer. In particular, one may call 
+ * {@link #getPublicName} to get a name for the limit that is recognized by the engine API such as 
+ * {@link info.julang.external.JulianScriptEngine#setLimit(String, int) setLimit(String, int)}.
  * 
  * @author Ming Zhou
  */
 public enum EngineLimit {
 	
-	MAX_THREADS(true, "About to exceed max threads allowed (%d)."),
+	MAX_THREADS(true, "About to exceed max threads allowed (%d).", false, 1),
+	MAX_USED_MEMORY_IN_BYTE(true, "About to exceed max memory allowed (%d bytes).", true, 512),
 	
 	;
 	
-	EngineLimit(boolean maxOrMin, String msgTmpl){
+	EngineLimit(boolean maxOrMin, String msgTmpl, boolean stateful, int minValue){
 		this.maxOrMin = maxOrMin;
 		this.msgTmpl = msgTmpl;
+		this.stateful = stateful;
+		this.minValue = minValue;
 	}
 	
 	public static final int UNDEFINED = Integer.MIN_VALUE;
 	
 	private boolean maxOrMin;
 	private String msgTmpl;
+	private boolean stateful;
+	private int minValue;
 	
 	private static final String s_prefix = "System.Limit.";
 	private static final String s_prefix_upper = s_prefix.toUpperCase().replace('.', '_');
@@ -61,8 +70,26 @@ public enum EngineLimit {
 		return maxOrMin;
 	}
 	
+	public boolean isStateful() {
+		return stateful;
+	}
+	
 	public String getMessageTemplate() {
 		return msgTmpl;
+	}
+	
+	/**
+	 * Get the name that can be used by when invoking JSE through Java API, 
+	 * for both {@link info.julang.external.JulianScriptEngine JulianScriptEngine} 
+	 * and {@link info.julang.jsr223.JulianScriptingEngine JSR-223 implementation}.
+	 * @return
+	 */
+	public String getPublicName() {
+		return this.name().toLowerCase().replace('_', '.');
+	}
+
+	public int sanitize(int value) {
+		return Math.max(minValue, value);
 	}
 	
 	/**
@@ -91,6 +118,7 @@ public enum EngineLimit {
 		if (s_lmap == null) {
 			s_lmap = new HashMap<String, EngineLimit>();
 			s_lmap.put(MAX_THREADS.getName(), MAX_THREADS);
+			s_lmap.put(MAX_USED_MEMORY_IN_BYTE.getName(), MAX_USED_MEMORY_IN_BYTE);
 		}
 	}
 }

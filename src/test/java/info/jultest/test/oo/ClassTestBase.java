@@ -17,6 +17,7 @@ import info.julang.typesystem.jclass.JInterfaceType;
 import info.julang.typesystem.jclass.MemberType;
 import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JStringType;
+import info.julang.util.OSTool;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -294,6 +295,10 @@ public class ClassTestBase {
 		public boolean isBuiltIn() {
 			return false;
 		}
-		
+
+		@Override
+		public int getSize() {
+			return 0;
+		}
 	}
 }

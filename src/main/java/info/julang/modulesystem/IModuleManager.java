@@ -26,6 +26,7 @@ package info.julang.modulesystem;
 
 import java.util.List;
 
+import info.julang.execution.security.EngineLimit;
 import info.julang.execution.security.EnginePolicyEnforcer;
 import info.julang.execution.threading.JThread;
 import info.julang.external.interfaces.IExtModuleManager;
@@ -62,6 +63,15 @@ public interface IModuleManager extends IExtModuleManager {
 	 * @return
 	 */
 	public EnginePolicyEnforcer getEnginePolicyEnforcer();
+	
+	/**
+	 * Set engine limit to the specified value. Engine limit is a subtype of engine policy,
+	 * so it can be reset by {@link #resetPlatformAccess()}.
+	 * 
+	 * @param el
+	 * @param value
+	 */
+	public void setEngineLimit(EngineLimit el, int value);
 
 	/**
 	 * Load a module of specified name.

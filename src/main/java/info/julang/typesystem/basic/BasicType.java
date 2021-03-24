@@ -33,6 +33,7 @@ import info.julang.typesystem.AnyType;
 import info.julang.typesystem.JType;
 import info.julang.typesystem.conversion.Convertibility;
 import info.julang.typesystem.jclass.builtin.JStringType;
+import info.julang.util.OSTool;
 
 /**
  * An overall class representing the basic types supported by Julian Script Language, which are:

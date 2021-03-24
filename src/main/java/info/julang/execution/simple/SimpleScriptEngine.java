@@ -48,10 +48,10 @@ import info.julang.execution.StandardIO;
 import info.julang.execution.State;
 import info.julang.execution.StringScriptProvider;
 import info.julang.execution.security.EngineLimit;
-import info.julang.execution.security.EngineLimitPolicy;
 import info.julang.execution.security.EnginePolicyEnforcer;
 import info.julang.execution.security.IEnginePolicy;
 import info.julang.execution.symboltable.IVariableTable;
+import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThreadManager;
 import info.julang.execution.threading.ThreadRuntime;
@@ -65,6 +65,7 @@ import info.julang.external.exceptions.JSEError;
 import info.julang.external.exceptions.JSEException;
 import info.julang.external.exceptions.ScriptNotFoundException;
 import info.julang.external.interfaces.IExtEngineRuntime;
+import info.julang.external.interfaces.ResetPolicy;
 import info.julang.hosting.HostedMethodManager;
 import info.julang.hosting.mapped.implicit.ImplicitPlatformTypeMapper;
 import info.julang.hosting.mapped.implicit.ObjectBindingGroup;
@@ -116,11 +117,15 @@ public class SimpleScriptEngine implements IScriptEngine {
 	
 	private boolean useDefExHandler;
 	
+	private boolean clearUserDefinedTypesOnReentry;
+	
+	private boolean clearUserBindingsOnExit;
+	
 	private JThread mainThread;
 	
 	private boolean policyUpdated;
 	
-	private List<Pair<EngineLimit, Integer>> limits;
+	private Map<EngineLimit, Integer> limits;
 	
 	/**
 	 * [CFOW] Create a new SimpleScriptEngine.
@@ -137,7 +142,9 @@ public class SimpleScriptEngine implements IScriptEngine {
 		this.runtime = (SimpleEngineRuntime)runtime;
 		initializeInteractiveMode(this.runtime);
 		
-		this.useDefExHandler = option.useExceptionDefaultHandler();
+		this.useDefExHandler = option.shouldUseExceptionDefaultHandler();
+		this.clearUserDefinedTypesOnReentry = allowReentry && option.shouldClearUserDefinedTypesOnReentry();
+		this.clearUserBindingsOnExit = allowReentry && option.shouldClearUserBindingsOnExit();
 	}
 	
 	/**
@@ -191,11 +198,15 @@ public class SimpleScriptEngine implements IScriptEngine {
 		}
 		
 		EngineRuntime runtime = getRuntime();
+		IModuleManager modManager = runtime.getModuleManager();
 		
-		runtime.getTypeTable().initialize(runtime);
+		boolean inited = runtime.getTypeTable().initialize(runtime);
+		if (!firstTime && !inited && clearUserDefinedTypesOnReentry) {
+			// The engine is being re-entered without resetting.
+			resetUserDefinedTypes(modManager);
+		}
 		
 		// Set module paths
-		IModuleManager modManager = runtime.getModuleManager();
 		modManager.clearModulePath();
 		for(String path : context.modulePaths){
 			modManager.addModulePath(path);
@@ -210,15 +221,19 @@ public class SimpleScriptEngine implements IScriptEngine {
 						pc.allowOrDeny, pc.category, pc.operations);
 				}
 			}
-			policyUpdated = false;
-		}
-		
-		// Set limits
-		if (limits != null && limits.size() > 0) {
-			EnginePolicyEnforcer enforcer = modManager.getEnginePolicyEnforcer();
-			for (Pair<EngineLimit, Integer> lm : limits) {
-				enforcer.addPolicy(new EngineLimitPolicy(lm.getFirst(), lm.getSecond()));
+			
+			// Set limits
+			if (limits != null && limits.size() > 0) {
+				for (Entry<EngineLimit, Integer> lm : limits.entrySet()) {
+					modManager.setEngineLimit(lm.getKey(), lm.getValue());
+				}
 			}
+			
+			policyUpdated = false;
+		} else {
+			// Reset stateful policies.
+			EnginePolicyEnforcer enforcer = modManager.getEnginePolicyEnforcer();
+			enforcer.resetLimits();
 		}
 		
 		// Execute the script in blocking mode
@@ -269,6 +284,11 @@ public class SimpleScriptEngine implements IScriptEngine {
 				}
 			}
 			
+			// Bindings from the last run is no more use.
+			if (clearUserBindingsOnExit) {
+				context.detachedBindings = null;
+			}
+			
 			Argument[] scriptArguments = convertArguments(context.getArguments());
 			
 			// Clear the result from last run
@@ -295,12 +315,16 @@ public class SimpleScriptEngine implements IScriptEngine {
 			state = State.FAULTED;
 			context.exception = jse;
 			result = new Result(jse);
-			if (handler == null && useDefExHandler){
+			if (handler == null && useDefExHandler) {
 				handler = new DefaultExceptionHandler(this.runtime.getStandardIO(), true);
 			}
-			if(handler != null){
+			
+			if (handler != null) {
 				handler.onException(jse); // the handler can decide if it needs to throw.
 			}
+
+			// If not using default handler, but no other handler is specified either, then 
+			// fail silently. This is by design.
 		} catch (JSERuntimeException error) {
 			state = State.FAULTED;
 			throw new EngineInvocationError("A fatal error occurs when invoking script engine.", error);
@@ -322,13 +346,25 @@ public class SimpleScriptEngine implements IScriptEngine {
 			mainThread = null;
 			
 			// Clean up if we are to call this engine again.
-			if(allowReentry){
+			if (allowReentry) {
 				context.reset();
-				if (!interactiveMode){
+				if (!interactiveMode) {
 					modManager.clearModulePath();
+				}
+				
+				if (clearUserBindingsOnExit) {
+					context.detachBindings();
 				}
 			}
 		}
+	}
+	
+	private void resetUserDefinedTypes(IModuleManager modManager) {
+		TypeTable tt = (TypeTable)runtime.getTypeTable();
+		tt.clearAllUserDefinedTypes();
+		
+		ModuleManager mm = (ModuleManager)modManager;
+		mm.clearAllUserDefinedModules();
 	}
 	
 	// Translate bound objects to mapped types and create objects with the corresponding type.
@@ -412,17 +448,27 @@ public class SimpleScriptEngine implements IScriptEngine {
 	}
 	
 	/**
-	 * Wipe out all the defined variables, added bindings, as well as loaded types.
-	 * <p/>
+	 * Wipe out all the defined variables and loaded types.
+	 * <p>
 	 * Note if this method is called, the runtime passed into the constructor may be dropped, and a new runtime
 	 * gets created based off of it. To continue using the old runtime from outside would have no effect on the 
 	 * engine anymore.
 	 */
 	@Override
-	public void reset() {
-		runtime = null;
-		mainThread = null;
-		runtime = getRuntime();
+	public void reset(ResetPolicy pol) {
+		if (pol == ResetPolicy.FULL || runtime == null) {
+			runtime = null;
+			mainThread = null;
+			runtime = getRuntime();
+		} else { // ResetPolicy.USER_DEFINED_ONLY
+			// variables
+			runtime.getGlobalVariableTable().clear();
+			
+			// types
+			IModuleManager modManager = runtime.getModuleManager();
+			resetUserDefinedTypes(modManager);
+		}
+		
 		state = State.NOT_STARTED;
 	}
 	
@@ -434,11 +480,13 @@ public class SimpleScriptEngine implements IScriptEngine {
 		EngineLimit lim = EngineLimit.fromString(name);
 		if (lim != null) {
 			if (limits == null) {
-				limits = new ArrayList<>();
+				limits = new HashMap<>();
 			}
 			
-			limits.add(new Pair<>(lim, value));
+			limits.put(lim, value);
 		}
+		
+		this.policyUpdated = true;
 	}
 	
 	/**
@@ -504,24 +552,47 @@ public class SimpleScriptEngine implements IScriptEngine {
 		
 		private Map<String, IBinding> bindings;
 		
+		private Map<String, IBinding> detachedBindings;
+		
 		private String[] arguments;
 		
 		private JulianScriptException exception;
 		
 		private List<PolicyConfig> policies;
 		
+		private void detachBindings() {
+			detachedBindings = bindings;
+			bindings = null;
+		}
+		
 		@Override
 		public IBinding getBinding(String name) {
-			return bindings != null ? bindings.get(name) : null;
+			// Try current bindings first.
+			IBinding binding = bindings != null ? bindings.get(name) : null;
+			if (binding != null) {
+				return binding;
+			}
+			
+			// If not found, try detached bindings.
+			if (detachedBindings != null) {
+				return detachedBindings.get(name);
+			} else {
+				return null;
+			}
 		}
 		
 		@Override
 		public void addBinding(String name, IBinding binding) {
 			if(isMutable()){
-				if(bindings == null){
+				if (bindings == null) {
 					bindings = new HashMap<String, IBinding>();
 				}
+				
 				bindings.put(name, binding);
+				
+				if (detachedBindings != null) {
+					detachedBindings.remove(name);
+				}
 			}
 		}
 

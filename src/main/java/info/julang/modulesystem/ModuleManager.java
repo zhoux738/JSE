@@ -35,10 +35,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import info.julang.execution.security.CheckResultKind;
+import info.julang.execution.security.EngineLimit;
+import info.julang.execution.security.EngineLimitPolicy;
 import info.julang.execution.security.EnginePolicyEnforcer;
 import info.julang.execution.security.IEnginePolicy;
 import info.julang.execution.security.PlatformAccessPolicy;
+import info.julang.execution.security.StatefulEngineLimitPolicy;
 import info.julang.execution.symboltable.ITypeTable;
+import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThread.MonitorInterruptCondition;
 import info.julang.execution.threading.ThreadRuntime;
@@ -93,7 +97,8 @@ public class ModuleManager implements IModuleManager {
 	// Module management
 	private Map<String, ModuleInfo> cache;
 	private ModuleLocator locator;
-	private Map<String, OneOrMoreList<ClassInfo>> allClasses;
+	private Map<String, OneOrMoreList<ClassInfo>> allClasses; // Keyed by simple name (NOT fully qualified).
+	private Set<String> allUserDefinedClasses;
 	
 	// Platform API mapping
 	private HostedMethodManager hmm;
@@ -116,6 +121,88 @@ public class ModuleManager implements IModuleManager {
 	
 	public ModuleManager(){
 		this(ModuleManager.class.getClassLoader());
+	}
+	
+	/**
+	 * Clear all user-defined modules. JuFC modules will be preserved.
+	 */
+	public synchronized void clearAllUserDefinedModules() {
+		Set<String> mNames = new HashSet<>(cache != null ? cache.size() : 0);
+		Set<String> cNames = new HashSet<>(allClasses != null ? allClasses.size() : 0);
+		
+		for (String mName : cache.keySet()) {
+			if (isSystemModule(mName)) {
+				continue;
+			} else {
+				mNames.add(mName);
+			}
+		}
+
+		if (allUserDefinedClasses != null) {
+			for (String cName : allClasses.keySet()) {
+				if (allUserDefinedClasses.contains(cName)) {
+					cNames.add(cName);
+				}
+			}
+		}
+		
+		if (cache != null) {
+			for (String mName : mNames) {
+				cache.remove(mName);
+			}
+		}
+		
+		if (allClasses != null) {
+			for (String cName : cNames) {
+				OneOrMoreList<ClassInfo> clist = allClasses.get(cName);
+				if (clist == null || clist.size() == 0) {
+					// Abnormal case. But can be safely ignored here.
+					continue;
+				}
+				
+				if (clist.hasOnlyOne()) {
+					// This single class must be the user-defined one. Remove the whole entry
+					allClasses.remove(cName);
+					continue;
+				}
+				
+				// More complicated case - a simple name is used by more than one classes, and it's possible
+				// some of them are JuFC.
+				
+				OneOrMoreList<ClassInfo> sysClasses = null;
+				for (ClassInfo ci : clist) {
+					if (TypeTable.isSystemType(ci.getFQName())) {
+						if (sysClasses == null) {
+							sysClasses = new OneOrMoreList<ClassInfo>(ci);
+						} else {
+							sysClasses.add(ci);
+						}
+					}
+				}
+				
+				if (sysClasses != null) {
+					// Replace with a pure JuFC list
+					allClasses.put(cName, sysClasses);
+				} else {
+					// All existing classes are user-defined. They can all go.
+					allClasses.remove(cName);
+				}
+			}
+		}
+		
+		// We don't know any user-defined types anymore.
+		if (allUserDefinedClasses != null) {
+			allUserDefinedClasses.clear();
+		}
+		
+		// Hosted mappings can all go since JuFC doesn't use it.
+		if (hmm != null) {
+			hmm.clearAllMappedTypes();
+		}
+	}
+	
+	private static boolean isSystemModule(String modName) {
+		return modName != null && ("System".equals(modName) || modName.startsWith("System."));
 	}
 	
 	/**
@@ -528,6 +615,7 @@ public class ModuleManager implements IModuleManager {
 			}
 			
 			// Add classes to global cache
+			boolean isUserModule = !isSystemModule(mmi.getName());
 			for(ClassInfo ci : mmi.getClasses()){
 				String name = ci.getName();
 				OneOrMoreList<ClassInfo> list = allClasses.get(name);
@@ -535,6 +623,14 @@ public class ModuleManager implements IModuleManager {
 					allClasses.put(name, new OneOrMoreList<ClassInfo>(ci));
 				} else {
 					list.add(ci);
+				}
+				
+				if (isUserModule) {
+					if (allUserDefinedClasses == null) {
+						allUserDefinedClasses = new HashSet<>();
+					}
+					
+					allUserDefinedClasses.add(name);
 				}
 			}
 		}
@@ -616,6 +712,15 @@ public class ModuleManager implements IModuleManager {
 					new PlatformAccessPolicy(kvp.getKey(), kvp.getValue().getFirst(), kvp.getValue().getSecond()));
 			}
 		}
+	}
+	
+	@Override
+	public void setEngineLimit(EngineLimit el, int value) {
+		EnginePolicyEnforcer enforcer = getEnginePolicyEnforcer();
+		enforcer.addPolicy(
+			el.isStateful()	
+			? new StatefulEngineLimitPolicy(el, value)
+			: new EngineLimitPolicy(el, value));
 	}
 	
 	@Override

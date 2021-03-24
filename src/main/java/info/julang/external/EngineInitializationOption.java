@@ -26,9 +26,11 @@ package info.julang.external;
 
 public class EngineInitializationOption {
 
-	private boolean allowReentry;
-	private boolean useExceptionDefaultHandler;
-	private boolean interactiveMode;
+	boolean allowReentry;
+	boolean useExceptionDefaultHandler;
+	boolean interactiveMode;
+	boolean clearUserDefinedTypesOnReentry;
+	boolean clearUserBindingsOnExit;
 	
 	public EngineInitializationOption(){
 		this(false, true, false);
@@ -39,13 +41,16 @@ public class EngineInitializationOption {
 		this.allowReentry = allowReentry;
 		this.useExceptionDefaultHandler = useExceptionDefaultHandler;
 		this.interactiveMode = interactiveMode;
+		
+		this.clearUserDefinedTypesOnReentry = false;
+		this.clearUserBindingsOnExit = false;
 	}
 	
 	public boolean allowReentry() {
 		return allowReentry;
 	}
 	
-	public boolean useExceptionDefaultHandler() {
+	public boolean shouldUseExceptionDefaultHandler() {
 		return useExceptionDefaultHandler;
 	}
 	
@@ -53,4 +58,11 @@ public class EngineInitializationOption {
 		return interactiveMode;
 	}
 	
+	public boolean shouldClearUserDefinedTypesOnReentry() {
+		return clearUserDefinedTypesOnReentry;
+	}
+	
+	public boolean shouldClearUserBindingsOnExit() {
+		return clearUserBindingsOnExit;
+	}
 }

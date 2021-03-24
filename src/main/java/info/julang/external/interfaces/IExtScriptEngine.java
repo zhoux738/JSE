@@ -33,8 +33,10 @@ public interface IExtScriptEngine {
 
 	/**
 	 * Reset the engine. Memory, types, variable table will all be wiped out.
+	 * 
+	 * @param pol The policy for resetting operation, defining what should be reset and what should be kept.
 	 */
-	void reset();
+	void reset(ResetPolicy pol);
 	
 	/**
 	 * Execute a script file.

@@ -52,15 +52,32 @@
   <copy file="${builtjar}" todir="${imported.basedir}/../build/lkg" if:set="canCopyBuiltJar"/>
 
   <!-- If LKG doesn't exist and we haven't built locally, try to download the latest from the offical website -->
-  <!-- curl -L http://127.0.0.1:3000/latest -o ${imported.basedir}/../build/lkg/JSE-LKG.jar -->
+  <!-- (1) Try curl -->
   <echo message="LKG jar missing. Obtaining from official website." if:set="bothJarPathsMissing"/>
-  <exec executable="curl" dir="${basedir}" failonerror="true" outputproperty="curloutput" errorproperty="curlerror" if:set="bothJarPathsMissing">
+  <available file="curl" filepath="${env.PATH}" property="curl.present" if:set="bothJarPathsMissing"/>
+  <!-- curl -L http://127.0.0.1:3000/latest -o build/lkg/JSE-LKG.jar -->
+  <echo message="Downloading with curl ..." if:set="curl.present"/>
+  <exec executable="curl" dir="${basedir}" failonerror="true" outputproperty="curloutput" errorproperty="curlerror" if:set="curl.present">
     <arg value="-L"/> <!-- Support redirection -->
   	<arg value="-s"/> <!-- Silent mode -->
   	<arg value="--fail"/> <!-- Fail on HTTP error -->
-    <arg value="http://${official.website}/latest"/>
+    <arg value="https://${official.website}/latest"/>
     <arg value="-o"/>
     <arg value="${imported.basedir}/../build/lkg/JSE-LKG.jar"/>
+  </exec>
+  <!-- (2) Try Powershell -->
+  <condition property="tryOnWindows">
+	<and>
+	  <isset property="bothJarPathsMissing"/>
+	  <not><isset property="curl.present"/></not>
+      <os family="windows"/>
+	</and>
+  </condition>
+  <!-- powershell -c "invoke-webrequest -uri 'https://julang.info/latest' -outfile build/lkg/JSE-LKG.jar" -->
+  <echo message="Downloading with Powershell ..." if:set="tryOnWindows"/>
+  <exec executable="powershell" dir="${basedir}" failonerror="true" outputproperty="ps1output" errorproperty="ps1error" if:set="tryOnWindows">
+    <arg value="-c"/>
+  	<arg value="invoke-webrequest -uri 'https://${official.website}/latest' -outfile ${imported.basedir}/../build/lkg/JSE-LKG.jar"/>
   </exec>
 
   <!-- If we have tried any fix, attest the existence again -->
@@ -89,8 +106,9 @@
     </and>
   </condition>
   <fail if="failedToAttestLkgJar" message=
-"Cannot invoke JSE from Ant. Must obtain a working copy first. Try run 'mvn package' from the source root. 
-If this is the first time you are trying to build it, may get the latest JSE jar from the official website or contact the author."/>
+"Cannot invoke JSE from Ant. Must obtain a working copy first. If you have successfully built JSE locally before, try to run 'mvn package' from the source root.
+If this is the first time you are trying to build JSE, you may get the latest JSE jar from the official website (https://${official.website}) or contact the author.
+If the network environment doesn't allow you to get JSE externally, try to bootstrap locally with: ant bootstrap -Dlocal=true"/>
 
   <!-- Call Maven from Ant. Originally from http://maven.apache.org/ant-tasks/examples/mvn.html -->
   <macrodef name="maven">

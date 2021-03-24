@@ -82,4 +82,10 @@ public interface JType {
 	 */
 	boolean isBuiltIn();
 	
+	/**
+	 * Calculate the size of this type.
+	 * @return
+	 */
+	int getSize();
+	
 }

@@ -10,10 +10,19 @@
     you must run "ant build" to compile and reinstall juleng along with its dependencies before calling "ant main".
 
     To run all the tests, call "ant test". This will launch a containerized test suite to validate JSR-223 compatibility.
+    
+    The fastest way of building the main project and obtaining a JSE jar is to run "ant build-main -Dquick=true", which bypasses all tests.
   </description>
 
-  <import file="./build/shared.xml"/>
+  <condition property="isLocal">
+    <and>
+	  <isset property="local"/>
+	  <istrue value="${local}"/>
+    </and>
+  </condition>
 	
+  <import file="./build/shared.xml" unless:set="isLocal"/>
+  
   <!-- I: Developer-friendly goal aliases -->
   <!-- In Ant, tasks with description are considered public tasks and can be seen from "ant -projecthelp" -->
   
@@ -47,12 +56,33 @@
     </antcall>
   </target>
 	
-  <target name="bootstrap" description="(Special) Create a temporary pom file excluding juleng references, then build JSE to produce binaries that building juleng itself would entail">
+  <target name="bootstrap" description="(Special) Build files required by juleng build">	
+    <antcall target="bootstrap-with-lkg" unless:set="isLocal" />
+    <antcall target="bootstrap-without-lkg" if:set="isLocal" />
+  </target>
+  
+  <target name="bootstrap-without-lkg">
+    <echo message="Bootstrap without LKG version of JSE."/>
+	
+	<!-- Copy files to the current folder -->
+	<copy file="./build/bootstrap/bootstrap_build.xml" tofile="bootstrap_build.xml.tmp"/>
+	<copy file="./build/bootstrap/bootstrap_pom.xml" tofile="bootstrap_pom.xml.tmp"/>
+	
+    <ant antfile="bootstrap_build.xml.tmp" />
+	
+    <!-- Clean up -->
+	<delete file="bootstrap_build.xml.tmp"/>
+	<delete file="bootstrap_pom.xml.tmp"/>
+  </target>
+  
+  <target name="bootstrap-with-lkg">
+    <echo message="Bootstrap with LKG version of JSE."/>
+	
     <!-- Create temp pom file -->
-  	<julian srcFile="./build/bootstrap.jul" />
+  	<julian srcFile="./build/bootstrap/bootstrap.jul" />
   	
     <!-- mvn clean compile -->
-    <echo message="Run 'mvn clean compile' against ${btpom}"/>
+    <echo message="Run 'mvn clean compile' against ${btpom}"/> <!-- $btpom is set in bootstrap.jul -->
     <maven basedir="${basedir}"
            options="-f ${btpom}"
            goal="clean compile"
@@ -160,13 +190,43 @@
  
   <!-- 2 --> 
   <target name="build-main">
-    <!-- mvn verify -->
+    <condition property="isQuick">
+      <and>
+	    <isset property="quick"/>
+	    <istrue value="${quick}"/>
+      </and>
+    </condition>
+   
+    <!-- regular build: verify with all tests. -->
+    <property name="build-goal" value="verify" unless:set="isQuick"/>
+    <property name="build-opt" value="" unless:set="isQuick"/>
+    
+    <!-- quick build: compile and package only. -->
+    <property name="build-goal" value="package" if:set="isQuick"/>
+    <property name="build-opt" value="-Dmaven.test.skip=true -DskipITs" if:set="isQuick"/>
+    
+    <!-- delete from system local repository -->
+    <!-- for JSE developers, it's never intended to install JSE to system local repository (.m2 folder), 
+         all dependent projects are supposed to consume JSE from the local repository to which we are 
+         going to place the package at the end of this target. -->
+    <maven basedir="${basedir}"
+           options="-DmanualInclude='info.julang:JSE' -DreResolve=false"
+           goal="dependency:purge-local-repository"
+           resultproperty="maven.build.result"/>
+    
+    <!-- run mvn -->
     <property name="clean-goal" value="" unless:set="cleanBeforeRun"/>
     <property name="clean-goal" value="clean" if:set="cleanBeforeRun"/>
     <echo message="Run 'mvn ${clean-goal} verify' against pom.xml"/>
     <maven basedir="${basedir}"
-           options=""
-           goal="${clean-goal} verify"
+           options="${build-opt}"
+           goal="${clean-goal} ${build-goal}"
+           resultproperty="maven.build.result"/>
+
+    <echo message="Install locally built JSE to local repository at ./target/jserepo"/>
+    <maven basedir="${basedir}"
+           options="-Dfile=target/JSE-${jse.version}.jar -DgroupId=info.julang -DartifactId=JSE -Dversion=${jse.version} -Dpackaging=jar -DlocalRepositoryPath=target/jserepo"
+           goal="org.apache.maven.plugins:maven-install-plugin:2.3.1:install-file"
            resultproperty="maven.build.result"/>
   </target>
  

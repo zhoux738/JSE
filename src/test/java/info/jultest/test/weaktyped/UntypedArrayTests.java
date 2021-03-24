@@ -24,7 +24,7 @@ public class UntypedArrayTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_array_1.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_array_1.jul"));
 		
 		validateStringValue(gvt, "str0", "a_12_obj=5");
 		validateStringValue(gvt, "str1", "a_12_obj=5");
@@ -38,7 +38,7 @@ public class UntypedArrayTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_array_2.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_array_2.jul"));
 		
 		validateStringValue(gvt, "str0", "a_12_obj=5");
 		validateStringValue(gvt, "str1", "a_12_obj=5");
@@ -53,7 +53,7 @@ public class UntypedArrayTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_array_3.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_array_3.jul"));
 		
 		validateStringValue(gvt, "sa", "a");
 		validateStringValue(gvt, "sb", "b");
@@ -68,7 +68,7 @@ public class UntypedArrayTests {
 		SimpleScriptEngine engine = makeSimpleEngine(gvt);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		
-		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "var_array_4.jul"));
+		engine.run(getScriptFile(Commons.Groups.SCRIPTING, FEATURE, "var_array_4.jul"));
 		
 		validateStringValue(gvt, "sa", "a");
 		validateStringValue(gvt, "sb", "b");

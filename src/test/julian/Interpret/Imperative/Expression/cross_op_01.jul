@@ -1,0 +1,45 @@
+bool check(Function f) {
+	try {
+		f();
+		return false;
+	} catch (System.Lang.IllegalOperandException ex) {
+		return true;
+	}
+}
+
+// int + ...
+var s1a = 1 + 'a';
+var f2_1 = 1 + 1.1;
+var b0 = check(() => 1 + true);
+var s1xyz = 1 + "xyz";
+var i100 = 1 + (byte)99;
+
+// bool + ...
+var struexyz = true + "xyz";
+var struea = true + 'a';
+var b1 = check(() => true + (byte)1);
+var b2 = check(() => true + 1);
+var b3 = check(() => true + true);
+var b4 = check(() => true + 1.2);
+
+// byte + ...
+byte b = 37;
+var s37a = b + 'a';
+var f38_1 = b + 1.1;
+var b5 = check(() => b + true);
+var s37xyz = b + "xyz";
+var i137 = b + 100;
+
+// char + ...
+var sa2 = 'a' + 2;
+var sa1_1 = 'a' + 1.1;
+var safalse = 'a' + false;
+var saxyz = 'a' + "xyz";
+var sa99 = 'a' + (byte)99;
+
+// float + ...
+float f = 2.2;
+var f4_2 = f + 2;
+var f9_2 = f + (byte)7;
+var s2_2a = f + 'a';
+var s2_2xyz = f + "xyz";

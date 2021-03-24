@@ -31,7 +31,7 @@ package info.julang.execution.security;
  */
 public class EngineLimitPolicy implements IEnginePolicy<Integer> {
 
-	private EngineLimit lim;
+	protected EngineLimit lim;
 	private int val;
 	
 	public EngineLimitPolicy(EngineLimit lim, int value) {

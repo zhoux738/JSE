@@ -52,8 +52,9 @@ public class RestrictedTypeTable implements ITypeTable {
 	}
 
 	@Override
-	public void initialize(IExtEngineRuntime rt) {
+	public boolean initialize(IExtEngineRuntime rt) {
 		// NO-OP (underlying table is initialized)
+		return false;
 	}
 
 	@Override

@@ -22,26 +22,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.external.interfaces;
+package info.julang.execution.security;
 
-import java.util.List;
+/**
+ * Stateful EngineLimitPolicy where the checking is based off a tracked value against the limit.
+ * Always checked with a delta. If allowed, the delta will be accumulated into the tracked value. 
+ * 
+ * @author Ming Zhou
+ */
+public class StatefulEngineLimitPolicy extends EngineLimitPolicy {
 
-public interface IExtTypeTable {
-
-	/**
-	 * Initialize this type table with Julian's built-in class types.
-	 * 
-	 * @param rt engine runtime
-	 * @return true if it's initialized as result of this invocation; 
-	 * false if the initialization was skipped since it's already done.
-	 * Either way, the initialization is done after this method returns.
-	 */
-	public boolean initialize(IExtEngineRuntime rt);
+	private int currVal;
 	
-	/**
-	 * Finalize the given types.
-	 * 
-	 * @param typeNames The list of fully qualifies names of types.
-	 */
-	public void finalizeTypes(List<String> typeNames);
+	public StatefulEngineLimitPolicy(EngineLimit lim, int value) {
+		super(lim, value);
+	}
+
+	@Override
+	public CheckResult check(Integer delta) {
+		int newVal = currVal + delta;
+		int limVal = getValue();
+		boolean violated = lim.isMaxOrMin() ? newVal > limVal : newVal < limVal;
+		
+		if (violated) {
+			return CheckResult.deny(String.format(lim.getMessageTemplate(), limVal));
+		}
+		
+		currVal = newVal;
+		return CheckResult.allow();
+	}
+	
+	public void reset() {
+		currVal = 0;
+	}
 }

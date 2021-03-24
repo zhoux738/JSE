@@ -1,0 +1,11 @@
+var obj = new Object();
+int[] a = new int[10];
+
+bool caught = false;
+try {
+	int[] b = new int[1024];
+} catch (UnderprivilegeException ex) {
+	caught = ex.getMessage().contains("(1024 bytes)");
+}
+
+bool done = a != null && obj != null;

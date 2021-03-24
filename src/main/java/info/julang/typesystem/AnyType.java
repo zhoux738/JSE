@@ -118,4 +118,9 @@ public class AnyType implements JType {
 		return true;
 	}
 	
+	@Override
+	public int getSize() {
+		return 0;
+	}
+	
 }

@@ -2,10 +2,10 @@ package info.jultest.test.hosted;
 
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
+import static info.jultest.test.Commons.validateFloatValue;
 import static info.jultest.test.Commons.validateIntArrayValue;
 import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
-import static info.jultest.test.Commons.validateFloatValue;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,6 +27,7 @@ import info.julang.memory.MemoryArea;
 import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.ArrayValueBuilder;
 import info.julang.memory.value.ArrayValueBuilderHelper;
+import info.julang.memory.value.ByteValue;
 import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
@@ -71,6 +72,18 @@ public class TypeConversionTests {
 		Assert.assertEquals(2, pav.length);
 		Assert.assertEquals(37, pav[0]);
 		Assert.assertEquals(41, pav[1]);
+
+		builder = ArrayValueBuilderHelper.getBuilder(ByteType.getInstance(), mem, tt);
+		builder.setLength(2);
+		builder.setValue(0, new ByteValue(mem, (byte)37));
+		builder.setValue(1, new ByteValue(mem, (byte)41));
+		av = builder.getResult();
+		obj = toValue(av);
+		Assert.assertEquals(byte[].class, obj.getClass());
+		byte[] pav2 = (byte[])obj;
+		Assert.assertEquals(2, pav2.length);
+		Assert.assertEquals(37, pav2[0]);
+		Assert.assertEquals(41, pav2[1]);
 	}
 	
 	@Test

@@ -2,8 +2,8 @@ package info.jultest.test.threading;
 
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
-import static info.jultest.test.Commons.validateBoolValueEx;
-import static info.jultest.test.Commons.validateIntValueEx;
+import static info.jultest.test.Commons.validateBoolValue;
+import static info.jultest.test.Commons.validateIntValue;
 
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ public class PromiseAdvancedTests extends ThreadingTestBase {
 		
 		engine.run(getScriptFile(Commons.Groups.THREADING, FEATURE, "promprom_1.jul"));
 		
-		validateIntValueEx(gvt, "result", 7);
+		validateIntValue(gvt, "result", 7);
 	}
 	
 	@Test
@@ -34,8 +34,8 @@ public class PromiseAdvancedTests extends ThreadingTestBase {
 		
 		engine.run(getScriptFile(Commons.Groups.THREADING, FEATURE, "prom_defer_1.jul"));
 
-		validateIntValueEx(gvt, "r1", 7);
-		validateBoolValueEx(gvt, "r2", true);
+		validateIntValue(gvt, "r1", 7);
+		validateBoolValue(gvt, "r2", true);
 	}
 	
 	@Test
@@ -45,7 +45,7 @@ public class PromiseAdvancedTests extends ThreadingTestBase {
 		
 		engine.run(getScriptFile(Commons.Groups.THREADING, FEATURE, "prom_agg_1.jul"));
 		
-		validateIntValueEx(gvt, "acc", 3);
+		validateIntValue(gvt, "acc", 3);
 	}
 	
 	@Test
@@ -55,6 +55,6 @@ public class PromiseAdvancedTests extends ThreadingTestBase {
 		
 		engine.run(getScriptFile(Commons.Groups.THREADING, FEATURE, "prom_agg_2.jul"));
 		
-		validateIntValueEx(gvt, "acc", 3);
+		validateIntValue(gvt, "acc", 3);
 	}
 }

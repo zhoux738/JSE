@@ -31,6 +31,8 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import info.julang.execution.security.EngineLimit;
+import info.julang.execution.security.EnginePolicyEnforcer;
 import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.JSEError;
@@ -84,6 +86,7 @@ import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.builtin.JArrayType;
 import info.julang.typesystem.jclass.builtin.JDynamicType;
 import info.julang.typesystem.jclass.jufc.SystemTypeNames;
+import info.julang.util.OSTool;
 
 /**
  * The expression to create a new object. There are two use cases:
@@ -100,11 +103,19 @@ import info.julang.typesystem.jclass.jufc.SystemTypeNames;
  */
 public class NewExpression extends ExpressionBase {
 
+	private EnginePolicyEnforcer ep;
+	
 	public NewExpression(ThreadRuntime rt, AstInfo<ExpressionContext> ec) {
 		super(rt, ec, null);
 	}
 
 	public Operand evaluate(Context context){
+		// If to check memory usage, store the policy enforcer for later use.
+		EnginePolicyEnforcer epf = rt.getModuleManager().getEnginePolicyEnforcer();
+		if (epf.getLimit(EngineLimit.MAX_USED_MEMORY_IN_BYTE) != EngineLimit.UNDEFINED) {
+			this.ep = epf;
+		}
+		
 		E_newContext nec = (E_newContext)ec.getAST();
 		CreatorContext cc = nec.creator();
 		
@@ -136,7 +147,15 @@ public class NewExpression extends ExpressionBase {
 
 	// Create an object of Dynamic type.
 	private DynamicValue newDynamic(Context context, Map_initializerContext initContext) {
-		DynamicValue dv = new DynamicValue(context.getHeap(), JDynamicType.getInstance());
+		JType dynType = JDynamicType.getInstance();
+		DynamicValue dv = new DynamicValue(context.getHeap(), dynType);
+		
+		// It's fine we check this after creation for scalar type. 
+		// The enforcement doesn't need to be precise.
+		if (this.ep != null) {
+			this.ep.checkLimit(EngineLimit.MAX_USED_MEMORY_IN_BYTE, dynType.getSize());
+		}
+		
 		initObject(context, dv, initContext);
 		return dv;
 	}
@@ -152,6 +171,12 @@ public class NewExpression extends ExpressionBase {
 		List<ArgumentContext> args = alc != null ? alc.argument() : new ArrayList<ArgumentContext>();
 		NewObjExecutor noe = new NewObjExecutor(rt);
 		ObjectValue ov = noe.newObject(context, args, type, ec);
+		
+		// It's fine we check this after creation for scalar type. 
+		// The enforcement doesn't need to be precise.
+		if (this.ep != null) {
+			this.ep.checkLimit(EngineLimit.MAX_USED_MEMORY_IN_BYTE, type.getSize());
+		}
 		
 		Map_initializerContext initContext = ast.map_initializer();
 		if (initContext != null) {
@@ -314,6 +339,15 @@ public class NewExpression extends ExpressionBase {
                 dims[exprLen] = ArrayValueFactory.UndefinedLength;
 			}
 			
+			// Must check this before creation for vector type, since the requested size can be infinitely large.
+			if (this.ep != null) {
+				int acc = Math.max(type.getSize(), OSTool.WordSize);
+				for (int i = 0; i < dims.length; i++) {
+					acc *= (dims[i] + 1);
+				}
+				this.ep.checkLimit(EngineLimit.MAX_USED_MEMORY_IN_BYTE, acc);
+			}
+			
 			arrVal = ArrayValueFactory.createArrayValue(context.getHeap(), context.getTypTable(), type, dims);
 		} else {
 			// with initializer
@@ -363,6 +397,14 @@ public class NewExpression extends ExpressionBase {
 		
 		// With all the elements collected, we can now create an array value that holds them
 		int count = values.size();
+		JType etype = arrType.getElementType();
+		
+		// Check the whole array before creation for vector type. The check for each element has already happened.
+		if (this.ep != null) {
+			int unit = Math.max(etype.getSize(), OSTool.WordSize);
+			this.ep.checkLimit(EngineLimit.MAX_USED_MEMORY_IN_BYTE, unit * Math.max(count, 1));
+		}
+		
 		ArrayValue array = ArrayValueFactory.createArrayValue(context.getHeap(), context.getTypTable(), arrType.getElementType(), count);
 		for(int i=0; i<count; i++){
 			values.get(i).assignTo(array.getValueAt(i));

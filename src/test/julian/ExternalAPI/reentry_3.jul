@@ -1,0 +1,10 @@
+class C {
+	static int value = 10;
+}
+
+Type t = typeof(C);
+var f = t.getField("value");
+curr = f.get(null);
+//Console.println("BEFORE set: " + curr);
+f.set(null, curr + 1);
+// Console.println(" AFTER set: " + f.get(null));

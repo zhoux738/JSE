@@ -37,8 +37,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import com.sun.org.apache.xalan.internal.extensions.ExpressionContext;
-
 public class ANTLRHelper {
 
 	public static String getRuleName(ParserRuleContext prt){

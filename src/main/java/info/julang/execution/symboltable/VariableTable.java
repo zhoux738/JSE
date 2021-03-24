@@ -191,7 +191,10 @@ public class VariableTable implements IVariableTable {
 	 */
 	public void clear(){
 		scopes.clear();
-		bindings.clear();
+		
+		if (bindings != null) {
+			bindings.clear();
+		}
 	}
 	
 	/**
