@@ -53,7 +53,7 @@ import info.julang.typesystem.jclass.builtin.JLambdaType;
 
 /**
  * Lambda expression represents a lambda definition, in ABNF form of
- * <pre><code> lambda := param-list '=>' lambda-body
+ * <pre><code> lambda := param-list '=&lt;' lambda-body
  * 
  * param-list := single-param
  *             | multi-params
@@ -67,17 +67,19 @@ import info.julang.typesystem.jclass.builtin.JLambdaType;
  * lambda-body := block
  *              | expr</code></pre>
  * Examples:
- * <pre>  1) (string s, int i) => { ... }
- *  2) (s, i) => { ... }
- *  3) s => { ... }
- *  4) (MyPkg.MyClass c, int i) => ...;
- *  5) (c, i) => ...;
- *  6) c => ...;</pre>
- * Notes:<p/>
- * (1) In cases of 2), 3), 5), 6), the parameters are untyped. No type checking will be done at the start of calling the lambda, and runtime exception will be thrown if 
- * a type incompatibility cannot be overcome.<br/>
- * (2) Untyped and typed parameters can be mixed. <br/>
- * <p/>
+ * <pre>  1) (string s, int i) =&lt; { ... }
+ *  2) (s, i) =&lt; { ... }
+ *  3) s =&lt; { ... }
+ *  4) (MyPkg.MyClass c, int i) =&lt; ...;
+ *  5) (c, i) =&lt; ...;
+ *  6) c =&lt; ...;</pre>
+ * Notes:
+ * <p>
+ * (1) In cases of 2), 3), 5), 6), the parameters are untyped. No type checking will be 
+ * done at the start of calling the lambda, and runtime exception will be thrown if a
+ * type incompatibility cannot be overcome.<br>
+ * (2) Untyped and typed parameters can be mixed. <br>
+ * <p>
  * 
  * @author Ming Zhou
  */

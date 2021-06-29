@@ -76,11 +76,11 @@ public class SimpleEngineRuntime implements EngineRuntime {
 	 * @param mm   Must be {@link IModuleManager}
 	 */
 	public SimpleEngineRuntime(IExtMemoryArea heap, IExtVariableTable gvt, IExtTypeTable tt, IExtModuleManager mm) {
-		this((MemoryArea)heap, (IVariableTable)gvt, (ITypeTable)tt, (IModuleManager)mm);
+		this((MemoryArea)heap, (IVariableTable)gvt, (ITypeTable)tt, (IModuleManager)mm, null);
 	}
 	
-	public SimpleEngineRuntime(MemoryArea heap, IVariableTable gvt, ITypeTable tt, IModuleManager mm) {
-		this(heap, gvt, tt, mm, new InternalTypeResolver(), new JThreadManager());
+	public SimpleEngineRuntime(MemoryArea heap, IVariableTable gvt, ITypeTable tt, IModuleManager mm, JThreadManager tm) {
+		this(heap, gvt, tt, mm, new InternalTypeResolver(), tm == null ? new JThreadManager() : tm);
 	}
 	
 	public SimpleEngineRuntime(MemoryArea heap, IVariableTable gvt, IModuleManager mm) {

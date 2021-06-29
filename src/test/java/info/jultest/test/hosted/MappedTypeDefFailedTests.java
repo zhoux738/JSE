@@ -15,8 +15,8 @@ import info.julang.modulesystem.ModuleInfo;
 import info.julang.typesystem.JType;
 import info.jultest.test.AssertHelper;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestRunner;
 import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestRunner;
 
 public class MappedTypeDefFailedTests {
 	

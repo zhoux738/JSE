@@ -33,8 +33,7 @@ import info.julang.memory.value.operable.InitArgs;
 import info.julang.typesystem.JType;
 
 /**
- * An iterator backed by a user-defined script object which implements 
- * <font color="green"><code>System.Util.IIterator</code></font>.
+ * An iterator backed by a user-defined script object which implements <code style="color:green">System.Util.IIterator</code>.
  * 
  * @author Ming Zhou
  */

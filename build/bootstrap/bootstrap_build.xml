@@ -36,18 +36,28 @@
   
   <target name="antlr">
     <!-- mvn -f bootstrap_pom.xml.tmp antlr4:antlr4 -->
-    <echo message="Run 'antlr4:antlr4' to generate parser source files."/>
+    <echo message="Run 'mvn antlr4:antlr4' to generate parser source files."/>
     <maven basedir="${basedir}"
            pomfile="bootstrap_pom.xml.tmp"
            goal="antlr4:antlr4"
            resultproperty="maven.build.result"/>
   </target>
   
-  <target name="bootstrap" depends="antlr">
+  <target name="plugin" depends="antlr">
     <!-- mvn -f mvnplugin/pom.xml install -->
     <echo message="Run 'mvn clean install' against mvnplugin/pom.xml"/>
     <maven basedir="${basedir}/mvnplugin"
            goal="clean install"
+           resultproperty="maven.build.result"/>
+  </target>
+	
+  <target name="bootstrap" depends="plugin">
+    <!-- mvn clean package -->
+  	<!-- (at this moment, we have plugin installed, but 'ant build' cannot run yet as it relies on an LKG build for some scripts.) -->
+    <echo message="Run 'mvn clean package' to create the first package that can be used as LKG later by 'ant build'."/>
+    <maven basedir="${basedir}"
+           pomfile="pom.xml"
+           goal="clean package"
            resultproperty="maven.build.result"/>
   </target>
 </project>

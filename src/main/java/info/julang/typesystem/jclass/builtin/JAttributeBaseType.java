@@ -32,8 +32,8 @@ import info.julang.typesystem.jclass.TypeBootstrapper;
 import info.julang.typesystem.jclass.builtin.doc.JulianDoc;
 
 /**
- * This base class contains most data and logic shared among concrete Attribute types. Note while <font color="green">Attribute</font>
- * inherits from <font color="green">Object</font> in Julian, in the implementation {@link JAttributeBaseType} inherits from
+ * This base class contains most data and logic shared among concrete Attribute types. Note while <code style="color:green">Attribute</code>
+ * inherits from <code style="color:green">Object</code> in Julian, in the implementation {@link JAttributeBaseType} inherits from
  * {@link JClassType}.
  * <pre>
  *       [Julian type hierarchy]    [Implemented by] (extending)
@@ -127,7 +127,7 @@ public class JAttributeBaseType extends JClassType {
 	}
 	
 //	/**
-//	 * Get default members of <font color="green">Attribute</font>.
+//	 * Get default members of <code style="color:green">Attribute</code>.
 //	 * 
 //	 * @return
 //	 */

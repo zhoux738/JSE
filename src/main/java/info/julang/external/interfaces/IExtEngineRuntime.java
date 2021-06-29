@@ -34,28 +34,28 @@ public interface IExtEngineRuntime {
 	/**
 	 * Get heap area of the script engine.
 	 * 
-	 * @return
+	 * @return The heap memory area.
 	 */
 	IExtMemoryArea getHeap();
 	
 	/**
 	 * Get global type table.
 	 * 
-	 * @return
+	 * @return The global type table.
 	 */
 	IExtTypeTable getTypeTable();
 	
 	/**
 	 * Get global variable table.
 	 * 
-	 * @return
+	 * @return The global variable table.
 	 */
 	IExtVariableTable getGlobalVariableTable();
 	
 	/**
 	 * Get module manager.
 	 * 
-	 * @return
+	 * @return The module manager.
 	 */
 	IExtModuleManager getModuleManager();
 	

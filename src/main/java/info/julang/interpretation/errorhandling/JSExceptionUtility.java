@@ -94,7 +94,7 @@ public final class JSExceptionUtility {
 	 * Initialize a Julian script exception using the runtime value (which is a script exception instance).
 	 * 
 	 * @param context
-	 * @param jval Must be a <code><font color=="green">System.Exception</font></code>.
+	 * @param jval Must be a <code><font color=="green">System.Exception</code>.
 	 * @param linfo location info
 	 */
 	public static JulianScriptException initializeAsScriptException(Context context, JValue jval, IHasLocationInfo linfo) {

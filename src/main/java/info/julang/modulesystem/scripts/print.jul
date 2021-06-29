@@ -1,0 +1,21 @@
+/*
+ * Provides functions for printing variables.
+ */
+ 
+/*
+ * Print any given value to standard output.
+ *
+ * [param: anything] The value to print out.
+ */
+void print(var anything) {
+  Console.print(anything); 
+}
+
+/*
+ * Print any given value to standard output, followed by an OS-dependent line-break.
+ *
+ * [param: anything] The value to print out.
+ */
+void println(var anything) {
+  Console.println(anything); 
+}

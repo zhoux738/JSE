@@ -90,7 +90,7 @@ import info.julang.typesystem.jclass.jufc.SystemTypeNames;
 import info.julang.typesystem.loading.ITypeResolver;
 
 /**
- * The String type as in<br/>
+ * The String type as in<br>
  * <code>
  *   string s = "sample";
  * </code>

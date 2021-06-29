@@ -30,7 +30,7 @@ import info.julang.interpretation.errorhandling.KnownJSException;
 /**
  * The exception thrown when two or more types can be resolved from the current context 
  * given the imported modules.
- * <p/>
+ * <p>
  * For example, in a Julian file, two modules, A and B, are imported. And both A and B contain
  * a class called MyClass. If only the simple name of MyClass is used in this file, it will
  * cause a namespace conflict because both A.MyClass and B.MyClass are resolvable. 

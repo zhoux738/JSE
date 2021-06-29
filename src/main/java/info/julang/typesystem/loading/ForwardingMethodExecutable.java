@@ -48,8 +48,8 @@ public class ForwardingMethodExecutable extends MethodExecutable {
 	private MethodExecutable fexec;
 	private Result resultUponArgumentException;
 	
-	public ForwardingMethodExecutable(ICompoundType ofType, boolean isStatic, Result resultUponArgumentException) {
-		super(null, ofType, isStatic);
+	public ForwardingMethodExecutable(String name, ICompoundType ofType, boolean isStatic, Result resultUponArgumentException) {
+		super(name, null, ofType, isStatic);
 		this.resultUponArgumentException = resultUponArgumentException;
 	}
 	

@@ -1,0 +1,13 @@
+import System.Concurrency;
+
+Thread t2 = Thread.create(() => {
+	try {
+		Environment.evaluate(new EvalConfig(), "defsx.jul", null);
+	} catch (Exception ex) {
+		s2 = verify(ex);
+	}
+});
+
+t2.start();
+
+t2.join();

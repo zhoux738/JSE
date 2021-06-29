@@ -20,8 +20,8 @@ import info.julang.hosting.mapped.implicit.ImplicitTypeNameConvertor;
 import info.julang.interpretation.errorhandling.KnownJSException;
 import info.julang.modulesystem.ModuleInfo;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestRunner;
 import info.jultest.test.hosted.classes.Car;
-import info.jultest.test.oo.ExceptionTestRunner;
 
 public class ImplicitBindingTests {
 	

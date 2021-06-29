@@ -28,7 +28,7 @@ import info.julang.typesystem.jclass.builtin.JMethodType;
 
 /**
  * A hidden member for initializing a field.
- * <p/>
+ * <p>
  * The class field initializer is basically an expression running in instance context, so it is just a special type of method.
  * 
  * @author Ming Zhou

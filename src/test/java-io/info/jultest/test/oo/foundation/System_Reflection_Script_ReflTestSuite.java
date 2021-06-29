@@ -9,7 +9,8 @@ import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.util.OSTool;
 import info.jultest.test.Commons;
-import info.jultest.test.oo.ExceptionTestsBase;
+import info.jultest.test.ExceptionTestsBase;
+
 import org.junit.Assert;
 
 import org.junit.Test;
@@ -41,9 +42,9 @@ public class System_Reflection_Script_ReflTestSuite extends ExceptionTestsBase {
 		
 		String act = OSTool.canonicalizePath(Commons.getStringValue(gvt, "s"));
 		if (OSTool.isWindows()) {
-	        Assert.assertTrue(act.endsWith("ModuleSys\\ReflTest3\\def.jul"));
+	        Assert.assertTrue(act, act.endsWith("ModuleSys\\ReflTest3\\def.jul"));
 		} else {
-	        Assert.assertTrue(act.endsWith("ModuleSys/ReflTest3/def.jul"));
+	        Assert.assertTrue(act, act.endsWith("ModuleSys/ReflTest3/def.jul"));
 		}
 	}
 	

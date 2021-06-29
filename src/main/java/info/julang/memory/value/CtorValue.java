@@ -30,7 +30,7 @@ import info.julang.typesystem.jclass.builtin.JConstructorType;
 
 /**
  * A derivative of {@link FuncValue}, CtorValue represents an instance constructor. 
- * <p/>
+ * <p>
  * Its <i>this</i> value can be obtained by calling {@link #getThisValue()}.
  * 
  * @author Ming Zhou
@@ -63,7 +63,7 @@ public class CtorValue extends FuncValue {
 	
 	/**
 	 * Get method type. This is equivalent to calling:
-	 * <p/>
+	 * <p>
 	 * <code>(JConstructorType)getType()</code>
 	 * 
 	 * @return

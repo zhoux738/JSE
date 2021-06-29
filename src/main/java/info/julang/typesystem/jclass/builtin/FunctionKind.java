@@ -26,14 +26,19 @@ package info.julang.typesystem.jclass.builtin;
 
 public enum FunctionKind {
 
+	/** Global function defined with the C99-like syntax in the loose scripts. */
 	FUNCTION,
 	
+	/** Method member of a class, static or not. */
 	METHOD,
-	
+
+	/** Constructor member of a class. */
 	CONSTRUCTOR,
-	
+
+	/** Lambda defined anywhere. */
 	LAMBDA,
-	
+
+	/** A group of overloaded method members, either all static or all not, but never mixed. */
 	METHOD_GROUP
 	
 }

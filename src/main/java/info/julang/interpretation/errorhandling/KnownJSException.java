@@ -24,7 +24,6 @@ SOFTWARE.
 
 package info.julang.interpretation.errorhandling;
 
-
 public enum KnownJSException {
 
 	// Any enum type defined here must be also defined in a corresponding Julian file.

@@ -47,7 +47,7 @@ import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.TypeBootstrapper;
 
 /**
- * The Enum type as in<p/>
+ * The Enum type as in<p>
  * <code>
  *   enum Planet { 
  *     Mars,
@@ -55,10 +55,11 @@ import info.julang.typesystem.jclass.TypeBootstrapper;
  *     Venus
  *   }
  * </code>
- * <p/>
- * Enum in Julian is implemented as a special class. It has <font color="green">Object</font> as parent class,
- * contains two constant fields: <font color="green">Enum</font>.ordinal (int) and <font color="green">Enum</font>.literal (string).
- * <p/>
+ * <p>
+ * Enum in Julian is implemented as a special class. It has <code style="color:green">Object</code> as parent class,
+ * contains two constant fields: <code style="color:green">Enum.ordinal</code> (int) 
+ * and <code style="color:green">Enum.literal</code> (string).
+ * <p>
  * The language provides a syntax for enum declaration. The code <code> enum Planet { Mars, Earth, Venus } </code>
  * is actually equivalent to <pre><code>class Planet : Enum { 
  * 
@@ -79,13 +80,13 @@ import info.julang.typesystem.jclass.TypeBootstrapper;
  * } </code></pre>
  * 
  * However, users cannot write this directly in their scripts.
- * <p/>
- * This base class contains most data and logic shared among concrete Enum types. Note while <font color="green">Enum</font>
- * inherits from <font color="green">Object</font> in Julian, in the implementation {@link JEnumBaseType} inherits from
+ * <p>
+ * This base class contains most data and logic shared among concrete Enum types. Note while <code style="color:green">Enum</code>
+ * inherits from <code style="color:green">Object</code> in Julian, in the implementation {@link JEnumBaseType} inherits from
  * {@link JClassType}.
  * <pre>
  *       [Julian type hierarchy]    [Implemented by]
- *              Object           ==   JObjectType   ---------->  JClassType
+ *              Object           ==   JObjectType   ---------))  JClassType
  *                /|\                                               /|\
  *                 |                                                 |
  *                 |                                                 |

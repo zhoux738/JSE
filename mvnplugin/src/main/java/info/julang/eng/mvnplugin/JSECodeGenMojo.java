@@ -34,6 +34,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import info.julang.eng.mvnplugin.aotinfo.AOTInfoIndexer;
+import info.julang.eng.mvnplugin.aotinfo.ScriptSynthesizer;
+import info.julang.modulesystem.scripts.InternalScriptLoader;
 import info.julang.typesystem.jclass.jufc.FoundationClassParser;
 
 /**
@@ -43,6 +45,8 @@ import info.julang.typesystem.jclass.jufc.FoundationClassParser;
  * The AOT script info should be used as the first alternative, but not the only option. To avoid any
  * cross-dependency issue blocking a successful build of JSE, this mojo can opt to emit empty classes and
  * corresponding coordinator class that returns null for any query.
+ * <p>
+ * Also generate a few built-in scripts.
  * 
  * @author Ming Zhou
  */
@@ -70,14 +74,23 @@ public class JSECodeGenMojo extends AbstractMojo {
     		return;
     	}
     	
-    	String path = srcDirectory.getAbsolutePath() + FoundationClassParser.JuFCRoot;
+    	String path = srcDirectory.getAbsolutePath() + InternalScriptLoader.ScriptsRoot;
+    	File bisRoot = new File(path);
+    	
+    	path = srcDirectory.getAbsolutePath() + FoundationClassParser.JuFCRoot;
     	File jufcRoot = new File(path);
     	
-    	// Pre-scan each module directly from file system, then emit a synthesized RawScriptInfo class.
-    	// At the end emit an entrance class that can return an instance of RSI based on the path passed in.
     	try {
+    		// Synthesize scripts from other built-in scripts. These scripts usually only
+    		// contain include statements.
+    		ScriptSynthesizer synth = new ScriptSynthesizer(bisRoot, logger);
+    		synth.synthesizeAll();
+    		
+        	// Pre-scan each module directly from file system, then emit a synthesized RawScriptInfo class.
+        	// At the end emit an entrance class that can return an instance of RSI based on the path passed in.
         	AOTInfoIndexer loader = new AOTInfoIndexer(jufcRoot, logger);
         	loader.loadAll();
+        	
     		logger.info("IMPORTANT - refresh project in IDE to synchronize the latest changes. Failing to do so may cause build and test errors in IDE.");
     	} catch (Throwable ex) {
         	logger.error(ex);

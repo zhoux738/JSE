@@ -28,7 +28,7 @@ import info.julang.execution.EngineRuntime;
 import info.julang.execution.Executable;
 
 /**
- * An interface abstracted from <font color="green"><code>System.Concurrency.IOThreadWrapper</code></font>, 
+ * An interface abstracted from <code style="color:green">System.Concurrency.IOThreadWrapper</code>, 
  * mainly used for internal purpose.
  * 
  * @author Ming Zhou

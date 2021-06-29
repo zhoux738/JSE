@@ -29,15 +29,16 @@ public interface ITermController {
 	/**
 	 * Move cursor in a given direction.
 	 *  
-	 * @param direction
+	 * @param direction The moving direction of cursor.
 	 * @param distance the display units to move. Each unit correspond to one character. 
 	 */
 	void moveCursor(Direction direction, int distance);
 	
 	/**
 	 * Reset the cursor to (x,y).
-	 * @param x if <= 0, ignored. Will move y only.
-	 * @param y must >= 1
+	 * 
+	 * @param x if &lt;= 0, ignored. Will move y only.
+	 * @param y must &gt;= 1
 	 */
 	void setCursor(int x, int y);
 	
@@ -48,11 +49,15 @@ public interface ITermController {
 	
 	/**
 	 * Clear the screen by given directives.
+	 * 
+	 * @param option How to clear the screen.
 	 */
 	void clearScreen(ClearingOption option);
 	
 	/**
 	 * Set font color.
+	 * 
+	 * @param color The color of the text.
 	 */
 	void setColor(FontColor color);
 }

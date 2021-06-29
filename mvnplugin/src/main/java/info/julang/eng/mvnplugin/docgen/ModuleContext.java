@@ -24,6 +24,7 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.docgen;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,25 +58,27 @@ public class ModuleContext {
 	public final static String MD_VERSION = "jse.version";
 	public static final String OFFICIAL_WEBSITE = "official.website";
 	
-	public static interface TypeDocProcessor {
+	public static interface TopLevelDocProcessor {
 
 		/**
-		 * Process a given type doc model.
+		 * Process a given top-level doc model.
 		 * @param key Fully qualified name of this type. For primitive types language alias is used.
-		 * @param doc The doc model, which also contains type names.
+		 * @param doc The doc model.
 		 */
-		void process(String key, DocModel.Type doc);
+		void process(String key, DocModel.Documented doc);
 		
 	}
 	
 	private Map<String, DocumentedClassInfo> typesByFN;
 	private Map<String, DocModel.Type> builtInTyps;
 	private Map<String, String> metadata;
+	private List<DocModel.Script> scripts;
 	
 	ModuleContext(){
 		typesByFN = new HashMap<String, DocumentedClassInfo>();
 		builtInTyps = new HashMap<String, DocModel.Type>();
 		metadata = new HashMap<String, String>();
+		scripts = new ArrayList<DocModel.Script>();
 	}
 	
 	/**
@@ -101,7 +104,7 @@ public class ModuleContext {
 	 * @param proc
 	 * @param pat if null, no filter will be applied
 	 */
-	public void foreach(TypeDocProcessor proc, Pattern pat){
+	public void foreach(TopLevelDocProcessor proc, Pattern pat){
 		for (Entry<String, Type> entry: builtInTyps.entrySet()){
 			String fname = entry.getKey();
 			if (pat == null || pat.matcher(fname).matches()){
@@ -113,6 +116,13 @@ public class ModuleContext {
 			String fname = entry.getKey();
 			if (pat == null || pat.matcher(fname).matches()){
 				proc.process(fname, entry.getValue().getDoc());
+			}
+		}
+		
+		for (DocModel.Script script : scripts) {
+			String fname = script.name;
+			if (pat == null || pat.matcher(fname).matches()){
+				proc.process(fname, script);
 			}
 		}
 	}
@@ -156,6 +166,15 @@ public class ModuleContext {
 	}
 	
 	/**
+	 * Set doc models for built-in scripts.
+	 * 
+	 * @param scripts
+	 */
+	void setScriptDoc(List<DocModel.Script> scripts) {
+		this.scripts = scripts;
+	}
+	
+	/**
 	 * Get documentation for the given type reference. Returns null if the doc for this type has not been set.
 	 */
 	DocModel.Type getDoc(DocModel.TypeRef tref){
@@ -166,6 +185,22 @@ public class ModuleContext {
 		} else {
 			throw new DocGenException("The type " + fname + " cannot be resolved.");
 		}
+	}
+	
+	/**
+	 * Try to get a built-in script matching the given name.
+	 * 
+	 * @param name
+	 * @return null if not found.
+	 */
+	public ScriptInfo getScriptInfo(String name) {
+		for (DocModel.Script s : this.scripts) {
+			if (name.equals(s.name)) {
+				return new ScriptInfo(s);
+			}
+		}
+		
+		return null;
 	}
 	
 	/**

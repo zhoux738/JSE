@@ -1,0 +1,33 @@
+import System.Reflection;
+import System.Collection;
+
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "../Shared/commons.jul", null);
+
+string cc(var[] names) {
+	string s = "";
+	for (var n : names) {
+		s += n;
+	}
+	
+	return s;
+}
+
+void verify (var tag, Script script, string[] names) {
+	println(tag + ":");
+	
+	Set set = new Set();
+	for (string n : names) {
+		set.add(n);
+	}
+	
+	Module mod = script.getModule();
+	TypeInfo[] tinfos = mod.getTypes();
+	for (TypeInfo ti : tinfos) {
+		string sn = ti.getSimpleName();
+		println(sn);
+		assert(set.remove(sn), "Type name not found: " + sn);
+	}
+	
+	assert(set.size() == 0, "Type name unaccounted: " + cc(set.getAll()));
+}

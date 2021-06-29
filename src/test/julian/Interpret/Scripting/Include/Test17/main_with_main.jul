@@ -1,0 +1,4 @@
+
+include "main_with_main.jul";
+
+return true;

@@ -1,0 +1,5 @@
+int calc() {
+	return 5 / 0.0;
+}
+
+calc();

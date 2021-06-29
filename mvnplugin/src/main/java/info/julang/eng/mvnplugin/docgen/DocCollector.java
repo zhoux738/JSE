@@ -56,22 +56,26 @@ import info.julang.eng.mvnplugin.GlobalLogger;
 import info.julang.eng.mvnplugin.ScriptInfoBag;
 import info.julang.eng.mvnplugin.SystemModuleProcessor;
 import info.julang.eng.mvnplugin.docgen.DocModel.Constructor;
+import info.julang.eng.mvnplugin.docgen.DocModel.DocType;
+import info.julang.eng.mvnplugin.docgen.DocModel.Documented;
 import info.julang.eng.mvnplugin.docgen.DocModel.EnumEntry;
 import info.julang.eng.mvnplugin.docgen.DocModel.Field;
 import info.julang.eng.mvnplugin.docgen.DocModel.InterfaceType;
 import info.julang.eng.mvnplugin.docgen.DocModel.Method;
+import info.julang.eng.mvnplugin.docgen.DocModel.Script;
 import info.julang.eng.mvnplugin.docgen.DocModel.Type;
 import info.julang.eng.mvnplugin.docgen.DocModel.TypeDescription;
 import info.julang.eng.mvnplugin.docgen.DocModel.TypeRef;
-import info.julang.eng.mvnplugin.docgen.ModuleContext.TypeDocProcessor;
+import info.julang.eng.mvnplugin.docgen.ModuleContext.TopLevelDocProcessor;
 import info.julang.eng.mvnplugin.htmlgen.ApiIndexModel;
 import info.julang.eng.mvnplugin.htmlgen.MarkDown2HtmlConverter;
 import info.julang.eng.mvnplugin.htmlgen.WebsiteGenerator;
 import info.julang.eng.mvnplugin.htmlgen.WebsiteResources;
-import info.julang.eng.mvnplugin.mdgen.MarkdownConverter;
+import info.julang.eng.mvnplugin.mdgen.ScriptDocMarkdownConverter;
 import info.julang.eng.mvnplugin.mdgen.TutorialInfo;
 import info.julang.eng.mvnplugin.mdgen.TutorialInfo.ChapterInfo;
 import info.julang.eng.mvnplugin.mdgen.TutorialInfo.IChapterInfo;
+import info.julang.eng.mvnplugin.mdgen.TypeDocMarkdownConverter;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.simple.SimpleEngineRuntime;
 import info.julang.execution.symboltable.TypeTable;
@@ -115,24 +119,22 @@ import info.julang.typesystem.loading.depresolving.HardDependencyResolver;
 import info.julang.typesystem.loading.depresolving.IDependencyResolver;
 
 /**
- * Generate JSON files containing Julian documentation for each system type. The generated files
- * are grouped per module.
- * <p>
- * These files are to be further processed by other tools to generate user-friendly documentation format.
+ * Generate JSON/Markdown/HTML files containing Julian documentation for each system type, script file and tutorial chapter. 
+ * The generated files for types are grouped by module.
  * 
  * @author Ming Zhou
  */
 public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implements ISerializationHelper, IHtmlDocMerger {
 	
-	/** &lt;repo&gt;/docs/api/raw */
+	/** {repo}/docs/api/raw */
 	private File apiJsonRoot;
-	/** &lt;repo&gt;/docs/api/markdown */
+	/** {repo}/docs/api/markdown */
 	private File apiMdRoot;
-	/** &lt;repo&gt;/docs/release/website/html/api */
+	/** {repo}/docs/release/website/html/api */
 	private File apiHtmlRoot;
-	/** &lt;repo&gt;/docs/docs/tutorials */
+	/** {repo}/docs/tutorials */
 	private File tutRoot;
-	/** &lt;repo&gt;/release/website/html/tutorial */
+	/** {repo}/release/website/html/tutorial */
 	private File tutHtmlRoot;
 	
 	private ModuleContext mc;
@@ -141,7 +143,8 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 	private TutorialInfo tut;
 	private BuiltInPrimitiveDocParser parser0; // info.julang.typesystem
 	private BuiltInPrimitiveDocParser parser1; // info.julang.typesystem.basic
-	private BuiltInClassDocParser parser2; // info.julang.typesystem.jclass.jufc.System[.*]
+	private BuiltInClassDocParser parser2;     // info.julang.typesystem.jclass.jufc.System[.*]
+	private ScriptDocParser scriptParser;      // info.julang.modulesystem.scripts
 	
 	public DocCollector(File srcDirectory, File projDirectory, Log logger){
 		super(new File(srcDirectory.getAbsolutePath() + FoundationClassParser.JuFCRoot), logger);
@@ -172,6 +175,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 		};
 		parser1 = new BuiltInPrimitiveDocParser(srcDirectory, this, mc, logger);
 		parser2 = new BuiltInClassDocParser(srcDirectory, this, mc, logger);
+		scriptParser = new ScriptDocParser(srcDirectory, this, mc, logger);
 	}
 
 	@Override
@@ -213,6 +217,9 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 		// JuFC types
 		collectJuFC(pat);
 		
+		// Built-in scripts
+		scriptParser.collectAll(pat);
+		
 		// Meta-data
 		emitMetadata();
 		
@@ -251,17 +258,17 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 	 * Generate MD files for each matching type.
 	 */
 	private void genUserDocs(Pattern pat, final SerializationType type) {
-		mc.foreach(new TypeDocProcessor(){
+		mc.foreach(new TopLevelDocProcessor(){
 			@Override
-			public void process(String key, Type doc) {
+			public void process(String key, Documented doc) {
 				if (doc == null) {
-					GlobalLogger.get().warn("Couldn't generate MD for " + key + " since the type is null.");
+					GlobalLogger.get().warn("Couldn't generate MD for " + key + " since the document model is null.");
 				}
 				
-				if (doc.visibility == Accessibility.PUBLIC) {
+				if (Accessibility.PUBLIC == doc.visibility || doc.getDocType() == DocType.SCRIPT) {
 					GlobalLogger.get().info("Generating MD for " + key + " ...");
 					try {
-						File modRoot = DocCollector.this.getModuleRoot(doc.getModuleName(), type);
+						File modRoot = DocCollector.this.getModuleRoot(doc.getDocFolderName(), type);
 						DocCollector.this.serialize(modRoot, doc, type);
 					} catch (MojoExecutionException e) {
 						throw new DocGenException("Unable to generate Markdown file for type: " + key, e);
@@ -1014,7 +1021,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 	public File getModuleRoot(String modName, SerializationType styp){
 		String path = null;
 		switch(styp){
-			case WEBSITE:
+		case WEBSITE:
 			path = apiHtmlRoot.getAbsolutePath();
 			break;
 		case MARKDOWN:
@@ -1040,40 +1047,75 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 	}
 
 	@Override
-	public void serialize(File modRoot, Type typ, SerializationType styp) throws MojoExecutionException {
+	public void serialize(File modRoot, Documented doc, SerializationType styp) throws MojoExecutionException {
 		try {
+			DocType dtyp = doc.getDocType();
+			boolean isScript = false;
+			switch(dtyp) {
+			case TYPE:
+			case TUTORIAL:
+				break;
+			case SCRIPT:
+				isScript = true;
+				break;
+			default:
+				if (dtyp.isTopLevel()) {
+					throw new MojoExecutionException("Unrecognized doc model of type '" + dtyp.name() + "'.");
+				} else {
+					throw new MojoExecutionException("Cannot serialize non-top-level doc model of type '" + dtyp.name() + "'.");
+				}
+			}
+			
 			// JSON
 			switch(styp){
 			case RAW:
-				String result = serialize0(typ);
-				try (FileWriter fw = new FileWriter(getFile(modRoot, typ, ".json"))){
+				String result = serialize0(doc);
+				try (FileWriter fw = new FileWriter(getFile(modRoot, doc, ".json"))){
 					fw.write(result);
 				}
 				break;
 			case MARKDOWN:
-				try (MarkdownConverter mdconv = new MarkdownConverter(mc, tut, typ, getFile(modRoot, typ, ".md"))){
-					mdconv.write();
+				if (isScript) {
+					try (ScriptDocMarkdownConverter mdconv 
+						= new ScriptDocMarkdownConverter(mc, tut, (Script)doc, getFile(modRoot, doc, ".md"))){
+						mdconv.write();
+					}
+				} else {
+					try (TypeDocMarkdownConverter mdconv 
+						= new TypeDocMarkdownConverter(mc, tut, (Type)doc, getFile(modRoot, doc, ".md"))){
+						mdconv.write();
+					}
 				}
+				
 				break;
 			case WEBSITE:
 				// First generate MD
-				File mdModRoot = this.getModuleRoot(typ.getModuleName(), SerializationType.MARKDOWN);
-				File markDownFile = getFile(mdModRoot, typ, ".md");
-				try (MarkdownConverter mdconv = new MarkdownConverter(mc, tut, typ, markDownFile)){
-					mdconv.write();
+				File mdModRoot = this.getModuleRoot(doc.getDocFolderName(), SerializationType.MARKDOWN);
+				File markDownFile = getFile(mdModRoot, doc, ".md");
+
+				if (isScript) {
+					try (ScriptDocMarkdownConverter mdconv
+						= new ScriptDocMarkdownConverter(mc, tut, (Script)doc, markDownFile)){
+						mdconv.write();
+					}
+				} else {
+					try (TypeDocMarkdownConverter mdconv 
+						= new TypeDocMarkdownConverter(mc, tut, (Type)doc, markDownFile)){
+						mdconv.write();
+					}
 				}
 				
 				// Then convert to HTML
-				File htmlFile = getFile(modRoot, typ, ".html");
+				File htmlFile = getFile(modRoot, doc, ".html");
 				MarkDown2HtmlConverter htmlConv = new MarkDown2HtmlConverter(markDownFile);
 				String contents = htmlConv.convert();
-				mergeDocTemplate(this.apiIndex, WebsiteResources.api, typ.getModuleName(), typ.name, contents, htmlFile, typ);
+				mergeDocTemplate(this.apiIndex, WebsiteResources.api, doc.getDocFolderName(), doc.name, contents, htmlFile, doc);
 				break;
 			default:
 				throw new MojoExecutionException("Unknown serialization type: " + styp.name());
 			}
 		} catch (IOException e) {
-			throw new MojoExecutionException("Failed to emit documentation for type " + typ.name, e);
+			throw new MojoExecutionException("Failed to emit documentation for type " + doc.name, e);
 		}
 	}
 
@@ -1103,7 +1145,7 @@ public class DocCollector extends SystemModuleProcessor<ScriptInfoBag> implement
 		mergeToFile("website/doc.vm", context, htmlFile);
 	}
 	
-	private File getFile(File modRoot, Type typ, String ext) throws MojoExecutionException, IOException {
+	private File getFile(File modRoot, Documented typ, String ext) throws MojoExecutionException, IOException {
 		String parentDirPath = modRoot.getAbsolutePath();
 		File dir = new File(parentDirPath);
 		dir.mkdirs();

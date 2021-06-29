@@ -35,7 +35,7 @@ import info.julang.typesystem.jclass.MemberType;
 import info.julang.typesystem.jclass.builtin.JAttributeType;
 
 /**
- * An on-platform representation of <font color="green">System.AttributeType</font><pre><code> module System;
+ * An on-platform representation of <code style="color:green">System.AttributeType</code><pre><code> module System;
  * 
  * class AttributeTarget {
  *   static const int CLASS       = 0b000001;
@@ -52,7 +52,7 @@ import info.julang.typesystem.jclass.builtin.JAttributeType;
  * }
  * </code></pre>
  * Implementation node: the data and logic of this class must be synchronized with what is defined in 
- * <font color="green">System.AttributeType</font><pre><code>.
+ * <code style="color:green">System.AttributeType</code>.
  * 
  * @author Ming Zhou
 */

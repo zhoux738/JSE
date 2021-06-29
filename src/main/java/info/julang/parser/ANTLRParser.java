@@ -227,7 +227,7 @@ public class ANTLRParser {
 	/**
 	 * Parse the given text to build AST. This can be called without {@link #scan(boolean)} getting called first.
 	 * 
-	 * @param _stream
+	 * @param buildTree
 	 * @param throwNow if true, throw the exception if parsing failed; otherwise, the exception can be demanded from the result.
 	 */
 	public void parse(boolean buildTree, boolean throwNow){

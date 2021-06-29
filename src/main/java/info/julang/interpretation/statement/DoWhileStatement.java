@@ -33,7 +33,7 @@ import info.julang.parser.AstInfo;
 
 /**
  * The do-while statement in Julian language.
- * <p/>
+ * <p>
  * The do-while statement has the form: <pre><code> do{
  *   ... (statements)
  * } while(|bool-expr|)</code></pre>

@@ -70,6 +70,8 @@ public class WrapperScriptUpdater {
 	 * Generate a new script file to the directory given in ctor (jarDirPath).
 	 * <p>
 	 * An I/O error won't fault the call.
+	 * 
+	 * @return 0 if succeeded; non-zero if failed.
 	 */
 	public int update(){
 		try {
@@ -85,6 +87,9 @@ public class WrapperScriptUpdater {
 	
 	/**
 	 * Add a case-insensitive key and its value.
+	 * 
+	 * @param key The variable name 
+	 * @param value The variable value
 	 */
 	public void addVariable(String key, String value) {
 		if (variables == null) {

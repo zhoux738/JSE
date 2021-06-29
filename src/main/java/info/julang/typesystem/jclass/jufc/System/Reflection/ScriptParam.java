@@ -38,7 +38,7 @@ import info.julang.memory.value.TempValueFactory;
 import info.julang.typesystem.jclass.JParameter;
 
 /**
- * The native implementation of <code><font color="green">System.Reflection.Parameter</font></code>.
+ * The native implementation of <code style="color:green">System.Reflection.Parameter</code>.
  * 
  * @author Ming Zhou
  */

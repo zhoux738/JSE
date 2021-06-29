@@ -59,7 +59,7 @@ public class MappedMethodExecutable extends MappedExecutableBase {
 	private Method method;
 	
 	public MappedMethodExecutable(ICompoundType ofType, Method method, boolean isStatic) {
-		super(ofType, isStatic);
+		super(">-" + method.getName(), ofType, isStatic);
 		this.method = method;
 	}
 	

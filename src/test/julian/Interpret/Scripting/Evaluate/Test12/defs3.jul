@@ -1,0 +1,5 @@
+import System.Concurrency;
+
+Promise.start().then(()=> { 
+	Environment.evaluate(new EvalConfig(), "defsx.jul", null);
+}).getResult(true);

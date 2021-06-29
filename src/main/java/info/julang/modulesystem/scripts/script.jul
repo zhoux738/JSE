@@ -1,0 +1,46 @@
+/*
+ * Provides helper functions for incorporating other scripts.
+ */
+ 
+/*
+ * Include another script. Semantically equivalent to `include` statement, this function can be called anywhere 
+ * inside from the outermost scope in a loose script, and due to being a function, it allows the caller to get 
+ * the returned value.
+ *
+ * Same file will be included once only. Recalling this against the same path returns the cached result. When including
+ * files in a chain, the inclusion on the same file from the 2nd time will be skipped and a `null` value is returned 
+ * instead since the actual result is yet to be determined.
+ *
+ * Do not mimic this function in a user-defined script. Special handling is performed inside the engine to greenlight 
+ * calling [Environment.evaluate()](System.Environment#evaluate) from a global function defined in this built-in script.
+ *
+ * [access] System.Environment/eval
+ * [param: path] Either an absolute path, or a path relative to the calling script.
+ * [return] The result of interpreting the specified script. Null if the script is not explicitly returned with a value.
+ */
+var incl(string path) {
+ 	EvalConfig config = new EvalConfig();
+	var res = Environment.evaluate(config, path, new string[0]);
+	return res;
+}
+
+/*
+ * Evaluate another script, which would share the global variables and bindings with the caller script.
+ *
+ * Unlike `incl()`, results won't be cached.  When evaluating files in a chain, attempt to target the same file twice 
+ * results in exception.
+ *
+ * Do not mimic this function in a user-defined script. Special handling is performed inside the engine to greenlight 
+ * calling [Environment.evaluate()](System.Environment#evaluate) from a global function defined in this built-in script.
+ *
+ * [access] System.Environment/eval
+ * [param: path] Either an absolute path, or a path relative to the calling script.
+ * [param: args] Arguments in string array. Can be null.
+ * [return] The result of interpreting the specified script. Null if the script is not explicitly returned with a value.
+ */
+var eval(string path, string[] args) {
+ 	EvalConfig config = new EvalConfig();
+ 	config.setShareScope(true);
+	var res = Environment.evaluate(config, path, args == null ? new string[0] : args);
+	return res;
+}

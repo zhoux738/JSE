@@ -1,0 +1,15 @@
+EvalConfig config = new EvalConfig();
+
+Environment.evaluate(config, "routines.jul", null);
+
+// Use a type defined from an evaluated script.
+MC1 mc = new MC1();
+int i1 = MC1.v;
+
+// Use a type defined from a previously evaluated script.
+Environment.evaluate(config, "routines2.jul", null);
+int i2 = MC1.v;
+
+// Import another module from the evaluated script.
+Environment.evaluate(config, "routines3.jul", null);
+string mc5_updated = MyMod.MC5.s;

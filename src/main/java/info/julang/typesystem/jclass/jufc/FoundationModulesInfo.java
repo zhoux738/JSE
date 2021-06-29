@@ -51,7 +51,7 @@ public final class FoundationModulesInfo {
 	
 	/**
 	 * For a given module name, tell if it is a Julian Foundation Module. 
-	 * <p/>
+	 * <p>
 	 * If a module is a Julian Foundation Module, it means: 
 	 * (1) this module is contained in the Julian runtime as part of deliverable; 
 	 * (2) its namespace is reserved and cannot be used by other parties.
@@ -66,7 +66,7 @@ public final class FoundationModulesInfo {
 	
 	/**
 	 * For a given module name, return the paths of all the constituting scripts.
-	 * <p/>
+	 * <p>
 	 * The path contains module segment. For example, if modName = "System", the 
 	 * return path will be started with "System/".
 	 * 

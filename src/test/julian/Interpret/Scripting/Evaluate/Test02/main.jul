@@ -1,0 +1,8 @@
+EvalConfig config = new EvalConfig();
+string s_abc = Environment.evaluate(config, "defs.jul", new string[]{"a", "b", "c"});
+
+string s_empty1 = Environment.evaluate(config, "defs.jul", new string[0]);
+
+string s_empty2 = Environment.evaluate(config, "defs.jul", null);
+
+string s_xyz = Environment.evaluate(config, "defs.jul", new string[]{"xyz"});

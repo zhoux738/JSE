@@ -39,8 +39,8 @@ import info.julang.typesystem.jclass.jufc.System.Concurrency.ScriptThread.Script
 
 /**
  * The standard {@link Runnable Java Runnable} implementation that's associated with a {@link JThread} object.
- * <p/>
- * The implementation of {@link Runnable#run()} calls {@ JThread#run(Argument[])}. At the end it captures 
+ * <p>
+ * The implementation of {@link Runnable#run()} calls {@link JThread#run(Argument[])}. At the end it captures 
  * the unhandled exception, if any.
  * 
  * @author Ming Zhou
@@ -63,12 +63,18 @@ public class JThreadRunnable implements Runnable {
 	
 	private ScriptExceptionHandler handler;
 	
+	private boolean isMainForked;
+	
 	JThreadRunnable(JThreadManager manager, JThread thread, Argument[] args){
 		this.manager = manager;
 		this.thread = thread;
 		this.args = args;
 		
-		manager.addThread(thread, this);
+		this.isMainForked = thread.isMain() && thread.isReplicated();
+		
+		if (!isMainForked) {
+			manager.addThread(thread, this);
+		}
 	}
 	
 	@Override
@@ -86,8 +92,16 @@ public class JThreadRunnable implements Runnable {
 			
 			result = thread.run(args);
 		} catch (JulianScriptException jse) { 
+			if (isMainForked) { // Keep popping. Let the previous main thread handle this.
+				throw jse;
+			}
+			
 			error = jse;
 		} catch (JThreadAbortedException jtae) {
+			if (isMainForked) { // Keep popping. Let the previous main thread handle this.
+				throw jtae;
+			}
+			
 			// If thread is aborted by engine termination, ignore it.
 			error = null;
 		} catch (Exception e) {
@@ -142,7 +156,9 @@ public class JThreadRunnable implements Runnable {
 				manager.registerError(thread.getId(), true, error);
 			}
 			
-			manager.removeThread(thread.getId());
+			if (!isMainForked) {
+				manager.removeThread(thread.getId());
+			}
 		}
 	}
 	

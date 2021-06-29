@@ -23,8 +23,8 @@ SOFTWARE.
 */
 
 /**
- * The native implementation of <font color="green">System.Util.Regex</font>.
- * <p/>
+ * The native implementation of <code style="color:green">System.Util.Regex</code>.
+ * <p>
  * This implementation is backed by {@link java.util.regex.Pattern}.
  *  
  * @author Ming Zhou

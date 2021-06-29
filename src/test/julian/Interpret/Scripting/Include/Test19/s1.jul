@@ -1,0 +1,3 @@
+System.Reflection.Script script = Environment.getScript();
+verify("s1", script, "s1.jul");
+return script;

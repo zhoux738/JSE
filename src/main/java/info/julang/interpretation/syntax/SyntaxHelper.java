@@ -349,7 +349,7 @@ public final class SyntaxHelper {
 	
 	/**
 	 * Parse a list of member declarations into {@link MethodDeclInfo}.
-	 * <p/>
+	 * <p>
 	 * This methods returns a preliminary parsing result from the declaration. The information
 	 * includes the annotation, modifiers, type (in case of method, the return type), name, etc.
 	 * In particular, no preemptive parsing will be done for the executable body.
@@ -557,7 +557,7 @@ public final class SyntaxHelper {
 
 	/**
 	 * The following patterns match a lambda definition:
-	 * <p/>
+	 * <p>
 	 * <pre>
 	 *   1) type-safe
 	 *  	(string s, int i) => ...
@@ -573,7 +573,7 @@ public final class SyntaxHelper {
 	 *      => ...;</pre>
 	 * If this method returns a non-null value, PC has now moved after '=>', waiting for further parsing 
 	 * by the caller. If this method returns null, then it is not a lambda.
-	 * <p/>
+	 * <p>
 	 * @param ast
 	 */
 	// lambda_signature LAMBDA ( ( RETURN? expression ) | block ) # e_lambda

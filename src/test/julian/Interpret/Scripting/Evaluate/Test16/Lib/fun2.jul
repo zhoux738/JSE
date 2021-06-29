@@ -1,0 +1,5 @@
+EvalConfig config = new EvalConfig();
+config.setShareScope(true);
+Environment.evaluate(config, "fun2_helper.jul", arguments);
+
+return i == 5;

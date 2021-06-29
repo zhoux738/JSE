@@ -1,0 +1,9 @@
+
+include "t19_3.jul";
+
+class MyClass { }
+
+System.Reflection.Script script = Environment.getScript();
+verify(0, script, new string[] { "MyClass" });
+
+return true;

@@ -26,8 +26,10 @@ package info.julang.typesystem.jclass;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import info.julang.execution.symboltable.ITypeTable;
@@ -53,7 +55,7 @@ import info.julang.typesystem.jclass.builtin.JTypeStaticDataType;
 
 /**
  * A bootstrapper used to load a set of most fundamental built-in object types.
- * <p/>
+ * <p>
  * Object types are common loaded during runtime on demand. But those special 
  * types, such as Object, Array and Function, must be loaded at an earlier stage.
  * Since these types are also referring among themselves, they must be loaded 
@@ -65,6 +67,47 @@ import info.julang.typesystem.jclass.builtin.JTypeStaticDataType;
 public final class BuiltinTypeBootstrapper {
 
 	private static boolean done;
+	
+	private static Set<String> biTypNames;
+	
+	/**
+	 * Check if the given name is a built-in type.
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static boolean isBuiltInType(String name) {
+		if (biTypNames == null) {
+			synchronized(BuiltinTypeBootstrapper.class) {
+				if (biTypNames == null) {
+					biTypNames = new HashSet<String>();
+					
+					biTypNames.add(IntType.getInstance().getName());
+					biTypNames.add("int");
+					biTypNames.add(BoolType.getInstance().getName());
+					biTypNames.add("bool");
+					biTypNames.add(ByteType.getInstance().getName());
+					biTypNames.add("byte");
+					biTypNames.add(CharType.getInstance().getName());
+					biTypNames.add("char");
+					biTypNames.add(FloatType.getInstance().getName());
+					biTypNames.add("float");
+					biTypNames.add(AnyType.getInstance().getName());
+					biTypNames.add(VoidType.getInstance().getName());
+					biTypNames.add("void");
+					biTypNames.add(JObjectType.FQNAME.toString());
+					biTypNames.add(JStringType.FQNAME.toString());
+					biTypNames.add(JArrayBaseType.FQNAME.toString());
+					biTypNames.add(JEnumBaseType.FQNAME.toString());
+					biTypNames.add(JAttributeBaseType.Name);
+					biTypNames.add(JFunctionType.FQNAME.toString());
+					biTypNames.add(JDynamicType.FQNAME.toString());
+				}
+			}
+		}
+		
+		return biTypNames.contains(name);
+	}
 
 	/**
 	 * Initialize built-in non-class types.

@@ -24,6 +24,13 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.docgen;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import info.julang.eng.mvnplugin.GlobalLogger;
 import info.julang.eng.mvnplugin.htmlgen.WebsiteResources;
 import info.julang.execution.namespace.NamespacePool;
@@ -46,13 +53,6 @@ import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.typesystem.jclass.builtin.JStringType;
 import info.julang.util.Pair;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Documentation models to be serialized.
@@ -156,6 +156,46 @@ public final class DocModel {
 	 }
 	*/
 	
+	/**
+	 * Describes the type of the doc model. Beware, this value doesn't exactly matches
+	 * the type name of doc model. For example, both {@link Member} and {@link EnumEntry} 
+	 * have <code>DocType == {@link #MEMBER}</code>.
+	 */
+	public enum DocType {
+		/** A Julian Type, either compound or primitive. */
+		TYPE(true),
+		
+		/** A member of Type, such as constructor, method and field. */
+		MEMBER(false),
+		
+		/** A global function defined in a built-in script. */
+		FUNCTION(false),
+		
+		/** A built-in script. */
+		SCRIPT(true),
+
+		/** A chapter in the tutorial. */
+		TUTORIAL(true),
+		
+		;
+		
+		private boolean topLevel;
+		
+		DocType(boolean topLevel){
+			this.topLevel = topLevel;
+		}
+		
+		/**
+		 * A top-level doc corresponds to a file upon serialization;
+		 * Non-top-level doc only becomes part of such files.
+		 * 
+		 * @return true if it's top-level.
+		 */
+		public boolean isTopLevel() {
+			return topLevel;
+		}
+	}
+	
 	public static class Keys {
 		static final String SEE = "see";
 		static final String SEE_ALSO = "see also";
@@ -190,7 +230,7 @@ public final class DocModel {
 	
 	public static class TypeRef {
 		/** The module name of this type. */
-		public String moduleName;
+		private String moduleName;
 		/** The simple name of this type. */
 		public String simpleName;
 		/** 0 if scalar, 1+ if it's an array. */
@@ -236,6 +276,16 @@ public final class DocModel {
 			return ref;
 		}
 		
+		public static TypeRef makeFromScript(ScriptInfo sinfo){
+			TypeRef ref = new TypeRef();
+
+			ref.moduleName = sinfo.getCategoryName();
+			ref.simpleName = sinfo.getSimpleName();
+			ref.dimension = 0;
+			
+			return ref;
+		}
+		
 		public String getFullName(){
 			String typeName = getFullScalarName();
 			typeName += this.getArrayDimension();
@@ -250,12 +300,13 @@ public final class DocModel {
 		
 		/**
 		 * Get a link path to this type from the given type's doc.
-		 * @param typ the doc the link will be put into
+		 * 
+		 * @param doc the doc the link will be put into
 		 */
-		public String getLinkPath(DocModel.Type typ, String suffix){
+		public String getLinkPath(DocModel.Documented doc, String suffix){
 			// The type ref's name can be either an alias or real name. Ideally we should use
 			// the parser to parse a code snippet (int a;) to derive the type part and resolve it
-			// against a type resolver. But this is hugely expensive and is the rewards is little.
+			// against a type resolver. But this is hugely expensive while the rewards is little.
 			// So just apply the special treatment for aliased types here.
 			String tgtMod = null;
 			String simpleName = null;
@@ -278,7 +329,7 @@ public final class DocModel {
 
 			StringBuilder result = new StringBuilder();
 			int tgtDepth = tgtMod != null && tgtMod.length() > 0 ? 2 : 1;
-			if (typ == TutorialPseudoType.INSTANCE) {
+			if (doc == TutorialPseudoType.INSTANCE) {
 				// Special - if we are linking from tutorial, must start from api resource
 				result.append("../" + WebsiteResources.api.name() + "/");
 				if (tgtMod != null && !"".equals(tgtMod)) {
@@ -286,8 +337,8 @@ public final class DocModel {
 				}
 			} else {
 				// Determine the relative path. Since all the modules are flatly laid out, we only
-				// have two levels: the built-in types sit in first level, the other the second.
-				String srcMod = typ.getModuleName();
+				// have two levels: the built-in types sit in first level, the others the second.
+				String srcMod = doc.getDocFolderName();
 				int srcDepth = srcMod != null && srcMod.length() > 0 ? 2 : 1;
 				int levelDiff = tgtDepth - srcDepth;
 				switch(levelDiff){
@@ -432,9 +483,15 @@ public final class DocModel {
 			return nodoc;
 		}
 		
+		public String getDocFolderName() { // To be overridden by top-level models.
+			return "";
+		}
+		
 		public String getSummary() {
 			return summary;
 		}
+		
+		public abstract DocType getDocType();
 
 		/**
 		 * Process the documentation block for this syntax element. The input is a string enclosed by
@@ -606,6 +663,22 @@ public final class DocModel {
 		
 		private static final String CODE_END_TAG = "[" + Keys.CODE + ": " + Keys.CODE_END + "]";
 		private static final String CODE_TAG = "[" + Keys.CODE + "]";
+	
+		// Used by subclasses.
+		protected String simplifyTypeName(String name){
+			switch(name.toLowerCase()){
+			case "integer": return "int"; 
+			case "byte": return "byte"; 
+			case "float": return "float";  
+			case "bool": return "bool";   
+			case "char": return "char";    
+			case "void": return "void";   
+			case "any": return "var";
+			default:
+			}
+			
+			return name;
+		}
 		
 		/** Add a new line to the current section, which might be summary of a doc entry. */
 		private void appendToCurrentSection(String trimmedLine, String rawLine, boolean first){
@@ -690,6 +763,16 @@ public final class DocModel {
 		protected Type(ClassSubtype stype){
 			super();
 			subtype = stype;
+		}
+		
+		@Override
+		public DocType getDocType() {
+			return DocType.TYPE;
+		}
+		
+		@Override
+		public String getDocFolderName() { // Type's doc folder name is their module name, which can be a compound name such as A.B
+			return getModuleName();
 		}
 		
 		public ClassSubtype getSubtype(){
@@ -852,19 +935,9 @@ public final class DocModel {
 			super();
 		}
 		
-		protected String simplifyTypeName(String name){
-			switch(name.toLowerCase()){
-			case "integer": return "int"; 
-			case "byte": return "byte"; 
-			case "float": return "float";  
-			case "bool": return "bool";   
-			case "char": return "char";    
-			case "void": return "void";   
-			case "any": return "var";
-			default:
-			}
-			
-			return name;
+		@Override
+		public DocType getDocType() {
+			return DocType.MEMBER;
 		}
 		
 		@Override
@@ -1152,7 +1225,7 @@ public final class DocModel {
 
 		@Override
 		public String getCoreSignature(boolean useSimpleTypeName, String linkage, ICoreSignatureDecorator decorator) {
-			String pre = linkage == null ? "(" :linkage;
+			String pre = linkage == null ? "(" : linkage;
 			String infix = linkage == null ? ", " : "-";
 			
 			StringBuilder sb = new StringBuilder();
@@ -1266,6 +1339,10 @@ public final class DocModel {
 			sb = map.get(new Pair<>(Keys.INHERITED, ""));
 			isInherited = sb != null; // The doc for this method is inherited.
 		}
+		
+		protected void processDocEntriesForCtor(Map<Pair<String, String>, StringBuilder> map) {
+			super.processDocEntries(map);
+		}
 
 		// Since return type is not part of method signature, do not implement Object.equals here.
 		
@@ -1293,6 +1370,111 @@ public final class DocModel {
 				return tref.getFullName() + " ";
 			}
 		}
+	}
+	
+	// Inherits from Method to reuse return type.
+	public static class Function extends Method {
+		
+		Function(String name){
+			this.name = name;
+		}
+		
+		@Override
+		public DocType getDocType() {
+			return DocType.FUNCTION;
+		}
+		
+		// return, inherited
+		@Override
+		protected void processDocEntries(Map<Pair<String, String>, StringBuilder> map) {
+			super.processDocEntriesForCtor(map);
+			StringBuilder sb = map.get(new Pair<>(Keys.RETURN, ""));
+			if (returnType != null) {
+				returnType.summary = sb != null ? sb.toString() : "";
+			}
+		}
+		
+		/**
+		 * Get the anchor's name for this member or a certain part (return/parameter) of this member.
+		 */
+		@Override
+		public String getAnchorName(AnchorType anchorTyp, String extra){
+			StringBuilder sb = new StringBuilder("gf-");
+			
+			sb.append(this.getCoreSignature(true, "-", null));
+			switch(anchorTyp){
+			case Parameter:
+				sb.append("-p-");
+				sb.append(extra);
+				break;
+			case Return:
+				sb.append("-r");
+				break;
+			default:
+				break;
+			}
+			
+			return sb.toString();
+		}
+		
+		@Override
+		public String getExtendedSignature(boolean asInstalledExtensionMethod){
+			return super.getExtendedSignature(false);
+		}
+
+		@Override
+		public String getMemberHeader(boolean useSimpleTypeName) {
+			// Global function doesn't have a definition header, which only applies to executable type members.
+			return "";
+		}
+		
+		@Override
+		public String toString(){
+			return "(Function) " + name;
+		}
+	}
+	
+	public static class Script extends Documented {
+		
+		public static final String DOC_FOLDER_NAME = "Scripts";
+		
+		/** Functions. */
+		public List<Function> functions;
+
+		/** Includes. */
+		public List<Script> includes;
+		
+		Script(String name){
+			this.name = name;
+			functions = new ArrayList<Function>();
+		}
+		
+		@Override
+		public DocType getDocType() {
+			return DocType.SCRIPT;
+		}
+		
+		@Override
+		public String getDocFolderName() { // Script's doc folder name is fixed
+			return DOC_FOLDER_NAME;
+		}
+		
+		@Override
+		protected void processDocEntries(Map<Pair<String, String>, StringBuilder> map){
+			Set<Pair<String, String>> keys = map.keySet();
+			
+			for(Pair<String, String> key : keys){
+				String k = key.getFirst(); 
+				switch(k){
+				case Keys.SEE:
+				case Keys.SEE_ALSO:
+					String v = key.getSecond();
+					TypeRef ref = TypeRef.makeFromFullName(v);				
+					references.add(ref);
+					break;
+				}
+			}
+		}	
 	}
 	
 	public static class InterfaceType extends Type {
@@ -1339,6 +1521,8 @@ public final class DocModel {
 		}
 	}
 	
+	// This is a bit hackish, but convenient. Treat the entire tutorial chapter as
+	// a huge summary of some non-existent type.
 	public static class TutorialPseudoType extends ClassType {
 		
 		public static TutorialPseudoType INSTANCE = new TutorialPseudoType();
@@ -1347,6 +1531,16 @@ public final class DocModel {
 			super();
 			this.name = "<Tutorial>";
 			this.setModuleName("");
+		}
+
+		@Override
+		public DocType getDocType() {
+			return DocType.TUTORIAL;
+		}
+		
+		@Override
+		public String getDocFolderName() { // Tutorial's doc folder name is empty because it is not used.
+			return "";
 		}
 	}
 	
@@ -1369,6 +1563,11 @@ public final class DocModel {
 		/** The ordinal value of this enum entry. */
 		public int ordinal;
 
+		@Override
+		public DocType getDocType() {
+			return DocType.MEMBER;
+		}
+		
 		@Override
 		protected void processDocEntries(Map<Pair<String, String>, StringBuilder> map) {
 			// NO-OP

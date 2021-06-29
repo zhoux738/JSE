@@ -54,8 +54,7 @@ import info.julang.typesystem.jclass.builtin.JStringType;
  * for method, are compliant with a certain subset of Julian types. 
  * <p>
  * As of 0.1.7, the allowed types are:
- * <p>
- * <table>
+ * <table summary="platform built-in type mapping">
  * <tr><th>Java Type</th><th>Julian Type</th></tr>
  * <tr><td>int</td><td>int</td></tr>
  * <tr><td>byte</td><td>byte</td></tr>

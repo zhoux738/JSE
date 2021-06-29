@@ -1,0 +1,4 @@
+// lambda
+var fun = () => Environment.evaluate(new EvalConfig(), "defsx.jul", null);
+
+fun();

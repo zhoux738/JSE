@@ -39,8 +39,8 @@ public class StandardIO {
 
 	// Raw (can be null)
 	private InputStream in;
-	private OutputStream out;
-	private OutputStream err;
+	protected OutputStream out;
+	protected OutputStream err;
 	
 	// Decorated
 	private PrintStream outPs;
@@ -78,7 +78,7 @@ public class StandardIO {
 				}
 			}
 		}
-		
+
 		return outPs;
 	}
 	

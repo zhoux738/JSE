@@ -39,13 +39,13 @@ import java.net.URL;
 
 /**
  * A factory to produce Julian Engine and its components using a customized class loader.
- * <p/>
+ * <p>
  * This class is the bridge between the two worlds. The user class calls the factory to create
  * components and engine. The returned values from these methods can be safely accessed by the
  * caller. The underlying classes of these values, however, are created in the internal class
  * loader. In particular, they are created via specially designed and regimented constructors,
  * which are commented with <b>[CFOW]</b>, a.k.a. "Called From Other World".
- * <p/>
+ * <p>
  * The classes in this package are the only classes (along with some utility classes) under 
  * package prefix "info.julang" that can be directly referenced from the caller's
  * world. In other words, EngineFactory itself can be safely loaded from the default class 
@@ -67,9 +67,7 @@ public class EngineFactory {
 	/**
 	 * Create an engine factory with specified configuration.
 	 * 
-	 * @param allowReentry if false, the engine this factory creates cannot be called again.
-	 * @param useExceptionDefaultHandler if false, the exception handler will be null. Any exception, even fatal, will
-	 * be silently consumed. 
+	 * @param option The option used to created the factory. 
 	 */
 	public EngineFactory(EngineInitializationOption option){
 		this.option = option;
@@ -90,7 +88,7 @@ public class EngineFactory {
 	 * Create a {@link info.julang.execution.simple.SimpleScriptEngine simple engine}
 	 * along with its runtime.
 	 * 
-	 * @return
+	 * @return A pair of engine and runtime.
 	 */
 	@SuppressWarnings("unchecked")
 	public EngineParamPair createEngineAndRuntime() {
@@ -127,7 +125,7 @@ public class EngineFactory {
 	/**
 	 * Create a {@link info.julang.execution.simple.SimpleScriptEngine simple engine}.
 	 * 
-	 * @return
+	 * @return An engine instance.
 	 */
 	public IExtScriptEngine createEngine() {
 		return createEngineAndRuntime().getFirst();
@@ -154,10 +152,12 @@ public class EngineFactory {
 	/**
 	 * Create a {@link info.julang.execution.symboltable.TypeTable type table}.
 	 * 
-	 * @return in form of {@link IExtTypeTable}, but in fact a {@link info.julang.
-	 * execution.symboltable.TypeTable TypeTable}. But the caller should not attempt to cast 
-	 * outside the script engine since the class is loaded from an internal class loader.
+	 * @param mem The memory area to be used by this type table.
+	 * @return an object that implements {@link IExtTypeTable}.
 	 */
+	// IMPLEMENTATION NOTES:
+	// The returned object is in fact an info.julang.execution.symboltable.TypeTable. But the caller should not
+	// attempt to cast outside the script engine since the class is loaded from an internal class loader.
 	public IExtTypeTable createTypeTable(IExtMemoryArea mem) {
 		return createComponent(
 			"info.julang.execution.symboltable.TypeTable", 
@@ -170,10 +170,11 @@ public class EngineFactory {
 	/**
 	 * Create a {@link info.julang.execution.symboltable.VariableTable variable table}.
 	 * 
-	 * @return in form of {@link IExtVariableTable}, but in fact a {@link info.julang.
-	 * execution.symboltable.VariableTable VariableTable}. But the caller should not attempt to cast 
-	 * outside the script engine since the class is loaded from an internal class loader.
+	 * @return an object that implements {@link IExtVariableTable}.
 	 */
+	// IMPLEMENTATION NOTES:
+	// The returned object is in fact an info.julang.execution.symboltable.VariableTable. But the caller should not
+	// attempt to cast outside the script engine since the class is loaded from an internal class loader.
 	public IExtVariableTable createGlobalVariableTable() {
 		return createComponent(
 			"info.julang.execution.symboltable.VariableTable", 
@@ -186,10 +187,11 @@ public class EngineFactory {
 	/**
 	 * Create a {@link info.julang.memory.simple.SimpleHeapArea heap memory area}.
 	 * 
-	 * @return in form of {@link IExtMemoryArea}, but in fact a {@link info.julang.
-	 * memory.simple.SimpleHeapArea SimpleHeapArea}. But the caller should not attempt to cast 
-	 * outside the script engine since the class is loaded from an internal class loader.
+	 * @return an object that implements {@link IExtMemoryArea}.
 	 */
+	// IMPLEMENTATION NOTES:
+	// The returned object is in fact an info.julang.memory.simple.SimpleHeapArea. But the caller should not
+	// attempt to cast outside the script engine since the class is loaded from an internal class loader.
 	public IExtMemoryArea createHeapMemory() {
 		return createComponent(
 			"info.julang.memory.simple.SimpleHeapArea", 
@@ -199,7 +201,7 @@ public class EngineFactory {
 	
 	/**
 	 * Get the class path for engine binaries.
-	 * <p/>
+	 * <p>
 	 * By default, this returns the path of JSE's jar.
 	 * 
 	 * @return A URL that can be used to initialize an {@link EngineComponentClassLoader}.

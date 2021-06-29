@@ -57,13 +57,14 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 /**
  * Casting operator is used to dynamically cast a value of some type A to another type B.
  * <pre><code>A a = (A) b;</code></pre>
- * <p/>
+ * <p>
  * The operation will succeed only if any of the following conditions is met:
+ * <ul>
  *   <li>b's type is A;</li>
  *   <li>b is a class type which is derived from A;</li>
  *   <li>b is a basic type and is convertible to type A;</li>
  *   <li>A is string - this is equal to calling toString()</li> 
- * <br/>
+ * </ul>
  * 
  * @author Ming Zhou
  */

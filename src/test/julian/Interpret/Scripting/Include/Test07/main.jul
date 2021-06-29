@@ -1,0 +1,7 @@
+
+include "routines.jul";
+include "routines.jul"; // Effectively skipped
+include "routines2.jul";
+
+int i5 = f5();
+int i7 = f7();

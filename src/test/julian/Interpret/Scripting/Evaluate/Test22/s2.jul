@@ -1,0 +1,5 @@
+i += 2;
+
+throw new Exception("FAILED!");
+
+i += 3;

@@ -119,7 +119,7 @@ public class ObjectMemberStorage {
 	
 	/**
 	 * A special method for adding method members to value of Function class.
-	 * <p/>
+	 * <p>
 	 * This exists because we must break an self-referencing loop during initialization 
 	 * of the very special Function class, which itself contains Function members.
 	 * 

@@ -32,7 +32,7 @@ import info.julang.interpretation.syntax.DeclInfo;
  * 
  * @author Ming Zhou
  */
-public class TypeInfo {
+public class TypeInfo implements UnitInfo {
 	
 	private String moduleName;
 	private String simpleName;
@@ -50,12 +50,35 @@ public class TypeInfo {
 		this.declInfo = declInfo;
 	}
 	
-	public String getModuleName(){
-		return moduleName;
+	//--------------- UnitInfo ---------------//
+	
+	public UnitType getUnitType() {
+		return UnitType.Type;
+	}
+
+	public String getCategoryName() {
+		return this.getModuleName();
 	}
 	
 	public String getSimpleName(){
 		return simpleName;
+	}
+	
+	public String getFullName(){
+		String name = (moduleName != null && !"".equals(moduleName)) ? moduleName + "." + simpleName : simpleName;
+		int d = dim;
+		while(d>0) {
+			name += "[]";
+			d--;
+		}
+		
+		return name;
+	}
+	
+	//--------------- Type-spcific ---------------//
+	
+	public String getModuleName(){
+		return moduleName;
 	}
 
 	public int getDimension(){
@@ -74,22 +97,11 @@ public class TypeInfo {
 		return declInfo != null ? declInfo.isStatic() : false;
 	}
 	
-	//------------ Helper Methods ------------//
-	
 	public boolean isBasic(){
 		return subtyp == null;
 	}
-	
-	public String getFullName(){
-		String name = (moduleName != null && !"".equals(moduleName)) ? moduleName + "." + simpleName : simpleName;
-		int d = dim;
-		while(d>0) {
-			name += "[]";
-			d--;
-		}
-		
-		return name;
-	}
+
+	//--------------- Object ---------------//
 	
 	@Override
 	public String toString(){

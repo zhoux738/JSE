@@ -31,6 +31,7 @@ import java.util.Set;
 
 import info.julang.execution.Argument;
 import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.JSEError;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.internal.NewObjExecutor;
 import info.julang.interpretation.syntax.ParsedTypeName;
@@ -51,12 +52,24 @@ import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptModule;
  * @author Ming Zhou
  */
 public class ModuleInfo {
+	
+	class DuplicateClassInfoException extends Exception {
+
+		private static final long serialVersionUID = -8865975483359618636L;
+		
+		ClassInfo oldClass;
+		
+		ClassInfo newClass;
+		
+		private DuplicateClassInfoException(ClassInfo oldClass, ClassInfo newClass) {
+			this.oldClass = oldClass;
+			this.newClass = newClass;
+		}
+	}
 
 	public static final String DEFAULT_MODULE_NAME = "<default>";
 	
 	public static final String IMPLICIT_MODULE_NAME = "<implicit>";
-	
-	private String name;
 	
 	protected List<ScriptInfo> scripts;
 	
@@ -64,8 +77,11 @@ public class ModuleInfo {
 	
 	protected List<ModuleInfo> requirements;
 	
-	public ModuleInfo(String name){
+	private String name;
+	
+	protected ModuleInfo(String name){
 		this.name = name;
+		requirements = new ArrayList<ModuleInfo>();
 	}
 	
 	public String getName(){
@@ -89,17 +105,39 @@ public class ModuleInfo {
 	}
 	
 	/**
+	 * Add from the given module info. If a type already exist in the current one, throw.
+	 * <p>
+	 * Only used when loading a loose script to be the default module, merging with the existing default module.
+	 * 
+	 * @param src the module info to be added from.
+	 */
+	void addFrom(ModuleInfo src) throws DuplicateClassInfoException {
+		combineFrom(src, false);
+	}
+	
+	/**
 	 * Merge from the given module info. The current one should take precedence.
+	 * <p>
+	 * Only used when loading a loose script to be the default module, merging with the existing default module.
 	 * 
 	 * @param src the module info to be merged from, but will not overwrite the
 	 * current one whenever there is a conflict.
 	 */
-	public void mergeFrom(ModuleInfo src) {
-		// (No need to merge scripts info )
+	void mergeFrom(ModuleInfo src) {
+		try {
+			combineFrom(src, true);
+		} catch (DuplicateClassInfoException e) {
+			// Won't happen.
+			throw new JSEError("Thrown DuplicateClassInfoException while it shouldn't.");
+		}
+	}
+	
+	private void combineFrom(ModuleInfo src, boolean merge) throws DuplicateClassInfoException {
+		// (No need to merge scripts info - we only store one script for the default module)
 		// this.scripts.addAll(src.scripts);
 		
-		this.classes = mergeLists(src.classes, this.classes);
-		this.requirements = mergeLists(src.requirements, this.requirements);
+		this.classes = mergeLists(src.classes, this.classes, merge);
+		this.requirements = mergeLists(src.requirements, this.requirements, true);
 		
 		// NOTE: we don't set new requirement list to each ScriptInfo instance. 
 		// This means classed defined in a previous line won't get bind to new
@@ -107,28 +145,51 @@ public class ModuleInfo {
 		//
 		// However, we must reset requirement info for the very 1st ScriptInfo,
 		// which is used to populate namespace ahead of global script execution.
-		ScriptInfo currScript = this.getFirstScript();
-		currScript.setRequirements(mergeLists(src.getFirstScript().getRequirements(), currScript.getRequirements()));
+		//
+		// Note this will overwrite the requirements of the previous first script.
+		// This so far is not very much a concern since the requirements are only
+		// used once when the script was executed. And that has already happened.
+		if (merge) {
+			ScriptInfo currScript = this.getFirstScript();
+			currScript.setRequirements(
+				mergeLists(src.getFirstScript().getRequirements(), currScript.getRequirements(), true));
+		}
 	}
 	
 	/**
 	 * Merge two lists. <code>src</code> list would overwrite any element in the <code>dst</code> list if
 	 * it equals() to the element.
 	 */
-	private <T> List<T> mergeLists(List<T> dst, List<T> src) {
+	private <T> List<T> mergeLists(List<T> dst, List<T> src, boolean ignoreConflict) throws DuplicateClassInfoException {
 		Set<T> set = new HashSet<T>();
 		set.addAll(src);
-		set.addAll(dst); // When adding an element from dst, if the element already exists in set, no-op. 
+		
+		if (ignoreConflict) {
+			set.addAll(dst); // When adding an element from dst, if the element already exists in set, no-op. 
+		} else {
+			for (T t : dst) {
+				if (set.contains(t)) {
+					for (T s : src) {
+						if (s.equals(t)) {
+							throw new DuplicateClassInfoException((ClassInfo)s, (ClassInfo)t);
+						}
+					}
+				} else {
+					set.add(t);
+				}
+			}
+		}
+		
+		
 		List<T> list = new ArrayList<T>();
 		list.addAll(set);
 		return list;
 	}
 
-	public static class MutableModuleInfo extends ModuleInfo {
+	static class MutableModuleInfo extends ModuleInfo {
 
-		public MutableModuleInfo(String name) {
+		MutableModuleInfo(String name) {
 			super(name);
-			requirements = new ArrayList<ModuleInfo>();
 		}
 		
 		private List<String> requiredModuleNames;
@@ -139,6 +200,10 @@ public class ModuleInfo {
 		
 		void addRequiredModule(ModuleInfo info){
 			requirements.add(info);
+		}
+
+		public void replaceRequirements(List<ModuleInfo> miListNew) {
+			requirements = miListNew;
 		}
 	}
 	
@@ -166,7 +231,8 @@ public class ModuleInfo {
 				info,
 				script.getScriptFilePath(), 
 				script.getRequirements(),
-				ainfo);
+				ainfo,
+				script.getInclusions());
 			
 			info.scripts.add(scriptFile);
 			
@@ -228,7 +294,32 @@ public class ModuleInfo {
     private ObjectValue modObject;
     
     /**
-     * Get <font color="green"><code>System.Reflection.Module</code></font> object for this module. 
+     * Reset script info for this module.
+     * <p>
+     * Used exclusively by the mutable default module.
+     * 
+     * @param csi The current script info.
+     * @param psi The previous script info.
+     */
+    void resetScriptInfo(ScriptInfo csi, ScriptInfo psi) {
+		// Note that module info and script info are cross-referencing each other,
+		// but we can only update them one by one. First create a new script info
+		// using the existing module info, then update the script info in that module.
+		List<ScriptInfo> sis = new ArrayList<>(1);
+		ScriptInfo nsi = new ScriptInfo(
+			csi.getModuleInfo(), 	// ModuleInfo from the current script
+			psi.getFullPath(),		// File path from the previous script
+			csi.getRequirements(),	// Requirements from the current script
+			psi.getAstInfo(),		// AST from the previous script
+			psi.getIncludedFiles());// Inclusions from the previous script (not effectively needed anymore)
+		sis.add(nsi);
+		
+		scripts = sis;
+    	modObject = null;
+    }
+    
+    /**
+     * Get <code style="color:green">System.Reflection.Module</code> object for this module. 
      * This object will be created the first time this method is called.
      * 
      * @param runtime

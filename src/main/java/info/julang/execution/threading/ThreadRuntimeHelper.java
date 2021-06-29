@@ -112,7 +112,7 @@ public final class ThreadRuntimeHelper {
 	}
 	
 	/**
-	 * Get the script object of type <code><font color="green">System.Type</font></code>.
+	 * Get the script object of type <code style="color:green">System.Type</code>.
 	 * <p>
 	 * If the type has not been loaded, it will be loaded from a system context.
 	 */

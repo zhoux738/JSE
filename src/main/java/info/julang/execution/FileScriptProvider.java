@@ -24,14 +24,17 @@ SOFTWARE.
 
 package info.julang.execution;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import info.julang.external.exceptions.ScriptNotFoundException;
+import info.julang.external.interfaces.IExtModuleManager;
 import info.julang.interpretation.GlobalScriptExecutable;
 import info.julang.parser.ANTLRParser;
 import info.julang.parser.LazyAstInfo;
 import info.julang.util.OSTool;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 
 /**
@@ -40,7 +43,7 @@ import java.io.FileNotFoundException;
  * @author Ming Zhou
  */
 public class FileScriptProvider implements ScriptProvider {
-
+	
 	private String filePathName;
 	
 	public static FileScriptProvider create(String filePathName){
@@ -56,7 +59,7 @@ public class FileScriptProvider implements ScriptProvider {
 	}
 	
 	@Override
-	public Executable getExecutable(boolean allowReentry) throws ScriptNotFoundException {
+	public GlobalScriptExecutable getExecutable(boolean allowReentry) throws ScriptNotFoundException {
 		try {
 			FileInputStream fis = new FileInputStream(filePathName);
 			ANTLRParser ap = new ANTLRParser(filePathName, fis, true);
@@ -69,4 +72,16 @@ public class FileScriptProvider implements ScriptProvider {
 		}
 	}
 	
+	@Override
+	public String getDefaultModulePath() {
+		try {
+			File f = new File(filePathName);
+			String ppath = f.getParentFile().getCanonicalPath();
+			ppath = OSTool.canonicalizePath(ppath) + File.separator + IExtModuleManager.DefaultModuleDirectoryName;
+			return ppath;
+		} catch (IOException e) {
+			// If this does happen, getExecutable() would fail too.
+			return null;
+		}
+	}	
 }

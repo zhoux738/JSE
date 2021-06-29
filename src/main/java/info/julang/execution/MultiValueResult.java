@@ -42,7 +42,8 @@ public class MultiValueResult extends Result {
 
 	/**
 	 * Get the returned values of execution. Note this value is stored in the current frame (the callee has returned)
-	 * @return
+	 * 
+	 * @return The array of values returned as the result.
 	 */
 	public JValue[] getReturnedValues() {
 		return values;

@@ -1,0 +1,9 @@
+EvalConfig config = new EvalConfig();
+
+bool succ = false;
+string errMsg = "FAILED!!!";
+try {
+	Environment.evaluate(config, "Lib/fun4.jul", new String[] { errMsg });
+} catch (Exception ex) {
+	succ = ex.getMessage().contains(errMsg);
+}

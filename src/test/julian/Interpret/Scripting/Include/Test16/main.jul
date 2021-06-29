@@ -1,0 +1,4 @@
+
+include "Lib/fun.jul";
+
+int v = fun();

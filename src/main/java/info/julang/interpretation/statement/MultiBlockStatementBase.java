@@ -45,7 +45,7 @@ import org.antlr.v4.runtime.TokenStream;
 /**
  * The multi-block statement base implements shared features of several statements which involve using sub-block,
  * including <code>if-else</code>, <code>for</code>, <code>while</code>, and <code>try</code>.
- * <p/>
+ * <p>
  * The class implements {@link IHasResult}. But it by default returns {@link Result#Void}. This is because
  * in general these statements do not yield a result by itself. But if it does, such as the case where a <code>return</code>
  * statement is used in a <code>for</code> loop, {@link IHasResult#getResult()} should keep returning the appropriate result.
@@ -84,7 +84,7 @@ public abstract class MultiBlockStatementBase extends StatementBase implements I
 	
 	/**
 	 * Execute the loop body, which may be aborted by break statement.
-	 * <p/>
+	 * <p>
 	 * The sub-class should call, but not override, this method.
 	 * 
 	 * @param context
@@ -98,7 +98,7 @@ public abstract class MultiBlockStatementBase extends StatementBase implements I
 	
 	/**
 	 * Execute a section, which may be enclosed by { and }.
-	 * <p/>
+	 * <p>
 	 * The sub-class should call, but not override, this method.
 	 * 
 	 * @param context
@@ -137,7 +137,7 @@ public abstract class MultiBlockStatementBase extends StatementBase implements I
 	
 	/**
 	 * Execute a section which is enclosed by { and }.
-	 * <p/>
+	 * <p>
 	 * The sub-class should call, but not override, this method.
 	 * 
 	 * @param context

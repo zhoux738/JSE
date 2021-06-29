@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * The various limits enforced by the engine during runtime.
- * Exceeding these limits will cause <font color="green">System.UnderprivilegeExcetion</font>.
+ * Exceeding these limits will cause <code style="color:green">System.UnderprivilegeExcetion</code>.
  * <p>
  * This class can be partially used by the JSE Java programmer. In particular, one may call 
  * {@link #getPublicName} to get a name for the limit that is recognized by the engine API such as 
@@ -82,7 +82,8 @@ public enum EngineLimit {
 	 * Get the name that can be used by when invoking JSE through Java API, 
 	 * for both {@link info.julang.external.JulianScriptEngine JulianScriptEngine} 
 	 * and {@link info.julang.jsr223.JulianScriptingEngine JSR-223 implementation}.
-	 * @return
+	 * 
+	 * @return The public name for this limit.
 	 */
 	public String getPublicName() {
 		return this.name().toLowerCase().replace('_', '.');

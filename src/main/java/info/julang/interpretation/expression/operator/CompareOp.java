@@ -31,7 +31,6 @@ import static info.julang.langspec.Operators.LT;
 import static info.julang.langspec.Operators.LTEQ;
 import static info.julang.langspec.Operators.NEQ;
 
-import info.julang.external.interfaces.JValueKind;
 import info.julang.interpretation.IllegalOperandsException;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.expression.Operand;
@@ -45,7 +44,7 @@ import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
 
 /**
- * Operators: >, >=, <, <=, ==, !=
+ * Operators: &gt;, &gt;=, &lt;, &lt;=, ==, !=
  * 
  * @author Ming Zhou
  */

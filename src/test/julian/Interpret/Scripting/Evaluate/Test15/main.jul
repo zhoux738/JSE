@@ -1,0 +1,3 @@
+EvalConfig config = new EvalConfig();
+config.setUseDefaultRoot(true);
+Environment.evaluate(config, arguments[0] + "/types.jul", new string[0]);

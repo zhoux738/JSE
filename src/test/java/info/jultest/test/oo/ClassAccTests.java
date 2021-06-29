@@ -6,6 +6,7 @@ import static info.jultest.test.Commons.validateIntValue;
 import static info.jultest.test.Commons.validateStringValue;
 import static org.junit.Assert.assertEquals;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestRunner;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;

@@ -24,19 +24,25 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.htmlgen;
 
-import info.julang.eng.mvnplugin.docgen.DocModel.Type;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.velocity.VelocityContext;
+
+import info.julang.eng.mvnplugin.GlobalLogger;
+import info.julang.eng.mvnplugin.docgen.DocModel;
+import info.julang.eng.mvnplugin.docgen.DocModel.DocType;
 import info.julang.eng.mvnplugin.docgen.IHtmlDocMerger;
 import info.julang.eng.mvnplugin.docgen.ModuleContext;
-import info.julang.eng.mvnplugin.docgen.ModuleContext.TypeDocProcessor;
+import info.julang.eng.mvnplugin.docgen.ModuleContext.TopLevelDocProcessor;
 import info.julang.eng.mvnplugin.htmlgen.ApiIndexModel.TutorialIndexModel;
 import info.julang.eng.mvnplugin.mdgen.TutorialInfo;
 import info.julang.eng.mvnplugin.mdgen.TutorialInfo.IChapterInfo;
 import info.julang.eng.mvnplugin.mdgen.TutorialInfo.IChapterInfoProcessor;
 import info.julang.typesystem.jclass.Accessibility;
-
-import java.io.File;
-
-import org.apache.maven.plugin.MojoExecutionException;
 
 public class WebsiteGenerator {
 
@@ -52,36 +58,29 @@ public class WebsiteGenerator {
 		this.tinfo = tinfo;
 	}
 	
-//	/**
-//	 * Generate files needed for the website.
-//	 */
-//	public void genWebsite() throws MojoExecutionException {
-//		if (!websiteRoot.exists()){
-//			websiteRoot.mkdirs();
-//		}
-//		
-//		getApiIndex();
-//		getTutorialIndex();
-//	}
-	
 	/**
 	 * Generate files needed for the website.
 	 */
 	public void genWebsite(ApiIndexModel api, TutorialIndexModel tut) throws MojoExecutionException {
+		GlobalLogger.get().info("Generating top-level resources for website ...");
 		if (!websiteRoot.exists()){
 			websiteRoot.mkdirs();
 		}
 
 		mergeIndexTemplate(api, WebsiteResources.api);
 		mergeIndexTemplate(tut, WebsiteResources.tutorial);
+		
+		genSitemap(api, tut);
 	}
 
 	public ApiIndexModel getApiIndexModel() throws MojoExecutionException {
 		final ApiIndexModel index = new ApiIndexModel();
-		mc.foreach(new TypeDocProcessor(){
+		mc.foreach(new TopLevelDocProcessor(){
 			@Override
-			public void process(String key, Type doc) {
-				if (doc.visibility == Accessibility.PUBLIC) {
+			public void process(String key, DocModel.Documented doc) {
+				DocType dtyp = doc.getDocType();
+				if (dtyp == DocType.TYPE && doc.visibility == Accessibility.PUBLIC 
+					|| dtyp == DocType.SCRIPT) {
 					index.addType(doc);
 				}
 			}
@@ -101,6 +100,21 @@ public class WebsiteGenerator {
 		});
 
 		return index;
+	}
+
+	private void genSitemap(ApiIndexModel api, TutorialIndexModel tut) throws MojoExecutionException {
+		VelocityContext context = new VelocityContext();
+		context.put("tv_tut_root", tut.getRoot());
+		context.put("tv_api_root", api.getRoot());
+		context.put("tv_hostname", mc.getMetatdata(ModuleContext.OFFICIAL_WEBSITE));
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+		String datetime = sdf.format(new Date());
+		context.put("tv_lastmod", datetime);
+
+		File file = new File(websiteRoot, "sitemap.xml");
+		merger.mergeToFile("website/sitemap.vm", context, file);
 	}
 	
 	private void mergeIndexTemplate(ApiIndexModel model, WebsiteResources resType) throws MojoExecutionException {		

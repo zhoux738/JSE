@@ -14,9 +14,9 @@ import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.errorhandling.KnownJSException;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestRunner;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestRunner;
-import info.jultest.test.oo.ExceptionTestsBase;
 
 public class BuiltInIrregularUseTests extends ExceptionTestsBase {
 

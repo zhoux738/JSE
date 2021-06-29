@@ -1,0 +1,18 @@
+// import System.Reflection;
+
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "../Shared/commons.jul", null);
+
+config.setShareScope(true);
+config.setReturnException(true);
+
+int i = 0;
+
+var r1 = Environment.evaluate(config, "s1.jul", null);
+assert(r1 == null, "result is not null!");
+
+var r2 = Environment.evaluate(config, "s2.jul", null);
+assert(r2 is Exception, "result is not exception!");
+assert(i == 2, "i != 2");
+
+return true;

@@ -4,7 +4,7 @@ import info.julang.memory.JSEOutOfMemoryException;
 import info.julang.memory.IStored;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.MemoryAreaType;
-import info.julang.memory.MemoryOpreationException;
+import info.julang.memory.MemoryOperationException;
 
 public class DummyMemoryArea implements MemoryArea {
 
@@ -20,13 +20,13 @@ public class DummyMemoryArea implements MemoryArea {
 
 	@Override
 	public boolean reallocate(IStored value)
-		throws JSEOutOfMemoryException, MemoryOpreationException {
+		throws JSEOutOfMemoryException, MemoryOperationException {
 		return true;
 	}
 
 	@Override
 	public boolean deallocate(IStored value)
-		throws MemoryOpreationException {
+		throws MemoryOperationException {
 		return true;
 	}
 

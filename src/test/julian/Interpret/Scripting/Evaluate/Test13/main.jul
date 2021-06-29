@@ -1,0 +1,5 @@
+EvalConfig c = new EvalConfig();
+
+Environment.evaluate(c, "defs1.jul", null);
+
+void func() { }

@@ -29,7 +29,7 @@ import info.julang.interpretation.IStackFrameInfo;
 
 /**
  * The stack area holds data of local variables whose life cycle is entirely determined by the function call.
- * <br/>
+ * <br>
  * Each thread has one stack area. Therefore a scripting engine can have more than one stack area.
  * 
  * @author Ming Zhou
@@ -44,7 +44,7 @@ public abstract class StackArea implements MemoryArea {
 	
 	/**
 	 * Push a new frame on top of the stack. 
-	 * <p/>
+	 * <p>
 	 * This method is called when a function is called in the current thread (the thread that holds this stack area).
 	 * 
 	 * @throws JSEStackOverflowException if no more frame can be pushed into stack
@@ -53,7 +53,7 @@ public abstract class StackArea implements MemoryArea {
 	
 	/**
 	 * Pop the topmost frame out of the stack. 
-	 * <p/>
+	 * <p>
 	 * This method is called when a function exits in the current thread (the thread that holds this stack area).
 	 */
 	abstract public void popFrame();

@@ -1,0 +1,34 @@
+// add, has, remove
+import System.Collection;
+
+Set m = new Set();
+int i0 = m.size();
+
+m.add("a");
+m.add("b");
+m.add("cc");
+
+int i3a = m.size();
+
+m.add("c" + "c");
+
+int i3b = m.size();
+
+bool t1 = m.has("a");
+bool t2 = m.has("cc");
+bool f1 = m.has("d");
+bool f2 = m.has(new Object());
+
+bool f3 = m.remove("d");
+bool t3 = m.remove("b");
+
+int i2 = m.size();
+
+m.add(5);
+m.add(5.0);
+m.add('5');
+
+int i5 = m.size();
+bool t4 = m.has(7 - 2);
+bool t5 = m.has(2.5 * 2);
+bool f4 = m.has("5");

@@ -37,12 +37,12 @@ import java.util.Map;
 
 /**
  * A namespace pool is a collection of namespaces which can be referred to by the current code.
- * <p/>
+ * <p>
  * The namespace pool is associated with execution context. More specifically there are two cases:
- * <p/>
+ * <p>
  * (1) The global context. The global script, and code in global function are in global context. Its 
  * namespaces are contributed by import statements appearing at the very start of scripts.
- * <p/>
+ * <p>
  * (2) The method context. The code in a method make references to class context. Its namespaces are
  * contributed by the import statement appearing at the very start of the module script that contains
  * the definition of this class.
@@ -57,20 +57,38 @@ public class NamespacePool {
 	
 	private Map<String, OneOrMoreList<String>> bindings;
 	
+	/**
+	 * Create a new namespace pool instance.
+	 */
 	public NamespacePool(){
 		namespaces = new ArrayList<String>();
 		aliases = new HashMap<String, String>();
 		bindings = new HashMap<String, OneOrMoreList<String>>();
 	}
 	
+	/**
+	 * Add a namespace to this pool.
+	 * 
+	 * @param ns The namespace.
+	 */
 	public void addNamespace(String ns){
 		namespaces.add(ns);
 	}
 	
+	/**
+	 * Get all the namespaces in this pool.
+	 * 
+	 * @return A list of all the namespaces.
+	 */
 	public List<String> getNamespaces(){
 		return namespaces;
 	}
 	
+	/**
+	 * Add namespaces from the known requirements for a script.
+	 * 
+	 * @param req The requirement info
+	 */
 	public void addNamespaceFromRequirementInfo(RequirementInfo req){
 		namespaces.add(req.getName());
 		String alias = req.getAlias();
@@ -79,6 +97,11 @@ public class NamespacePool {
 		}
 	}
 	
+	/**
+	 * Add namespace from a script info.
+	 * 
+	 * @param script The script info
+	 */
 	public void addNamespaceFromScriptInfo(ScriptInfo script){
 		addNamespace(script.getModuleInfo().getName());
 		List<RequirementInfo> reqs = script.getRequirements();
@@ -90,8 +113,8 @@ public class NamespacePool {
 	/**
 	 * Bind a simple name with a full name. This is called during interpretation when a name match is determined.
 	 * 
-	 * @param name
-	 * @param fullName
+	 * @param name The simple name of a type. This must be a suffix of fullName.
+	 * @param fullName The full name of a type.
 	 */
 	public void addBinding(String name, String fullName){
 		bindings.put(name, new OneOrMoreList<String>(fullName));
@@ -100,9 +123,9 @@ public class NamespacePool {
 	/**
 	 * For a given namespace alias and simple name, return a full name.
 	 * 
-	 * @param alias
-	 * @param name
-	 * @return
+	 * @param alias The alias of a namespace.
+	 * @param name The namespace.
+	 * @return The full name associated with this alias.
 	 */
 	public String getFullNameByAlias(String alias, String name){
 		String ns = aliases.get(alias);
@@ -116,8 +139,8 @@ public class NamespacePool {
 	/**
 	 * For a given simple name, return a list of all the possible full names.
 	 * 
-	 * @param inScriptClassName
-	 * @return
+	 * @param tname The parsed type name.
+	 * @return A list that contains all the possible full names that are derivable from the simple name.
 	 */
 	public OneOrMoreList<String> getAllPossibleFullNames(ParsedTypeName tname){
 		FQName qname = tname.getFQName();

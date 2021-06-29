@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
 
 /**
  * A marker annotation to make a field the injection point for arguments. Applying this
- * on N boolean fields, 0 or 1 String field, 0 or 1 Pair<String, String> field, and 0 
+ * on N boolean fields, 0 or 1 String field, 0 or 1 Pair&lt;String, String&gt; field, and 0 
  * or 1 {@link ConsoleSession} field.   
  * 
  * @author Ming Zhou

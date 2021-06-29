@@ -26,23 +26,23 @@ package info.julang.typesystem.conversion;
 
 /**
  * Describe whether and how one type is convertible to another.
- * <p/>
+ * <p>
  * Convertibility is used by both basic and object types. Some basic types are convertible to each other,
  * but (1) the precision can be lost after the conversion. {@link #PROMOTED} and {@link #DEMOTED} describes the
  * result of such conversion in this light. (2) a semantic change is implicated, therefore an explicit casting
  * operation is required. {@link #CASTABLE} is for marking such requirement. 
- * <p/>
+ * <p>
  * For object types, the convertibility mainly concerns the class/interface inheritance. A subclass is convertible 
  * to its parent class, but the functionality (usable methods) might be narrowed as the result. This is considered 
  * as a {@link #DOWNGRADED} conversion.
- * <p/>
+ * <p>
  * In contrast, a parent class is not necessarily convertible to its subclass. But since the classes are in the same 
  * line of hierarchy, the possibility exists that an object of some parent class is indeed an instance of its subclass.
  * We define such conversion as {@link #UNSAFE}.
- * <p/>
- * Other kinds of type conversion are {@link #IMPOSSIBLE}. This include converting between basic and object types 
+ * <p>
+ * Other kinds of type conversion are {@link #UNCONVERTIBLE}. This includes converting between basic and object types 
  * (with the exception of String type), and between classes which are not in the same line of hierarchy.
- * <p/>
+ * <p>
  * A type is always convertible to itself ({@link #EQUIVALENT}).
  * 
  * @author Ming Zhou

@@ -28,7 +28,7 @@ import info.julang.typesystem.jclass.builtin.JMethodType;
 
 /**
  * A hidden member for initializing a class.
- * <p/>
+ * <p>
  * The class static constructor is a special type of static method that runs when a class is loaded 
  * (referenced for the first time). A class can have up to one such constructor which has a syntax
  * as follows:<pre><code>class MyClass {
@@ -38,7 +38,7 @@ import info.julang.typesystem.jclass.builtin.JMethodType;
  * }</code></pre>
  * Note it cannot have any other modifier than the required one <code>'static'</code>, and its parameter
  * list must be empty.
- * <p/>
+ * <p>
  * The static constructor is invoked after all the static field initializers, regardless of where it 
  * appears in the class definition relative to those fields declaration.
  * 

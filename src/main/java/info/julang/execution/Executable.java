@@ -43,6 +43,7 @@ public interface Executable {
 	 * @param args the provided arguments. It is intentionally undefined whether the values in these arguments 
 	 * are stored or not. The implementation of this method thus must assume that they are not stored.
 	 * @return the result of execution.
+	 * @throws EngineInvocationError if the engine encountered a fatal error.
 	 */
 	Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) throws EngineInvocationError;
 	

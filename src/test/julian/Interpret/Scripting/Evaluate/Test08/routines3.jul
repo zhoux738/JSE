@@ -1,0 +1,3 @@
+import MyMod;
+
+MC5.s = MC5.s + "_updated";

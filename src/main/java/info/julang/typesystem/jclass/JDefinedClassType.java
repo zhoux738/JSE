@@ -43,7 +43,7 @@ public class JDefinedClassType extends JClassType implements IDefinedType {
 	
 	/**
 	 * Start defining a new class, with only name known.
-	 * <p/>
+	 * <p>
 	 * The caller must use the associated builder (call {@link getBuilder()} to get it) 
 	 * to populate class member and attributes.
 	 * 

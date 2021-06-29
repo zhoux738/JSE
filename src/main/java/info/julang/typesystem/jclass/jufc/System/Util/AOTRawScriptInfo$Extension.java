@@ -35,6 +35,7 @@ public class AOTRawScriptInfo$Extension extends RawScriptInfo {
         m_classes.add(new RawClassInfo("FilterIterator", new AOTClassDeclInfo_FilterIterator (this)));
         m_classes.add(new RawClassInfo("MappingIterator", new AOTClassDeclInfo_MappingIterator (this)));
         m_classes.add(new RawClassInfo("ZippingIterator", new AOTClassDeclInfo_ZippingIterator (this)));
+        m_classes.add(new RawClassInfo("SetFilterer", new AOTClassDeclInfo_SetFilterer (this)));
 
         m_requirements = new ArrayList<RequirementInfo>();
         m_requirements.add(new RequirementInfo("System", null));
@@ -427,6 +428,63 @@ public class AOTRawScriptInfo$Extension extends RawScriptInfo {
         
         public String getName(){
             return "ZippingIterator";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.MODULE;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_SetFilterer extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_SetFilterer(RawScriptInfo minfo) {
+            super(minfo);
+            
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.Util.SetFilterer");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "SetFilterer";
         }
 
         public ClassSubtype getSubtype() {

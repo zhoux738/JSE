@@ -60,7 +60,7 @@ public interface JValue extends IStored, IExtValue {
 	
 	/**
 	 * Compare this value to another value.
-	 * <p/>
+	 * <p>
 	 * Note this is different from {@link Object#equals(Object)}, which is used to attest equality in Java.
 	 * This method is used to check the equality of two values in Julian. For example, an int value of 1
 	 * and a float of 1.0 are considered equal in the script, but their respective Java instance, of type 
@@ -92,7 +92,7 @@ public interface JValue extends IStored, IExtValue {
 	 * <p>
 	 * This method is implemented by certain built-in values which expose vector semantics (such as array
 	 * or string), as well as any user-defined classes which implements 
-	 * <font color="green"><code>System.Util.IIndexable</code></font>.
+	 * <code style="color:green">System.Util.IIndexable</code>.
 	 * 
 	 * @return null if this value is not indexable.
 	 */
@@ -106,8 +106,8 @@ public interface JValue extends IStored, IExtValue {
 	 * <p>
 	 * This method is implemented by certain built-in values which expose vector semantics (such as array
 	 * or string), as well as any user-defined classes which implements either 
-	 * <font color="green"><code>System.Util.IIterator</code></font> or
-	 * <font color="green"><code>System.Util.IIterable</code></font>.
+	 * <code style="color:green">System.Util.IIterator</code> or
+	 * <code style="color:green">System.Util.IIterable</code>.
 	 * 
 	 * @return null if this value is not iterable.
 	 */

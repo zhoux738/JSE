@@ -62,7 +62,7 @@ import info.julang.typesystem.jclass.builtin.JEnumType;
 
 /**
  * The switch statement in Julian language.
- * <p/>
+ * <p>
  * The switch statement is comprised of multiple parts:<pre><code> <b>switch</b>(|expr|){
  * <b>case</b> val1: ... ... (statements)
  * <b>case</b> val2: ... ... (statements)
@@ -70,7 +70,7 @@ import info.julang.typesystem.jclass.builtin.JEnumType;
  * <b>default</b>: ... ... (statements)
  * } </code></pre>
  * Note that:
- * <p/>
+ * <ul>
  *   <li>val1, val2, ... must be constants or literals, and can only be 
  *       Boolean, Char, Enum, Integer, String type or a <code>typeof</code> expression.</li>
  *   <li>there can be any number of case clauses</li>
@@ -80,7 +80,7 @@ import info.julang.typesystem.jclass.builtin.JEnumType;
  *   <li>if encountering a break, exit the block; if encountering a continue, exit a block only if this switch 
  *   statement sits inside a construct which permits continue (such as for statement).</li>
  *   <li>if the case condition is an id that is not resolvable, or a type not recognized, the case will be skipped</li>
- * <br/><br/>
+ * </ul>
  * 
  * @author Ming Zhou
  */

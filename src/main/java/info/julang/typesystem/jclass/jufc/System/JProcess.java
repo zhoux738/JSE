@@ -81,19 +81,19 @@ import info.julang.typesystem.jclass.jufc.System.IO.JSEIOException;
 import info.julang.util.Pair;
 
 /**
- * The platform end for <code><font color="green">System.Process</font></code>.
+ * The platform end for <code style="color:green">System.Process</code>.
  * <p>
- * The most important feature of <code><font color="green">System.Process</font></code> is the support for IO 
+ * The most important feature of <code style="color:green">System.Process</code> is the support for IO 
  * redirection. The process has three standard IO channels: Input, Output and Error. When starting a new 
  * process, the caller defines whether using inherited IO from the parent process, which in this case is always 
  * the JVM on which Julian engine is running. If <code>inheritedIO = true</code>, the process simply directs IO 
  * to that of the parent process. If not, the IO would be connected to OS pipes.  
  * <p>
  * Whatever value <code>inheritedIO</code> is, the caller may always overwrite a specific channel with an 
- * instance of <code><font color="green">System.IO.Stream</font></code>. Then the subprocess will use that 
+ * instance of <code style="color:green">System.IO.Stream</code>. Then the subprocess will use that 
  * stream to input or output. In particular, it calls <code>read()</code> or <code>write()</code> method on that 
- * stream object. (TODO) One exception is that, if the stream is exactly of type <code><font color="green">
- * System.IO.FileStream</font></code>, the underlying file will be used directly, bypassing method call. This is 
+ * stream object. (TODO) One exception is that, if the stream is exactly of type <code style="color:green">
+ * System.IO.FileStream</code>, the underlying file will be used directly, bypassing method call. This is 
  * a performance optimization.
  * <p>
  * If a channel is not using <code>inheritedIO</code>, and it is not specified with a stream object, the IO is 

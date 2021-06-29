@@ -31,7 +31,7 @@ public interface ScriptExceptionHandler {
 	/**
 	 * The method to call when a {@link JulianScriptException} is thrown and not handled by user.
 	 * 
-	 * @param jse
+	 * @param jse The JSE exception instance.
 	 */
 	void onException(JulianScriptException jse); 
 	

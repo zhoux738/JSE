@@ -41,7 +41,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * The platform binding of <code><font color="green">System.Concurrency.Lock</font></code>.
+ * The platform binding of <code style="color:green">System.Concurrency.Lock</code>.
  * 
  * @author Ming Zhou
  */

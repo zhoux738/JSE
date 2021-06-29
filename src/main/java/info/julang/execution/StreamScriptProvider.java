@@ -22,16 +22,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package info.julang.memory;
+package info.julang.execution;
 
-import info.julang.external.exceptions.JSEError;
+import java.io.InputStream;
 
-public class MemoryOpreationException extends JSEError {
+import info.julang.external.exceptions.ScriptNotFoundException;
+import info.julang.interpretation.GlobalScriptExecutable;
+import info.julang.interpretation.InterpretedExecutable;
+import info.julang.parser.ANTLRParser;
+import info.julang.parser.LazyAstInfo;
 
-	private static final long serialVersionUID = -66105877830043457L;
+/**
+ * The stream script provider provides an executable from an input stream.
+ * 
+ * @author Ming Zhou
+ */
+public class StreamScriptProvider implements ScriptProvider {
 
-	public MemoryOpreationException(String msg, Class<?> sourceClass) {
-		super(msg, sourceClass);
+	private InputStream stream;
+	private String fileName;
+	
+	public StreamScriptProvider(InputStream stream, String fileName){
+		this.stream = stream;
+		this.fileName = fileName;
+	}
+	
+	@Override
+	public GlobalScriptExecutable getExecutable(boolean allowReentry) throws ScriptNotFoundException {
+		ANTLRParser ap = new ANTLRParser(fileName, stream, false);
+		LazyAstInfo lainfo = ap.scan(false);
+		ap.parse(true, false);
+		return new GlobalScriptExecutable(lainfo, allowReentry, false);
 	}
 
+	@Override
+	public String getDefaultModulePath() {
+		return null;
+	}
 }

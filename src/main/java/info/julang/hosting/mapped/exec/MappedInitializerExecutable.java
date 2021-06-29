@@ -45,7 +45,7 @@ public class MappedInitializerExecutable extends MappedExecutableBase {
 	private Field field;
 	
 	public MappedInitializerExecutable(ICompoundType ofType, KnownMappedType kmt, Field field, boolean isStatic) {
-		super(ofType, isStatic);
+		super("/Init>-"+field.getName(), ofType, isStatic);
 		this.field = field;
 		this.kmt = kmt;
 	}

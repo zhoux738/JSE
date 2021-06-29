@@ -46,7 +46,7 @@ import info.julang.memory.value.StringValue;
 import info.julang.memory.value.TempValueFactory;
 
 /**
- * The native implementation of <font color="green">System.IO.File</font>.
+ * The native implementation of <code style="color:green">System.IO.File</code>.
  * 
  * @author Ming Zhou
  */

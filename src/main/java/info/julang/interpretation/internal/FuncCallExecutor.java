@@ -34,6 +34,7 @@ import info.julang.external.interfaces.JValueKind;
 import info.julang.interpretation.IllegalArgumentsException;
 import info.julang.interpretation.RuntimeCheckException;
 import info.julang.interpretation.errorhandling.JulianScriptException;
+import info.julang.interpretation.errorhandling.StackTraceKind;
 import info.julang.memory.value.FuncValue;
 import info.julang.memory.value.HostedArrayValue;
 import info.julang.memory.value.IFuncValue;
@@ -353,7 +354,19 @@ public class FuncCallExecutor {
 			// At this point we have method's name and parameter information, so we can add a stack trace into the exception.
 			String fn = jse.getFileName();
 			int lineNo = jse.getLineNumber();
-			jse.addStackTrace(rt.getTypeTable(), funcType.getFullFunctionName(false), JParameter.getParamNames(params), fn, lineNo);
+			String name;
+			String[] pnames;
+			StackTraceKind stk = jse.resetTraceKind();
+			if (stk == null || stk == StackTraceKind.CALL) {
+				// Regular trace - a function call
+				name = funcType.getFullFunctionName(false);
+				pnames = JParameter.getParamNames(params);
+			} else {
+				// Special trace - usually related to incorporating another file
+				name = stk.getTraceName();
+				pnames = null;
+			}
+			jse.addStackTrace(rt.getTypeTable(), name, pnames, fn, lineNo);
 			throw jse;
 		} catch (EngineInvocationError e) {
 			throw new JSEError("An error occurs while invoking " + funcType.getName());

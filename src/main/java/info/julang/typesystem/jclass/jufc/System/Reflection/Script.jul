@@ -18,8 +18,9 @@ class Script {
 	hosted string getPath();
 	
 	/*
-	 * Get the module this script belongs to. Note a module consists one or more scripts, but a script 
-	 * can only be part of a single module.
+	 * Get the module this script belongs to. Note a module consists of one or more scripts, but a script 
+	 * can only be part of a single module. For loose scripts which do not have a module declaration, this
+	 * method still returns a module object that represents the statically unreferenceable default module.
 	 *
 	 * [return] The [module](Module) this script belongs to.
 	 */

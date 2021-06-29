@@ -1,0 +1,5 @@
+void println(Object obj){
+	Console.print("[");
+	Console.print(obj);
+	Console.print("]");
+}

@@ -52,7 +52,7 @@ public interface IStored {
 	
 	/**
 	 * Whether this value is stored in any memory area.
-	 * <p/>
+	 * <p>
 	 * This method is <b>not</b> equivalent to <code>{@link #getMemoryArea()} != null</code>.
 	 * A value can be unstored if either it has no memory area, or the memory that contains
 	 * it has been {@link MemoryArea#isRecycled() recycled}.

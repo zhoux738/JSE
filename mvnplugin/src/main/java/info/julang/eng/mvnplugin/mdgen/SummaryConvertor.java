@@ -64,8 +64,12 @@ public class SummaryConvertor {
 	 *   3) [ or ] is escaped by `.
 	 */
 	public static List<IParsedDocSection> convert(
-		ModuleContext mc, TutorialInfo tut, NamespacePool np,
-		String summary, DocModel.Type typ, DocModel.Member mem){		
+		ModuleContext mc, 
+		TutorialInfo tut, 
+		NamespacePool np,
+		String summary, 
+		DocModel.Documented doc, 
+		DocModel.Member mem) {
 		Pattern pat = Pattern.compile("\\[[^\\]]+\\]");
 		Matcher matcher = pat.matcher(summary);
 		int plainStart = 0;
@@ -139,7 +143,7 @@ public class SummaryConvertor {
 							if (total == 0){
 								end = index + 1;
 								sub = summary.substring(start, end);
-								section = new InDocLink(mc, tut, np, sub, typ, mem);
+								section = new InDocLink(mc, tut, np, sub, doc, mem);
 							}
 							break;
 						case '[':
@@ -165,7 +169,7 @@ public class SummaryConvertor {
 				} else {
 					// [AAA]
 					sub = summary.substring(start, end);
-					section = new InDocLink(mc, tut, np, sub, typ, mem);
+					section = new InDocLink(mc, tut, np, sub, doc, mem);
 				}
 			}
 			

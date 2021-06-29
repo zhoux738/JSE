@@ -37,7 +37,7 @@ import info.julang.memory.value.indexable.IIndexable;
 
 /**
  * The operand pushed into the expression stack.
- * <p/>
+ * <p>
  * To create a new operand, either call {@link #createOperand(JValue)} by passing along a known value,
  * or any of direct-from-literal factory methods to which the literal value is provided. For example,
  * To create an integer operand with value = 5, call {@link Operand#createIntOperand(int) createIntOperand(5)};

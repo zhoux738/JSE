@@ -51,7 +51,9 @@ public class HistoryManager {
 	}
 	
 	/**
-	 * Returns a list of historical commands in FIFO order.
+	 * Returns a list of historical commands in chronological order.
+	 * 
+	 * @return A list of historical commands in chronological order.
 	 */
 	public List<String> list(){
 		return all;

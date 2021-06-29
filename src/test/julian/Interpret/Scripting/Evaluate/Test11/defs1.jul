@@ -1,0 +1,10 @@
+// class member
+class S {
+
+	static void fun() {
+		Environment.evaluate(new EvalConfig(), "defsx.jul", null);
+	}
+
+}
+
+S.fun();

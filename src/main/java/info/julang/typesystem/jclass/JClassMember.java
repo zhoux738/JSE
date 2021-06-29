@@ -30,11 +30,12 @@ import info.julang.typesystem.jclass.annotation.JAnnotation;
 
 /**
  * This class describes the following properties of a class member:
+ * <ul>
  * <li>name: the name, as in script source, of this member </li>
  * <li>accessibility: the visibility of this type to other types </li>
  * <li>static: whether this member is static </li>
  * <li>type: the type of this member </li>
- * <p/>
+ * </ul>
  * 
  *  @author Ming Zhou
  */
@@ -137,7 +138,7 @@ public abstract class JClassMember implements IAnnotated {
 
 	/**
 	 * Used to compare the equality between class members <b>within the same class</b>.
-	 * <p/>
+	 * <p>
 	 * A class member a is equal to b when both have same name and are of same type, plus meeting any 
 	 * additional conditions as required by different member types.
 	 */

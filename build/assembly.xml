@@ -6,6 +6,16 @@
     <format>jar</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
+  <fileSets>
+     <fileSet>
+       <directory>./target/classes</directory>
+       <outputDirectory>./</outputDirectory>
+       <includes>
+         <include>info/julang/**</include>
+         <include>META-INF/services/javax.script.ScriptEngineFactory</include>
+       </includes>
+     </fileSet>
+  </fileSets>
   <dependencySets>
     <dependencySet>
       <outputDirectory>/</outputDirectory>
@@ -13,7 +23,6 @@
       <unpack>true</unpack>
       <scope>runtime</scope>
       <includes>
-      	<include>info.julang:JSE</include>
       	<include>org.antlr:antlr4-runtime</include>
       </includes>
     </dependencySet>

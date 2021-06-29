@@ -28,7 +28,7 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.operable.JulianObjectAdaptor;
 
 /**
- * An interface mirroring <font color="green"><code>System.Util.IIterator</code></font>.
+ * An interface mirroring <code style="color:green">System.Util.IIterator</code>.
  * 
  * @author Ming Zhou
  */

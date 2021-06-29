@@ -36,8 +36,8 @@ import info.julang.typesystem.JType;
 
 /**
  * An interop wrapper over System.Collection.HashKey. This class is used as the key for
- * Java's HashMap class which serves as the underlying implementation of <code>
- * <font color="green">System.Collection.Map</font></code>. Both {@link #hashCode()} 
+ * Java's HashMap class which serves as the underlying implementation of
+ * <code style="color:green">System.Collection.Map</code>. Both {@link #hashCode()} 
  * and {@link #equals(Object)} are redirected to the JSE code.
  * 
  * @author Ming Zhou
@@ -100,7 +100,7 @@ public class HashKeyWrapper extends JSEObjectWrapper {
 	 *   return key.equals(hk.key);
 	 * }
 	 * </code></pre>
-	 * @param val an instance of <code><font color="green">System.Collection.HashKey</font></code>
+	 * @param val an instance of <code style="color:green">System.Collection.HashKey</code>
 	 */
 	@Override
 	public boolean equals(Object another){

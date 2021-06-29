@@ -1,0 +1,30 @@
+class MC {
+	int v = 0;
+}
+
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "routines.jul", null);
+
+bool b1 = false;
+try {
+    Console.println(a);
+} catch (Exception ex) {
+	b1 = ex.getMessage().contains("a is not defined");
+}
+
+config.setShareScope(true);
+Environment.evaluate(config, "routines.jul", null);
+int i5 = a;
+
+// routines2 defines its own ival, which has nothing to do with this one.
+int ival = 10;
+config.setShareScope(false);
+Environment.evaluate(config, "routines2.jul", null);
+int i10 = ival;
+
+// routines3 uses ival and mc without definition, much like it uses arguments.
+MC mc = new MC();
+config.setShareScope(true);
+Environment.evaluate(config, "routines3.jul", null);
+int i23 = ival;
+int i47 = mc.v;

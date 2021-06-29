@@ -82,8 +82,8 @@ public abstract class NativeExecutorBase implements INativeExecutor {
 	
 	/**
 	 * Create a hosted value in heap of the given type, optionally referred to by a ref value created in the current frame.
-	 * <p/>
-	 * Do not use this to create <code><font color="green">String</font></code> value. Use {@link #createString} instead.
+	 * <p>
+	 * Do not use this to create <code style="color:green">String</code> value. Use {@link #createString} instead.
 	 * 
 	 * @param fullTypeName
 	 * @param rt thread runtime

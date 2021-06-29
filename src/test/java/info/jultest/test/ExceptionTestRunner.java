@@ -1,4 +1,4 @@
-package info.jultest.test.oo;
+package info.jultest.test;
 
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
@@ -13,9 +13,7 @@ import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.interpretation.errorhandling.KnownJSException;
-import info.jultest.test.AssertHelper;
-import info.jultest.test.Commons;
-import info.jultest.test.TestExceptionHandler;
+
 import org.junit.Assert;
 
 /**
@@ -34,9 +32,15 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 	
 	private String feature;
 	
-	public ExceptionTestRunner(String group, String feature){
+	private String[] args;
+	
+	public ExceptionTestRunner(String group, String feature) {
+		this(group, feature, false);
+	}
+	
+	public ExceptionTestRunner(String group, String feature, boolean reentry){
 		VariableTable gvt = new VariableTable(null);
-		engine = makeSimpleEngine(gvt);
+		engine = makeSimpleEngine(gvt, reentry);
 		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
 		teh = installExceptionHandler(engine);
 		this.group = group;
@@ -50,6 +54,18 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		return engine;
 	}
 	
+	public void setArguments(String... args) {
+		this.args = args;
+	}
+	
+	private void execute(String fileName) throws EngineInvocationError {
+		if (this.args != null) {
+			engine.getContext().setArguments(args);
+		}
+		
+		engine.run(getScriptFile(group, feature, fileName));
+	}
+	
 	/**
 	 * For dev only.
 	 * 
@@ -61,7 +77,7 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		throws EngineInvocationError {
 		
 		engine.setExceptionHandler(new DefaultExceptionHandler(engine.getRuntime().getStandardIO(), true));
-		engine.run(getScriptFile(group, feature, fileName));
+		execute(fileName);
 	}
 	
 	/**
@@ -94,8 +110,8 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		boolean checkFileName,
 		int lineNo) 
 		throws EngineInvocationError {
-		
-		engine.run(getScriptFile(group, feature, fileName));
+
+		execute(fileName);
 		
 		validateException(
 			teh, 
@@ -131,7 +147,9 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		KnownJSException directCause,
 		String... texts) 
 		throws EngineInvocationError {
-		engine.run(getScriptFile(group, feature, fileName));
+		
+		execute(fileName);
+		
 		if (exception != null) {
 			Assert.assertEquals(exception.getFullName(), teh.getTypeName());
 		}
@@ -153,8 +171,9 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		String causeName,
 		int causeLine) 
 		throws EngineInvocationError {
+		
 		try {
-			engine.run(getScriptFile(group, feature, fileName));	
+			execute(fileName);
 			
 			validateException(
 				teh, 
@@ -190,8 +209,9 @@ public class ExceptionTestRunner extends ExceptionTestsBase {
 		String platformExceptionName,
 		KnownJSException cause) 
 		throws EngineInvocationError {
+		
 		try {
-			engine.run(getScriptFile(group, feature, fileName));	
+			execute(fileName);	
 			
 			// 1) If the exception is converted to JSE, check the engine stack.
 			if(!GlobalSetting.skipCatch(kjs)){

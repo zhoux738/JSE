@@ -79,7 +79,6 @@ import info.julang.typesystem.jclass.annotation.JAnnotation;
 import info.julang.typesystem.jclass.builtin.JConstructorType;
 import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.typesystem.jclass.builtin.JObjectType;
-import info.julang.util.Box;
 import info.julang.util.OneOrMoreList;
 import info.julang.util.Pair;
 
@@ -306,7 +305,7 @@ public class MappedTypeLoader {
 					// script type Object does NOT map to java.lang.Object. So we need insert another layer to separate 
 					// type checking and method execution.
 					ForwardingMethodExecutable fme = new ForwardingMethodExecutable(
-						typ, sta, new Result(TempValueFactory.createTempBoolValue(false)));
+						memberName, typ, sta, new Result(TempValueFactory.createTempBoolValue(false)));
 					fme.setForwardingExecutable(exec);
 					JParameter[] ptypesArray2 = new JParameter[2];
 					ptypesArray2[0] = ptypesArray[0];

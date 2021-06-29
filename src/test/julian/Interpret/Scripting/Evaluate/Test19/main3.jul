@@ -1,0 +1,14 @@
+class MyClass { }
+
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "t19_3.jul", null);
+
+System.Reflection.Script script = Environment.getScript();
+verify(0, script, new string[] { "MyClass" });
+
+Environment.evaluate(config, "s3.jul", new string[] { "1" });
+
+script = Environment.getScript();
+verify(0, script, new string[] { "MyClass", "UrClass" });
+
+return true;

@@ -44,7 +44,6 @@ import info.julang.memory.value.IArrayValue;
 import info.julang.memory.value.IPlatformArrayValue;
 import info.julang.memory.value.IntValue;
 import info.julang.memory.value.JValue;
-import info.julang.memory.value.ObjectArrayValue;
 import info.julang.memory.value.ObjectValue;
 import info.julang.memory.value.RefValue;
 import info.julang.memory.value.TempValueFactory;
@@ -80,10 +79,9 @@ import info.julang.typesystem.jclass.jufc.System.ScriptType;
 
 /**
  * ArrayBase type is the parent type of all other array types. The internal name of this type is just "ARRAY".
- * <p/>
  * <pre>
  *       [Julian type hierarchy]    [Implemented by]
- *              Object           ==   JObjectType   ---------->  JClassType
+ *              Object           ==   JObjectType   ---------))  JClassType
  *                /|\                                               /|\
  *                 |                                                 |
  *                 |                                                 |

@@ -7,11 +7,27 @@
 #if( $item.Module )
 #if( $item.Name == $tv_module )
                           <li class="nav-item">
-                            <a class="nav-link" data-toggle="collapse" data-target="${c_sharp}$item.Name" href="${c_sharp}" aria-expanded="true">$item.Name</a>
+                            <a class="nav-link" data-toggle="collapse" data-target="${c_sharp}$item.Name" href="${c_sharp}" aria-expanded="true">
+#if( $item.Name == "Scripts" )
+<i>
+#end
+$item.Name
+#if( $item.Name == "Scripts" )
+</i>
+#end
+</a>
                             <ul id=$item.Name class="collapse show">
 #else
                           <li class="nav-item">
-                            <a class="nav-link collapsed" data-toggle="collapse" data-target="${c_sharp}$item.Name" href="${c_sharp}">$item.Name</a>
+                            <a class="nav-link collapsed" data-toggle="collapse" data-target="${c_sharp}$item.Name" href="${c_sharp}">
+#if( $item.Name == "Scripts" )
+<i>
+#end
+$item.Name
+#if( $item.Name == "Scripts" )
+</i>
+#end
+</a>
                             <ul id=$item.Name class="collapse">
 #end
 #foreach( $subitem in $item.Items )

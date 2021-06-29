@@ -1,0 +1,17 @@
+// set operations
+string[] s1 = new string[] { "bmw", "nissan", "mb", "vw", "mb" };
+string[] s2 = new string[] { "toyota", "nissan", "vw", "subaru", "nissan", "honda" };
+
+var dif = s1.except(s2).toArray(); // s1 - s2 =(d)=> "bmw", "mb"
+Array.sort(dif, false);
+
+var ins = s1.intersect(s2).toArray(); // s1 ^ s2 =(d)=> "nissan", "vw"
+Array.sort(ins, false);
+
+var uni = s1.union(s2).toArray(); // s1 + s2 =(d)=> "bmw", "nissan", "mb", "vw", "toyota", "subaru", "honda"
+Array.sort(uni, false);
+
+var dis1 = s1.distinct().toArray(); // s1 =(d) => "bmw", "nissan", "mb", "vw"
+Array.sort(dis1, false);
+var dis2 = s2.distinct().toArray(); // s2 =(d) => "toyota", "nissan", "vw", "subaru", "honda"
+Array.sort(dis2, false);

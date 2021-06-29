@@ -21,6 +21,7 @@ import info.julang.typesystem.jclass.annotation.JAnnotation;
 import info.julang.typesystem.jclass.builtin.JAttributeType;
 import info.julang.typesystem.jclass.builtin.JEnumType;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestRunner;
 
 import java.util.List;
 

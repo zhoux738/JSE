@@ -28,15 +28,15 @@ import info.julang.typesystem.JType;
 import info.julang.typesystem.jclass.JDefinedClassType;
 
 /**
- * The Attribute type as in<p/>
- * <pre><code><code>   attribute Author { 
+ * The Attribute type as in<p>
+ * <pre><code>   attribute Author { 
  *     int year = Date.now().year;
  *     string name;
  *     ISBN number;
- *   }</code></code></pre> 
- * Attribute in Julian is implemented as a special class. It has <font color="green">Object</font> 
+ *   }</code></pre> 
+ * Attribute in Julian is implemented as a special class. It has <code style="color:green">Object</code> 
  * as parent class, and contains a number of fields, optionally with an initializer.
- * <p/>
+ * <p>
  * The language provides a syntax for attribute declaration. The code above is actually equivalent to 
  * <pre><code>class Author : Attribute { 
  * 
@@ -55,24 +55,24 @@ import info.julang.typesystem.jclass.JDefinedClassType;
  * } </code></pre>
  * 
  * However, users cannot write this directly in their scripts.
- * <p/>
+ * <p>
  * Attribute type is used to annotate class definitions. There are a couple of places where an attribute can be used:
- * <p/><pre>
- * <li>Class</li>
+ * <ul>
+ * <li>Class:
  * <code>[Author(name="Ming")]
- * class MyBook { ... }</code>
- * <li>Method</li>
+ * class MyBook { ... }</code></li>
+ * <li>Method:
  * <code>class MyLib { 
  *   [Logging(pattern="{time}: {method-name}")]
  *   void compute(){ ... } 
- * }</code>
- * <li>Field</li>
+ * }</code></li>
+ * <li>Field:
  * <code>class MyLib { 
  *   [Owner(name="Patrick")]
  *   int const id = ...;
- * }</code></pre>
- * <p/>
- * Where an attribute can be used is governed by meta-attribute <font color="green">System.Attribute.Target</font>. A 
+ * }</code></li>
+ * </ul>
+ * Where an attribute can be used is governed by meta-attribute <code style="color:green">System.Attribute.Target</code>. A 
  * more complete version of the Author example is given below: <pre><code><code>   [Target(value=new AttrTarget[]{AttrTarget.Class, AttrTarget.Method})]
  *   attribute Author { 
  *     int year = Date.now().year;

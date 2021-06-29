@@ -1,0 +1,17 @@
+// add, has, remove
+import System.Collection;
+
+Set m = new Set();
+
+m.add("a");
+m.add(5);
+m.add("xyz");
+m.add(true);
+m.add('5');
+
+bool res = true;
+for (var v : m) {
+	res = res && m.remove(v);
+}
+
+int i0 = m.size();

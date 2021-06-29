@@ -1,0 +1,2 @@
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "script2.jul", arguments);

@@ -43,7 +43,7 @@ public class JDefinedInterfaceType extends JInterfaceType implements IDefinedTyp
 	
 	/**
 	 * Start defining a new interface, with only name known.
-	 * <p/>
+	 * <p>
 	 * The caller must use the associated builder (call {@link getBuilder()} to get it) 
 	 * to populate interface member and attributes.
 	 * 

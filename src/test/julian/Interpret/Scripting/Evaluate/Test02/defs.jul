@@ -1,0 +1,10 @@
+if (arguments == null) {
+  return null;
+} else {
+  string res = "";
+  for (string s : arguments) {
+  	res += s;
+  }
+  
+  return res;
+}

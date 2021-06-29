@@ -1,0 +1,43 @@
+/*
+ * Provides helper functions for operations unified across all types.
+ */
+
+/*
+ * Convert anything to a string.
+ *
+ * [param: val] The value to get the string form from.
+ * [return] The string representation of the input value.
+ */
+string toString(var val) {
+ 	if (val == null) {
+		return "(null)";
+	}
+	
+	if (val is Object) {
+		return val.toString();
+	} else {
+		return "" + val;
+	}
+}
+
+/*
+ * Get the length of anything.
+ *
+ * [param: val] The value to get the length from.
+ * [return] The actual size if it's an [Array] or [System.Collection.Container]; 0 if null; 1 if anything else.
+ */
+int getLength(var val) {
+	if (val == null) {
+	  return 0;
+	}
+	
+	if (val is Array) {
+	  return ((Array)val).length;
+	}
+	
+	if (val is System.Collection.Container) {
+	  return ((System.Collection.Container)val).size();
+	}
+	
+	return 1;
+}

@@ -2,6 +2,7 @@ package info.jultest.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -397,6 +398,11 @@ public final class Commons {
         StringValue svalue = (StringValue) value;
         String val = svalue.getStringValue();
         assertTrue(val != null && val.length() > 0);
+    }
+    
+    public static void validateUndefinedValue(VariableTable vt, String varName){
+        JValue value = vt.getVariable(varName);
+        assertNull("Variable " + varName + " defined?", value);
     }
 	
 	public static void validateIntArrayValue(JValue val, int[] array){

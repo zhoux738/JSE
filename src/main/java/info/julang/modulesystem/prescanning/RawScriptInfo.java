@@ -39,6 +39,7 @@ import info.julang.interpretation.syntax.SyntaxHelper;
 import info.julang.langspec.ast.JulianParser.DeclarationsContext;
 import info.julang.langspec.ast.JulianParser.ProgramContext;
 import info.julang.langspec.ast.JulianParser.Type_declarationContext;
+import info.julang.modulesystem.IncludedFile;
 import info.julang.modulesystem.RequirementInfo;
 import info.julang.parser.ANTLRParser;
 import info.julang.parser.AstInfo;
@@ -48,7 +49,7 @@ import info.julang.typesystem.jclass.jufc.FoundationClassParser;
 /**
  * Contains the most preliminary info about a script: the AST parsed from this script, the classes 
  * defined inside, its dependencies, etc.
- * <p/>
+ * <p>
  * An instance of this class is created and populated when the file is loaded into the runtime.  
  * 
  * @author Ming Zhou
@@ -93,6 +94,8 @@ public class RawScriptInfo implements IRawScriptInfo {
 	
 	private String filePath;
 	
+	private List<IncludedFile> included;
+	
 	private List<RequirementInfo> requirements;
 	
 	private Set<String> requirementsSet;
@@ -128,6 +131,10 @@ public class RawScriptInfo implements IRawScriptInfo {
 		return moduleName;
 	}
 
+	public List<IncludedFile> getInclusions() {
+		return included;
+	}
+
 	public List<RequirementInfo> getRequirements() {
 		return requirements;
 	}
@@ -143,8 +150,21 @@ public class RawScriptInfo implements IRawScriptInfo {
 	public String getScriptFilePath() {
 		return filePath;
 	}
-
+	
 	//----------------------------------------------------//
+	
+	/**
+	 * Add a new included file.
+	 * 
+	 * @param incInfo
+	 */
+	public void addInclusion(IncludedFile incInfo) {
+		if (included == null) {
+			included = new ArrayList<IncludedFile>();
+		}
+		
+		included.add(incInfo);
+	}	
 	
 	/**
 	 * Add a new requirement.
@@ -200,6 +220,7 @@ public class RawScriptInfo implements IRawScriptInfo {
 	
 	public void reset(String filePath, LazyAstInfo ainfo){
 		this.filePath = filePath;
+		included = null;
 		requirements = new ArrayList<RequirementInfo>();
 		requirementsSet = new HashSet<String>();
 		

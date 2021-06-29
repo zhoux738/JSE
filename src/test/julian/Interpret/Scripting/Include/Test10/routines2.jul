@@ -1,0 +1,7 @@
+try {
+  string val1 = MC5.s;
+} catch (Exception ex) {
+  assert(ex.getMessage().contains("not defined"), "undefined ex not encountered!");
+}
+
+assert(MyMod.MC5.s == "mc5", "MyMod.MC5.s != \"mc5\"");

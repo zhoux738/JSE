@@ -50,7 +50,7 @@ import info.julang.typesystem.jclass.builtin.JFunctionType;
 import info.julang.typesystem.jclass.jufc.SystemTypeUtility;
 
 /**
- * The platform binding of <code><font color="green">System.Concurrency.Thread</font></code>.
+ * The platform binding of <code style="color:green">System.Concurrency.Thread</code>.
  * 
  * @author Ming Zhou
  */

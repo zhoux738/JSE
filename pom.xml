@@ -8,11 +8,31 @@
   
   <groupId>info.julang</groupId>
   <artifactId>JSE</artifactId>
-  <version>${jse.version}</version><!-- Putting a variable here is causing an error when executing lifecycle mapping plugin inside Eclipse ${jse.version} -->
+  <version>${jse.version}</version>
+  <!-- During regular development, use ${jse.version}. However, 
+       (1) putting a variable here may cause an error when executing lifecycle mapping plugin inside Eclipse;
+       (2) IMPORTANT: maven-install-plugin and maven-deploy-plugin are unable to use the version read from variable. -->
 
   <name>JSE</name>
-  <url>http://julang.info</url>
+  <url>https://julang.info</url>
   <description>Julian Script Engine</description>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Ming Zhou</name>
+      <email>zhoux738@umn.edu</email>
+      <organization>Julian Script Engine Team</organization>
+      <organizationUrl>https://julang.info</organizationUrl>
+    </developer>
+  </developers>
 
   <dependencies>
     <dependency>
@@ -35,7 +55,7 @@
     <dependency>
       <groupId>info.julang.eng</groupId>
       <artifactId>juleng-maven-plugin</artifactId>
-      <version>0.0.3</version>
+      <version>0.0.4</version>
     </dependency>
     <!-- JULENG: END -->
   </dependencies>
@@ -59,7 +79,97 @@
         <test.argline>--illegal-access=permit --add-opens java.base/java.lang.invoke=ALL-UNNAMED</test.argline>
       </properties>
     </profile>
+	<profile>
+		<id>release-sign-artifacts</id>
+		<activation>
+			<property>
+				<name>releaseToMCR</name>
+				<value>true</value>
+			</property>
+		</activation>
+		<build>
+			<plugins>
+	            <plugin>
+	              <groupId>org.apache.maven.plugins</groupId>
+	              <artifactId>maven-source-plugin</artifactId>
+	              <version>3.2.0</version>
+	              <executions>
+	                <execution>
+	                  <id>attach-sources</id>
+				      <phase>verify</phase>
+	                  <goals>
+	                    <goal>jar-no-fork</goal>
+	                  </goals>
+	                </execution>
+	              </executions>
+	            </plugin>
+	         	<plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-javadoc-plugin</artifactId>
+				  <version>2.10.4</version>
+				  <configuration>
+				    <encoding>UTF-8</encoding>
+					<source>8</source>
+				    <excludePackageNames>
+						info.julang.clapp*;info.julang.dev;info.julang.execution*;info.julang.hosting*;info.julang.jsr223;
+						info.julang.interpretation*;info.julang.langspec;info.julang.memory*;info.julang.modulesystem*;
+						info.julang.parser;info.julang.scanner;info.julang.typesystem*</excludePackageNames>
+				  </configuration>
+				  <executions>
+				    <execution>
+				      <id>attach-javadoc</id>
+				      <phase>verify</phase>
+				      <goals>
+				        <goal>jar</goal>
+				      </goals>
+				    </execution>
+				  </executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>1.6</version>
+					<executions>
+						<execution>
+							<id>sign-artifacts</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>sign</goal>
+							</goals>
+							<configuration>
+				                <gpgArguments>
+				                    <arg>--pinentry-mode</arg>
+				                    <arg>loopback</arg>
+				                </gpgArguments>
+				            </configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</build>
+	</profile>
   </profiles>
+  
+  <!-- Deployment to Maven central repository: START -->
+  <!-- See https://central.sonatype.org/pages/apache-maven.html -->
+  <distributionManagement>
+	<snapshotRepository>
+	  <id>ossrh</id>
+	  <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+	</snapshotRepository>
+	<repository>
+	  <id>ossrh</id>
+	  <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	</repository>
+  </distributionManagement>
+		
+  <scm>
+	<connection>scm:git:git://github.com/zhoux738/JSE.git</connection>
+	<developerConnection>scm:git:git@github.com:zhoux738/JSE.git</developerConnection>
+	<url>https://github.com/zhoux738/JSE</url>
+	<tag>HEAD</tag>
+  </scm>
+  <!-- Deployment to Maven central repository: END -->
   
   <build>    
     <plugins>
@@ -129,14 +239,14 @@
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
         <version>4.5</version>
+        <configuration>
+          <visitor>true</visitor>
+        </configuration>
         <executions>
           <execution>
             <goals>
               <goal>antlr4</goal>
             </goals>
-            <configuration>
-              <visitor>true</visitor>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -260,35 +370,12 @@
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
-          <!-- Jar #1: JSE executable -->
-          <execution>
-            <id>build-jse</id>
-            <phase>package</phase>
-            <goals>
-              <goal>attached</goal>
-            </goals>
-            <configuration>
-              <finalName>JSE-${project.version}</finalName>
-              <appendAssemblyId>false</appendAssemblyId>
-              <descriptors>
-                <descriptor>./build/assembly.xml</descriptor>
-              </descriptors>
-              <archive>
-                 <manifest>
-                   <mainClass>info.julang.CmdLineApplication</mainClass>
-                 </manifest>
-                 <manifestEntries>
-                   <JSE-Version>${version}</JSE-Version>
-                 </manifestEntries>
-              </archive>
-            </configuration>
-          </execution>
-          <!-- Jar #2: CI executable for containerized testing -->
+          <!-- Jar #1: CI executable for containerized testing -->
           <execution>
             <id>build-ci</id>
             <phase>package</phase>
             <goals>
-              <goal>attached</goal>
+              <goal>single</goal>
             </goals>
             <configuration>
               <finalName>CI-${project.version}</finalName>
@@ -300,6 +387,29 @@
               <archive>
                  <manifest>
                    <mainClass>info.jultest.ci.CITestRunner</mainClass>
+                 </manifest>
+                 <manifestEntries>
+                   <JSE-Version>${version}</JSE-Version>
+                 </manifestEntries>
+              </archive>
+            </configuration>
+          </execution>
+          <!-- Jar #2: JSE executable -->
+          <execution>
+            <id>build-jse</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>JSE-${project.version}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptors>
+                <descriptor>./build/assembly.xml</descriptor>
+              </descriptors>
+              <archive>
+                 <manifest>
+                   <mainClass>info.julang.CmdLineApplication</mainClass>
                  </manifest>
                  <manifestEntries>
                    <JSE-Version>${version}</JSE-Version>
@@ -364,7 +474,54 @@
                     </lifecycleMappingMetadata>
                 </configuration>
             </plugin>
-        
+
+            <!-- Deployment to Maven central repository: START -->
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.2</version>
+				<executions>
+					<execution>
+						<id>default-deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<localCheckout>true</localCheckout>
+					<pushChanges>false</pushChanges>
+					<mavenExecutorId>forked-path</mavenExecutorId>
+					<arguments>-Dgpg.passphrase=${gpg.passphrase}</arguments>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.scm</groupId>
+						<artifactId>maven-scm-provider-gitexe</artifactId>
+						<version>1.9.5</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.7</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+		    <!-- Deployment to Maven central repository: END -->
+
             <!-- Putting a variable in version property (jse.version) causes an error 
                  when executing lifecycle-mapping plug-in inside Eclipse, but running 
                  Maven from cmdline is not affected. This plug-in is therefore commented out.

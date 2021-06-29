@@ -52,7 +52,7 @@ public interface ITypeTable extends IExtTypeTable {
 	
 	/**
 	 * Get the type value by name.
-	 * <p/>
+	 * <p>
 	 * Type value is the runtime data of a type (containing static fields, for example)
 	 * 
 	 * @param fqname fully qualified name
@@ -62,7 +62,7 @@ public interface ITypeTable extends IExtTypeTable {
 	
 	/**
 	 * Get the type value by name.
-	 * <p/>
+	 * <p>
 	 * Type value is the runtime data of a type (containing static fields, for example)
 	 * 
 	 * @param fqname fully qualified name

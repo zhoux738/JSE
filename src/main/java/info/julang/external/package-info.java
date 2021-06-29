@@ -25,14 +25,14 @@ SOFTWARE.
 /**
  * Package <b><code>info.julang.external</code></b> defines the interfaces and public-facing classes
  * that can be safely referenced and accessed by the users.
- * <p/>
+ * <p>
  * An instance of Julian script engine is supposed to run in an isolated realm within the confines of JVM runtime. 
  * This makes it possible for multiple engine instances running together without causing conflicts with each other
  * with regards to engine-wide shared resources and common facilities. One example of such resource is the statically
  * initialized built-in and foundation classes. The isolation is achieved by {@link EngineFactory}, which loads  
  * engine internals through {@link EngineComponentClassLoader a distinct class loader} that reverts the default 
  * delegation model.
- * <p/>
+ * <p>
  * The classes in this package, and its sub-packages, are the only classes (along with some utility classes) under 
  * prefix "info.julang" that can be directly referenced from the caller's world. For example, {@link 
  * EngineFactory} can be safely loaded from the default class loader, or whatever class loader that loads the user's 

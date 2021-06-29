@@ -36,6 +36,7 @@ import info.julang.execution.threading.ThreadRuntime;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.statement.ExpressionStatement;
 import info.julang.interpretation.statement.StatementOption;
+import info.julang.langspec.Keywords;
 import info.julang.langspec.ast.JulianParser.ArgumentContext;
 import info.julang.langspec.ast.JulianParser.Argument_listContext;
 import info.julang.langspec.ast.JulianParser.Function_callContext;
@@ -45,23 +46,23 @@ import info.julang.parser.AstInfo;
 
 /**
  * The executable for a constructor forward call.
- * <p/>
+ * <p>
  * A constructor's executable is made up by two parts: forward call and main body. 
  * The forward call is about calling another constructor before the main body is 
  * executed. In Julian, a forward call can be made against either another constructor 
  * in the same class, or a constructor in a parent class. If no forward call is present, 
  * will default to call the parent's parameter-less constructor.
- * <p/>
- * The {@link #execute(ThreadRuntime, info.julang.execution.Argument[]) execute()} 
+ * <p>
+ * The {@link ConstructorForwardExecutable#execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) execute()} 
  * method will return a multi-value result representing each of the argument expression.
  * It is safe to cast it to the type of {@link MultiValueResult}.
- * <br/>
+ * <br>
  * @author Ming Zhou
  */
 public class ConstructorForwardExecutable extends MethodExecutable implements Cloneable {
 	
-	public ConstructorForwardExecutable(AstInfo<Function_callContext> ainfo, JClassType ofType) {
-		super(ainfo, ofType, false);
+	public ConstructorForwardExecutable(boolean isSuper, AstInfo<Function_callContext> ainfo, JClassType ofType) {
+		super(isSuper ? Keywords.SUPER : Keywords.THIS, ainfo, ofType, false);
 	}
 
 	@Override
@@ -95,6 +96,6 @@ public class ConstructorForwardExecutable extends MethodExecutable implements Cl
 	
 	@Override
 	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
-		super.repliateArgsAndBindings(args, ctxt, func, false);
+		super.replicateArgsAndBindings(args, ctxt, func, false);
 	}
 }

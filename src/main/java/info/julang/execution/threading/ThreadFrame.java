@@ -55,7 +55,7 @@ public class ThreadFrame {
 //	/**
 //	 * Add a new variable into this frame. The variable will be allocated memory in the
 //	 * frame, and get registered in variable table.
-//	 * <p/>
+//	 * <p>
 //	 * The variable must be not stored anywhere when this method is called.
 //	 * 
 //	 * @param name

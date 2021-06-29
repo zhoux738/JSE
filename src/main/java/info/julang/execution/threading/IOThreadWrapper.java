@@ -37,7 +37,7 @@ import info.julang.typesystem.jclass.JParameter;
 import info.julang.typesystem.jclass.builtin.JFunctionType;
 
 /**
- * Interop object targeting <font color="green"><code>System.Concurrency.IOThreadWrapper</code></font>, 
+ * Interop object targeting <code style="color:green">System.Concurrency.IOThreadWrapper</code>, 
  * which wraps an IO-continuation thread that continues polling from a job queue until signaled with completion.
  * 
  * @author Ming Zhou

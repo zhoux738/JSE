@@ -46,7 +46,7 @@ import info.julang.typesystem.jclass.builtin.JObjectType;
 
 /**
  * The statement for declaring (and defining) a class.
- * <p/>
+ * <p>
  * Syntax:
  * <pre><code>[accessibility] [extensibility] <b>class</b> {NAME} : {PARENT_NAME}, {INTERFACE_NAME}* {
  * 
@@ -57,7 +57,7 @@ import info.julang.typesystem.jclass.builtin.JObjectType;
  * </ul>
  * The <code>{PARENT_NAME}</code> after <code>:</code> is the parent class to inherit from; 
  * <code>{INTERFACE_NAME}</code>s are the interfaces to implement.
- * <p/>
+ * <p>
  * @author Ming Zhou
  */
 public class ClassDeclarationStatement extends ClassLoadingStatement {

@@ -15,8 +15,8 @@ import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.jultest.test.AssertHelper;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestsBase;
 
 // This test verifies that a Security Exception thrown by the Java's access controller will
 // be translated to JSE's System.UnderprivilegeException.

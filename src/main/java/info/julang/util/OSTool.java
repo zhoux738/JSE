@@ -34,7 +34,7 @@ public final class OSTool {
 	/**
 	 * Canonicalize the file system path. In particular, use back slash (\) on Windows, and forward slash (/) on other OSes. 
 	 * 
-	 * @param fileName
+	 * @param fileName The file path and name
 	 * @return a canonicalized file system path, with unified path separator.
 	 */
 	public static String canonicalizePath(String fileName) {
@@ -53,6 +53,7 @@ public final class OSTool {
 	/**
      * Check whether the OS is any of the specified OSes.
      * 
+     * @param types The array of OS types.
      * @return true if it is any of the specified OS.
      */
     public static boolean is(OSType... types) {

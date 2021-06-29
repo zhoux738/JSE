@@ -36,15 +36,15 @@ import info.julang.typesystem.jclass.JClassType;
 
 /**
  * The Array type is for both single and multi-dimensional arrays defined in script
- * <p/>
+ * <p>
  * This class doesn't provide public constructor. To make an array type, call static 
- * method {@link #createJArrayType(JType)} or {@link #createJArrayType(JType, int)}. 
+ * method {@link #createJArrayType(ITypeTable tt, JType elementType, boolean covariant)} 
+ * or {@link #createJArrayType(ITypeTable tt, JType elementType, int dimension)}. 
  * This is because array type declaration is essentially implicit declaration of a 
  * new class type that inherits JArrayType, and we must prevent duplicated definition.
- * <p/>
- * This class also provides a set of static APIs to facilitate array-type-related 
- * operations, such as {@link #getArrayDimension(JArrayType) getting the dimension of 
- * an array type} or {@link #isArrayType(JType)} determining if a type is array type. 
+ * <p>
+ * This class also provides a static helpers APIs to facilitate array-type-related 
+ * operations, such as {@link #isArrayType(JType) determining if a type is array type}. 
  * 
  * @author Ming Zhou
  */
@@ -118,7 +118,7 @@ public class JArrayType extends JArrayBaseType {
 	
 	/**
 	 * Create a new array type with specified element type. Used only during bootstrapping.
-	 * <p/>
+	 * <p>
 	 * This is needed because during bootstrapping the singleton for array base type is not ready yet,
 	 * and we can only reference it from the type farm.
 	 * @return

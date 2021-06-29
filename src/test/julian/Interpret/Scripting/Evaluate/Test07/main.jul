@@ -1,0 +1,23 @@
+class MC {
+	int v = 0;
+}
+
+MC mc = new MC();
+
+EvalConfig config = new EvalConfig();
+config.setShareScope(true);
+
+Environment.evaluate(config, "routines.jul", null);
+int v1 = mc.v; 
+
+// same args
+Environment.evaluate(config, "routines.jul", null);
+int v2 = mc.v; 
+
+// effectively same args
+Environment.evaluate(config, "routines.jul", new string[0]);
+int v3 = mc.v; 
+
+// different args
+Environment.evaluate(config, "routines.jul", new string[]{ "a" });
+int v103 = mc.v; 

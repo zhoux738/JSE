@@ -27,7 +27,7 @@ package info.julang.memory.simple;
 import info.julang.memory.HeapArea;
 import info.julang.memory.JSEOutOfMemoryException;
 import info.julang.memory.IStored;
-import info.julang.memory.MemoryOpreationException;
+import info.julang.memory.MemoryOperationException;
 
 /**
  * A very simple implementation of heap memory area that doesn't have GC built into it. But since
@@ -39,9 +39,9 @@ import info.julang.memory.MemoryOpreationException;
 public class SimpleHeapArea extends HeapArea {
 	
 	@Override
-	public synchronized boolean allocate(IStored value) throws JSEOutOfMemoryException, MemoryOpreationException {
+	public synchronized boolean allocate(IStored value) throws JSEOutOfMemoryException, MemoryOperationException {
 		if(value.isStored()){
-			throw new MemoryOpreationException("Attempt to allocate memory for a value that is already stored.", this.getClass());
+			throw new MemoryOperationException("Attempt to allocate memory for a value that is already stored.", this.getClass());
 		}
 		
 		value.setMemoryArea(this);
@@ -49,7 +49,7 @@ public class SimpleHeapArea extends HeapArea {
 	}
 
 	@Override
-	public synchronized boolean reallocate(IStored value) throws JSEOutOfMemoryException, MemoryOpreationException {
+	public synchronized boolean reallocate(IStored value) throws JSEOutOfMemoryException, MemoryOperationException {
 		//If the heap contains this value, we return as if a re-allocation had been actually done.
 		if(value.getMemoryArea() == this){
 			return true;
@@ -59,9 +59,9 @@ public class SimpleHeapArea extends HeapArea {
 	}
 
 	@Override
-	public synchronized boolean deallocate(IStored value) throws MemoryOpreationException {
+	public synchronized boolean deallocate(IStored value) throws MemoryOperationException {
 		if(!value.isStored()){
-			throw new MemoryOpreationException("Attempt to de-allocate memory for a value that is not stored.", this.getClass());
+			throw new MemoryOperationException("Attempt to de-allocate memory for a value that is not stored.", this.getClass());
 		}
 		
 		if(value.getMemoryArea() != this){

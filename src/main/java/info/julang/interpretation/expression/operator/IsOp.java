@@ -43,11 +43,12 @@ import info.julang.typesystem.jclass.ICompoundType;
 /**
  * Is operator is used to check if a value is of type A.
  * <pre><code>if(a is A){...}</code></pre>
- * <p/>
+ * <p>
  * The operation returns a boolean value. It returns true if any of the following conditions is met:
+ * <ul>
  *   <li>a's type is A;</li>
  *   <li>any of a's ancestral type is A</li>
- * <br/><br/>
+ * </ul>
  * 
  * @author Ming Zhou
  */

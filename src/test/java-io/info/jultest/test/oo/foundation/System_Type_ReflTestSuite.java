@@ -17,8 +17,8 @@ import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.typesystem.AnyType;
 import info.jultest.test.Commons;
 import info.jultest.test.EFCommons;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestsBase;
 
 public class System_Type_ReflTestSuite extends ExceptionTestsBase {
 

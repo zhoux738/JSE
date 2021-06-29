@@ -1,0 +1,3 @@
+
+include "routines.jul"; // define new type
+include "routines2.jul"; // use the type

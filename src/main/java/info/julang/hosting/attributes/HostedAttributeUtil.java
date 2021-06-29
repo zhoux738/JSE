@@ -76,7 +76,7 @@ public class HostedAttributeUtil {
 	}
 	
 	/**
-	 * @return the mapped platform class name if the attribute is a <code><font color="green">System.Mapped</font><code> instance. 
+	 * @return the mapped platform class name if the attribute is a <code style="color:green">System.Mapped<code> instance. 
 	 * null if the attribute is any other kind.
 	 */
 	public static String getMappedClassName(AttrValue av){

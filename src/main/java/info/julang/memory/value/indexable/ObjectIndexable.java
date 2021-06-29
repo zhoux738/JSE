@@ -34,7 +34,7 @@ import info.julang.typesystem.JType;
 
 /**
  * An indexable backed by a user-defined indexable script object, which implements 
- * <font color="green"><code>System.Util.IIndexable</code></font>.
+ * <code style="color:green">System.Util.IIndexable</code>.
  * 
  * @author Ming Zhou
  */

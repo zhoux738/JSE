@@ -42,14 +42,16 @@ public interface IExtResult {
 	public String getExceptionOutput();
 	
 	/**
-	 * Get the full path-file name for in which this exception was originally thrown. 
-	 * @return
+	 * Get the full path-file name in which this exception was originally thrown. 
+	 * 
+	 * @return the full path-file name in which this exception was originally thrown. 
 	 */
 	public String getExceptionFileName();
 	
 	/**
 	 * Get the line number on the file at which this exception was originally thrown. 
-	 * @return
+	 * 
+	 * @return the line number on the file at which this exception was originally thrown. 
 	 */
 	public int getExceptionLineNumber();
 

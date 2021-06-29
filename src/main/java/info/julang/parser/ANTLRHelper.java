@@ -137,6 +137,7 @@ public class ANTLRHelper {
 		
 		return sb.toString();
 	}
+	
 	/**
 	 * Convert escape sequences to the target char in a string. For example, if the input is ['\', 'n', 'a', '\', 't'],
 	 * the result would be ['\n', 'a', '\t']. Escape sequences include control chars, ASCII code and Unicode. 

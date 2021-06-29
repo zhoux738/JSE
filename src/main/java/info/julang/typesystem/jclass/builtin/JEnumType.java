@@ -92,7 +92,7 @@ public class JEnumType extends JDefinedClassType {
 	/**
 	 * Populate an Enum type by
 	 * <p>
-	 * 1) adding static enum fields corresponding to each enum value <br/>
+	 * 1) adding static enum fields corresponding to each enum value <br>
 	 * 2) adding initializers for each enum field.
 	 * <p>
 	 * Note this method doesn't finish initializing an enum type. The initializers are yet to

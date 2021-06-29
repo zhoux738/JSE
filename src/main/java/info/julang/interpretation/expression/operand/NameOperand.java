@@ -31,7 +31,7 @@ import info.julang.langspec.Keywords;
 /**
  * A name operand contains a partially qualified name. Such operands are typically created 
  * from identifiers.
- * <p/>
+ * <p>
  * To get access to the value represented by this name, need first resolve the name in a
  * given context.
  *

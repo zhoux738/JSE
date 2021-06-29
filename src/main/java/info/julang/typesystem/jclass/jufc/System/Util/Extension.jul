@@ -475,11 +475,12 @@ static class IIterableExtension {
 			tgt = new Entry[len];
 			Array.copy(src, 0, tgt, 0, len);
 		} else {
-			// Otherwise, create an untyped array with the same length and copy the items one by one.
-			int len = this.count();
+			// Otherwise, create a List first, then copy the items one by one to an Array.
+			System.Collection.List list = this.toList();
+			int len = list.size();
 			tgt = new var[len];
 			int i = 0;
-			for(var item : this){
+			for(var item : list){
 				tgt[i] = item;
 				i++;
 			}
@@ -555,6 +556,100 @@ static class IIterableExtension {
 	 */	
 	static System.Collection.Map toMap(IIterable this, Function toKey){	
 		return toMap(this, toKey, null);
+	}
+
+	/*
+	 * Get a new iterable which is a set-difference from this and another iterable.
+	 *
+	 * The difference contains distinct elements which appear in the first (this) iterable but not the other one.
+	 * In other words, (1) the result only contains elements coming from this iterable, and (2) these elements
+	 * also do not appear in the other iterable. For example, `set-{A, B, C, X, Y}` except `set-{C, E, F, X}` =
+	 * `set-{A, B, Y}`.
+	 *
+	 * Duplicate elements, whether coming from the same iterable or not, are eliminated. The
+	 * distinction is determined by [equals()](Object#equals) if it's an [Object], or the 
+	 * natural equality for primitive values.
+	 * 
+	 * [param: this] The source iterable.
+	 * [param: another] The other iterable.
+	 * [return] A new iterable which is the set-difference by deducting the second iterable from this one.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * Notably, the other iterable can be null, which is semantically equivalent to an empty iterable.
+	 */	
+	static IIterable except(IIterable this, IIterable another){
+		_checkNull(this);
+		SetFilterer sf = new SetFilterer(another);
+		return this.filter(val => {
+		    // Yield this element only if it doesn't appear in the other set. 
+		    return !sf.checkAndAdd(val, true);
+		});
+	}
+	
+	/*
+	 * Get a new iterable which is a set-intersection from this and another iterable.
+	 *
+	 * The intersection contains distinct elements which appear at least once in both iterables. 
+	 * Duplicate elements, whether coming from the same iterable or not, are eliminated. The
+	 * distinction is determined by [equals()](Object#equals) if it's an [Object], or the 
+	 * natural equality for primitive values.
+	 * 
+	 * [param: this] The source iterable.
+	 * [param: another] The other iterable.
+	 * [return] A new iterable which is the set-intersection from the two iterables.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * Notably, the other iterable can be null, which is semantically equivalent to an empty iterable.
+	 */
+	static IIterable intersect(IIterable this, IIterable another){
+		_checkNull(this);
+		SetFilterer sf = new SetFilterer(another);
+		SetFilterer thisSf = new SetFilterer(null);
+		return this.filter(val => {
+		    // Yield this element only if it also appears in the other set,
+		    // and it hasn't been yielded from the current set.
+			
+			bool res = sf.checkAndAdd(val, false);
+			if (res) {
+				res = !thisSf.checkAndAdd(val, true);
+			}
+			
+			return res;
+		});
+	}
+
+	/*
+	 * Get a new iterable which is a set-union from this and another iterable.
+	 *
+	 * The union contains distinct elements from both iterables. Duplicate elements, whether coming from the same iterable or not,
+	 * are eliminated. The distinction is determined by [equals()](Object#equals) if it's an [Object], or the natural equality 
+	 * for primitive values.
+	 * 
+	 * [param: this] The source iterable.
+	 * [param: another] The other iterable.
+	 * [return] A new iterable which is the set-union from the two iterables.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 * Notably, the other iterable can be null, which is semantically equivalent to an empty iterable.
+	 */		
+	static IIterable union(IIterable this, IIterable another){
+		_checkNull(this);
+		if (another == null) {
+			another = new var[0];
+		}
+		
+		// Everything from this set + Anything only from another set
+		return this.distinct().concat(another.except(this));
+	}
+	
+	/*
+	 * Get a new iterable which only consists of the distinct elements from this iterable.
+	 *
+	 * The distinction is determined by [equals()](Object#equals) if it's an [Object], or the natural equality for primitive values.
+	 * 
+	 * [param: this] The source iterable.
+	 * [return] A new iterable which only consists of the distinct elements from this iterable.
+	 * [throws: System.NullReferenceException] If the given iterable is null.
+	 */	
+	static IIterable distinct(IIterable this){
+		return this.except(null);
 	}
 }
 
@@ -797,5 +892,27 @@ internal class ZippingIterator : IIterator {
 		var v2 = another.next();
 		
 		return _func(v1, v2);
+	}
+}
+
+internal class SetFilterer {
+
+	private System.Collection.Set _set;
+	
+	internal SetFilterer(IIterable iterable) {
+		_set = new System.Collection.Set();
+		if (iterable != null) {
+			for (var it : iterable) {
+				_set.add(it);
+			}
+		}
+	}
+	
+	internal bool checkAndAdd(var val, bool doAdd) {
+		bool exists = _set.has(val);
+		if (doAdd && !exists) {
+			_set.add(val);
+		}
+		return exists;
 	}
 }

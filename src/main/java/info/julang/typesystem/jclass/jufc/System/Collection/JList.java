@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The native implementation of <font color="green">System.Collection.List</font>.
+ * The native implementation of <code style="color:green">System.Collection.List</code>.
  * 
  * @author Ming Zhou
  */

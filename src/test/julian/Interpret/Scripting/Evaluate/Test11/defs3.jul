@@ -1,0 +1,6 @@
+// global function
+void func() {
+	Environment.evaluate(new EvalConfig(), "defsx.jul", null);
+}
+
+func();

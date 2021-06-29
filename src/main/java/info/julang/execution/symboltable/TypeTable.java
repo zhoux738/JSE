@@ -72,10 +72,10 @@ import info.julang.util.OneOrMoreList;
 
 /**
  * Type table contains all the definition of types during runtime.
- * <p/>
+ * <p>
  * Part of type information is stored by a backing memory area. This includes static fields of a class,
  * and the code block of functions.
- * <p/>
+ * <p>
  * Type table is globally unique and thread safe. When adding a new type to the table, the type should be
  * added with <code>finalized = false</code>. Then after the initialization is done, mark <code>finalized
  * </code> as <code>true</code>. This is because initialization cannot be performed while the type is not
@@ -165,7 +165,7 @@ public class TypeTable implements ITypeTable {
 	
 	/**
 	 * Get the type value by name.
-	 * <p/>
+	 * <p>
 	 * Type value is the runtime data of a type (containing static fields, for example)
 	 * 
 	 * @param fqname fully qualified name
@@ -177,7 +177,7 @@ public class TypeTable implements ITypeTable {
 	
 	/**
 	 * Get the type value by name.
-	 * <p/>
+	 * <p>
 	 * Type value is the runtime data of a type (containing static fields, for example)
 	 * 
 	 * @param fqname fully qualified name
@@ -465,12 +465,16 @@ public class TypeTable implements ITypeTable {
 		}
 	}
 	
-	public static boolean isSystemType(String name) {
-		if (!name.contains(".")) {
+	public static boolean isSystemType(String name) {		
+		if (name.startsWith("System.")) {
 			return true;
 		}
 		
-		if (name.startsWith("System.")) {
+		if (name.contains(".")) {
+			return false;
+		}
+		
+		if (BuiltinTypeBootstrapper.isBuiltInType(name)) {
 			return true;
 		}
 		

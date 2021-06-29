@@ -31,19 +31,31 @@ public class CyclicDependencyException extends JSERuntimeException {
 
     private static final long serialVersionUID = -2717726182728855064L;
 
-	public CyclicDependencyException(String[] typeNames) {
-		super(createMsg(typeNames));
+	public CyclicDependencyException(String[] names, boolean isTypeOrScript) {
+		super(createMsg(names, isTypeOrScript));
 	}
 
-	private static String createMsg(String[] typeNames) {
-		StringBuilder sb = new StringBuilder("The following types form a cyclic dependency with each other: ");
-		int total = typeNames.length - 1;
+	private static String createMsg(String[] names, boolean isTypeOrScript) {
+		StringBuilder sb = new StringBuilder("The following " );
+		sb.append(isTypeOrScript ? "types" : "scripts");
+		sb.append(" form a cyclic dependency with each other");
+		if (!isTypeOrScript) {
+			sb.append(", in the order of inclusion");
+		}
+		sb.append(": ");
+		if (!isTypeOrScript) {
+			sb.append(System.lineSeparator());
+		}
+		int total = names.length - 1;
 		for(int i = 0; i < total; i++){
-			sb.append(typeNames[i]);
+			sb.append(names[i]);
 			sb.append(',');
+			if (!isTypeOrScript) {
+				sb.append(System.lineSeparator());
+			}
 		}
 		
-		sb.append(typeNames[total]);
+		sb.append(names[total]);
 		
 	    return sb.toString();
     }

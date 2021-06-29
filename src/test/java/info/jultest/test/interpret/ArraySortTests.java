@@ -13,7 +13,7 @@ import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.errorhandling.KnownJSException;
 import info.jultest.test.Commons;
-import info.jultest.test.oo.ExceptionTestRunner;
+import info.jultest.test.ExceptionTestRunner;
 
 public class ArraySortTests {
 
@@ -112,5 +112,4 @@ public class ArraySortTests {
 			"selbst", 
 			"invoked through an engine callback.");
 	}
-	
 }

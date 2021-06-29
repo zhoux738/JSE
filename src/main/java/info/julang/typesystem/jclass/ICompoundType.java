@@ -50,7 +50,7 @@ public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 	
 	/**
 	 * Try to get a class instance member by name.
-	 * <p/>
+	 * <p>
 	 * If the member is overloaded, returns the first one defined in the class.
 	 * 
 	 * @param name
@@ -60,7 +60,7 @@ public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 	
 	/**
 	 * Try to get a class static member by name.
-	 * <p/>
+	 * <p>
 	 * If the member is overloaded, returns the first one defined in the class.
 	 * 
 	 * @param name
@@ -70,7 +70,7 @@ public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 	
 	/**
 	 * Try to get all the class static members with the specified name.
-	 * <p/>
+	 * <p>
 	 * If the member is overloaded, returns all of them.
 	 * 
 	 * @param name
@@ -80,7 +80,7 @@ public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 
 	/**
 	 * Get class field initializers.
-	 * <p/>
+	 * <p>
 	 * The returned initializers are in the order they are declared in the class.
 	 * 
 	 * @param isStatic true to return initializers for static fields, false for instance fields
@@ -90,7 +90,7 @@ public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 	
 	/**
 	 * Get class static members.
-	 * <p/>
+	 * <p>
 	 * This includes all static members defined by this class, regardless of its accessibility, and all
 	 * static members which are (1) defined by any class in the hierarchy tree above this class and (2) 
 	 * visible to this class.
@@ -101,10 +101,10 @@ public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 	
 	/**
 	 * Get class instance members.
-	 * <p/>
+	 * <p>
 	 * These include all instance members defined by the class, regardless of its accessibility, and all
 	 * inheritable instance members defined by any type in the hierarchy tree above this class.
-	 * <p/>
+	 * <p>
 	 * Inheritable means {@link info.julang.typesystem.jclass.Accessibility#PUBLIC PUBLIC}, 
 	 * {@link info.julang.typesystem.jclass.Accessibility#PROTECTED PROTECTED}, or 
 	 * {@link info.julang.typesystem.jclass.Accessibility#MODULE MODULE}. By using same name 
@@ -118,7 +118,7 @@ public interface ICompoundType extends JType, IAnnotated, IClassOrInterface {
 	/**
 	 * Get type of parent class.
 	 * @return the type of parent class. Null if and only if the current type is 
-	 * <font color="green"><code>Object</code></font>.
+	 * <code style="color:green">Object</code>.
 	 */
 	JClassType getParent();
 	

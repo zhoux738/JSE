@@ -24,12 +24,13 @@ SOFTWARE.
 
 package info.julang.execution;
 
+import java.io.ByteArrayInputStream;
+
 import info.julang.external.exceptions.ScriptNotFoundException;
 import info.julang.interpretation.GlobalScriptExecutable;
+import info.julang.interpretation.InterpretedExecutable;
 import info.julang.parser.ANTLRParser;
 import info.julang.parser.LazyAstInfo;
-
-import java.io.ByteArrayInputStream;
 
 /**
  * The string script provider provides an executable from a string.
@@ -47,12 +48,16 @@ public class StringScriptProvider implements ScriptProvider {
 	}
 	
 	@Override
-	public Executable getExecutable(boolean allowReentry) throws ScriptNotFoundException {
+	public InterpretedExecutable getExecutable(boolean allowReentry) throws ScriptNotFoundException {
 		ByteArrayInputStream bais = new ByteArrayInputStream(script.getBytes());
 		ANTLRParser ap = new ANTLRParser("<memory>", bais, false);
 		LazyAstInfo lainfo = ap.scan(false);
 		ap.parse(true, false);
 		return new GlobalScriptExecutable(lainfo, allowReentry, interactiveMode);
 	}
-	
+
+	@Override
+	public String getDefaultModulePath() {
+		return null;
+	}
 }

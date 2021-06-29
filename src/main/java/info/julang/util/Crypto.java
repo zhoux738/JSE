@@ -37,7 +37,7 @@ public final class Crypto {
 	/**
 	 * Calculate Secure Hash 256 in hexadecimal string from then given input.
 	 * 
-	 * @param input
+	 * @param input The input string to be hashed.
 	 * @param digitsToPreserve The even number of hexadecimal digits to return. 
 	 * [1, 64], increment by one if it's odd. Any number beyond the range is 
 	 * treated as to return all.

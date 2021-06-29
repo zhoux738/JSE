@@ -1,0 +1,6 @@
+EvalConfig config2 = new EvalConfig();
+config2.setShareScope(false);
+config2.setReturnException(true);
+i += 10;
+Environment.evaluate(config2, "fun3_helper.jul", arguments);
+i += 10;

@@ -58,9 +58,9 @@ public interface JType {
 	
 	/**
 	 * Whether this type is basic type.
-	 * <br/>
+	 * <br>
 	 * For the basic types supported in Julian, see {@link BasicType}.
-	 * <br/>
+	 * <br>
 	 * If this returns true, {@link isObject()} must return false. If this returns false, 
 	 * the other method may return either true of false.
 	 * @return
@@ -69,7 +69,7 @@ public interface JType {
 	
 	/**
 	 * Whether this type is object type.
-	 * <br/>
+	 * <br>
 	 * If this returns true, {@link isBasic()} must return false. If this returns false, 
 	 * the other method may return either true of false.
 	 * @return

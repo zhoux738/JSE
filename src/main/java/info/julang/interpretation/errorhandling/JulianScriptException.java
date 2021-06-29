@@ -50,26 +50,26 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
  * Julian script exception, or JSE, is the wrapper class on hosting platform and 
- * interop bridge for <font color="green">System.Exception</font> in Julian language.
- * <p/>
+ * interop bridge for <code style="color:green">System.Exception</code> in Julian language.
+ * <p>
  * JSE is different from {@link JSERuntimeException}, which is used throughout the
  * codebase to represent every kind of script exceptions that must be handled later
  * on. JSE is used to carry the script exception up the stack utilizing Java's 
  * exception handling mechanism. 
- * <p/>
+ * <p>
  * When a script exception arises in the script, it will be caught and wrapped in
  * a JSE at appropriate timing. The JSE will be re-thrown, and upon the exit of each
  * frame the stack trace will be updated. Finally, the script engine will see the 
  * JSE surfaced up, and handle that in accordance with the settings (outputs stacktrace
  * to console, or returns the exception to engine users for in-proc info exchange).
- * <p/>
+ * <p>
  * Since callsite information is not fully available at the time the exception is 
  * created, there are two stages that an exception will go through before it can leave  
  * a stack trace record. First, the enclosing expression/statement in which the 
  * exception is thrown can log its source file name and line number. Second, when the
  * exception is popped up to the function caller, the function name will become
  * available, therefore a new stack trace entry can be created.
- * <p/>
+ * <p>
  * When we add a new trace entry, we unset the line number info. This is because we 
  * want to make sure that the line number is set only once between it travels through
  * two frames. We thus use {@link JulianScriptException#UNSET_LINENO} to determine
@@ -106,6 +106,10 @@ public class JulianScriptException extends RuntimeException {
 	private MemoryArea memory;
 	
 	private boolean invokedByPlatform;
+	
+	private boolean preserveAcrossPlatformBoundary;
+	
+	private StackTraceKind kind = StackTraceKind.CALL;
 	
 	/**
 	 * Create a new JulianScriptException wrapping a Julian exception type.
@@ -158,7 +162,7 @@ public class JulianScriptException extends RuntimeException {
 
 	/**
 	 * Add a frame record, with source info.
-	 * <p/>
+	 * <p>
 	 * An example of formatted string: calculate(int, int)  (/path/to/file.jul, 117)
 	 * 
 	 * @param funcName
@@ -220,7 +224,7 @@ public class JulianScriptException extends RuntimeException {
 	
 	/**
 	 * Get the type of JSE exception, which can be retrieved by {@link #getExceptionValue()}. It's
-	 * either of, or derived from, type <code><font color="green">System.Exception</font></code>.
+	 * either of, or derived from, type <code style="color:green">System.Exception</code>.
 	 */
 	public JClassType getExceptionType(){
 		return (JClassType) exception.getType();
@@ -295,7 +299,7 @@ public class JulianScriptException extends RuntimeException {
 	/**
 	 * Get the inner Julian exception that caused this one.
 	 * 
-	 * @return an ObjectValue of <code><font color="green">System.Exception</font></code> type. 
+	 * @return an ObjectValue of <code style="color:green">System.Exception</code> type. 
 	 * null of no internal cause.
 	 */
 	public ObjectValue getJSECause(){
@@ -319,6 +323,32 @@ public class JulianScriptException extends RuntimeException {
 	
 	public void setInvokedByPlatform(){
 		invokedByPlatform = true;
+	}
+	
+	public StackTraceKind resetTraceKind() {
+		StackTraceKind kind = this.kind;
+		this.kind = StackTraceKind.CALL;
+		return kind;
+	}
+	
+	public void setTraceKind(StackTraceKind kind) {
+		this.kind = kind;
+	}
+
+	/**
+	 * If called, this exception will be thrown as is when being popped up across the platform-JSE boundary,
+	 * otherwise it will be wrapped in a {@link info.julang.hosting.HostingPlatformException}.
+	 */
+	public void preserveAcrossPlatformBoundary() {
+		this.preserveAcrossPlatformBoundary = true;
+	}
+
+	/**
+	 * Check whether this exception should be thrown as is when being popped up across the platform-JSE boundary.
+	 * @return true if the exception should be thrown without being wrapped in a {@link info.julang.hosting.HostingPlatformException}.
+	 */
+	public boolean shouldPreserveAcrossPlatformBoundary() {
+		return this.preserveAcrossPlatformBoundary;
 	}
 	
 	public static String toStandardExceptionOutput(ObjectValue exception) {
@@ -354,7 +384,13 @@ public class JulianScriptException extends RuntimeException {
 			if(indent>0){
 				addIndent(sb, indent);
 			}
-			sb.append("  at ");
+			
+			StackTraceKind kind = StackTraceKind.parseByName(stacktrace[i]);
+			if (kind == StackTraceKind.CALL) {
+				sb.append("  at ");
+			} else {
+				sb.append("  on ");
+			}
 			sb.append(stacktrace[i]);
 			sb.append(System.lineSeparator());
 		}

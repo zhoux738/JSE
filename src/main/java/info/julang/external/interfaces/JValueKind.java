@@ -26,7 +26,7 @@ package info.julang.external.interfaces;
 
 /**
  * The kind of JValue.
- * <p/>
+ * <p>
  * JValueKind provides a quicker way to help determine what a value holds. 
  * This is different from {@link info.julang.typesystem.JTypeKind JTypeKind}, which describes 
  * the type a value is of from the perspective of runtime context. For example, in code

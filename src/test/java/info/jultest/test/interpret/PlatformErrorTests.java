@@ -6,8 +6,8 @@ import static info.jultest.test.Commons.makeSimpleEngine;
 import org.junit.Test;
 
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestsBase;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;

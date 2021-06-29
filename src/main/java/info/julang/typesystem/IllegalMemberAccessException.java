@@ -29,7 +29,7 @@ import info.julang.interpretation.errorhandling.KnownJSException;
 
 /**
  * The exception thrown when trying to reference a type number in an unexpected way.
- * <p/>
+ * <p>
  * Call any of the static methods to create a new instance of this exception.
  * 
  * @author Ming Zhou

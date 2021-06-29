@@ -135,6 +135,7 @@ public class AOTInfoIndexer extends SystemModuleProcessor<ScriptInfoBagEx> {
 		
 		mergeToFile("SystemRawScriptInfoInitializer.vm", context, new File(absPath));
 		
+		logger.info("Generated a total of " + (scripts.size() + 1) + " source files.");
 	}
 	
     protected void loadJavaSrcFiles(File root, List<String> javaFiles) throws MojoExecutionException {

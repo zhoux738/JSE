@@ -29,7 +29,7 @@ import info.julang.memory.FrameMemoryArea;
 import info.julang.memory.IStored;
 import info.julang.memory.JSEOutOfMemoryException;
 import info.julang.memory.JSEStackOverflowException;
-import info.julang.memory.MemoryOpreationException;
+import info.julang.memory.MemoryOperationException;
 import info.julang.memory.StackArea;
 
 import java.util.ArrayDeque;
@@ -61,7 +61,7 @@ public class SimpleStackArea extends StackArea {
 		@Override
 		public boolean allocate(IStored value) {
 			if(value.isStored()){
-				throw new MemoryOpreationException("Attempt to allocate memory for a value that is already stored.", this.getClass());
+				throw new MemoryOperationException("Attempt to allocate memory for a value that is already stored.", this.getClass());
 			}
 
 			value.setMemoryArea(this);
@@ -70,7 +70,7 @@ public class SimpleStackArea extends StackArea {
 
 		@Override
 		public boolean reallocate(IStored value)
-			throws JSEOutOfMemoryException, MemoryOpreationException {
+			throws JSEOutOfMemoryException, MemoryOperationException {
 			//If the frame contains this value, we return as if a re-allocation had been actually done.
 			if(value.getMemoryArea() == this){
 				return true;
@@ -80,9 +80,9 @@ public class SimpleStackArea extends StackArea {
 		}
 
 		@Override
-		public boolean deallocate(IStored value) throws MemoryOpreationException {
+		public boolean deallocate(IStored value) throws MemoryOperationException {
 			if(!value.isStored()){
-				throw new MemoryOpreationException("Attempt to de-allocate memory for a value that is not stored.", this.getClass());
+				throw new MemoryOperationException("Attempt to de-allocate memory for a value that is not stored.", this.getClass());
 			}
 			
 			if(value.getMemoryArea() != this){// The value is not stored in this memory area.
@@ -114,10 +114,10 @@ public class SimpleStackArea extends StackArea {
 	
 	@Override
 	public boolean allocate(IStored value) 
-		throws JSEOutOfMemoryException, MemoryOpreationException {
+		throws JSEOutOfMemoryException, MemoryOperationException {
 		SimpleFrameArea frame = getActiveFrame();
 		if(frame == null){
-			throw new MemoryOpreationException("Cannot allocate memory from a uninitialized stack memory area.", this.getClass());
+			throw new MemoryOperationException("Cannot allocate memory from a uninitialized stack memory area.", this.getClass());
 		}
 		// Dispatch operation to the active frame.
 		return frame.allocate(value);
@@ -125,20 +125,20 @@ public class SimpleStackArea extends StackArea {
 
 	@Override
 	public boolean reallocate(IStored value) 
-		throws JSEOutOfMemoryException, MemoryOpreationException {
+		throws JSEOutOfMemoryException, MemoryOperationException {
 		SimpleFrameArea frame = getActiveFrame();
 		if(frame == null){
-			throw new MemoryOpreationException("Cannot allocate memory from a uninitialized stack memory area.", this.getClass());
+			throw new MemoryOperationException("Cannot allocate memory from a uninitialized stack memory area.", this.getClass());
 		}
 		// Dispatch operation to the active frame.
 		return frame.reallocate(value);
 	}
 
 	@Override
-	public boolean deallocate(IStored value) throws MemoryOpreationException {
+	public boolean deallocate(IStored value) throws MemoryOperationException {
 		SimpleFrameArea frame = getActiveFrame();
 		if(frame == null){
-			throw new MemoryOpreationException("Cannot allocate memory from a uninitialized stack memory area.", this.getClass());
+			throw new MemoryOperationException("Cannot allocate memory from a uninitialized stack memory area.", this.getClass());
 		}
 		// Dispatch operation to the active frame.
 		return frame.deallocate(value);

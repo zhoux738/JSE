@@ -47,5 +47,9 @@ public interface IStackFrameInfo {
 	 * Return true if this frame is from a function defined in a loose script.
 	 */
 	boolean isFromLooseScript();
-	// In future, add getName()
+	
+	/**
+	 * Get the name of this frame, which is usually the name of function being invoked.
+	 */
+	String getName();
 }

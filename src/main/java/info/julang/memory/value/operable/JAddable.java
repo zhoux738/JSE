@@ -29,7 +29,7 @@ import info.julang.memory.value.JValue;
 
 /**
  * An interface marking this value as applicable for '+' operator.
- * <p/>
+ * <p>
  * Note while '+' in Julian is not necessarily commutative (applying '+' on
  * two strings in different order will yield different result), changing the
  * order of operands must not affect the legality of operator.

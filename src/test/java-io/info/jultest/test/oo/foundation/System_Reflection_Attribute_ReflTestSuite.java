@@ -9,8 +9,8 @@ import org.junit.Test;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.jultest.test.Commons;
-import info.jultest.test.oo.ExceptionTestRunner;
-import info.jultest.test.oo.ExceptionTestsBase;
+import info.jultest.test.ExceptionTestRunner;
+import info.jultest.test.ExceptionTestsBase;
 
 public class System_Reflection_Attribute_ReflTestSuite extends ExceptionTestsBase {
 

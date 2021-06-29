@@ -1,0 +1,16 @@
+import System.Reflection;
+
+void println(var obj) {
+	print(obj);
+	print(Environment.lineSeparator);
+}
+
+void print(var obj) {
+	// Console.print(obj);
+}
+
+void assert(bool pred, string msg) {
+	if (!pred) {
+		throw new Exception(msg);
+	}
+}

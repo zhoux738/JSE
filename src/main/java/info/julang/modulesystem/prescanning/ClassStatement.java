@@ -32,12 +32,12 @@ import info.julang.parser.AstInfo;
 /**
  * Read the script file and discover class declarations, collecting information about these classes 
  * to store in {@link RawScriptInfo}.
- * <p/>
+ * <p>
  * A class declaration in Julian has the form of <pre><code>class A : C, I1, I2, ... {
  *   ... ...
  *}</code></pre>where C is a class name and In is interface name. This class won't care too much 
  * about the semantics though.
- * <p/>
+ * <p>
  * @author Ming Zhou
  */
 public class ClassStatement implements PrescanStatement {

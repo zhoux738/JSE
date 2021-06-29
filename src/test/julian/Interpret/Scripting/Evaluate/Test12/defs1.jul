@@ -1,0 +1,15 @@
+import System.Concurrency;
+
+void func() {
+	try {
+		Environment.evaluate(new EvalConfig(), "defsx.jul", null);
+	} catch (Exception ex) {
+		s1 = verify(ex);
+	}
+}
+
+Thread t1 = Thread.create(func);
+
+t1.start();
+
+t1.join();

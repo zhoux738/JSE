@@ -29,21 +29,21 @@ import info.julang.interpretation.errorhandling.JulianScriptException;
 
 /**
  * Engine context is the main channel connecting engine runtime and the outside world.
- * <p/>
+ * <p>
  * The hosting environment is able to create an engine context and passes it to script 
  * engine, which runs some executable (provided by a separate class {@link ScriptProvider} 
  * based on the given context.
- * <p/>
+ * <p>
  * The hosting environment can query bindings from the context. It is, however, up to the 
  * implementation of EngineContext to decide which and how a state (variable) is translated 
  * to a binding to be exposed to the external world.
- * <p/>
+ * <p>
  * One should note the differences between this interface and {@link EngineRuntime}. The 
  * latter concerns only engine internals, providing all the runtime information as strictly 
  * defined by Julian Script Engine specification. This interface, on the other hand, should 
  * be considered as a media through which the hosting environment and the script engine 
  * exchange information.
- * <p/>
+ * <p>
  * To enforce in-JVM isolation, most methods are defined in {@link IExtEngineContext} that 
  * can be safely called from outside script engine.
  * 

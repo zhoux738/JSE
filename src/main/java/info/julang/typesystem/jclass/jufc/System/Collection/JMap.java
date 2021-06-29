@@ -54,19 +54,19 @@ import info.julang.typesystem.jclass.JClassType;
 import info.julang.util.Pair;
 
 /**
- * The native implementation of <font color="green">System.Collection.Map</font>.
+ * The native implementation of <code style="color:green">System.Collection.Map</code>.
  * <p>
  * To use Java's {@link java.util.HashMap} as the storage backend,  we must hook it with hashCode()
- * and equals(Object) methods defined in Julian. To achieve this, we use a wrapper class, <code>
- * <font color="green">System.Collection.HashKey</font></code>, as the type of key on the side of 
+ * and equals(Object) methods defined in Julian. To achieve this, we use a wrapper class,
+ * <code style="color:green">System.Collection.HashKey</code>, as the type of key on the side of 
  * Julian's API, regardless of the original key passed in by script composer. On the Java side, 
  * this class is wrapped by an interop class, {@link HashKeyWrapper}, which is used as the type of 
  * key for HashMap class. 
  * <p>
  * When invoked, HashMap class calls hashCode() and equals(Object) on the key object, which is a 
- * HashKeyWrapper. The latter forwards either call to <code><font color="green">
- * System.Collection.HashKey</font></code>, which, eventually, calls hashCode() and equals(Object) 
- * defined in the original key type.
+ * HashKeyWrapper. The latter forwards either call to 
+ * <code style="color:green">System.Collection.HashKey</code>, which, eventually, calls <code>hashCode()</code> 
+ * and <code>equals(Object)</code> defined in the original key type.
  *  
  * @author Ming Zhou
  */

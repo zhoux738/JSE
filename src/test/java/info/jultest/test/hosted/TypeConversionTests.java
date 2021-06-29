@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import info.julang.execution.Argument;
 import info.julang.execution.EngineRuntime;
-import info.julang.execution.Executable;
 import info.julang.execution.Result;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.ITypeTable;
@@ -22,6 +21,7 @@ import info.julang.execution.threading.ThreadRuntime;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.hosting.mapped.MappedTypeConversionException;
 import info.julang.hosting.mapped.PlatformConversionUtil;
+import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.context.Context;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.value.ArrayValue;
@@ -208,7 +208,7 @@ public class TypeConversionTests {
 	}
 
 	private Context makeUnthreadedContext(EngineRuntime rt){
-		JThread jt = rt.getThreadManager().createMain(rt, new Executable(){
+		JThread jt = rt.getThreadManager().createMain(rt, new InterpretedExecutable(null, null, false, false){
 
 			@Override
 			public Result execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) throws EngineInvocationError {

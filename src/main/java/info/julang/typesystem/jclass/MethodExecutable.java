@@ -56,14 +56,18 @@ import info.julang.typesystem.loading.InternalTypeResolver;
 
 /**
  * The executable for method invocation.
- * <p/>
+ * <p>
  * The method executable takes care of a couple of extra things than function executable:
+ * <ul>
  * <li>The namespace pool is fixed and shared among all the methods of the same class.</li>
- * <li>The treatment for <b>this</b> keyword</li> (TODO - maybe not done here, but rather passed along as 1st arg with name = "this")
+ * <li>The treatment for <b>this</b> keyword</li>
  * <li>The treatment for <b>super</b> keyword</li>
- * <br/><br/>
+ * </ul>
+ * 
  * @author Ming Zhou
  */
+// Implementation Notes:
+// The treatment for this keyword may be not done here, but rather passed along as 1st arg with name = "this"
 public class MethodExecutable extends InterpretedExecutable implements Cloneable {
 	
 	private static class MethodMemberNameResolver implements IMemberNameResolver {
@@ -121,11 +125,11 @@ public class MethodExecutable extends InterpretedExecutable implements Cloneable
 	}
 	
 	private MethodExecutable(){
-		super(null, false, false);
+		super(null, null, false, false);
 	}
 	
-	public MethodExecutable(AstInfo<? extends ParserRuleContext> ast, ICompoundType ofType, boolean isStatic) {
-		super(ast, false, true);
+	public MethodExecutable(String name, AstInfo<? extends ParserRuleContext> ast, ICompoundType ofType, boolean isStatic) {
+		super(name, ast, false, true);
 		containingType = ofType;
 		// Load shared namespace
 		nsPool = containingType.getNamespacePool();

@@ -38,6 +38,7 @@ import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.exceptions.JSEError;
+import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.MemoryArea;
 import info.julang.memory.StackArea;
@@ -51,7 +52,7 @@ import info.julang.typesystem.loading.InternalTypeResolver;
 
 /**
  * A JThread represents a thread running in script engine. It may or may not be backed by a native thread.
- * <p/>
+ * <p>
  * A thread has its own stack and variable table. 
  * 
  * @author Ming Zhou
@@ -107,6 +108,17 @@ public class JThread {
 	}
 	
 	/**
+	 * Replicate an existing thread with new executable.
+	 */
+	static JThread replicateThread(
+		JThread thread, StackAreaFactory stackFactory, InterpretedExecutable exec, EngineRuntime engRt){
+		JThreadProperties props = thread.props.clone();
+		props.setReplicated(true);
+		JThread repThread = createNewThread(thread.id, thread.name, stackFactory, engRt, thread.func, exec, null, props);
+		return repThread;
+	}
+	
+	/**
 	 * The method to run this thread. Always call this through the runnable object returned by 
 	 * {@ #getRunnable(Argument[])}, which implements the standard {@link java.lang.Runnable 
 	 * runnable} object that will call back this method when running in a Java thread. 
@@ -148,7 +160,7 @@ public class JThread {
 	
 	/**
 	 * Get a Runnable instance that can be run or scheduled in Java's threading API.
-	 * <p/>
+	 * <p>
 	 * One and only one {@link JThreadRunnable runnable} object will be ever generated from this JThread.
 	 * 
 	 * @param manager
@@ -201,12 +213,20 @@ public class JThread {
 		return props.isMain();
 	}
 	
+	public boolean isReplicated() {
+		return props.isReplicated();
+	}
+	
 	public int getRunCount() {
 		return props.getRunCount();
 	}
 	
 	public boolean isIOThread() {
 		return props.isIOThread();
+	}
+	
+	public Executable getExecutable() {
+		return exec;
 	}
 	
 	//----------------- Thread signaling -----------------//
@@ -286,15 +306,21 @@ public class JThread {
 	 */
 	public synchronized HostedValue getScriptThreadObject() {		
 		if(threadObjectInJulian == null){
-			if (props.isMain()){				
-				// If this is the main thread, lazy-initialize the object.
-				JType typ = SystemTypeUtility.ensureTypeBeLoaded(threadRt, ScriptThread.FullTypeName);
-				
-				ScriptThread st = new ScriptThread(this, this.runnable);
-				HostedValue hv = new HostedValue(threadRt.getHeap(), typ);
-				hv.setHostedObject(st);
-				
-				threadObjectInJulian = hv;
+			if (props.isMain()){
+				JThread first = threadRt.getThreadManager().getFirstMain();
+				if (first == this) {
+					// If this is the 1st object representing main thread, lazy-initialize the object.
+					JType typ = SystemTypeUtility.ensureTypeBeLoaded(threadRt, ScriptThread.FullTypeName);
+					
+					ScriptThread st = new ScriptThread(this, this.runnable);
+					HostedValue hv = new HostedValue(threadRt.getHeap(), typ);
+					hv.setHostedObject(st);
+					
+					threadObjectInJulian = hv;
+				} else {
+					// If this is the 2nd+ object representing main thread, delegate to the 1st.
+					threadObjectInJulian = first.getScriptThreadObject();
+				}
 			} else {
 				throw new JSEError(
 					"The current thread (" + 
@@ -308,10 +334,10 @@ public class JThread {
 	
 	/**
 	 * Safely call wait() on the monitor.
-	 * <p/>
+	 * <p>
 	 * This method must be used when awaiting a monitor while ignoring the interruption
-	 * signal sent from scripts (through <code><font color="green">
-	 * System.Concurrency.Thread.interrupt()</font></code>). All the system usage of wait()
+	 * signal sent from scripts (through <code style="color:green">
+	 * System.Concurrency.Thread.interrupt()</code>). All the system usage of wait()
 	 * must be called through this wrapper.
 	 * 
 	 * @param monitor
@@ -338,7 +364,7 @@ public class JThread {
 	}
 	
 	/**
-	 * An interface defining the condition on which {@link JThread#safeWait(Object)} should quit.
+	 * An interface defining the condition on which {@link JThread#safeWait(Object, MonitorInterruptCondition)} should quit.
 	 */
 	public static interface MonitorInterruptCondition {
 		

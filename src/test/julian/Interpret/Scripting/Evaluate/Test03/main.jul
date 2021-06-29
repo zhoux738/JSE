@@ -1,0 +1,5 @@
+EvalConfig config = new EvalConfig();
+config.setUseDefaultRoot(true);
+string[] args = new string[]{"a", "b", "c"};
+string s_a = Environment.evaluate(config, "choose1.jul", args);
+string s_b = Environment.evaluate(config, "scripts/choose2.jul", args);

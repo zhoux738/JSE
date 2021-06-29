@@ -1,0 +1,3 @@
+// WARNING:
+// Make sure the divide-by-0 happens at line 3 since we are going to assert on this location.
+return 5 / 0.0;

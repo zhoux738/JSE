@@ -24,6 +24,10 @@ SOFTWARE.
 
 package info.julang.eng.mvnplugin.mdgen;
 
+import java.awt.Color;
+import java.io.IOException;
+import java.util.List;
+
 import info.julang.eng.mvnplugin.GlobalLogger;
 import info.julang.eng.mvnplugin.docgen.DocModel;
 import info.julang.eng.mvnplugin.docgen.DocModel.AnchorType;
@@ -31,10 +35,12 @@ import info.julang.eng.mvnplugin.docgen.DocModel.AttributeType;
 import info.julang.eng.mvnplugin.docgen.DocModel.EnumEntry;
 import info.julang.eng.mvnplugin.docgen.DocModel.EnumType;
 import info.julang.eng.mvnplugin.docgen.DocModel.Field;
+import info.julang.eng.mvnplugin.docgen.DocModel.Function;
 import info.julang.eng.mvnplugin.docgen.DocModel.TutorialPseudoType;
 import info.julang.eng.mvnplugin.docgen.DocModel.TypeDescription;
 import info.julang.eng.mvnplugin.docgen.DocModel.TypeRef;
 import info.julang.eng.mvnplugin.docgen.ModuleContext;
+import info.julang.eng.mvnplugin.docgen.ScriptInfo;
 import info.julang.eng.mvnplugin.docgen.TypeInfo;
 import info.julang.eng.mvnplugin.htmlgen.WebsiteResources;
 import info.julang.eng.mvnplugin.mdgen.TutorialInfo.ChapterInfo;
@@ -42,12 +48,22 @@ import info.julang.execution.namespace.NamespacePool;
 import info.julang.modulesystem.BadNameException;
 import info.julang.modulesystem.naming.FQName;
 
-import java.awt.Color;
-import java.io.IOException;
-import java.util.List;
-
 /**
- * Convert a in-doc link to an markdown link.
+ * Convert an in-doc link to a markdown link.
+ * <p>
+ * The supported link forms are:
+ * <p>
+ * <table>
+ * <tr align="left">
+ *     <th>Link Type</th>    <th>Simple Form</th>                      <th>Full Form</th>                                     <th>Presentation</th></tr>
+ * <tr><td>Parameter</td>    <td><code>[param: paramName]</code></td>  <td><code>[the parameter](param: paramName)</code></td><td><code>{@link #a the parameter}</code></td></tr>
+ * <tr><td>Type</td>         <td><code>[type: TypeName]</code></td>    <td><code>[the type](type: TypeName)</code></td>       <td><code>{@link #a the type}</code></td></tr>
+ * <tr><td>Script</td>       <td><code>[script: script.jul]</code></td><td><code>[the script](script: script.jul)</code></td> <td><code>{@link #a the script}</code></td></tr>
+ * <tr><td>Function Type</td><td><code>[func: int, MyType]</code></td> <td><code>-</code></td>                                <td><code>{@link #a Function}({@link #a int}, {@link #a MyType})</code></td></tr>
+ * <tr><td>Tutorial</td>     <td><code>[tutorial: Topic]</code></td>   <td><code>[the chapter](tutorial: Topic)</code></td>   <td><code>{@link #a the chapter}</code></td></tr>
+ * </table>
+ * 
+ * There are a few other forms which do not really generate a link, but can be used to generate pre-styled information box.
  * 
  * @author Ming Zhou
  */
@@ -56,6 +72,7 @@ public class InDocLink implements IParsedDocSection {
 	private static final String TypeLink = "type:";
 	private static final String ParamLink = "param:";
 	private static final String FuncLink = "func:";
+	private static final String ScriptLink = "script:";
 	private static final String ReturnLink = "return";
 	private static final String TutorialLink = "tutorial:";
 	private static final String Version = "version:";
@@ -68,26 +85,35 @@ public class InDocLink implements IParsedDocSection {
 	private ModuleContext mc;
 	private TutorialInfo tut;
 	private NamespacePool np;
-	private DocModel.Type typ;
+	private DocModel.Documented doc;
 	private DocModel.Member mem;
 	private String txt;
 	private String rawlnk;
 	private int indexLevel = -1;
+	private boolean isLinkToScript = false;
 	
 	/**
 	 * Create a doc link in the given context as defined by type and member.
 	 * 
+	 * @param mc Module context - contains all type info.
+	 * @param tut Tutorial info - contains indexing based on keywords.
+	 * @param np The namespace pool in the current textual context.
 	 * @param str the original link text.
-	 * @param typ The type from which this doc is extracted.
+	 * @param doc The top-level model from which this doc is extracted.
 	 * @param mem If null, the doc is for the type itself; otherwise for this particular member.
 	 */
 	public InDocLink(
-		ModuleContext mc, TutorialInfo tut, NamespacePool np, 
-		String str, DocModel.Type typ, DocModel.Member mem) {
+		ModuleContext mc,
+		TutorialInfo tut,
+		NamespacePool np, 
+		String str,
+		DocModel.Documented doc,
+		DocModel.Member mem) {
+		
 		this.mc = mc;
 		this.np = np;
 		this.tut = tut;
-		this.typ = typ;
+		this.doc = doc;
 		this.mem = mem;
 		
 		int index = str.indexOf(']');
@@ -103,6 +129,10 @@ public class InDocLink implements IParsedDocSection {
 				// [type: A] => [A](type: A)
 				rawlnk = txt;
 				txt = rawlnk.substring(TypeLink.length()).trim();
+			} else if (txt.startsWith(ScriptLink)) {
+				// [script: a] => [a](script: a)
+				rawlnk = txt;
+				txt = rawlnk.substring(ScriptLink.length()).trim();
 			} else if (txt.startsWith(FuncLink)) {
 				// [func: int, System.IO.File] => generate a string in the form of 'Function(int, File)' with each type linked.
 				String params = txt.substring(FuncLink.length()).trim();
@@ -151,7 +181,8 @@ public class InDocLink implements IParsedDocSection {
 				markdownWriter.add(pss);
 			}
 		} else {
-			markdownWriter.add(StylizedString.create(getText(), false).toLink(getLink()));
+			StylizedString ss = StylizedString.create(getText(), false).toLink(getLink()).toItalic(isLinkToScript);			
+			markdownWriter.add(ss);
 		}
 	}
 
@@ -175,12 +206,12 @@ public class InDocLink implements IParsedDocSection {
 			return BrokenLink;
 		} else {
 			String cname = chap.getLinkName() + ".html";
-			if (typ == TutorialPseudoType.INSTANCE){
+			if (doc == TutorialPseudoType.INSTANCE){
 				// If linking from tutorial, the link points to the same level
 				return linkTargetOnly ? cname : StylizedString.create(chap.getTitle()).toLink(cname).toString();
 			} else {
 				// If linking from API docs, must navigate to Tutorial resource
-				String modName = typ.getModuleName();
+				String modName = doc.getDocFolderName();
 				String link = null;
 				if (modName == null || "".equals(modName)){
 					link = "../" + WebsiteResources.tutorial.name() + "/" + cname;
@@ -199,7 +230,7 @@ public class InDocLink implements IParsedDocSection {
 		sb.append("<code>");
 		// [Function](Function)
 		NamespacePool ns = new NamespacePool();
-		ns.addNamespace(typ.getModuleName());
+		setModuleName(ns);
 		TypeInfo tinfo = mc.getTypeInfo("Function", 0, ns);
 		String link = getLinkPath(tinfo.getFullName());
 		StylizedString ss1 = StylizedString.create(tinfo.getFullName()).toLink(link);
@@ -234,16 +265,17 @@ public class InDocLink implements IParsedDocSection {
 	
 	private String getLink(){
 		// Supported link types:
-		// 1) [TTT]        same as [TTT](type: TTT)
-		// 2) [TTT](LLL)   LLL can be
-		// 2.1) AAA#BBB    It's a member of name BBB on FQTN AAA
-		// 2.2) #BBB       It's a member of name BBB on the current type
-		// 2.4) param: PPP A param with name PPP. This only applies to ctor/member doc
-		// 2.5) type: AAA  The FQTN AAA
-		// 2.6) return     Return value. This only applies to member doc 
-		// 2.7) scheme://  External link
-		// 2.8) starting with ./ or ../ 
-		//                 Relative link
+		// 1) [TTT]          same as [TTT](type: TTT)
+		// 2) [TTT](LLL)     LLL can be
+		// 2.1) AAA#BBB      It's a member of name BBB on FQTN AAA
+		// 2.2) #BBB         It's a member of name BBB on the current type
+		// 2.4) param: PPP   A param with name PPP. This only applies to ctor/member doc
+		// 2.5) type: AAA    The FQDN type name AAA
+		// 2.6) script: sss  The FQDN script name sss
+		// 2.7) return       Return value. This only applies to member doc 
+		// 2.8) scheme://    External link
+		// 2.9) starting with ./ or ../ 
+		//                   Relative link
 		if (rawlnk == null) {
 			return null;
 		}
@@ -262,7 +294,9 @@ public class InDocLink implements IParsedDocSection {
 //			}
 		} else if (rawlnk.startsWith(TypeLink)){
 			String typName = rawlnk.substring(TypeLink.length()).trim();
-			link = typeNameToLink(typName, null);
+			if (!typName.contains("#")) {
+				link = typeNameToLink(typName, null);
+			}
 		} else if (rawlnk.startsWith(ParamLink)){
 			String paramName = rawlnk.substring(ParamLink.length()).trim();
 			link = "#" + mem.getAnchorName(AnchorType.Parameter, paramName);
@@ -271,18 +305,28 @@ public class InDocLink implements IParsedDocSection {
 		} else if (rawlnk.startsWith(TutorialLink)) {
 			String keyword = rawlnk.substring(TutorialLink.length()).trim();
 			link = getTutLink(keyword, true);
-		} 
+		} else if (rawlnk.startsWith(ScriptLink)){
+			isLinkToScript = true;
+			String scriptName = rawlnk.substring(ScriptLink.length()).trim();
+			if (!scriptName.contains("#")) {
+				link = scriptNameToLink(scriptName, null);
+			}
+		}  
 		
 		if (link == null && rawlnk.contains("#")){
-			String typeName = rawlnk;
+			String mname = rawlnk;
+			boolean isScript = false;
 			if (rawlnk.startsWith(TypeLink)){
-				typeName = rawlnk.substring(TypeLink.length()).trim();
+				mname = rawlnk.substring(TypeLink.length()).trim();
+			} else if (rawlnk.startsWith(ScriptLink)){
+				mname = rawlnk.substring(ScriptLink.length()).trim();
+				isScript = true;
 			}
-			String[] sections = typeName.split("#");
+			String[] sections = mname.split("#");
 			if (sections.length == 2){
-				String typName = sections[0];
+				String entName = sections[0];
 				String memName = sections[1];
-				link = typeNameToLink(typName, memName);
+				link = isScript ? scriptNameToLink(entName, memName) : typeNameToLink(entName, memName);
 			}
 		}
 		
@@ -292,6 +336,17 @@ public class InDocLink implements IParsedDocSection {
 			link = typeNameToLink(rawlnk.trim(), null);
 		}
 		
+		return link;
+	}
+	
+	private String scriptNameToLink(String scriptName, String memName) {
+		ScriptInfo sinfo = this.mc.getScriptInfo(scriptName);
+		String link = getLinkPath(sinfo);
+		String memLink = getMemberLink(sinfo.getModel(), memName);
+		if (memLink != null) {
+			link += "#" + memLink;
+		}
+		 
 		return link;
 	}
 	
@@ -306,8 +361,8 @@ public class InDocLink implements IParsedDocSection {
 		NamespacePool ns = new NamespacePool();
 		TypeInfo tinfo = null;
 		if (typeName == null || "".equals(typeName)){
-			ns.addNamespace(typ.getModuleName());
-			tinfo = this.mc.getTypeInfo(typ.name, 0, ns);
+			setModuleName(ns);
+			tinfo = this.mc.getTypeInfo(doc.name, 0, ns);
 		} else {
 			FQName fn;
 			try {
@@ -323,7 +378,7 @@ public class InDocLink implements IParsedDocSection {
 			} else {
 				// This is an NFQ name
 				// (Ideally we should also provide an NS same as the source code, but we can defer this. If the name is NQ, just use current module.)
-				ns.addNamespace(typ.getModuleName());
+				setModuleName(ns);
 			}
 			
 			tinfo = this.mc.getTypeInfo(typeName, 0, ns);			
@@ -387,6 +442,19 @@ public class InDocLink implements IParsedDocSection {
 			for (Field fd : fds) {
 				if (f.equals(fd.name)) {
 					return fd.getAnchorName();
+				}
+			}
+		}
+		
+		return null;
+	}
+
+	private String getMemberLink(DocModel.Script script, String funcName) {
+		if (funcName != null) {
+			List<Function> funcs = script.functions;
+			for (Function func : funcs) {
+				if (funcName.equals(func.name)) {
+					return func.getAnchorName();
 				}
 			}
 		}
@@ -471,13 +539,13 @@ public class InDocLink implements IParsedDocSection {
 		if (index != -1) {
 			// Has parameter list part. Could be a ctor or method.
 			NamespacePool ns = new NamespacePool();
-			ns.addNamespace(typ.getModuleName());
+			setModuleName(ns);
 
 			int endIndex = memName.indexOf(')', index);
 			String plist = memName.substring(index + 1, endIndex).trim();
 			
 			memName = memName.substring(0, index);
-			if (memName.equals(this.typ.name)){
+			if (memName.equals(this.doc.name)){
 				ctor = new DocModel.Constructor(memName);
 			} else {
 				ctor = new DocModel.Method();
@@ -516,7 +584,7 @@ public class InDocLink implements IParsedDocSection {
 			}
 		} else {
 			// No parameter list part. Could be a ctor, method or field.
-			if (memName.equals(this.typ.name)){
+			if (memName.equals(this.doc.name)){
 				ctor = new DocModel.Constructor(memName);
 			} else {
 				ctor = new DocModel.Method();
@@ -567,7 +635,19 @@ public class InDocLink implements IParsedDocSection {
 	private String getLinkPath(String fullName){
 		TypeRef tref = TypeRef.makeFromFullName(fullName);
 		tref = tref.resolve(np, mc);
-		String link = tref.getLinkPath(typ, null);
+		String link = tref.getLinkPath(doc, null);
 		return link;
+	}
+
+	private String getLinkPath(ScriptInfo sinfo){
+		TypeRef tref = TypeRef.makeFromScript(sinfo);
+		String link = tref.getLinkPath(doc, null);
+		return link;
+	}
+	
+	private void setModuleName(NamespacePool ns) {
+		if (doc instanceof DocModel.Type) {
+			ns.addNamespace(((DocModel.Type)doc).getModuleName());
+		}
 	}
 }

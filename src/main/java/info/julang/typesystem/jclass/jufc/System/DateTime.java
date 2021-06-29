@@ -41,8 +41,8 @@ import info.julang.memory.value.RefValue;
 import info.julang.util.Pair;
 
 /**
- * The native implementation of <font color="green">System.DateTime</font>.
- * <p/>
+ * The native implementation of <code style="color:green">System.DateTime</code>.
+ * <p>
  * This implementation is backed by {@link java.util.Calendar}, which has a tricky part: its month
  * is 0-based. So a +1/-1 conversion is performed at this layer to make Julian API more user friendly.
  *  

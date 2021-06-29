@@ -86,7 +86,7 @@ public abstract class Operator {
 	
 	/**
 	 * Apply this operator on given operands.
-	 * <p/>
+	 * <p>
 	 * Where the operands come from doesn't concern this method. The number of operands provided,
 	 * however, must be equal to {@link #getArity()}.
 	 * 
@@ -218,9 +218,9 @@ public abstract class Operator {
 	
 	/**
 	 * Replicate a value in current frame.
-	 * <p/>
+	 * <p>
 	 * If the value is of basic type, or string, make a copy by value (call-by-value).
-	 * <p/>
+	 * <p>
 	 * If the value if of other types, make a reference to hold that value (call-by-reference).
 	 * 
 	 * @param val

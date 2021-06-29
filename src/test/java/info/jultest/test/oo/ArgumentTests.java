@@ -5,6 +5,7 @@ import org.junit.Test;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.errorhandling.KnownJSException;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestRunner;
 
 public class ArgumentTests {
 

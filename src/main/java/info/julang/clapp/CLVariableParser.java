@@ -34,6 +34,7 @@ import info.julang.external.binding.CharacterBinding;
 import info.julang.external.binding.IBinding;
 import info.julang.external.binding.IntegerBinding;
 import info.julang.external.binding.StringBinding;
+import info.julang.external.interfaces.IExtVariableTable;
 
 /**
  * Parse cmdline variable in the format of name[:type][=value]. Forbid use of names which do not 
@@ -56,7 +57,7 @@ class CLVariableParser {
 		forbiddenSet = new HashSet<String>();
 		forbiddenSet.add("this");
 		forbiddenSet.add("super");
-		forbiddenSet.add("arguments");
+		forbiddenSet.add(IExtVariableTable.KnownVariableName_Arguments);
 		forbiddenSet.add("System");
 	}
 	

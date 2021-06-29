@@ -4,12 +4,12 @@
 
   <groupId>info.julang.eng</groupId>
   <artifactId>juleng-maven-plugin</artifactId>
-  <version>0.0.3</version>
+  <version>0.0.4</version>
   <packaging>maven-plugin</packaging>
 
   <name>JSE Engineering Maven Plugin</name>
 
-  <url>http://julang.info</url>
+  <url>https://julang.info</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -24,6 +24,9 @@ SOFTWARE.
 
 package info.julang.modulesystem.prescanning.lazy;
 
+import java.io.File;
+
+import info.julang.external.interfaces.IExtModuleManager;
 import info.julang.modulesystem.prescanning.IllegalModuleFileException;
 import info.julang.modulesystem.prescanning.RawScriptInfo;
 import info.julang.modulesystem.prescanning.RawScriptInfo.Option;
@@ -32,22 +35,39 @@ import info.julang.scanner.ITokenStream;
 public class LazyModuleStatement implements LazyPrescanStatement {
 
 	private ModuleNameReader reader;
+	private String implicitModuleName;
 	
-	public LazyModuleStatement(ModuleNameReader reader){
+	public LazyModuleStatement(ModuleNameReader reader, String implicitModuleName){
 		this.reader = reader;
+		this.implicitModuleName = implicitModuleName;
 	}
-	
+
+	// Starts right after the module keyword.
 	@Override
 	public void prescan(ITokenStream stream, RawScriptInfo info) {
 		StringBuilder fullName = new StringBuilder();
 		stream.mark();
-		reader.readModuleName(stream, fullName, false);
+		reader.readModuleName(stream, fullName, true);
 		
 		String fname = fullName.toString();
 		
-		if(info.getModuleName() == null){
-			info.setModuleName(fname);
-		}
+		if ("".equals(fname)) { // Implicit module name
+			if (implicitModuleName != null) {
+				info.setModuleName(fname = implicitModuleName);
+			} else {
+				throw new IllegalModuleFileException(
+					info, stream,
+					"The module name is not defined. Default module declaration "
+					+ "(module;) can only be used for module files found under the default module path, i.e. '"
+					+ IExtModuleManager.DefaultModuleDirectoryName 
+					+ File.separator 
+					+ "' co-located with the invoked script.");	
+			}
+		} else {
+			if (info.getModuleName() == null) {
+				info.setModuleName(fname);
+			}
+		}		
 		
 		Option opt = info.getOption();
 		

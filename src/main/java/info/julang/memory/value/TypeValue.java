@@ -183,7 +183,7 @@ public class TypeValue extends ObjectValue {
 	private ObjectValue typeObject;
 	
 	/**
-	 * Get <font color="green"><code>System.Type</code></font> object for this type. 
+	 * Get <code style="color:green">System.Type</code> object for this type. 
 	 * This object will be created the first time this method is called.
 	 * 
 	 * @param runtime

@@ -30,6 +30,7 @@ import info.julang.execution.Executable;
 import info.julang.execution.Result;
 import info.julang.execution.security.UnderprivilegeException;
 import info.julang.execution.threading.ThreadRuntime;
+import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.StackArea;
 import info.julang.memory.value.IFuncValue;
 import info.julang.memory.value.JValue;
@@ -77,6 +78,14 @@ public abstract class HostedExecutable implements Executable {
 		} catch (JSERuntimeException jsrex) {
 			// Throw any JSERuntimeException as is.
 			throw jsrex;
+		} catch (JulianScriptException jsrex) {
+			if (jsrex.shouldPreserveAcrossPlatformBoundary()) {
+				// Throw JulianScriptException if required so.
+				throw jsrex;
+			} else {
+				// Otherwise wrap it in HostingPlatformException. 
+				throw new HostingPlatformException(jsrex, className, methodName);
+			}
 		} catch (SecurityException ex) {
 			// For security exception, wrap it in System.UnderprivilegeException.
 			throw new UnderprivilegeException(new HostingPlatformException(ex, className, methodName));

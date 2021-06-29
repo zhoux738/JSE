@@ -1,0 +1,23 @@
+/*
+ * Provides helper functions for function objects.
+ */
+ 
+/*
+ * Bind `this` to the given value.
+ *
+ * [param: thisVal] The new value to be used when resolving `this` keyword inside the given function.
+ * [return] The function to which a new `this` value has been bound;
+ */
+Function bindThis(Function func, var thisVal) {
+  return Function.bind(func, thisVal);
+}
+
+/*
+ * Bind the first few arguments to the given values. The `this` variable remains unchanged.
+ *
+ * [param: args] The new values to bind to the first few arguemnts of the given function.
+ * [return] The function of which the first few arguments have been bound to the given values;
+ */
+Function bindArgs(var[] args) {
+  return Function.bind(func, null, args);
+}

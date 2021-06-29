@@ -1,0 +1,18 @@
+#* Parameters:
+    tv_scripts *#
+package info.julang.modulesystem.scripts;
+
+import java.net.URL;
+import java.util.Map;
+
+/**
+ * This source file is automatically generated.
+ */
+final class InternalScriptLoaderInitializer {
+
+	static void init(Map<String, URL> scripts) {
+#foreach( $script in $tv_scripts )
+      scripts.put("$script", null);
+#end
+	}
+}

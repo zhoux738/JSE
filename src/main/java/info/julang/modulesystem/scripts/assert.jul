@@ -1,0 +1,57 @@
+/*
+ * Provides assertion functions.
+ */
+ 
+/*
+ * Assert a predicate. On assertion failure, throw [System.AssertException].
+ *
+ * [param: predicate] The condition to assert. If false, throw System.AssertException.
+ * [throw: System.AssertException] When predicate is false.
+ */
+void assert(bool predicate) {
+ 	assertTrue(predicate, "The assertion failed.");
+}
+
+/*
+ * Assert a predicate. On assertion failure, throw [System.AssertException].
+ *
+ * [param: predicate] The condition to assert. If false, throw System.AssertException.
+ * [param: msg] A message that will be used in AssertException.
+ * [throw: System.AssertException] When predicate is false.
+ */
+void assertTrue(bool predicate, string msg) {
+ 	if (!predicate) {
+		throw new AssertException(msg);
+	}
+}
+
+/*
+ * Assert that two values are equal. On assertion failure, throw [System.AssertException].
+ *
+ * [param: exp] The expected value.
+ * [param: act] The actual value.
+ * [throw: System.AssertException] When the two values are not equal.
+ */
+void assertEqual(var exp, var act) {
+ 	if (exp == act) {
+ 		// primitive equality or reference equality
+ 		return;
+ 	}
+ 	
+ 	if (exp != null && exp is Object && exp.equals(act)) {
+ 		// semantic equality
+ 		return;
+ 	}
+ 	
+ 	string expStr = exp == null ? "(null)" 
+ 		: exp is Object 
+ 			? exp.toString()
+ 			: "" + exp;
+
+ 	string actStr = act == null ? "(null)" 
+ 		: act is Object 
+ 			? act.toString()
+ 			: "" + act;
+ 			
+	throw new AssertException("Values are not equal. Expected: " + expStr + "; Actual: " + actStr);
+}

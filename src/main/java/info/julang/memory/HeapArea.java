@@ -27,9 +27,9 @@ package info.julang.memory;
 
 /**
  * The heap area holds data of class instances. 
- * <br/>
+ * <br>
  * Each scripting engine has one and only one HeapArea.
- * <br/>
+ * <br>
  * This area is subject to garbage collection.
  * 
  * @author Ming Zhou

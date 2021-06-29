@@ -1,0 +1,3 @@
+class MC1 {
+	static int v = 1;
+}

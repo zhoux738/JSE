@@ -573,7 +573,7 @@ public class JFileStream {
 	 *                  after the first read which either filled the buffer or hit EOF. If not null, will call this method 
 	 *                  recursively, and upon end of each call the buffer will be filled out, except perhaps the last time 
 	 *                  when the EOF was hit first. After each read, the callback will be invoked on the given IO thread.  
-	 * @param handle    The promise handle of type <code><font color="green">System.Concurrency.PromiseHandle</font></code> 
+	 * @param handle    The promise handle of type <code style="color:green">System.Concurrency.PromiseHandle</code> 
 	 *                  that can be used to settle the promise associated with this asynchronous call.
 	 * @param totalRead The count of bytes read so far.
 	 */
@@ -723,7 +723,7 @@ public class JFileStream {
 	 * @param buffer    A buffer to hold the data to write.
 	 * @param achan     The file channel.
 	 * @param position  The initial position on the buffer to read the data into.
-	 * @param handle    The promise handle of type <code><font color="green">System.Concurrency.PromiseHandle</font></code> 
+	 * @param handle    The promise handle of type <code style="color:green">System.Concurrency.PromiseHandle</code> 
 	 *                  that can be used to settle the promise associated with this asynchronous call.
 	 */
 	private void writeAsync0(

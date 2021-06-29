@@ -47,7 +47,7 @@ import info.julang.typesystem.jclass.JClassType;
 
 /**
  * The try statement in Julian language.
- * <p/>
+ * <p>
  * The try statement is comprised of multiple parts:<pre><code> try {
  *   ... ...
  * } catch (Exception ex) {
@@ -56,10 +56,11 @@ import info.julang.typesystem.jclass.JClassType;
  *   ... ...
  * } </code></pre>
  * Note that:
- * <p/>
+ * <ul>
  *   <li>there can be zero or multiple catch section</li>
  *   <li>there can be zero or one finally section</li>
- * <p/>
+ * </ul>
+ * 
  * @author Ming Zhou
  */
 public class TryStatement extends MultiBlockStatementBase {
@@ -114,9 +115,9 @@ public class TryStatement extends MultiBlockStatementBase {
 	
 	/**
 	 * Interpret the catch and finally clauses.
-	 * <p/>
+	 * <p>
 	 * In the declared order, try to match each <code>catch</code> clause against the captured exception until one is found, execute the block.
-	 * <p/>
+	 * <p>
 	 * Whether caught or not, run <code>finally</code> clause at the end.
 	 * 
 	 * @param context

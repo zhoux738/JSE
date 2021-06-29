@@ -28,7 +28,7 @@ import info.julang.memory.value.JValue;
 import info.julang.memory.value.operable.JulianObjectAdaptor;
 
 /**
- * An interface mirroring <font color="green"><code>System.Util.IIndexable</code></font>.
+ * An interface mirroring <code style="color:green">System.Util.IIndexable</code>.
  * 
  * @author Ming Zhou
  */
@@ -51,7 +51,7 @@ public interface IIndexable extends JulianObjectAdaptor {
 	/**
 	 * Set the value at the specified index. Will overwrite.
 	 * <p>
-	 * This is used when assigning by index, in the form of <p/><pre>
+	 * This is used when assigning by index, in the form of <p><pre>
 	 * <code>m[k] = v;</code></pre>
 	 * 
 	 * @return the new value at the specified index. Null if the index is out of range.

@@ -47,8 +47,8 @@ public abstract class MappedExecutableBase extends MethodExecutable {
 
 	static final String PARAM_VAR_NAME = "platform_arguments";
 	
-	public MappedExecutableBase(ICompoundType ofType, boolean isStatic) {
-		super(null, ofType, isStatic);
+	protected MappedExecutableBase(String name, ICompoundType ofType, boolean isStatic) {
+		super("<Platform" + name, null, ofType, isStatic);
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public abstract class MappedExecutableBase extends MethodExecutable {
 	
 	@Override
 	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
-		super.repliateArgsAndBindings(args, ctxt, func, false);
+		super.replicateArgsAndBindings(args, ctxt, func, false);
 	}
 
 	protected abstract Result executeInternal(ThreadRuntime runtime, Context ctxt) throws InvocationTargetException, IllegalAccessException;

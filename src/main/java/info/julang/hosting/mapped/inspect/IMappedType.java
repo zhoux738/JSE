@@ -37,7 +37,7 @@ package info.julang.hosting.mapped.inspect;
  * field with type being the class type itself is surely mappable:<pre><code> class Node {
  *   Node n;
  * }</code></pre>
- * But since we don't have {@link JType} instance for this very type, we 
+ * But since we don't have {@link info.julang.typesystem.JType} instance for this very type, we 
  * can only use an abstract layer to carry the information down the road.
  * 
  * @author Ming Zhou

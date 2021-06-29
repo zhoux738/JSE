@@ -26,12 +26,15 @@ package info.julang.modulesystem.prescanning;
 
 import java.util.List;
 
+import info.julang.modulesystem.IncludedFile;
 import info.julang.modulesystem.RequirementInfo;
 import info.julang.parser.LazyAstInfo;
 
 public interface IRawScriptInfo {
 
 	String getModuleName();
+	
+	List<IncludedFile> getInclusions();
 
 	List<RequirementInfo> getRequirements();
 

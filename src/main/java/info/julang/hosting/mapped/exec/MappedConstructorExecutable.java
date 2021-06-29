@@ -60,7 +60,7 @@ public class MappedConstructorExecutable extends MappedExecutableBase {
 	private Constructor<?> ctor;
 	
 	public MappedConstructorExecutable(ICompoundType ofType, Constructor<?> ctor) {
-		super(ofType, false);
+		super("/Ctor>-" + ctor.getName(), ofType, false);
 		this.ctor = ctor;
 	}
 	

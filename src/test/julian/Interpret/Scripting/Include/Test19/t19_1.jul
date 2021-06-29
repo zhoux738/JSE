@@ -1,0 +1,28 @@
+import System.Reflection;
+
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "../Shared/commons.jul", null);
+
+void verify (var tag, Script script, String scriptName) {
+	// script path contains script name
+	println("[" + tag);
+	print  ("Path:   ");
+	println(script.getPath());
+	assert(script.getPath().endsWith(scriptName), "Unexpected script name " + script.getPath());
+	
+	// module name is invariably [MODULE|<default>]
+	Module mod = script.getModule();
+	print  ("Module: ");
+	println(mod);
+	assert("[MODULE|<default>]".equals(mod.toString()), "Unexpected module name " + mod.toString());
+	
+	// only one script in this module, which is exactly the script from which the module was obtained
+	Script[] scripts = mod.getScripts();
+	println("Scripts:");
+	for (Script s : scripts) {
+	    print("  - ");
+		println(s.getPath());
+		assert(s.getPath() == script.getPath(), "Unexpected script path " + s.getPath());
+	}
+	println("]");
+}

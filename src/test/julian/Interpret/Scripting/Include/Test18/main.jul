@@ -1,0 +1,5 @@
+
+include "helper.jul";
+include "defs.jul";
+var t2 = System.Concurrency.Thread.getCurrent();
+println(t2);

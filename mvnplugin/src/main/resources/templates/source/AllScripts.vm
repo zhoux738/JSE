@@ -1,0 +1,10 @@
+#* Parameters:
+    tv_scripts *#
+/*
+ * An aggregate script that includes all other built-in scripts.
+ */
+ 
+// This script file is automatically generated.
+#foreach( $script in $tv_scripts )
+include "$script";
+#end

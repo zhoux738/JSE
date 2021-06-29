@@ -1,0 +1,5 @@
+class UrClass { }
+
+System.Reflection.Script script = Environment.getScript();
+verify(arguments[0], script, new string[] { "MyClass", "UrClass" });
+return script;

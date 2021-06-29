@@ -52,7 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The native implementation of <font color="green">System.Network.Socket</font>.
+ * The native implementation of <code style="color:green">System.Network.Socket</code>.
  * 
  * @author Ming Zhou
  */

@@ -42,7 +42,7 @@ import info.julang.util.OneOrMoreList;
 /**
  * An context-free type resolver used to resolve a name to a Julian type, loading it 
  * if necessary.
- * <p/>
+ * <p>
  * An instance of this class is shared among multiple threads and it's thread-safe. 
  * {@link InContextTypeResolver} provides a more friendly interface at the price of
  * losing thread safety.
@@ -80,8 +80,8 @@ public class InternalTypeResolver {
 	
 	/**
 	 * Resolve a type, using specified namespace pool.
-	 * <p/>
-	 * <b><font color="red">WARNING</font></b>: Can only be used by {@link TypeLoader} when loading a depending type.
+	 * <p>
+	 * <span style="color:red; font-weight: bold;">WARNING</span>: Can only be used by {@link TypeLoader} when loading a depending type.
 	 * 
 	 * @param context
 	 * @param nsPool
@@ -94,7 +94,7 @@ public class InternalTypeResolver {
 	
 	/**
 	 * Given a type name, resolve the type in current context.
-	 * <p/><pre> (1) If the type has been loaded, go to (3)
+	 * <p><pre> (1) If the type has been loaded, go to (3)
 	 * (2) If the type has not been loaded, 
 	 *   (2.1) Look at the the namespace pool and make a full type name conversion.
 	 *   (2.2) Try to see if a type of the assembled name can be found by module manager.

@@ -31,7 +31,7 @@ import java.util.List;
 
 /**
  * A list optimized for the case that there is only one element.
- * <p/>
+ * <p>
  * This class doesn't support removing elements from list.
  * 
  * @author Ming Zhou
@@ -54,7 +54,7 @@ public class OneOrMoreList<T> implements Iterable<T> {
 	/**
 	 * Create a list containing exactly one element.
 	 * 
-	 * @param first
+	 * @param first The very first element.
 	 */
 	public OneOrMoreList(T first){
 		one = first;
@@ -64,7 +64,7 @@ public class OneOrMoreList<T> implements Iterable<T> {
 	/**
 	 * Create from a collection.
 	 * 
-	 * @param all
+	 * @param all Elements to add to the collection upon creation.
 	 */
 	public OneOrMoreList(Collection<T> all){
 		int total = all != null ? all.size() : 0;
@@ -83,7 +83,8 @@ public class OneOrMoreList<T> implements Iterable<T> {
 
 	/**
 	 * Determine if there is only one element.
-	 * @return
+	 * 
+	 * @return True if there is only one element.
 	 */
 	public boolean hasOnlyOne(){
 		return preListSize == 1;
@@ -91,7 +92,8 @@ public class OneOrMoreList<T> implements Iterable<T> {
 	
 	/**
 	 * Return the very first element (the one added through constructor).
-	 * @return
+	 * 
+	 * @return The very first element.
 	 */
 	public T getFirst(){
 		return one;

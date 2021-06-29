@@ -170,7 +170,7 @@ HOSTED:        'hosted';
 IF :           'if';
 IMPORT:        'import';
 IN :           'in';
-INCLUDE:       'include';        // RESERVED
+INCLUDE:       'include';
 INT :          'int';
 INTERFACE :    'interface';
 INTERNAL :     'internal';
@@ -820,9 +820,9 @@ executable
     : statement_list
     ;
 
-// 6. Module    
+// 6. Code organization    
 module_definition
-    : MODULE composite_id SEMICOLON
+    : MODULE composite_id? SEMICOLON
     ;
 
 import_statement
@@ -830,6 +830,10 @@ import_statement
     | IMPORT composite_id AS IDENTIFIER SEMICOLON
     ;
 
+include_statement
+    : INCLUDE STRING_LITERAL SEMICOLON
+    ;
+    
 // 7. Type
 modifiers
     : ( PUBLIC | PROTECTED | PRIVATE | INTERNAL | FINAL | CONST | ABSTRACT | HOSTED | STATIC )+
@@ -955,7 +959,8 @@ attribute_body
     
 // 8. Program
 preamble
-    : module_definition? import_statement*
+    : module_definition import_statement*  // module script
+    | import_statement* include_statement* // loose script
     ;
 
 declarations

@@ -37,8 +37,8 @@ import info.julang.memory.value.TempValueFactory;
 import info.julang.typesystem.JArgumentException;
 
 /**
- * The native implementation of <font color="green">System.Util.Math</font>.
- * <p/>
+ * The native implementation of <code style="color:green">System.Util.Math</code>.
+ * <p>
  * This implementation is backed by {@link java.lang.Math}.
  *  
  * @author Ming Zhou

@@ -28,7 +28,7 @@ import info.julang.interpretation.errorhandling.IHasLocationInfoEx;
 
 /**
  * A statement of some particular type is detected, yet it is not allowed to occur at where it is detected.
- * <p/>
+ * <p>
  * One example is <code>continue</code> statement can only occur in loop body. If it appear outside a loop,
  * an IllegalLexicalContextException will be thrown.
  * 

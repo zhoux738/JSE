@@ -29,8 +29,8 @@ import info.julang.interpretation.errorhandling.KnownJSException;
 
 /**
  * Exception that is thrown when accessing a thread at unexpected timing or in illegal state.
- * <p/>
- * This exception surfaces from Julian as <code><font color="green">System.IllegalStateException</font></code>.
+ * <p>
+ * This exception surfaces from Julian as <code style="color:green">System.IllegalStateException</code>.
  * 
  * @author Ming Zhou
  */

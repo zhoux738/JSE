@@ -36,7 +36,7 @@ public interface IHasExitCause {
 	/**
 	 * Get the cause for exit. If the statement has yet to exit, this will always return {@link ExitCause#UNDEFINED}.
 	 * Otherwise, it will returns any of the following:
-	 * <p/>
+	 * <p>
 	 *  <ul>{@link ExitCause#THROUGH THROUGH}: the statement ran to end.</ul> 
 	 *  <ul>{@link ExitCause#BROKEN BROKEN}: the statement is jumped out by break.</ul> 
 	 *  <ul>{@link ExitCause#CONTINUED CONTINUED}: the statement is jumped out by continue.</ul> 

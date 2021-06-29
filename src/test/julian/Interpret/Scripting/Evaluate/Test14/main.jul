@@ -1,0 +1,8 @@
+// rountines4 is eval'ed from an inner scope.
+int i40 = -1;
+{
+	int i50 = 50;
+	EvalConfig c = new EvalConfig();
+	c.setShareScope(true);
+	Environment.evaluate(c, "routines4.jul", null);
+}

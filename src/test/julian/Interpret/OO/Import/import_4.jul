@@ -1,0 +1,10 @@
+// import ModuleSys.ModB;
+
+bool succ = false;
+string s;
+
+try {
+ s = ModuleSys.ModB.Person.Type;
+} catch (System.Lang.UndefinedSymbolException ex) {
+ succ = true;
+}

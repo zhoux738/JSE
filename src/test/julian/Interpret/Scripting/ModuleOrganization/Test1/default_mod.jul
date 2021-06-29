@@ -1,0 +1,4 @@
+import ModA;
+
+var ca = new ClassA();
+int i329 = ca.getValue();

@@ -1,0 +1,2 @@
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "main_with_main.jul", arguments);

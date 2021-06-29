@@ -57,7 +57,7 @@ public abstract class GeneralExpression extends ExpressionBase {
 
 	/**
 	 * Given an expression tree, evaluate its nodes and return results in form of {@link Operand Operands}.
-	 * <p/>
+	 * <p>
 	 * This is a rather generalized approach. For expressions which have special requirements, this whole 
 	 * method must be overridden.
 		

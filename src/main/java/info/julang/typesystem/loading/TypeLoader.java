@@ -97,11 +97,11 @@ import info.julang.util.Pair;
 
 /**
  * The type loader which actually loads the type from modules.
- * <p/>
+ * <p>
  * The type loader in Julian engine adopts a very simple hierarchical & isolation model 
  * in comparison to Java's class loader. It essentially contains only two loaders: the
  * system loader and the application loader. The system loader loads every type of 
- * <fonr color="green">System</font> module. The application loaders loads other classes.
+ * <code style="color: green">System</code> module. The application loaders loads other classes.
  * 
  * @author Ming Zhou
  */
@@ -121,11 +121,11 @@ public class TypeLoader {
 	
 	/**
 	 * Load a type using fully qualified type name.
-	 * <p/>
+	 * <p>
 	 * This method will load the type with the given name and all the types it refers to 
 	 * by class hierarchy, field type and method parameter/return type. It will not load
 	 * types used by field initializer, method/constructor body and class initializer.
-	 * <p/>
+	 * <p>
 	 * This method is thread safe. It cannot be accessed by more than one thread at any 
 	 * time. The downside of this design is that it prevents parallelized loading of 
 	 * class set which do not overlap with each other (for example, T1 loads A, B and C

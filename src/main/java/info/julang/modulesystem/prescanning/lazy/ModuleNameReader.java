@@ -73,23 +73,34 @@ public class ModuleNameReader {
 	/**
 	 * Read the module name into string builder.
 	 * 
-	 * @param stream
-	 * @param fullName
-	 * @param acceptAs
-	 * @return an alias of the module name if available (<code>ABC</code> in "<code>import A.B.C as ABC</code>")
+	 * @param stream Token stream
+	 * @param fullName The full name to be built out of the stream input
+	 * @param isModuleOrImport whether this method is called for module (true) or import statement (false). 
+	 * module supports implicit module naming (module;); import accepts alias definition (AA.BB.CDE as XY).
+	 * @return an alias of the module name if available (<code>ABC</code> in "<code>import A.B.C as ABC</code>"), 
+	 * or null if the module statement doesn't contain a module name.
 	 */
-	public String readModuleName(ITokenStream stream, StringBuilder fullName, boolean acceptAs){
+	public String readModuleName(ITokenStream stream, StringBuilder fullName, boolean isModuleOrImport){
 		this.stream = stream;
 		stream.mark();
 		Token tok = null;
 		String alias = null;
+		boolean first = isModuleOrImport;
 		while(true){
 			// Read module's name by section
 			tok = stream.next();
 			if(tok.getType() != JulianLexer.IDENTIFIER){
+				if (first && tok.getType() == JulianLexer.SEMICOLON) {
+					return null;
+				}
+				
 				reportError(ErrorType.ILLEGAL_MODULE_NAME);
 			}
+			
 			fullName.append(tok.getText());
+			if (isModuleOrImport) {
+				first = false;
+			}
 			
 			tok = stream.next();
 			int type = tok.getType();
@@ -98,7 +109,7 @@ public class ModuleNameReader {
 			} else if (type == JulianLexer.SEMICOLON){
 				break;
 			} else if (type == JulianLexer.AS){
-				if(!acceptAs){
+				if (isModuleOrImport) {
 					reportError(ErrorType.CANNOT_SPECIFY_ALIAS);
 				} else {
 					tok = stream.next();

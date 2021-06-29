@@ -37,12 +37,12 @@ import info.julang.parser.AstInfo;
 
 /**
  * The throw statement in Julian language.
- * <p/>
+ * <p>
  * The throw statement has format:<pre><code> throw |expr| ;</code></pre>
  * 
  * Note that |expr| must return a value which derives from, or is of, 
- * <font color="green">System.Exception</font> type.</li>
- * <p/>
+ * <code style="color:green">System.Exception</code> type.
+ * <p>
  * 
  * @author Ming Zhou
  */

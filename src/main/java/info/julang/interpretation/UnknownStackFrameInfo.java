@@ -54,4 +54,9 @@ public class UnknownStackFrameInfo implements IStackFrameInfo {
 		return false;
 	}
 
+	@Override
+	public String getName() {
+		return null;
+	}
+
 }

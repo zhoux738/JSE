@@ -1,0 +1,13 @@
+class MC {
+	int v = 0;
+}
+
+EvalConfig config = new EvalConfig();
+config.setReturnException(true);
+var value = Environment.evaluate(config, "routines.jul", null);
+
+string finde = "";
+if (value is Exception) {
+	finde = value.getMessage();
+}
+

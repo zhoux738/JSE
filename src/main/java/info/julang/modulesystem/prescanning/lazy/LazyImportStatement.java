@@ -31,7 +31,7 @@ import info.julang.scanner.ITokenStream;
 /**
  * Read the script file and parse the continuous "<code>import ...;</code>" statements.
  * <p>
- * There are two possible syntaxes for import statement, <p/>
+ * There are two possible syntaxes for import statement, <p>
  * either<pre>
  * <code>import a.b.c;</code></pre>
  * or <pre>
@@ -51,7 +51,7 @@ public class LazyImportStatement implements LazyPrescanStatement {
 	@Override
 	public void prescan(ITokenStream stream, RawScriptInfo info) {		
 		StringBuilder fullName = new StringBuilder();
-		String alias = reader.readModuleName(stream, fullName, true);
+		String alias = reader.readModuleName(stream, fullName, false);
 		
 		String name = fullName.toString();
 		if(!"System".equals(name)){

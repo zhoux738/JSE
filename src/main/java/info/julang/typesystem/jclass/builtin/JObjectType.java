@@ -277,6 +277,10 @@ public class JObjectType extends JClassType implements IDeferredBuildable {
 				+ "\n * "
 				+ "\n * If the subclass doesn't override this method, the default implementation is up to the platform."
 				+ "\n * If overriden, the implementation should be idempotent and deterministic."
+				+ "\n * "
+				+ "\n * This method is, after all, only available for an object. For primitive values such as [int],"
+				+ "\n * one may cast to string explicitly by the cast operator (`(string)5`), or use a global function"
+				+ "\n * such as [the one](script: any.jul#toString) provided by `any.jul`."
 				+ "\n */",
 		params = { },
 		returns = "A string that represents the runtime value of this object."

@@ -34,7 +34,7 @@ import info.julang.typesystem.jclass.jufc.System.Collection.JList;
 
 /**
  * An iterable backed by a user-defined script object which implements 
- * <font color="green"><code>System.Util.IIterable</code></font>.
+ * <code style="color:green">System.Util.IIterable</code>.
  * 
  * @author Ming Zhou
  */
@@ -95,7 +95,7 @@ public class ObjectIterable {
 		}
 	}
 	
-	// Special treatment for <font color="green"><code>System.Collection.List</code></font>.
+	// Special treatment for <code style="color:green">System.Collection.List</code>.
 	private class DeferredListIterator extends DeferredObjectIterator {
 		
 		private JList list;

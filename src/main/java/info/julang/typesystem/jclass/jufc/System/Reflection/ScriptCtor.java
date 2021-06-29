@@ -47,7 +47,7 @@ import info.julang.typesystem.jclass.JClassType;
 import info.julang.typesystem.jclass.JParameter;
 
 /**
- * The native implementation of <code><font color="green">System.Reflection.Constructor</font></code>.
+ * The native implementation of <code style="color:green">System.Reflection.Constructor</code>.
  * 
  * @author Ming Zhou
  */

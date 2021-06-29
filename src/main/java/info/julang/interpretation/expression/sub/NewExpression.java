@@ -90,10 +90,11 @@ import info.julang.util.OSTool;
 
 /**
  * The expression to create a new object. There are two use cases:
+ * <ul>
  * <li>creating a new object of some class type by invoking a constructor, 
- * and optionally, <code><font color="green">System.Util.IMapInitializable.initByMap()</font></code></li>
+ * and optionally, <code style="color:green">System.Util.IMapInitializable.initByMap()</code></li>
  * <li>creating an array of some type, with or without an initializer</li>
- * <p>
+ * </ul>
  * Syntax:<br>
  * <code>new MyObj();</code><br>
  * <code>new int[2];</code><br>

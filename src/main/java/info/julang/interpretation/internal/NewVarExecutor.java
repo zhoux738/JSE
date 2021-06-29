@@ -39,18 +39,15 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
  * An executor used to create a new variable in current scope, with its value either 
- * {@link #newVar(Context, String, JValue, boolean) provided by the caller}, or 
- * automatically allocated in current frame using default value for the 
- * {@link #newVar(Context, String, JType) given} or 
- * {@link #newVar(Context, String, ParsedTypeName) derived} type. 
+ * provided by the caller, or automatically allocated in current frame using default 
+ * value for the given type. See the overloaded implementation of <code>newVar()</code>
+ * for more details. 
  * 
  * @author Ming Zhou
  */
 public class NewVarExecutor {
 
-	public NewVarExecutor(){
-		
-	}
+	public NewVarExecutor(){ }
 	
 	/**
 	 * Add a new variable in current scope, with its value allocated in current frame 

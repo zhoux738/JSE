@@ -25,11 +25,12 @@ SOFTWARE.
 package info.julang.execution;
 
 import info.julang.external.exceptions.ScriptNotFoundException;
+import info.julang.interpretation.InterpretedExecutable;
 
 
 /**
  * The script provider is an abstract layer that decouples script reading and script execution.
- * <p/>
+ * <p>
  * In general, a script engine runs against {@link Executable}, which hides the implementation detail
  * of how a piece of script is interpreted. ScriptProvider is the interface that can provide such an Executable.
  * 
@@ -39,10 +40,18 @@ public interface ScriptProvider {
 
 	/**
 	 * Get the executable that can be invoked by a script engine.
-	 * <p/>
+	 * <p>
 	 * @param allowReentry this executable should be re-enterable. 
 	 * @return null of not executable is found.
+	 * @throws ScriptNotFoundException if the given script file cannot be found.
 	 */
-	Executable getExecutable(boolean allowReentry) throws ScriptNotFoundException;
+	InterpretedExecutable getExecutable(boolean allowReentry) throws ScriptNotFoundException;
 	
+	/**
+	 * Get the default module path. It will be added to the engine's module path list 
+	 * along with other manually set modules paths.
+	 * 
+	 * @return null if no default module path is configured for this provider.
+	 */
+	String getDefaultModulePath();	
 }

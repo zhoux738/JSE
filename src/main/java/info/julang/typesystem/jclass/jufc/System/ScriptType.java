@@ -84,7 +84,7 @@ import info.julang.typesystem.loading.LoadingInitiative;
 import info.julang.util.OneOrMoreList;
 
 /**
- * The native implementation of <code><font color="green">System.Type</font></code>.
+ * The native implementation of <code style="color:green">System.Type</code>.
  * 
  * @author Ming Zhou
  */

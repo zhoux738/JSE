@@ -2,7 +2,7 @@ package info.jultest.test.functional;
 
 import info.julang.external.exceptions.EngineInvocationError;
 import info.jultest.test.Commons;
-import info.jultest.test.oo.ExceptionTestRunner;
+import info.jultest.test.ExceptionTestRunner;
 
 import org.junit.Test;
 

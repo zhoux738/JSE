@@ -40,7 +40,7 @@ public abstract class BasicValue extends JValueBase {
 
 	/**
 	 * Replicate this basic value by casting it to another type. Precision loss by demotion or semantic change is possible.
-	 * <p/>
+	 * <p>
 	 * Note this method would create (and return) a new value to be stored in the given memory area.
 	 * @param type
 	 * @return the replicated value, stored in the given memory area. 

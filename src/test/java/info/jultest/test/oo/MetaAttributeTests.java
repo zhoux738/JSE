@@ -4,6 +4,7 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestRunner;
 import info.julang.dev.GlobalSetting;
 import info.julang.external.exceptions.EngineInvocationError;
 

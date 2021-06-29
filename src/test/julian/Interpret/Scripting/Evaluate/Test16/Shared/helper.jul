@@ -1,0 +1,3 @@
+EvalConfig config = new EvalConfig();
+var v = Environment.evaluate(config, "./helper_internal.jul", arguments);
+return v;

@@ -44,7 +44,7 @@ public interface IOrderResolvable {
 	List<String> getDependentTypeNames();
 	
 	/**
-	 * Whether the type derives from a <font color="green">System.Attribute</font>.
+	 * Whether the type derives from a <code style="color:green">System.Attribute</code>.
 	 */
 	boolean isAttributeType();
 	

@@ -1,0 +1,7 @@
+// global function passed as object
+void funcx() {
+	Environment.evaluate(new EvalConfig(), "defsx.jul", null);
+}
+
+var f = funcx();
+f();

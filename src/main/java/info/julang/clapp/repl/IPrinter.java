@@ -29,14 +29,14 @@ public interface IPrinter {
 	/**
 	 * Print a string to stdout.
 	 * 
-	 * @param s
+	 * @param s the string being output.
 	 */
 	void print(String s);
 	
 	/**
 	 * Print an error message, and switch to a new line.
 	 * 
-	 * @param s
+	 * @param s the string being output.
 	 */
 	void errorln(String s);
 	

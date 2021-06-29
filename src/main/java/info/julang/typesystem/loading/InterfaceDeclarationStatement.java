@@ -41,7 +41,7 @@ import java.util.List;
 
 /**
  * The statement for declaring (and defining) an interface.
- * <p/>
+ * <p>
  * Syntax:
  * <pre><code>[accessibility] <b>interface</b> {NAME} : {INTERFACE_NAME}* {
  * 
@@ -50,7 +50,7 @@ import java.util.List;
  * <li>accessibility: <code>public|(none)</code></li>
  * </ul>
  * The <code>{INTERFACE_NAME}</code>s after <code>:</code> are the interfaces to extend from.
- * <p/>
+ * <p>
  * @author Ming Zhou
  */
 public class InterfaceDeclarationStatement extends ClassLoadingStatement {

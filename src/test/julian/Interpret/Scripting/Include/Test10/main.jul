@@ -1,0 +1,12 @@
+
+include "routines.jul";
+
+bool succ = false;
+
+try {
+  string val1 = MC5.s;
+} catch (Exception ex) {
+	succ = ex.getMessage().contains("not defined");
+}
+
+string mc5 = MyMod.MC5.s;

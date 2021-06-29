@@ -48,7 +48,7 @@ import info.julang.typesystem.basic.BoolType;
 import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
- * The native implementation of <font color="green">System.IO.Directory</font>.
+ * The native implementation of <code style="color:green">System.IO.Directory</code>.
  * 
  * @author Ming Zhou
  */

@@ -40,7 +40,7 @@ public class Argument {
 
 	/**
 	 * Get the value of this argument. The value is stored in caller's frame.
-	 * @return
+	 * @return The value for this argument.
 	 */
 	public JValue getValue() {
 		return value;
@@ -48,7 +48,7 @@ public class Argument {
 
 	/**
 	 * Set a new value for this argument.
-	 * @param val
+	 * @param val The value for this argument.
 	 */
 	public void setValue(JValue val) {
 		this.value = val;
@@ -56,12 +56,18 @@ public class Argument {
 
 	/**
 	 * Get the name of formal parameter.
-	 * @return
+	 * @return The name for this argument.
 	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Create an argument.
+	 * 
+	 * @param name The name for this argument.
+	 * @param value The value for this argument.
+	 */
 	public Argument(String name, JValue value) {
 		this.name = name;
 		this.value = value;
@@ -69,8 +75,8 @@ public class Argument {
 	
 	/**
 	 * Create a "this" argument.
-	 * @param value
-	 * @return
+	 * @param value The value for this argument.
+	 * @return An argument representing 'this'.
 	 */
 	public static Argument CreateThisArgument(JValue value){
 		return new Argument(Keywords.THIS, value);
@@ -78,8 +84,8 @@ public class Argument {
 	
 	/**
 	 * Create argument array that contains only a "this".
-	 * @param value
-	 * @return
+	 * @param value The value for this argument.
+	 * @return Create an argument list which contains only one argument that is 'this'.
 	 */
 	public static Argument[] CreateThisOnlyArguments(JValue value){
 		return new Argument[]{CreateThisArgument(value)};

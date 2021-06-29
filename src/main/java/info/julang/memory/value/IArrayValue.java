@@ -13,9 +13,9 @@ import info.julang.typesystem.JType;
  * The need of this interface is mainly due to the existence of two kinds of arrays: Julian array and 
  * JVM array. A Julian array is held inside an {@link ArrayValue array value}; a JVM array can be 
  * bound with a variable in the form of {@link HostedArrayValue hosted value}. Array value and hosted 
- * array value are not inherently compatible because their associated types are {@link 
- * info.julang.typesystem.jclass.builtin.JArrayType JArrayType} and {@link 
- * info.julang.typesystem.jclass.builtin.HostedType HostedType}, respectively. So anywhere we need 
+ * array value are not inherently compatible because their associated types are 
+ * {@link info.julang.typesystem.jclass.builtin.JArrayType JArrayType} and 
+ * {@link info.julang.typesystem.jclass.builtin.JObjectType JObjectType (with hosted value)}, respectively. So anywhere we need 
  * to operate across these two types of values we must use an interface that encompasses all of array 
  * operations, which is exactly this interface. As a rule of thumb, whenever one is tempted to cast to
  * {@link ArrayValue}, consider casting to this interface instead.

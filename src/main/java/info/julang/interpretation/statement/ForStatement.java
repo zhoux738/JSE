@@ -56,10 +56,11 @@ import info.julang.typesystem.JType;
  *   expression</code></pre>or<pre><code> for(|for-init|;|for-cond|;|for-step|){
  *   for-body
  * } </code></pre>
- * The head that contains </code>|for-init|</code>, <code>|for-cond|</code> and <code>|for-step|</code> 
+ * The head that contains <code>|for-init|</code>, <code>|for-cond|</code> and <code>|for-step|</code> 
  * is required; body is not. Within the head, all the parts are all optional. The minimal form for head 
  * can be as simple as <code>for(;;)</code>, which constitutes an infinite loop.
  * <p>
+ * 
  * @author Ming Zhou
  */
 public class ForStatement extends MultiBlockStatementBase {

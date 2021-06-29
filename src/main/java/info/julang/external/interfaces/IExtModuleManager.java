@@ -25,17 +25,54 @@ SOFTWARE.
 package info.julang.external.interfaces;
 
 public interface IExtModuleManager {
+	
+	/**
+	 * The name of directory that contains Julian modules: "jse_modules". 
+	 * This directory is located alongside the invoked script and is referred to as the default module path.
+	 * <p>
+	 * When invoking <code>main.jul</code> from the following example, the co-located directory 
+	 * <code>jse_modules</code> will be added to the module paths. As a result, without configuring 
+	 * the engine's module paths explicitly, the user is immediately able to 
+	 * <code>import</code> <code style="color: green">Module1</code><code>;</code> at the beginning
+	 * of <code>main.jul</code>.
+	 * <pre>
+	 *   (file system layout - Windows example)
+	 *      
+	 *      D:\
+	 *       +-- myfiles\
+	 *            |
+	 *            +-- main.jul
+	 *            |
+	 *            +-- jse_modules\
+	 *                 |
+	 *                 +-- Module1\
+	 *                 +-- Module2\
+	 *                 |    +-- SubmodA
+	 *                 +-- Module3\
+	 *                 |    +-- SubmodX
+	 *                 |         +-- SubmodY
+	 *                 ...
+	 *                 
+	 *   main.jul:
+	 *      
+	 *      import Module1;
+	 *      import Module2.SubmodA;
+	 *      import Module3.SubmodX.SubmodY as ThirdMod;
+	 * </pre>
+	 */
+	public static final String DefaultModuleDirectoryName = "jse_modules";
 
 	/**
 	 * Add a path for module probing.
-	 * @param path
+	 * 
+	 * @param path The path to module directory.
 	 */
 	void addModulePath(String path);
 	
 	/**
-	 * Clear all paths for module probing.
+	 * Clear data prepared for or produced during the previous execution session.
 	 */
-	void clearModulePath();
+	void clearExecutionData();
 	
 	/**
 	 * Set platform access policy.
@@ -64,7 +101,6 @@ public interface IExtModuleManager {
 	 * <p>
 	 * @param allowOrDeny true to allow; false to deny
 	 * @param category the platform access category, as defined in {@link info.julang.execution.security.PACON}.
-	 * 
 	 * @param operations the name of the operations defined in the category.
 	 */
 	void setPlatformAccess(boolean allowOrDeny, String category, String... operations);
@@ -77,7 +113,7 @@ public interface IExtModuleManager {
 	/**
 	 * Check if the module is loaded.
 	 * 
-	 * @param moduleName
+	 * @param moduleName The module's name.
 	 * @return True if the module has been loaded.
 	 */
 	boolean isLoaded(String moduleName);

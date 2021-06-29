@@ -1,0 +1,2 @@
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, arguments[0], null);

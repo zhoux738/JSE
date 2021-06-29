@@ -1,0 +1,18 @@
+bool verify(Exception ex) {
+	string str = ex.getMessage();
+	return ex is System.IllegalStateException 
+		&& str.contains("dynamically evaluate");
+}
+
+bool s1, s2, s3;
+EvalConfig c = new EvalConfig();
+c.setShareScope(true);
+
+Environment.evaluate(c, "defs1.jul", null);
+Environment.evaluate(c, "defs2.jul", null);
+
+try {
+	Environment.evaluate(c, "defs3.jul", null);
+} catch (Exception ex) {
+	s3 = verify(ex);
+}

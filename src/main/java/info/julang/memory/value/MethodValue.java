@@ -30,7 +30,7 @@ import info.julang.typesystem.jclass.builtin.JMethodType;
 
 /**
  * A derivative of {@link FuncValue}, MethodValue represents a method. 
- * <p/>
+ * <p>
  * It can be either instance or static, as determined by {@link #isStatic()}. 
  * If {@link #isStatic()} returns false, it is an instance method whose <i>this</i> value can be
  * obtained by calling {@link #getThisValue()}.
@@ -69,7 +69,7 @@ public class MethodValue extends FuncValue implements IMethodValue {
 	
 	/**
 	 * Get method type. This is equivalent to calling:
-	 * <p/>
+	 * <p>
 	 * <code>(JMethodType)getType()</code>
 	 * 
 	 * @return

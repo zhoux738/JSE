@@ -3,12 +3,13 @@ package info.jultest.test.module;
 import static info.jultest.test.Commons.getScriptFile;
 import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
+import static info.jultest.test.Commons.validateBoolValue;
 import static info.jultest.test.Commons.validateStringValue;
 import static info.jultest.test.Commons.verifyDetectedClass;
 import static org.junit.Assert.assertTrue;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestsBase;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
@@ -49,8 +50,9 @@ public class TypeResolvingTests extends ExceptionTestsBase {
 		assertException(teh, "System.Lang.NamespaceConflictException");
 	}
 	
+	// Full name with import
 	@Test
-	public void resolveFullNameTest() throws EngineInvocationError {
+	public void resolveFullNameTest1() throws EngineInvocationError {
 		VariableTable gvt = new VariableTable(null);
 		ModuleManager manager = new ModuleManager();
 		SimpleScriptEngine engine = makeSimpleEngine(gvt, manager, false);
@@ -62,4 +64,17 @@ public class TypeResolvingTests extends ExceptionTestsBase {
 		validateStringValue(gvt, "s", "HUMAN");
 	}
 
+	// Full name without import
+	@Test
+	public void resolveFullNameTest2() throws EngineInvocationError {
+		VariableTable gvt = new VariableTable(null);
+		ModuleManager manager = new ModuleManager();
+		SimpleScriptEngine engine = makeSimpleEngine(gvt, manager, false);
+		
+		engine.getContext().addModulePath(Commons.SRC_REPO_ROOT);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "import_4.jul"));
+		
+		validateBoolValue(gvt, "succ", true);
+	}
 }

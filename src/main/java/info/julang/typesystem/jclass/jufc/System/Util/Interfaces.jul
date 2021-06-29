@@ -246,14 +246,13 @@ class Entry {
  * demarcate the key and the value.
  *
  * While most keys are used as is, there is one exception. Any **identifier will be reinterpreted as a string 
- * literal**. This rule makes it more convenient to initialize [Dyanmic](tutorial: dynamic). If the key is 
+ * literal**. This rule makes it more convenient to initialize [Dynamic](tutorial: dynamic). If the key is 
  * indeed to be provided by a variable, enclose the variable with parentheses to force an evaluation.
  * [code]
  *   string country = "United States";
  *   Map capitals = new Map() { 
  *     country = "Washington" // A key of "country" will be added!
  *   };
- *
  *   Console.println(capitals["United States"]); // (null)
  *   Console.println(capitals["country"]); // Washington
  *

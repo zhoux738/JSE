@@ -1,0 +1,16 @@
+// System is imported by default.
+// import System;
+var evs = Environment.getAllEnv();
+
+string k, v;
+for (var kvp : evs) {
+	k = kvp.key;
+	v = kvp.value;
+	break;
+}
+
+bool succ = false;
+if (k != null && v != null) {
+	var v2 = Environment.getEnv(k);
+	succ = v2 == v;
+}

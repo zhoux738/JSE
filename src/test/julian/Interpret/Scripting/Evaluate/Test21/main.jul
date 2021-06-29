@@ -1,0 +1,16 @@
+// import System.Reflection;
+
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "../Shared/commons.jul", null);
+
+// Environment.evaluate(config, "s1.jul", null);
+
+try {
+  Environment.evaluate(config, "s1.jul", null);
+} catch (Exception ex) {
+  assert(ex.getMessage().contains("Encountered a syntax error during parsing"), "Didn't encounter a syntax error during parsing");
+}
+
+bool res = Environment.evaluate(config, "s2.jul", null);
+
+return res;

@@ -59,7 +59,7 @@ import info.julang.typesystem.jclass.jufc.System.IO.JSEIOException;
 import info.julang.util.OneOrMoreList;
 
 /**
- * The native implementation of <font color="green">System.Console</font>.
+ * The native implementation of <code style="color:green">System.Console</code>.
  * 
  * @author Ming Zhou
  */

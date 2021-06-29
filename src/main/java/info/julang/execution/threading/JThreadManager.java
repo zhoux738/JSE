@@ -26,6 +26,8 @@ package info.julang.execution.threading;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,8 +45,11 @@ import info.julang.execution.Executable;
 import info.julang.execution.Result;
 import info.julang.execution.namespace.NamespacePool;
 import info.julang.execution.security.EngineLimit;
+import info.julang.execution.simple.SimpleEngineRuntime;
+import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.external.exceptions.JSEError;
+import info.julang.interpretation.InterpretedExecutable;
 import info.julang.memory.StackArea;
 import info.julang.memory.simple.SimpleStackArea;
 import info.julang.memory.value.FuncValue;
@@ -59,7 +64,7 @@ import info.julang.util.Pair;
  * In Julian, the starting script executes in the main thread, which is also the sole
  * foreground thread. The engine terminates when the main thread runs to completion,
  * and returns result yielded by it. All other threads, which are kicked off through
- * Julian's standard API (<code><font color="green">System.Concurrency.Thread</font></code>), 
+ * Julian's standard API (<code style="color:green">System.Concurrency.Thread</code>), 
  * are background threads that will not block the engine's termination. These threads 
  * will also be shut down when the engine terminates.
  * <pre>
@@ -77,15 +82,16 @@ import info.julang.util.Pair;
  *     ENGINE RUNNING |             +-----[createBackground]---|--+
  *            ||      |   running   |                          |  |
  *            ||      |             |                          |  |
- *            ||      |             <-------[runBackground]----+  |
- *            ||      |             <-------[runBackground]-------+
+ *            ||      |             ((------[runBackground]----+  |
+ *            ||      |             ((------[runBackground]-------+
  *            ==      +-------------+</pre>
  * All threads running within JSE should be managed by this class. If a Java API
  * calls back a method on a new JVM thread, such as the case with asynchronous IO, 
  * we must not execute the logic, should it involve any Julian scripting, inline.
- * Instead, create an IO thread from this manager and post work items to it. See 
- * {@link #createIOContinuationThread(ThreadRuntime, boolean)} for more information.
- * <p> 
+ * Instead, fetch an IO thread from this manager and post work items to it. See 
+ * {@link #fetchIOThread(ThreadRuntime, boolean)} for more information.
+ * <p>
+ * 
  * @author Ming Zhou
  */
 // IMPLEMENTATION NOTES
@@ -117,6 +123,10 @@ public class JThreadManager {
 	// A list storing all the faulted threads.
 	private final List<FaultedThreadRecord> faulted;
 	
+	// A stack of main thread objects. When the main thread is replaced, the previous one will be pushed;
+	// When the replacing thread is done, the top thread will be popped and resumed.
+	private Deque<JThread> mainThreads;
+	
 	// IO related
 	private final IOThreadPool iopool;
     private AsyncSocketSession sockSession;
@@ -137,6 +147,98 @@ public class JThreadManager {
 	    iopool = new IOThreadPool();
 	    runCount = new AtomicInteger(0);
 	}
+	
+	//-------------------------- main thread stacking --------------------------//
+
+	public synchronized JThread resumePreviousMain() {
+		if (mainThreads == null || mainThreads.size() == 0) {
+			throw new JSEError("Cannot resume a previous main thread as there is no such one.");
+		}
+		
+		return (main = mainThreads.pop());
+	}
+	
+	public synchronized JThread getPreviousMain() {
+		if (mainThreads == null || mainThreads.size() == 0) {
+			throw new JSEError("Cannot get a previous main thread as there is no such one.");
+		}
+		
+		return mainThreads.peek();
+	}
+	
+	public synchronized JThread getCurrentMain() {	
+		if (main == null) {
+			throw new JSEError("Cannot get the first main thread when the engine is not running.");
+		}
+		
+		return main;
+	}
+	
+	public synchronized JThread getFirstMain() {
+		if (mainThreads != null && mainThreads.size() > 0) {
+			return mainThreads.getLast();
+		} else {
+			return getCurrentMain();
+		}
+	}
+	
+	/**
+	 * Get all of the main thread objects in the order of evaluation.
+	 */
+	public synchronized JThread[] getAllMains() {
+		JThread[] threads = new JThread[main != null ? 1 + (mainThreads != null ? mainThreads.size() : 0) : 0];
+		int i = threads.length;
+		if (main != null) {
+			threads[--i] = main;
+		}
+		
+		if (mainThreads != null) {
+			for (JThread mt : mainThreads) {
+				threads[--i] = mt;
+			}
+		}
+		
+		return threads;
+	}
+	
+	/**
+	 * Replicate the main thread with another one, inheriting all the thread-identifiable info such as id and name, 
+	 * sharing all runtime info except for global variable table, which is completely replaced with a new and empty one.
+	 * 
+	 * @param engineRt
+	 * @param exec
+	 * @return
+	 */
+	public JThread replaceMain(EngineRuntime engineRt, InterpretedExecutable exec) {
+		if (main == null) {
+			throw new JSEError("Cannot replace main thread when the engine is not running.");
+		}
+		
+		// Replicate EngineRuntime with new global variable table
+		SimpleEngineRuntime newEngRt = new SimpleEngineRuntime(
+			engineRt.getHeap(),
+			new VariableTable(null), // new GVT
+			engineRt.getTypeTable(),
+			engineRt.getModuleManager(),
+			engineRt.getThreadManager());
+		newEngRt.setStandardIO(engineRt.getStandardIO());
+		
+		synchronized (this) {
+			JThread currMain = main;
+			main = JThread.replicateThread(main, sfactory, exec, newEngRt);
+			
+			if (mainThreads == null) {
+				mainThreads = new LinkedList<JThread>();
+			}
+			
+			// Store the previous main thread.
+			mainThreads.push(currMain);
+		}
+		
+		return main;
+	}
+	
+	//-------------------------- IO threading --------------------------//
 	
 	/**
 	 * Fetch an IO thread from the pool.
@@ -165,6 +267,8 @@ public class JThreadManager {
     	
     	return sockSession;
     }
+    
+	//-------------------------- background thread management --------------------------//
 	
 	/**
 	 * Create a background thread but not run it.
@@ -236,15 +340,17 @@ public class JThreadManager {
 			return runnable;
 		}
 	}
+
+	//-------------------------- main thread management --------------------------//
 	
 	/**
 	 * Create and set main thread with name = "&lt;Julian-Main&gt;". Cannot be called if the engine is running.
 	 * 
 	 * @param engineRt
 	 * @param exec
-	 * @return
+	 * @return The object representing the main thread running in Julian engine. It has not been started.
 	 */
-	public JThread createMain(EngineRuntime engineRt, Executable exec){
+	public JThread createMain(EngineRuntime engineRt, InterpretedExecutable exec){
 		synchronized (this) {
 			assertNotRunning("Cannot create main thread when the engine is running.");
 
@@ -266,6 +372,31 @@ public class JThreadManager {
 	}
 	
 	/**
+	 * Run a thread inline.
+	 */
+	public Result runThreadInline(JThread thread, Argument[] args) throws EngineInvocationError {
+		// Run the main thread inline.
+		JThreadRunnable runnable = thread.getRunnable(this, args);
+		
+		runnable.run();
+		if (runnable.isSuccess()){
+			return runnable.getResult();
+		} else {
+			Exception e = runnable.getException();
+			if (e instanceof RuntimeException){
+				// This includes JulianRuntimeException and JSERuntimeException
+				RuntimeException re = (RuntimeException) e;
+				throw re;
+			} else if (e instanceof EngineInvocationError){
+				EngineInvocationError eie = (EngineInvocationError) e;
+				throw eie;
+			} else {
+				throw new EngineInvocationError("Unknown exception caught in Julian engine.", e);
+			}
+		}
+	}
+	
+	/**
 	 * Execute main thread and returns the result.
 	 * 
 	 * @return
@@ -282,24 +413,7 @@ public class JThreadManager {
 		
 		try {
 			// Run the main thread inline.
-			JThreadRunnable runnable = main.getRunnable(this, args);
-			
-			runnable.run();
-			if (runnable.isSuccess()){
-				return runnable.getResult();
-			} else {
-				Exception e = runnable.getException();
-				if (e instanceof RuntimeException){
-					// This includes JulianRuntimeException and JSERuntimeException
-					RuntimeException re = (RuntimeException) e;
-					throw re;
-				} else if (e instanceof EngineInvocationError){
-					EngineInvocationError eie = (EngineInvocationError) e;
-					throw eie;
-				} else {
-					throw new EngineInvocationError("Unknown exception caught in Julian engine.", e);
-				}
-			}
+			return runThreadInline(main, args);
 		} finally {
 			// 1) Lock down the manager. No more threads can be run.
 			terminating = true;
@@ -362,6 +476,8 @@ public class JThreadManager {
 		}
 	}
 	
+	//-------------------------- thread state and info --------------------------//
+	
 	/**
 	 * Check if the managed threads are running. This method returns false if the engine has not started,
 	 * or true if the engine has started tearing down.
@@ -420,7 +536,7 @@ public class JThreadManager {
 		}	
 	}
 	
-	//------------------ Customized ThreadPoolExecutor ------------------//
+	//------------------ customized ThreadPoolExecutor ------------------//
 	
 	private class JSEThreadPoolExecutor extends ThreadPoolExecutor {
 		

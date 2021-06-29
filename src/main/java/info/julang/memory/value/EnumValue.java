@@ -36,11 +36,11 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
  * A value of enum type.
- * <p/>
+ * <p>
  * Note enum type is class type too. An enum value contains two fields: <b>ordinal</b> and <b>literal</b>.
  * This class provides easy-to-use API for accessing to these two fields, but under the hood
  * they are still ordinary fields of a class.
- * <p/>
+ * <p>
  * In Julian, Enum value can be explicitly cast to string and int value.
  * @author Ming Zhou
  */
@@ -83,7 +83,7 @@ public class EnumValue extends ObjectValue implements JCastable, IEnumVal {
 	}
 
 	/**
-	 * Get <code><font color="green">Enum</font>.ordinal</code> (<font color="green">int</font> type).
+	 * Get <code style="color:green">Enum</code>.ordinal</code> (<code style="color:green">int</code> type).
 	 * @return
 	 */
 	public int getOrdinal() {
@@ -96,7 +96,7 @@ public class EnumValue extends ObjectValue implements JCastable, IEnumVal {
 	}
 
 	/**
-	 * Get <code><font color="green">Enum</font>.literal</code> (<font color="green">string</font> type).
+	 * Get <code style="color:green">Enum</code>.literal</code> (<code style="color:green">string</code> type).
 	 * @return
 	 */
 	public String getLiteral() {

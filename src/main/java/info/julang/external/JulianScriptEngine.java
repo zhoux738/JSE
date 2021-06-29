@@ -76,7 +76,7 @@ import info.julang.external.interfaces.IExtValue.IStringVal;
  * which parses cmdline arguments and provides interactive experiences. But ultimately it still uses
  * this class to execute the script.
  * 
- * @see {@link info.julang.jsr223.JulianScriptingEngine JSR-223 compliant Julian script engine}.
+ * @see info.julang.jsr223.JulianScriptingEngine JSR-223 compliant Julian script engine
  * @author Ming Zhou
  */
 public class JulianScriptEngine {
@@ -89,6 +89,14 @@ public class JulianScriptEngine {
 	private OutputStream output;
 	private OutputStream error;
 	
+	/**
+	 * Create a Julian script engine instance.
+	 * 
+	 * @param throwOnScriptError Throw exception, instead of returning successfully 
+	 * (albeit with Julian's stack trace printed out), if the script encounters an error.
+	 * @param isInteractiveMode If true, start the engine in interactive mode. 
+	 * This mode is reentrant and will preserve defined types.
+	 */
 	public JulianScriptEngine(boolean throwOnScriptError, boolean isInteractiveMode){
 		this(new EngineInitializationOption(true, throwOnScriptError, isInteractiveMode));
 	}
@@ -254,7 +262,8 @@ public class JulianScriptEngine {
 	
 	/**
 	 * Add a module path. Duplicate paths are disregarded.
-	 * @param path
+	 * 
+	 * @param path The path to a directory for module files.
 	 */
 	public void addModulePath(String path){
 		engine.getContext().addModulePath(path);
@@ -262,7 +271,8 @@ public class JulianScriptEngine {
 	
 	/**
 	 * Reset the engine. Wipe out all the variables and types.
-	 * @param pol
+	 * 
+	 * @param pol The reset policy.
 	 */
 	public void reset(ResetPolicy pol){
 		engine.reset(pol);
@@ -274,8 +284,8 @@ public class JulianScriptEngine {
 	 * If the operations are not given, allow all operations under this category.
 	 * If the category is the wildcard (*), allow everything. This is also the default setting.
 	 * <p>
-	 * @param category
-	 * @param operations
+	 * @param category The category of policy, as defined by {@link info.julang.execution.security.PACON}.
+	 * @param operations O or more operations of policy, as defined by {@link info.julang.execution.security.PACON}.
 	 */
 	public void allow(String category, String... operations){
 		engine.getContext().addPolicy(true, category, operations);
@@ -287,8 +297,8 @@ public class JulianScriptEngine {
 	 * If the operations are not given, deny all operations under this category.
 	 * If the category is the wildcard (*), deny everything.
 	 * <p>
-	 * @param category
-	 * @param operations
+	 * @param category The category of policy, as defined by {@link info.julang.execution.security.PACON}.
+	 * @param operations O or more operations of policy, as defined by {@link info.julang.execution.security.PACON}.
 	 */
 	public void deny(String category, String... operations){
 		engine.getContext().addPolicy(false, category, operations);
@@ -298,7 +308,7 @@ public class JulianScriptEngine {
 	 * Set standard input stream. This method can be called multiple times, but the new value 
 	 * will only take effect until the next invocation (e.g. {@link JulianScriptEngine#runFile(String)}).
 	 * <p>
-	 * This is the input source for <code><font color="green">System.Console.readln()</font></code>.
+	 * This is the input source for <code style="color:green">System.Console.readln()</code>.
 	 * 
 	 * @param input The standard input stream to use within the scripts. If null, default to the platform's standard input.
 	 */
@@ -310,9 +320,9 @@ public class JulianScriptEngine {
 	 * Set standard output stream. This method can be called multiple times, but the new value 
 	 * will only take effect until the next invocation (e.g. {@link JulianScriptEngine#runFile(String)}).
 	 * <p>
-	 * This is the output sink for <code><font color="green">System.Console.println()</font></code>.
+	 * This is the output sink for <code style="color:green">System.Console.println()</code>.
 	 * 
-	 * @param input The standard output stream to use within the scripts. If null, default to the platform's standard output.
+	 * @param output The standard output stream to use within the scripts. If null, default to the platform's standard output.
 	 */
 	public void setOutput(OutputStream output) {
 		this.output = output;
@@ -324,7 +334,7 @@ public class JulianScriptEngine {
 	 * <p>
 	 * This is the output sink for unhandled exceptions.
 	 * 
-	 * @param input The standard error stream to use within the scripts. If null, default to the platform's standard error.
+	 * @param error The standard error stream to use within the scripts. If null, default to the platform's standard error.
 	 */
 	public void setError(OutputStream error) {
 		this.error = error;
@@ -333,12 +343,13 @@ public class JulianScriptEngine {
 	/**
 	 * Set resource utilization limit to the engine.
 	 * <p>
-	 * Supported names:<br>
+	 * Supported names:
+	 * <pre>
 	 * <code>max.threads</code>
 	 * <code>max.used.memory.in.byte</code>
-	 *
-	 * @param name
-	 * @param value
+	 * </pre>
+	 * @param name Name of the limit.
+	 * @param value Value of the limit.
 	 */
 	public void setLimit(String name, int value) {
 		this.engine.setLimit(name, value);
@@ -353,9 +364,9 @@ public class JulianScriptEngine {
 	/**
 	 * Get a char binding's value.
 	 * 
-	 * @param name
-	 * @return
-	 * @throws ExternalBindingException
+	 * @param name The name of char variable.
+	 * @return the char value
+	 * @throws ExternalBindingException If the binding cannot be retrieved.
 	 */
 	public char getChar(String name) throws ExternalBindingException {
 		CharacterBinding binding = getBinding(name, BindingKind.Character);
@@ -369,9 +380,9 @@ public class JulianScriptEngine {
 	/**
 	 * Get a boolean binding's value.
 	 * 
-	 * @param name
-	 * @return
-	 * @throws ExternalBindingException
+	 * @param name The name of boolean variable.
+	 * @return the boolean value
+	 * @throws ExternalBindingException If the binding cannot be retrieved.
 	 */
 	public boolean getBool(String name) throws ExternalBindingException {
 		BooleanBinding binding = getBinding(name, BindingKind.Boolean);
@@ -385,8 +396,9 @@ public class JulianScriptEngine {
 	/**
 	 * Get an integer binding's value.
 	 * 
-	 * @param name
-	 * @return
+	 * @param name The name of float variable.
+	 * @return the float value
+	 * @throws ExternalBindingException If the binding cannot be retrieved.
 	 */
 	public float getFloat(String name) throws ExternalBindingException {
 		FloatBinding binding = getBinding(name, BindingKind.Float);
@@ -400,8 +412,9 @@ public class JulianScriptEngine {
 	/**
 	 * Get an integer binding's value.
 	 * 
-	 * @param name
-	 * @return
+	 * @param name The name of int variable.
+	 * @return the int value
+	 * @throws ExternalBindingException If the binding cannot be retrieved.
 	 */
 	public int getInt(String name) throws ExternalBindingException {
 		IntegerBinding binding = getBinding(name, BindingKind.Integer);
@@ -414,11 +427,11 @@ public class JulianScriptEngine {
 	
 	/**
 	 * Get a string binding's value.
-	 * <p/>
+	 * <p>
 	 * If an error occurs, returns null.
 	 * 
-	 * @param name
-	 * @return
+	 * @param name The name of String variable.
+	 * @return the String value
 	 */
 	public String getString(String name) {
 		try {
@@ -432,13 +445,13 @@ public class JulianScriptEngine {
 	
 	/**
 	 * Get a string binding's value.
-	 * <p/>
+	 * <p>
 	 * If an error occurs, returns null.
 	 * 
-	 * @param name
+	 * @param name The name of String variable.
 	 * @param throwOnError if true, will throw null when error occurs.
-	 * @return
-	 * @throws ExternalBindingException
+	 * @return the String value
+	 * @throws ExternalBindingException if the binding cannot be retrieved.
 	 */
 	public String getString(String name, boolean throwOnError) throws ExternalBindingException {
 		try {
@@ -459,11 +472,11 @@ public class JulianScriptEngine {
 	
 	/**
 	 * Get an object binding's value.
-	 * <p/>
+	 * <p>
 	 * If an error occurs, returns null.
 	 * 
-	 * @param name
-	 * @return
+	 * @param name the name of the bound object
+	 * @return The bound object.
 	 */
 	public Object getObject(String name) {
 		try {
@@ -477,13 +490,13 @@ public class JulianScriptEngine {
 	
 	/**
 	 * Get an object binding's value.
-	 * <p/>
+	 * <p>
 	 * If an error occurs, returns null.
 	 * 
-	 * @param name
+	 * @param name the name of the bound object
 	 * @param throwOnError if true, will throw null when error occurs.
-	 * @return
-	 * @throws ExternalBindingException
+	 * @return The bound object.
+	 * @throws ExternalBindingException if the binding cannot be retrieved.
 	 */
 	public Object getObject(String name, boolean throwOnError) throws ExternalBindingException {
 		try {
@@ -521,7 +534,7 @@ public class JulianScriptEngine {
 	/**
 	 * Run the Julian script as specified by the path, without any arguments.
 	 * 
-	 * @param Path the script file's path
+	 * @param path the script file's path
 	 * @return The result of running; can be null
 	 */
 	// This method is currently not used anywhere
@@ -538,7 +551,7 @@ public class JulianScriptEngine {
 	/**
 	 * Run the Julian script as specified by the path.
 	 * 
-	 * @param Path the script file's path
+	 * @param path the script file's path
 	 * @param arguments Arguments to pass along to the script
 	 * @return The result of running; can be null
 	 * @throws JSEException A wrapper exception, the cause of which can be any of 
@@ -551,7 +564,7 @@ public class JulianScriptEngine {
 	/**
 	 * Run the string as a Julian script.
 	 * 
-	 * @param Script the script content
+	 * @param script the script content
 	 * @param arguments Arguments to pass along to the script
 	 * @return The result of running; can be null
 	 * @throws JSEException A wrapper exception, the cause of which can be any of 

@@ -1,0 +1,5 @@
+EvalConfig config = new EvalConfig();
+config.setShareScope(true);
+int i = 0;
+Environment.evaluate(config, "Lib/fun3.jul", arguments);
+i += 1;

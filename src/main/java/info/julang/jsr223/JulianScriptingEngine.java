@@ -56,7 +56,7 @@ import info.julang.util.Pair;
  * Only {@link ScriptContext#ENGINE_SCOPE} is honored by this engine.
  * <p>
  * The user may use the following attributes to control the engine's behavior:
- * <pre><table style="text-align:left">
+ * <table style="text-align:left" summary="attributes recognized by JSR-223-compliant Julian scripting engine">
  *   <tr>
  *     <th>Key</th>
  *     <th>Type</th>
@@ -87,7 +87,7 @@ import info.julang.util.Pair;
  *     <td>Set to allow or deny arbitrary object binding. If not allowed, only a few select types can be bound.</td>
  *     <td>Allow arbitrary object binding.</td>
  *   </tr>
- * </table></pre>
+ * </table>
  * This engine runs in REPL mode, therefore the state from the previous runs will be retained.
  * <p>
  * 

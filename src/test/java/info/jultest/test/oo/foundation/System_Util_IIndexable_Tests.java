@@ -13,8 +13,8 @@ import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestsBase;
 
 public class System_Util_IIndexable_Tests extends ExceptionTestsBase {
 

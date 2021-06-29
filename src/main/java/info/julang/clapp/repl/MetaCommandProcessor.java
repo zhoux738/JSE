@@ -218,6 +218,7 @@ public class MetaCommandProcessor {
 	 * Get help for a single command or all commands.
 	 * 
 	 * @param metaCommand if null, get help for all commands.
+	 * @return The help information
 	 */
 	public String getHelp(String metaCommand) {
 		if (metaCommand == null) {

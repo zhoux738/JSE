@@ -513,3 +513,17 @@ class UnderprivilegeException : Exception {
 		return _isPlatform;
 	}
 }
+
+/*
+ * An exception that can be thrown when asserting on a condition failed. While most notably used 
+ * by the built-in global function `assert()` and `assetEqual()` (requiring `include "assert.jul"`), 
+ * it's not particularly reserved for system use.
+ */
+class AssertException : Exception { 
+	/* 
+	 * Create an instance of AssertException with specified message. 
+	 * 
+	 * [param: msg] The message for this exception.
+	 */
+	AssertException(string msg) : super(msg) {} 
+}

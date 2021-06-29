@@ -5,6 +5,7 @@ import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntValue;
 
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
 import info.julang.dev.GlobalSetting;
 import info.julang.execution.simple.SimpleScriptEngine;

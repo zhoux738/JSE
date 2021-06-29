@@ -1,0 +1,4 @@
+EvalConfig config = new EvalConfig();
+var t = Environment.evaluate(config, "defs.jul", new string[0]);
+var t2 = System.Concurrency.Thread.getCurrent();
+bool succ = t == t2;

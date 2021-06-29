@@ -42,14 +42,14 @@ public class GlobalFunctionExecutable extends InterpretedExecutable {
 	
 	/**
 	 * Create an executable wrapping a function script.
-	 * <p/>
+	 * <p>
 	 * This script can return from the middle (using <code>return</code> statement). It cannot define new types.
 	 * 
 	 * @param stream
 	 * @return
 	 */
-	public GlobalFunctionExecutable(AstInfo<ExecutableContext> ec, NamespacePool nsPool){
-		super(ec, false, true);
+	public GlobalFunctionExecutable(String name, AstInfo<ExecutableContext> ec, NamespacePool nsPool){
+		super(name, ec, false, true);
 		this.nsPool = nsPool;
 	}
 	

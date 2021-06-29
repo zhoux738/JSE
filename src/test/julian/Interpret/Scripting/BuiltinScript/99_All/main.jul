@@ -1,0 +1,10 @@
+
+include "all.jul";
+
+class Obj {
+	string toString() { return "obj"; }
+}
+
+string s_obj = toString(new Obj());
+string s_abc = toString("abc");
+string s_1   = toString(1);

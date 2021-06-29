@@ -1,0 +1,5 @@
+class MC1 {
+	static int v = 1;
+}
+
+return MC1.v;

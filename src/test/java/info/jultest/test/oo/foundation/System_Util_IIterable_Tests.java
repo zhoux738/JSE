@@ -15,7 +15,7 @@ import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.jultest.test.Commons;
-import info.jultest.test.oo.ExceptionTestsBase;
+import info.jultest.test.ExceptionTestsBase;
 
 public class System_Util_IIterable_Tests extends ExceptionTestsBase {
 
@@ -201,6 +201,21 @@ public class System_Util_IIterable_Tests extends ExceptionTestsBase {
 		validateStringArrayValue(gvt, "a1", new String[] {"PK_baic", "SZ_byd", "AH_chery", "CC_faw"});
 		validateStringArrayValue(gvt, "a2", new String[] {"PK_baic", "SZ_byd", "AH_chery"});
 		validateStringArrayValue(gvt, "a3", new String[] {"PK_baic", "SZ_byd", "AH_chery", "CC_faw"});
+	}
+
+	@Test
+	public void setOpsTest() throws EngineInvocationError {
+		resetTypeSystem();
+		VariableTable gvt = new VariableTable(null);
+		SimpleScriptEngine engine = makeSimpleEngine(gvt);
+		
+		engine.run(getScriptFile(Commons.Groups.OO, FEATURE, "iter_14.jul"));
+		
+		validateStringArrayValue(gvt, "dif",  new String[] {"bmw", "mb"});
+		validateStringArrayValue(gvt, "ins",  new String[] {"nissan", "vw"});
+		validateStringArrayValue(gvt, "uni",  new String[] {"bmw", "honda", "mb", "nissan", "subaru", "toyota", "vw"});
+		validateStringArrayValue(gvt, "dis1", new String[] {"bmw", "mb", "nissan", "vw"});
+		validateStringArrayValue(gvt, "dis2", new String[] { "honda", "nissan", "subaru", "toyota", "vw"});
 	}
 	
 	//--------------- Failure tests ---------------//

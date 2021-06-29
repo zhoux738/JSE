@@ -50,7 +50,7 @@ public final class JSExceptionFactory {
 	
 	/**
 	 * Create a known Julian Script Exception instance.
-	 * <p/>
+	 * <p>
 	 * The instance will be allocated in heap, initialized, with one of its constructor called.
 	 * <b>jse</b> (of type {@link KnownJSException}) provides the Julian source code for calling the constructor.
 	 * 
@@ -68,7 +68,7 @@ public final class JSExceptionFactory {
 	
 	/**
 	 * Create a known Julian Script Exception instance.
-	 * <p/>
+	 * <p>
 	 * The instance will be allocated in heap, initialized, with one of its constructor, whose parameter list
 	 * matches best the given argument list string, called.
 	 * 

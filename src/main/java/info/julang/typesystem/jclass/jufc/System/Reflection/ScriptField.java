@@ -57,7 +57,7 @@ import info.julang.typesystem.jclass.MemberType;
 import info.julang.util.OneOrMoreList;
 
 /**
- * The native implementation of <code><font color="green">System.Reflection.Field</font></code>.
+ * The native implementation of <code style="color:green">System.Reflection.Field</code>.
  * 
  * @author Ming Zhou
  */

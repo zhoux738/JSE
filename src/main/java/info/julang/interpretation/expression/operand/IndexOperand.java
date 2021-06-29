@@ -29,7 +29,7 @@ import info.julang.memory.value.indexable.IIndexable;
 
 /**
  * A member operand that represents the value of an indexed member of some array instance.
- * <p/>
+ * <p>
  * For now we simply only save the resolved value here. The reference to array instance 
  * and the index value are not tracked.
  * 

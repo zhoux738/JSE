@@ -38,7 +38,7 @@ import info.julang.modulesystem.ScriptInfo;
 import info.julang.util.OSTool;
 
 /**
- * The native implementation of <code><font color="green">System.Reflection.Script</font></code>.
+ * The native implementation of <code style="color:green">System.Reflection.Script</code>.
  * 
  * @author Ming Zhou
  */

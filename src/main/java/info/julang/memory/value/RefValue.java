@@ -38,9 +38,9 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
  * A value that refers to some other object values.
- * <p/>
+ * <p>
  * A RefValue must refer to some other object value. It cannot refer to either basic value or another reference value.
- * <p/>
+ * <p>
  * The static member {@link #NULL} is the internal representation for null literal in Julian scripts. It points at nothing.
  * 
  * @author Ming Zhou
@@ -103,7 +103,7 @@ public class RefValue extends JValueBase implements IRefVal {
 	
 	/**
 	 * Create a null value used in Julian scripts. Null value is a special instance of RefValue.
-	 * <p/>
+	 * <p>
 	 * Always use code similar to below to determine whether a ref value is null.
 	 * <pre><code>
 	 * if(ref.isNull()){
@@ -335,7 +335,7 @@ public class RefValue extends JValueBase implements IRefVal {
 	
 	/**
 	 * Dereference a given value, only if it is a reference value. If it is an object value, return as is.
-	 * <p/>
+	 * <p>
 	 * If it is null reference, returns {@link #NULL}.
 	 * @param val
 	 * @return null if it is neither a reference value, not an object value.

@@ -1,0 +1,7 @@
+
+include "routines.jul"; // define new type
+include "routines2.jul"; // use the type
+include "routines3.jul"; // define another new type
+
+int i2 = MC1.v;
+string mc5_updated = MyMod.MC5.s;

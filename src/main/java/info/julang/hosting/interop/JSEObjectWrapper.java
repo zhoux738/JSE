@@ -83,7 +83,7 @@ public class JSEObjectWrapper {
 			String fname = otyp.getName();
 			JType typ = rt.getTypeTable().getType(fname);
 			if (typ != otyp || !fname.equals(fullClassName)){
-				throw new JSEError("Cannot create an JSE object wrapper using a value that contains a type which cannot be found in the current runtime."); 
+				throw new JSEError("Cannot create a JSE object wrapper using a value that contains a type which cannot be found in the current runtime."); 
 			} else {
 				jcp = otyp; 
 			}
@@ -99,7 +99,7 @@ public class JSEObjectWrapper {
 				try {
 					jcp = (JClassType)rt.getTypeResolver().resolveType(cntx, new ParsedTypeName(fullClassName), true);
 				} catch (Exception ex){
-					throw new JSEError("Cannot create an JSE object wrapper using a type which cannot be found in the current runtime.", ex); 
+					throw new JSEError("Cannot create a JSE object wrapper using a type which cannot be found in the current runtime.", ex); 
 				}
 			}
 		}

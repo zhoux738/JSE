@@ -31,9 +31,9 @@ import info.julang.memory.StackArea;
  * ThreadRuntime represents the local runtime context of a thread. The context provides 
  * interface, among others, for getting access to thread's local memory areas. From 
  * thread runtime one can also query the engine's global state.
- * <p>
- * <b>!!! CAUTION !!! CAUTION !!! CAUTION !!!</b>
- * <p>
+ * 
+ * <p style="color:red; font-weight:bold">!!! CAUTION !!! CAUTION !!! CAUTION !!!</p>
+ * 
  * This interface is <b>NOT</b> designed to be thread-safe. Always access to it from the 
  * original managed thread with which the instance was associated from the very beginning.
  * If creating a new thread outside the manager, replicate the instance with a {@link 

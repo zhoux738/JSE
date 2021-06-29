@@ -1,0 +1,5 @@
+module MyMod;
+
+class MC5 {
+	static string s = "mc5";
+}

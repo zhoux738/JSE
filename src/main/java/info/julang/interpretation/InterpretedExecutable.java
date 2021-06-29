@@ -27,7 +27,6 @@ package info.julang.interpretation;
 import java.util.Map.Entry;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
@@ -71,17 +70,16 @@ import info.julang.typesystem.loading.InternalTypeResolver;
 /**
  * The interpreted executable is the core class of the scripting engine. It reads token stream from 
  * a scanner, and interprets the contents as per Julian language specification.
- * <p/>
- * This class roughly corresponds to the sequences involved in a function invocation. At start of
- * its {@link #InterpretedExecutable(TokenScanner, Token[])} method it switches context to a new 
- * one, then initiates a new {@link info.julang.interpretation.statement.BlockStatement 
- * BlockStatement} and interprets it within the new context. At the end, it switches back to the 
+ * <p>
+ * This class roughly corresponds to the sequences involved in a function invocation. At the start of
+ * execution, it switches to a new context, initiates a new {@link info.julang.interpretation.statement.BlockStatement 
+ * BlockStatement}, and interprets the statement within the new context. At the end, it switches back to the 
  * previous context and returns the result which itself was returned from the block statement.
- * <p/>
+ * <p>
  * Since the same executable can be run in different threads, we must use extra caution in order to
- * allow concurrent call to the instance's {@link #execute(ThreadRuntime, Argument[])} method. For 
+ * allow concurrent call to the instance's {@link InterpretedExecutable#execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) execute()} method. For 
  * example, only store global and immutable objects as instance member, and make all per-thread 
- * variables as locals within the {@link #execute (ThreadRuntime, Argument[]) execute} method.
+ * variables as locals within the {@link InterpretedExecutable#execute(ThreadRuntime runtime, IFuncValue func, Argument[] args) execute()} method.
  *  
  * @author Ming Zhou
  */
@@ -121,6 +119,8 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	
 	protected boolean isFunctionScript;
 	
+	protected String name;
+	
 	protected void copyFrom(InterpretedExecutable ie){
 		this.ast = ie.ast;
 		this.isGlobalScript = ie.isGlobalScript;
@@ -130,12 +130,14 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	/**
 	 * Create a new interpreted executable.
 	 * 
+	 * @param name The name of the executable, usually that of the function being invoked.
 	 * @param ast the AST to interpret. 
 	 * @param endingTokens if null, keep interpreting until EOF.
 	 * @param isGlobalScript if true, this executable is able to define types.
 	 * @param isFunctionScript if true, this executable can return from the middle. This option is incompatible with isGlobalScript.
 	 */
-	protected InterpretedExecutable(AstInfo<? extends ParserRuleContext> ast, boolean isGlobalScript, boolean isFunctionScript){
+	protected InterpretedExecutable(String name, AstInfo<? extends ParserRuleContext> ast, boolean isGlobalScript, boolean isFunctionScript){
+		this.name = name;
 		this.ast = ast;
 		this.isGlobalScript = isGlobalScript;
 		this.isFunctionScript = isFunctionScript;
@@ -245,10 +247,10 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	 * @param varTable
 	 */
 	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
-		repliateArgsAndBindings(args, ctxt, func, true);
+		replicateArgsAndBindings(args, ctxt, func, true);
 	}
 	
-	protected void repliateArgsAndBindings(Argument[] args, Context ctxt, IFuncValue func, boolean addLocalBindings) {
+	protected void replicateArgsAndBindings(Argument[] args, Context ctxt, IFuncValue func, boolean addLocalBindings) {
 		IVariableTable varTable = ctxt.getVarTable();
 		for(Argument arg : args){
 			varTable.addVariable(arg.getName(), arg.getValue());
@@ -304,7 +306,10 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	 * @param ctxt
 	 * @return
 	 */
-	protected Result execute(ThreadRuntime runtime, AstInfo<? extends ParserRuleContext> ast, StatementOption option, Context ctxt){
+	protected Result execute(
+		ThreadRuntime runtime, AstInfo<? extends ParserRuleContext> ast, StatementOption option, Context ctxt)
+		throws EngineInvocationError {
+		
 		ParserRuleContext ec = ast.getAST();
 		if (ec != null){ // An empty input can generate null Executable.
 			Statement bs = null;
@@ -377,5 +382,10 @@ public class InterpretedExecutable implements Executable, IStackFrameInfo {
 	@Override
 	public boolean isFromLooseScript() {
 		return false;
+	}
+	
+	@Override
+	public String getName() {
+		return name;
 	}
 }

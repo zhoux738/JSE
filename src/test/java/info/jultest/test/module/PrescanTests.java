@@ -232,7 +232,7 @@ public class PrescanTests {
 		RawScriptInfo info = new RawScriptInfo("ModuleSys.ModA", false);
 		info.initialize(Commons.SRC_REPO_ROOT + "ModuleSys/ModA/" + fileName);
 		
-		CollectScriptInfoStatement csis = new CollectScriptInfoStatement(fullyLoadNow);
+		CollectScriptInfoStatement csis = new CollectScriptInfoStatement(fullyLoadNow, false);
 		csis.prescan(info);
 		
 		return info;

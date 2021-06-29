@@ -74,6 +74,7 @@ public class PACON {
 		public final static String Name = "System.Environment";
 		
 		public final static String Op_read = "read";
+		public final static String Op_eval = "eval";
 	}
 	
 	public static class Reflection {

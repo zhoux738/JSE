@@ -35,10 +35,12 @@ import info.julang.memory.value.AttrValue;
  * A special platform type mapper used to map class members of registered types provided through {@link ObjectBindingGroup}.
  * <p>
  * This mapper is different from the default mapper in a few aspects:
- * <ul>- it doesn't use the engine class loader to load the target type; instead
- * it tries to get the type directly from the given type collection.</ul>
- * <ul>- it has less restrictions than the default mapper because the mapped type would have more limited usage.</ul>
- * <ul>- it doesn't produce any constructor member.</ul>
+ * <ul>
+ * <li> it doesn't use the engine class loader to load the target type; instead
+ * it tries to get the type directly from the given type collection.</li>
+ * <li> it has less restrictions than the default mapper because the mapped type would have more limited usage.</li>
+ * <li> it doesn't produce any constructor member.</li>
+ * </ul>
  * 
  * @author Ming Zhou
  */

@@ -30,7 +30,7 @@ import info.julang.interpretation.errorhandling.JulianScriptException;
 
 /**
  * The script engine interface.
- * <p/>
+ * <p>
  * This interface defines the basic behavior that a script engine can perform, such as invoking it and querying the state.
  * 
  * @author Ming Zhou
@@ -39,46 +39,45 @@ public interface IScriptEngine extends IExtScriptEngine {
 
 	/**
 	 * Run the script engine. The script is provided by {@link ScriptProvider}.
-	 * <p/>
+	 * <p>
 	 * The engine will consult with the engine context while executing. 
 	 * Arguments must be set into the context before this method is called. To get the context, call {@link #getContext()}.
-	 * <p/> 
+	 * <p> 
 	 * Based on implementation, this method can be either blocking or non-blocking. To query its state, call {@link #getState()}.
-	 * @param provider
-	 * @return
-	 * @throws EngineInvocationError 
+	 * @param provider The script provider
+	 * @throws EngineInvocationError if engine encountered a fatal error.
 	 */
 	void run(ScriptProvider provider) throws EngineInvocationError;
 	
 	/**
 	 * Run the script engine with specified arguments. The script is provided by {@link ScriptProvider}.
-	 * <p/>
+	 * <p>
 	 * Arguments passed in here will overwrite existing ones found in the engine's context, 
 	 * which can be retrieved by calling {@link #getContext()}.
-	 * <p/>
+	 * <p>
 	 * Based on implementation, this method can be either blocking or non-blocking. To query its state, call {@link #getState()}.
-	 * @param provider
-	 * @param arguments
-	 * @throws EngineInvocationError
+	 * @param provider The script provider
+	 * @param arguments The arguments to invoke with
+	 * @throws EngineInvocationError if engine encountered a fatal error.
 	 */
 	void run(ScriptProvider provider, String[] arguments) throws EngineInvocationError;
 	
 	/**
 	 * Return the context of this engine, which is expected, but not guaranteed, to refer to the same context passed into {@link #run}. 
 	 * Can be null if {@link State state} returns {@link State#NOT_STARTED}.
-	 * @return
+	 * @return The engine context.
 	 */
 	EngineContext getContext();
 	
 	/**
 	 * Get the current {@link State state} of this ScriptEngine.
-	 * @return 
+	 * @return The current state of the engine.
 	 */
 	State getState();
 	
 	/**
 	 * Set up exception handler, which gets called back when a {@link JulianScriptException} is thrown and not handled by user.
-	 * @param hanlder
+	 * @param hanlder A handler for any script exception.
 	 */
 	void setExceptionHandler(ScriptExceptionHandler hanlder);
 	

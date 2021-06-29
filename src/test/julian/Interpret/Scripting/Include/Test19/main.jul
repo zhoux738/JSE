@@ -1,0 +1,9 @@
+
+include "t19_1.jul";
+
+include "s1.jul";
+
+System.Reflection.Script script = Environment.getScript();
+verify(2, script, "main.jul");
+
+return true;

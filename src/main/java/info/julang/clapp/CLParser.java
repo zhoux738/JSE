@@ -35,7 +35,7 @@ import info.julang.util.OSTool;
 
 /**
  * A command-line parsing framework.
- * <p/>
+ * <p>
  * On Windows system we accept dash (-), double dashes (--), and slash (/) as argument symbol; 
  * on others we only accept dash (-) for short name and double dashes (--) for long name.
  * 
@@ -65,8 +65,8 @@ public class CLParser {
 	 * Parse the arguments. Can be only called effectively once. 
 	 * All the following calls return the one cached from the first call.
 	 * 
-	 * @return 
-	 * @throws CLParsingException
+	 * @return A cmdline environment
+	 * @throws CLParsingException If parsing failed.
 	 */
 	public CLEnvironment parse() throws CLParsingException {
 		if(env != null){

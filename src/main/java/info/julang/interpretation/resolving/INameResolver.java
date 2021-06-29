@@ -29,7 +29,7 @@ import info.julang.memory.value.JValue;
 /**
  * Name resolver is a context-sensitive class that is used to resolve an identifier encountered in script code. 
  * In Julian we have several different situations where the strategy for resolving identifiers can vary.
- * <p/>
+ * <ul>
  * <li>In the loose code, i.e. the code not present in method, the thread is running in a global environment and 
  * resolve names against a lexically scoped variable table. The bottom level of this table is the global variable 
  * table (<b>GVT</b>).
@@ -42,13 +42,14 @@ import info.julang.memory.value.JValue;
  * </li>
  * <li>For static methods and initializers, the names are resolved against two parts: <b>FVT</b> and class fields.
  * </li>
- * <br/><br/>
+ * </ul>
  * Name resolver is only used to resolve a simple name, but never a composite name, such as "a.b". This is because
  * for "a.b" it is either "a" getting resolved first by name resolver, in which case the part "b" will be interpreted
  * by {@link info.julang.interpretation.expression.operator.DotOp dot operator} ("."); or "a.b" getting 
  * resolved in entirety to be a type value by dot operator. Since name can be resolved either in name resolver or
  * by dot operator, the accessibility check must be performed at both places.
- * <br/><br/>
+ * <p>
+ * 
  * @author Ming Zhou
  */
 public interface INameResolver {

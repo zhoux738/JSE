@@ -26,6 +26,8 @@ package info.julang.external.interfaces;
 
 public interface IExtVariableTable {
 
+	public static final String KnownVariableName_Arguments = "arguments";
+	
 	/**
 	 * Enter into a new scope.
 	 */
@@ -44,11 +46,15 @@ public interface IExtVariableTable {
 	/**
 	 * Get the count of scope level. Each call to {@link #enterScope()} increments one level, 
 	 * each call to {@link #exitScope()} decrements one level.
+	 * 
+	 * @return The nest level.
 	 */
 	public int getNestLevel();
 	
 	/**
 	 * Get the dereferenced variable for the given name.
+	 * 
+	 * @param name The name of variable.
 	 * @return the actual value that is dereferenced from the variable. So it cannot be a 
 	 * {@link info.julang.memory.value.RefValue RefValue} or 
 	 * {@link info.julang.memory.value.UntypedValue UntypedValue}. null if not found.

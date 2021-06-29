@@ -47,15 +47,15 @@ import info.julang.typesystem.jclass.builtin.JFunctionType;
 
 /**
  * Statement for declaring local variables.
- * <p/>
+ * <p>
  * Basic syntax:
- * <p/>
- * (1) no initializer<br/>
+ * <p>
+ * (1) no initializer<br>
  * <pre><code>int i;</code></pre>
- * (2) with initializer<br/>
+ * (2) with initializer<br>
  * <pre><code>int i = 5;
  *MyObj m = getMyObj();</code></pre>
- * (3) multiple initialization, each with or without initializer<br/>
+ * (3) multiple initialization, each with or without initializer<br>
  * <pre><code>string s, t = "abc";</code></pre>
  * 
  * @author Ming Zhou

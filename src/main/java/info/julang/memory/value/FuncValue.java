@@ -32,7 +32,7 @@ import info.julang.typesystem.jclass.builtin.JFunctionType;
 
 /**
  * A function value that stores a function.
- * <p/>
+ * <p>
  * As first-class object, function is stored in value and treated the same way as other kinds such as int or string.
  * This class for itself is used for global function. Method and constructor are also values and their classes
  * ({@link MethodValue}, {@link CtorValue}) are derived from this.

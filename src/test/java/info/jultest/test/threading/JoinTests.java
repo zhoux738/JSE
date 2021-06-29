@@ -5,7 +5,7 @@ import static info.jultest.test.Commons.makeSimpleEngine;
 import static info.jultest.test.Commons.validateIntArrayValue;
 import static info.jultest.test.Commons.validateIntValue;
 import info.jultest.test.Commons;
-import info.jultest.test.oo.ExceptionTestRunner;
+import info.jultest.test.ExceptionTestRunner;
 import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;

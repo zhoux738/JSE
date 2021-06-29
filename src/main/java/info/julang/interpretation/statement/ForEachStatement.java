@@ -54,16 +54,17 @@ import info.julang.parser.AstInfo;
  *   expression</code></pre>or<pre><code> for(|type| |name| : |iterable-expr|){
  *   foreach-body
  * } </code></pre>
- * The head that contains </code>|type|</code>, <code>|name|</code> and <code>|iterable-expr|</code> 
+ * The head that contains <code>|type|</code>, <code>|name|</code> and <code>|iterable-expr|</code> 
  * is required; body is not. <code>|iterable-expr|</code> is an expression that must evaluate to
- * an iterable object, such as Array, <font color="green">System.Collection.List</font>, or a user-defined
- * class that implements either <font color="green">System.Util.IIterable</font> or 
- * <font color="green">System.Util.IIterator</font>.
+ * an iterable object, such as Array, <code style="color:green">System.Collection.List</code>, or a user-defined
+ * class that implements either <code style="color:green">System.Util.IIterable</code> or 
+ * <code style="color:green">System.Util.IIterator</code>.
  * <p>
- * For certain iterable objects, such as <font color="green">System.Collection.List</font>, a write-lock
+ * For certain iterable objects, such as <code style="color:green">System.Collection.List</code>, a write-lock
  * will be applied by this statement. If another thread is trying to modify the same object in the same
- * time, an exception of <font color="green">System.Collection.ConcurrentModificationException</font>
+ * time, an exception of <code style="color:green">System.Collection.ConcurrentModificationException</code>
  * will be thrown.
+ * <p>
  * 
  * @author Ming Zhou
  */

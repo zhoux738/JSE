@@ -29,10 +29,13 @@ public class AOTRawScriptInfo$Environment extends RawScriptInfo {
         
         m_classes = new ArrayList<RawClassInfo>();
         m_classes.add(new RawClassInfo("Environment", new AOTClassDeclInfo_Environment (this)));
+        m_classes.add(new RawClassInfo("EvalConfig", new AOTClassDeclInfo_EvalConfig (this)));
+        m_classes.add(new RawClassInfo("DynamicEvaluationException", new AOTClassDeclInfo_DynamicEvaluationException (this)));
 
         m_requirements = new ArrayList<RequirementInfo>();
         m_requirements.add(new RequirementInfo("System", null));
         m_requirements.add(new RequirementInfo("System.Reflection", null));
+        m_requirements.add(new RequirementInfo("System.Collection", null));
     }
 
     public String getModuleName() {
@@ -98,6 +101,121 @@ public class AOTRawScriptInfo$Environment extends RawScriptInfo {
 
         public boolean isStatic() {
             return true;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.PUBLIC;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_EvalConfig extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_EvalConfig(RawScriptInfo minfo) {
+            super(minfo);
+            
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.EvalConfig");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "EvalConfig";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public Accessibility getAccessibility() {
+            return Accessibility.PUBLIC;
+        }
+        
+        public boolean isAccessibilitySet(){
+            return true;
+        }
+
+    }
+    
+        
+    class AOTClassDeclInfo_DynamicEvaluationException extends LazyClassDeclInfo {
+
+        public AOTClassDeclInfo_DynamicEvaluationException(RawScriptInfo minfo) {
+            super(minfo);
+            
+            m_parentNames.add(ParsedTypeName.makeFromFullName("Exception"));
+        }
+
+        private List<ParsedTypeName> m_parentNames = new ArrayList<ParsedTypeName>();
+        private FQName m_fullName = new FQName("System.DynamicEvaluationException");
+        
+        public List<ParsedTypeName> getParentTypes(){
+            return m_parentNames;
+        }
+        
+        public FQName getFQName() {
+            return m_fullName;
+        }
+        
+        public String getName(){
+            return "DynamicEvaluationException";
+        }
+
+        public ClassSubtype getSubtype() {
+            return ClassSubtype.CLASS;
+        }
+        
+        public boolean isFinal() {
+            return false;
+        }
+        
+        public boolean isConst() {
+            return false;
+        }
+        
+        public boolean isHosted() {
+            return false;
+        }
+        
+        public boolean isAbstract() {
+            return false;
+        }
+
+        public boolean isStatic() {
+            return false;
         }
 
         public Accessibility getAccessibility() {

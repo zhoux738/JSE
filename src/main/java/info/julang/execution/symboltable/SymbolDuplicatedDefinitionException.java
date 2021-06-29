@@ -25,6 +25,8 @@ SOFTWARE.
 package info.julang.execution.symboltable;
 
 import info.julang.interpretation.errorhandling.KnownJSException;
+import info.julang.modulesystem.ClassInfo;
+import info.julang.modulesystem.ModuleInfo;
 
 /**
  * A symbol, such as variable, function, or type name, is defined more than once within current context.
@@ -37,6 +39,10 @@ public class SymbolDuplicatedDefinitionException extends SymbolBindingException 
 
 	public SymbolDuplicatedDefinitionException(String symbol) {
 		super("\"" + symbol + "\" is defined more than once in current scope.");
+	}
+	
+	public SymbolDuplicatedDefinitionException(ClassInfo ci, ModuleInfo mi) {
+		super("Type \'" + ci.getName() + "\' is defined more than once in module '" + mi.getName() + "'.");
 	}
 	
 	@Override

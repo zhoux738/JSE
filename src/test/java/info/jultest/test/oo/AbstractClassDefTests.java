@@ -8,6 +8,7 @@ import org.junit.Assume;
 import org.junit.Test;
 
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestRunner;
 import info.jultest.test.module.TestLoadingState;
 import info.julang.dev.GlobalSetting;
 import info.julang.execution.EngineRuntime;

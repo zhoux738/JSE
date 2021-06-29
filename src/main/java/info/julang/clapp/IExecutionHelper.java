@@ -28,10 +28,10 @@ import info.julang.external.exceptions.JSEException;
 
 /**
  * An interface abstracting the way to create and execute a script engine.
- * <p/>
+ * <p>
  * The type of engine instance used by this interface is rather raw, since we need to
  * deal with both JSR-223 engine type and our own type with more friendly API. The
- * implementation, however, can assume that the instance created by {@link #getEngineInstance()}
+ * implementation, however, can assume that the instance created by <code>getEngineInstance()</code>
  * will be used in other callbacks exposed by the interface, therefore a downcasting is
  * always safe.
  * 
@@ -41,23 +41,26 @@ public interface IExecutionHelper {
 
 	/**
 	 * Create a new engine instance.
+	 * 
+	 * @param env The cmdline environment.
+	 * @return The created engine instance.
 	 */
 	Object getEngineInstance(CLEnvironment env);
 
 	/**
 	 * Add module paths to runtime context.
 	 * 
-	 * @param engine
-	 * @param args
-	 * @param paths
+	 * @param engine The script engine.
+	 * @param args The arguments used when invoking the engine.
+	 * @param paths The module paths.
 	 */
 	void addModulePaths(Object engine, ExecutionArguments args, String[] paths);
 	
 	/**
 	 * Invoke the engine against the given context.
 	 * 
-	 * @param engine
-	 * @param args
+	 * @param engine The script engine.
+	 * @param args The arguments used when invoking the engine.
 	 * @return result from execution
 	 * @throws JSEException a wrapper exception with its inner exception being the root cause.
 	 */
@@ -66,7 +69,7 @@ public interface IExecutionHelper {
 	/**
 	 * Add variable bindings to the engine.
 	 * 
-	 * @param engine
+	 * @param engine The script engine.
 	 * @param namedBindings an array of name~binding pairs
 	 */
 	void addBindings(Object engine, NamedBinding[] namedBindings);

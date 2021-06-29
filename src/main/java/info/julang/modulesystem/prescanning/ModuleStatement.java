@@ -24,13 +24,16 @@ SOFTWARE.
 
 package info.julang.modulesystem.prescanning;
 
+import java.io.File;
+
+import info.julang.external.interfaces.IExtModuleManager;
 import info.julang.langspec.ast.JulianParser.Composite_idContext;
 import info.julang.langspec.ast.JulianParser.Module_definitionContext;
 import info.julang.modulesystem.prescanning.RawScriptInfo.Option;
 import info.julang.parser.AstInfo;
 
 /**
- * Read the script file and inspect the very first statement, making sure it is an 
+ * Read the script file and inspect the very first statement, making sure it is a 
  * "<code>module ...;</code>" with module name matching the given one in {@link RawScriptInfo}.
  * 
  * @author Ming Zhou
@@ -38,17 +41,34 @@ import info.julang.parser.AstInfo;
 public class ModuleStatement implements PrescanStatement {
 
 	private AstInfo<Module_definitionContext> ainfo;
+	private String implicitModuleName;
 	
-	public ModuleStatement(AstInfo<Module_definitionContext> ainfo){
+	public ModuleStatement(AstInfo<Module_definitionContext> ainfo, String implicitModuleName){
 		this.ainfo = ainfo;
+		this.implicitModuleName = implicitModuleName;
 	}
 	
-	// Starts right after the module keyword.
 	@Override
 	public void prescan(RawScriptInfo info) {
 		Module_definitionContext module = ainfo.getAST();
 		Composite_idContext cid = module.composite_id();
-		String fname = cid.getText();
+		
+		String fname;
+		if (cid == null) {
+			if (implicitModuleName != null) {
+				fname = implicitModuleName;
+			} else {
+				throw new IllegalModuleFileException(
+					info, module,
+					"The module name is not defined. Default module declaration "
+					+ "(module;) can only be used for module files found under the default module path, i.e. '"
+					+ IExtModuleManager.DefaultModuleDirectoryName 
+					+ File.separator 
+					+ "' co-located with the invoked script.");	
+			}
+		} else {
+			fname = cid.getText();
+		}
 		
 		if(info.getModuleName() == null){
 			info.setModuleName(fname);
@@ -58,13 +78,13 @@ public class ModuleStatement implements PrescanStatement {
 		
 		if(!opt.isAllowSystemModule() && fname.toLowerCase().startsWith("system.")){
 			throw new IllegalModuleFileException(
-				info, cid, "The module name (\"" + fname + "\") is reserved.");	
+				info, cid != null ? cid : module, "The module name (\"" + fname + "\") is reserved.");	
 		}
 		
 		if(!opt.isAllowNameInconsistency()){
 			if(!info.getModuleName().equals(fname)){
 				throw new IllegalModuleFileException(
-					info, cid, "The module name (\"" + fname + 
+					info, cid != null ? cid : module, "The module name (\"" + fname + 
 					"\") is not consistent with the file's directory structure. " + 
 					"This may be caused by a wrong configuration of script repository.");	 
 			}

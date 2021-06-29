@@ -35,7 +35,7 @@ import info.julang.parser.AstInfo;
 
 /**
  * The if statement in Julian language.
- * <p/>
+ * <p>
  * The if statement is comprised of multiple parts:<pre><code> if(|bool-expr|)
  *   |clause|
  * else if
@@ -45,10 +45,11 @@ import info.julang.parser.AstInfo;
  *   |clause|
  *  </code></pre>
  * Note that:
- * <p/>
+ * <ul>
  *   <li>|clause| can be a single expression or a script block enclosed by {}</li>
  *   <li>there can be any number of else if clauses</li>
  *   <li>there can be zero or one else clause</li>
+ * </ul>
  *
  * @author Ming Zhou
  */

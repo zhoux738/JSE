@@ -13,7 +13,7 @@ import info.julang.external.interfaces.IExtEngineRuntime;
 import info.julang.external.interfaces.IExtVariableTable;
 import info.jultest.test.Commons;
 import info.jultest.test.EFCommons;
-import info.jultest.test.oo.ExceptionTestsBase;
+import info.jultest.test.ExceptionTestsBase;
 
 public class System_Reflection_Field_ReflTestSuite extends ExceptionTestsBase {
 

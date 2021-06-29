@@ -24,8 +24,11 @@ SOFTWARE.
 
 package info.julang.execution.symboltable;
 
+import java.util.List;
+
 import info.julang.external.interfaces.IExtVariableTable;
 import info.julang.memory.value.JValue;
+import info.julang.util.Pair;
 
 public interface IVariableTable extends IExtVariableTable {
 
@@ -39,7 +42,7 @@ public interface IVariableTable extends IExtVariableTable {
 	
 	/**
 	 * Get variable with given name from the variable table.
-	 * <p/>
+	 * <p>
 	 * The search begins from the current scope. If it is not found in current scope, it will look up in the enclosing one. 
 	 * The process is repeated up to the outermost scope. If still not found, try the global variable scope (the outermost
 	 * scope in the global name space).
@@ -51,7 +54,7 @@ public interface IVariableTable extends IExtVariableTable {
 	
 	/**
 	 * Get variable with given name from the variable table.
-	 * <p/>
+	 * <p>
 	 * The search begins from the current scope. If it is not found in current scope, it will look up in the enclosing one. 
 	 * The process is repeated up to the outermost scope. If still not found, may optionally try the global variable scope 
 	 * (the outermost scope in the global name space).
@@ -63,7 +66,7 @@ public interface IVariableTable extends IExtVariableTable {
 	
 	/**
 	 * Add a new bound value to the variable table. This method should be used only by global variable table.
-	 * <p/>
+	 * <p>
 	 * Adding a binding with an existing name will overwrite the current one.
 	 * @param name
 	 * @param value
@@ -78,10 +81,16 @@ public interface IVariableTable extends IExtVariableTable {
 	public JValue getBinding(String name);
 	
 	/**
+	 * Get all bindings.
+	 */
+	public List<Pair<String, JValue>> getAllBindings();
+	
+	/**
 	 * Traverse the variable table by scope, delegating actual processing of each scope to a specified traverser.
 	 * 
 	 * @param traverser
-	 * @param topDown true if processing in top-down order; false bottom-up.
+	 * @param topDown true if processing in top-down order (starting from the innermost scope);
+	 * false bottom-up (starting from the outermost scope).
 	 */
 	public void traverse(IVariableTableTraverser traverser, boolean topDown);
 	

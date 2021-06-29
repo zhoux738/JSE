@@ -24,6 +24,11 @@ SOFTWARE.
 
 package info.julang.modulesystem;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import info.julang.execution.threading.ThreadRuntime;
 import info.julang.execution.threading.ThreadRuntimeHelper;
 import info.julang.memory.value.HostedValue;
@@ -32,23 +37,50 @@ import info.julang.memory.value.ObjectValue;
 import info.julang.parser.LazyAstInfo;
 import info.julang.typesystem.jclass.jufc.System.Reflection.ScriptScript;
 
-import java.util.List;
-
+/**
+ * The information about a script info, which is to be stored in a {@link ModuleInfo}.
+ * 
+ * @author Ming Zhou
+ */
 public class ScriptInfo {
 
 	private String fullPath;
 	
 	private List<RequirementInfo> reqs;
 
+	private List<IncludedFile> incs;
+	
 	private LazyAstInfo ainfo;
 	
 	private ModuleInfo modInfo;
 	
-	public ScriptInfo(ModuleInfo modInfo, String fullPath, List<RequirementInfo> reqs, LazyAstInfo ainfo) {
+	public ScriptInfo(
+		ModuleInfo modInfo,
+		String fullPath,
+		List<RequirementInfo> reqs,
+		LazyAstInfo ainfo,
+		List<IncludedFile> includes) {
+		
 		this.modInfo = modInfo;
 		this.fullPath = fullPath;
 		this.reqs = reqs;
 		this.ainfo = ainfo;
+		
+		if (includes != null) {
+		    int size = includes.size();
+		    if (size > 0) {
+				incs = new ArrayList<IncludedFile>(size);
+				Set<String> set = new HashSet<>(size);
+				
+				for (IncludedFile inf : includes) {
+					String path = inf.getFullPath();
+					if (!set.contains(path)) {
+						set.add(path);
+						incs.add(inf);
+					}
+				}
+		    }
+		}
 	}
 
 	public ModuleInfo getModuleInfo() {
@@ -67,6 +99,16 @@ public class ScriptInfo {
 		return ainfo;
 	}
 	
+	/**
+	 * Distinct script files included via include statement, 
+	 * in then order they appear the the top of this script file.
+	 * 
+	 * @return Null if there isn't any.
+	 */
+	public List<IncludedFile> getIncludedFiles() {
+		return incs;
+	}
+	
 	void setRequirements(List<RequirementInfo> reqs) {
 		this.reqs = reqs;
 	}
@@ -76,7 +118,7 @@ public class ScriptInfo {
 	private ObjectValue scriptObject;
 	
 	/**
-	 * Get <font color="green"><code>System.Reflection.Script</code></font> object for this type. 
+	 * Get <code style="color:green">System.Reflection.Script</code> object for this type. 
 	 * This object will be created the first time this method is called.
 	 * 
 	 * @param runtime

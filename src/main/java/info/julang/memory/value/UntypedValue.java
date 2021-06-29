@@ -32,11 +32,11 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
  * A value that can be any type.
- * <p/>
+ * <p>
  * Untyped value is implemented in a similar way as {@link RefValue}, where the actual value
  * is held in it. When assigned a new value, it simply replaces the held value with the new 
  * one. If the new value is also untyped, it will be unwrapped first.
- * <p/>
+ * <p>
  * This however is different from RefValue in that it is completely transparent to users. Under
  * no circumstances will an UntypedValue holds null value. When a user checks the type of an
  * untyped value, it gets the type of the actual value being held.

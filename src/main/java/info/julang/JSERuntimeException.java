@@ -53,15 +53,15 @@ public abstract class JSERuntimeException extends RuntimeException {
 	 * Convert this exception to a {@link JulianScriptException JSE} instance. Most of time we
 	 * should pop up a JSE instead of the original JSERuntimeException so that the stack trace
 	 * of script engine can be preserved and presented before users.
-	 * <p/>
+	 * <p>
 	 * If not overridden, will create an instance of JulianScriptException of type returned 
 	 * by {@link #getKnownJSException()}, using a default constructor which takes {@link #getMessage()}
 	 * as the sole argument. Note the message from Java object will be used without escaping, so the
 	 * subclass must create the message carefully such it any Julian meta-chars must be properly escaped.
 	 * 
-	 * @param rt
-	 * @param context
-	 * @return
+	 * @param rt The thread runtime
+	 * @param context The execution context
+	 * @return An instance of JulianScriptException that wraps Julian's <code style="color:green">System.Exception</code>.
 	 */
 	public JulianScriptException toJSE(ThreadRuntime rt, Context context) {
 		KnownJSException kjse = getKnownJSException();

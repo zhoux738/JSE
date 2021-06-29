@@ -30,7 +30,7 @@ import info.julang.typesystem.jclass.builtin.JAttributeType;
 
 /**
  * A value of attribute type.
- * <p/>
+ * <p>
  * Note attribute type is class type too.
  * 
  * @author Ming Zhou

@@ -45,18 +45,19 @@ import info.julang.typesystem.jclass.jufc.System.Concurrency.ScriptLock;
 
 /**
  * The sync statement in Julian language.
- * <p/>
+ * <p>
  * The sync statement has form:<pre><code> sync (expr) {
  *   ... ...
  * }</code></pre>
  * Note that:
- * <p/>
- *   <li><code>expr</code> evaluates to a value of type <code><font color="green">System.Concurrency.Lock</font></code></li>
+ * <ul>
+ *   <li><code>expr</code> evaluates to a value of type <code style="color:green">System.Concurrency.Lock</code></li>
  *   <li>the critical region must be enclosed in <code>{ }</code>. One-liner statement is not allowed.</li>
- * <p/>
- * The sync statement is a syntax sugar built on top of <code><font color="green">System.Concurrency.Lock</font></code>.
+ * </ul>
+ * The sync statement is a syntax sugar built on top of <code style="color:green">System.Concurrency.Lock</code>.
  * The same functionality can be achieved by calling <code>Lock.lock()</code> at the beginning and <code>Lock.unlock()</code>
  * at the end in a <code>finally</code> block.
+ * <p>
  * 
  * @author Ming Zhou
  */

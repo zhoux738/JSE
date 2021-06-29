@@ -215,10 +215,10 @@ public final class StreamBasedSyntaxHelper {
 
 	/**
 	 * Read the following tokens as a type name.
-	 * <p/>
+	 * <p>
 	 * The tokens may constitute a type name only if it is in form id(.id)*(\[\])* and is followed 
 	 * by another id, such as "<code>A.B x</code>" or "<code>A.B[][] y</code>".
-	 * <p/>
+	 * <p>
 	 * If the parse is successful, moves PC past the parsed type name. If not, PC remains unchanged.
 	 * 
 	 * @param stream

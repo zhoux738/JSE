@@ -31,7 +31,7 @@ public final class PreparsingHelper {
 	/**
 	 * Remove the trailing blanks, then trailing back-slashes (\).
 	 *  
-	 * @param s
+	 * @param s the string to be processed.
 	 * @return As an example, <code>" some \ text \\ "</code> would become <code>"some \ text"</code>
 	 */
 	public static Pair<String, Boolean> removeTrailingBackslashes(String s){

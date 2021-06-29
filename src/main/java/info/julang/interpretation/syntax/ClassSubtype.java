@@ -26,8 +26,8 @@ package info.julang.interpretation.syntax;
 
 /**
  * The subtype of a class declaration. This info is used mainly by type loader to determine 
- * how to load a class of special built-in type, such as <font color="green">Enum</font> and 
- * <font color="green">Attribute</font>.
+ * how to load a class of special built-in type, such as <code style="color:green">Enum</code> and 
+ * <code style="color:green">Attribute</code>.
  * 
  * @author Ming Zhou
  */

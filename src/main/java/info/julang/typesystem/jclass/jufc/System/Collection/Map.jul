@@ -68,7 +68,7 @@ class Map : Container, IIndexable, IIterable, IMapInitializable {
 	private hosted var[] _getKeys();
 	
 	/*
-	 * Put a key/value pair into the map. The key's hashCode() is to calculate the storage
+	 * Put a key/value pair into the map. The key's hashCode() is called to calculate the storage
 	 * location, and its equals() method is used to determine the uniqueness.
 	 *
 	 * [param: key] The key to the map.
@@ -92,7 +92,7 @@ class Map : Container, IIndexable, IIterable, IMapInitializable {
 	}
 	
 	/*
-	 * Remove the specified key from the the map.
+	 * Remove the specified key from the map.
 	 *
 	 * [param: key] The key to the map.
 	 * [return] If the key existed, the value associated with this key; otherwise, null. Note if the value 
@@ -105,7 +105,7 @@ class Map : Container, IIndexable, IIterable, IMapInitializable {
 	}
 	
 	/*
-	 * Get the value from the the map by the specified key.
+	 * Get the value from the map by the specified key.
 	 *
 	 * [param: key] The key to the map.
 	 * [return] If the key existed, the value associated with this key; otherwise, null. Note if the value 
@@ -239,6 +239,167 @@ internal class MapIterator : IIterator {
 	
 	private void init() {
 		keys = map.getKeys();
+		length = keys.length;
+		index = 0;
+	}
+}
+
+/*
+ * A hash set to store data based on the calculated hash value, allowing fast element-targeting
+ * operation at O(1) cost.
+ *
+ * An object stored in set will provide its hash through [Object.hashCode()](Object#hashCode()) 
+ * method. A primitive value will convert is numeric value into an integer to be used as hash. 
+ * For example, byte value simply promotes the value to integer, and a float value get floored 
+ * to an integer. 
+ *
+ * The hashcode is only a means to locate the slot in the map, but doesn't have to be unique. The
+ * uniqueness is determined by [Object.equals()](Object#equals(var)) method. When putting a 
+ * value into a set, if the slot suggested by the hashcode is already occupied, ```Object.equals()``` 
+ * is called between the new object and existing one. If the method returns true, the new object 
+ * is not added; otherwise, the object will be added anyway. If there is more than one object 
+ * using that slot, each of them will be compared against before the new object can be cleared 
+ * of its uniqueness and added. The multiple objects stored on the same map slot are internally 
+ * organized by a linked list. In best practice, try to make the hashcode as unique as possible 
+ * to improve the performance, and always pay attention to equals() to ensure its proper 
+ * functioning in determining the logical equality between two objects.
+ *
+ * Set is iterable:
+ * [code]
+ *    for (var value : set) {
+ *      Console.println(value);
+ *    }
+ * [code: end]
+ * 
+ * The methods of this class are **not** thread safe.
+ */
+[Bridged(apiset="System.Collection.Map")]
+class Set : Container, IIterable {
+
+	/*
+	 * Create a new set instance.
+	 */
+	[Bridged(name="ctor")]
+	hosted Set();
+	
+	[Bridged(name="put")]
+	private hosted void _put(var key, var value);
+	[Bridged(name="hasKey")]
+	private hosted bool _hasKey(var key);
+	[Bridged(name="remove")]
+	private hosted var _remove(var key);
+	[Bridged(name="size")]
+	private hosted int _size();
+	[Bridged(name="getKeys")]
+	private hosted var[] _getKeys();
+	
+	private static const Object s_dummy = new Object();
+	
+	/*
+	 * Add a value into the set. The value's hashCode() is called to calculate the storage
+	 * location, and its equals() method is used to determine the uniqueness.
+	 *
+	 * [param: value] The value to the map.
+	 * [throws: System.ArgumentException] When the key is null.
+	 */
+	void add(var value){
+		var k = convert(value);
+		_put(k, Set.s_dummy);
+	}
+	
+	/*
+	 * Check if the specified value exists in the set.
+	 *
+	 * [param: value] The value to query about.
+	 * [return] true if the value exists; false otherwise.
+	 */
+	bool has(var value){
+		var k = convert(value);
+		return _hasKey(k);
+	}
+	
+	/*
+	 * Remove the specified value from the set.
+	 *
+	 * [param: value] The value to find in the set.
+	 * [return] True if the value existed and removed as the result of this operation; 
+	 * false if the value didn't exist and this operation was a no-op.
+	 */
+	bool remove(var value){
+		var k = convert(value);
+		var res = _remove(k);
+		return res == Set.s_dummy;
+	}
+	
+	/*
+	 * The size of set.
+	 *
+	 * [return] Always non-negative. 0 if empty. 
+	 */
+	int size(){
+		return _size();
+	}
+	
+	/*
+	 * Get all the values stored in this set.
+	 *
+	 * [return] All the values stored in this set.
+	 */
+	var[] getAll() {
+		return _getKeys();
+	}
+	
+	private HashKey convert(var key){
+		if (key == null){
+			throw new ArgumentException("key");
+		}
+		
+		return new HashKey(key);
+	}
+	
+	// IIterable
+
+    /*
+	 * Get an iterator of this set.
+	 *
+	 * [return] An iterator which yields values stored in this set.
+	 */	
+	IIterator getIterator(){
+		return new SetIterator(this);
+	}
+}
+
+internal class SetIterator : IIterator {
+
+	private Set set;
+	private int index;
+	private int length;
+	private var[] keys;
+	
+	SetIterator(Set set){
+		this.set = set;
+	}
+	
+	bool hasNext() {
+		if (keys == null) {
+			init();
+		}
+		
+		return index < length;
+	}
+	
+	var next() {
+		if (keys == null) {
+			init();
+		}
+		
+		var k = keys[index];
+		index++;
+		return k;
+	}
+	
+	private void init() {
+		keys = set.getAll();
 		length = keys.length;
 		index = 0;
 	}

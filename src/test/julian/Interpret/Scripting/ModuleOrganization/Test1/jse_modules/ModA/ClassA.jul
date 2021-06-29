@@ -1,0 +1,16 @@
+module ModA;
+
+class ClassA {
+
+	static int i = 328;
+	
+	private int v;
+	
+	ClassA(){
+		v = ClassA.i++;
+	}
+
+	int getValue(){
+		return v;
+	}
+}

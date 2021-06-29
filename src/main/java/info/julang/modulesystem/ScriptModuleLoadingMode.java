@@ -1,0 +1,71 @@
+/*
+MIT License
+
+Copyright (c) 2017 Ming Zhou
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+package info.julang.modulesystem;
+
+/**
+ * Defines the type-loading behavior when a script is loaded as module.
+ * 
+ * @author Ming Zhou
+ */
+public enum ScriptModuleLoadingMode {
+
+	/**
+	 * Load the entrance script as the default module.
+	 */
+	InitialGlobalScript(false, ModuleInfo.DEFAULT_MODULE_NAME),
+	
+	/**
+	 * Load an evaluated script as additional part of the default module.
+	 */
+	AccumulativeGlobalScript(false, ModuleInfo.DEFAULT_MODULE_NAME),
+	
+	/**
+	 * Load the snippet as the new default module, replacing the old one.
+	 */
+	SubstitutiveGlobalScript(true, ModuleInfo.DEFAULT_MODULE_NAME),
+	
+	/**
+	 * Load the snippet as a new implicit module.
+	 */
+	ImplicitModuleScript(true, ModuleInfo.IMPLICIT_MODULE_NAME)
+	
+	;
+	
+	private boolean loadImmediately;
+	private String moduleName;
+	
+	ScriptModuleLoadingMode(boolean loadImmediately, String moduleName){
+		this.loadImmediately = loadImmediately;
+		this.moduleName = moduleName;
+	}
+	
+	boolean shouldLoadImmediately() {
+		return loadImmediately;
+	}
+	
+	String getModuleName() {
+		return moduleName;
+	}
+}

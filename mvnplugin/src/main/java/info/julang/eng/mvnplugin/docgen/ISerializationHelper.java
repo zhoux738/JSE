@@ -28,7 +28,7 @@ import java.io.File;
 
 import org.apache.maven.plugin.MojoExecutionException;
 
-import info.julang.eng.mvnplugin.docgen.DocModel.Type;
+import info.julang.eng.mvnplugin.docgen.DocModel.Documented;
 
 /**
  * The interface that provides means for serialization.
@@ -40,19 +40,23 @@ public interface ISerializationHelper {
 	/**
 	 * Given the module's name, get local directory to put the serialized documents into. 
 	 * The directory will be created if not existing yet.
+	 * <p>
+	 * All top-level models will be serialized undet the module root, even if it's not a module type.
 	 * 
 	 * @param modName
+	 * @param format
 	 * @return
 	 */
 	File getModuleRoot(String modName, SerializationType format);
 	
 	/**
-	 * Serialize the type model object to a JSON file under the module root.
+	 * Serialize the doc model object to a JSON file under the module root.
 	 *  
 	 * @param modRoot
-	 * @param typ
+	 * @param doc
+	 * @param format
 	 * @throws MojoExecutionException
 	 */
-	void serialize(File modRoot, Type typ, SerializationType format) throws MojoExecutionException;
+	void serialize(File modRoot, Documented doc, SerializationType format) throws MojoExecutionException;
 	
 }

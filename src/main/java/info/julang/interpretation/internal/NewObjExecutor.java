@@ -31,7 +31,6 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import info.julang.execution.Argument;
-import info.julang.execution.EngineRuntime;
 import info.julang.execution.Executable;
 import info.julang.execution.MultiValueResult;
 import info.julang.execution.Result;
@@ -74,10 +73,10 @@ import info.julang.typesystem.jclass.builtin.JObjectType;
 
 /**
  * A facade class that creates a new object of certain class. It allocates memory,
- * initializes the fields and calls constructor, either by {@link NewObjExecutor#newObject(Context, List, JType, AstInfo) 
- * matching the best one based} on the input arguments or {@link #newObject(EngineRuntime, JClassType, 
- * JClassConstructorMember, Argument[]) using whatever is specified}.
- * <p/>
+ * initializes the fields and calls constructor, either by matching the best one based
+ * on the input arguments or using whatever is specified. See the overloaded implementations of 
+ * <code>newObject</code> for more info.
+ * <p>
  * When calling a constructor, it will first call forward constructor if there is any. A forward constructor 
  * refers to calling another constructor from either the same class (by <code>this</code>) or the parent class
  * (by <code>super</code>).

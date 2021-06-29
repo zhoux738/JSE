@@ -34,12 +34,9 @@ import info.julang.parser.FilterableTokenStream;
 /**
  * The base token stream implements the {@link ITokenStream} interface.
  * <p>
- * The derived classes should call either {@link #setScanner(TokenScanner)} to set a
- * scanner as the source of tokens.
- * <p>
  * This class is not thread safe.
  * 
- * @see {@link ITokenStream}
+ * @see ITokenStream
  * 
  * @author Ming Zhou
  */

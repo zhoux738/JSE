@@ -33,7 +33,7 @@ import java.util.Set;
 
 /**
  * HardDependencyResolver sorts a collection of {@link IOrderResolvable} based on their dependency relationship. 
- * For example, assume A => (reads: "depends on") B, C; B => D; E; C => D; D => (NONE), and the given unsorted 
+ * For example, assume A =&gt; (reads: "depends on") B, C; B =&gt; D; E; C =&gt; D; D =&gt; (NONE), and the given unsorted 
  * collection is [{A: B, C}, {B: D, E}, {C: D}, {D: }]. The sorted collection will be [D, E, C, B, A], with items 
  * at the lower index having higher priority to load.
  * <p>
@@ -153,7 +153,7 @@ public class HardDependencyResolver implements IDependencyResolver {
 					if(children.contains(depName)) {
 						// Found cyclic dependency
 						children.add(depName);
-						throw new CyclicDependencyException(children.toArray(new String[0]));
+						throw new CyclicDependencyException(children.toArray(new String[0]), true);
 					}
 					
 					int depOrder = sort(states, dep, map, nameMap, children);

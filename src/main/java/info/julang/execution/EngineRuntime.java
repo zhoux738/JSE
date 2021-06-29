@@ -35,8 +35,9 @@ import info.julang.typesystem.loading.InternalTypeResolver;
 /**
  * EngineRuntime represents the global runtime context of an script engine. The context provides 
  * interface, among others, for getting access to engine's various global memory areas.
- * <p/>
- * Note thread-wise storage, such as stack, is accessible from {@link info.julang.execution.threading.ThreadRuntime ThreadRuntime}.
+ * <p>
+ * Note thread-wise storage, such as stack, is accessible from 
+ * {@link info.julang.execution.threading.ThreadRuntime ThreadRuntime}.
  *
  * @author Ming Zhou
  */
@@ -45,48 +46,49 @@ public interface EngineRuntime extends IExtEngineRuntime {
 	/**
 	 * Get heap area of the script engine.
 	 * 
-	 * @return
+	 * @return The heap area of the script engine.
 	 */
 	MemoryArea getHeap();
 	
 	/**
 	 * Get global type table.
 	 * 
-	 * @return
+	 * @return the global type table.
 	 */
 	ITypeTable getTypeTable();
 	
 	/**
 	 * Get default type resolver.
-	 * @return
+	 * 
+	 * @return the default type resolver.
 	 */
 	InternalTypeResolver getTypeResolver();
 	
 	/**
 	 * Get global variable table.
 	 * 
-	 * @return
+	 * @return the global variable table. 
 	 */
 	IVariableTable getGlobalVariableTable();
 	
 	/**
 	 * Get module manager.
 	 * 
-	 * @return
+	 * @return the module manager.
 	 */
 	IModuleManager getModuleManager();
 	
 	/**
 	 * Get thread manager.
 	 * 
-	 * @return
+	 * @return the thread manager.
 	 */
 	JThreadManager getThreadManager();
 	
 	/**
 	 * Get standard input/output streams.
 	 * 
-	 * @return
+	 * @return the standard input/output streams.
 	 */
 	StandardIO getStandardIO();
 }

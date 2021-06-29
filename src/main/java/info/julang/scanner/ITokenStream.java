@@ -44,8 +44,8 @@ import org.antlr.v4.runtime.Token;
  *  ^
  * At end
  *   [TOK 1] [TOK 2] [TOK 3] [TOK 4] [TOK EOF]
- *                                            ^ </code></pre>A stream always end with 
- * {@link info.julang.token.TokenKind#EOF EOF}. Calling {@link next()} when PC is
+ *                                            ^ </code></pre>
+ * A stream always ends with EOF. Calling {@link next()} when PC is
  * already pointing at the end of stream will still return an EOF. In other words, EOF is used to 
  * signal that the end of stream is reached. In no case will a null value be returned by this 
  * interface.

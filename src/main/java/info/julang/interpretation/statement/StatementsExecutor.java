@@ -73,7 +73,7 @@ import info.julang.typesystem.JType;
 /**
  * An internal class used to execute a list of statements. Exposes result and exit cause to
  * it caller. Used by other statements which need to invoke a list of sub-statements.
- * <p/>
+ * <p>
  * If an exception is thrown from any statement in the list, it will be, if possible, 
  * converted to a Julian script exception with part of source info set, and get re-thrown.
  * Later when exiting the current frame the rest of source info will be filled out.
@@ -136,11 +136,20 @@ class StatementsExecutor implements IHasResult, IHasExitCause {
 					case JulianParser.RULE_block:
 						// block 
 						//  : LEFT_CURLY statement_list? RIGHT_CURLY
-						BlockContext bc = (BlockContext)prt;
-						Statement_listContext slc = bc.statement_list();
-						if (slc != null){
-							abort = interpretStatments(slc.statement(), context);
+						
+						// enter scope
+						context.getVarTable().enterScope();
+						try {
+							BlockContext bc = (BlockContext)prt;
+							Statement_listContext slc = bc.statement_list();
+							if (slc != null){
+								abort = interpretStatments(slc.statement(), context);
+							}
+						} finally {
+							// leave scope
+							context.getVarTable().exitScope();
 						}
+						
 						break;
 					default:
 						throw ANTLRHelper.getUnrecognizedError(prt);

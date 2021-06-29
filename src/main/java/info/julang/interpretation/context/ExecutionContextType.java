@@ -26,7 +26,7 @@ package info.julang.interpretation.context;
 
 /**
  * The type of syntactic context in which the code is executing.
- * <p/>
+ * <p>
  * This corresponds to the textual location of code. For example, code defined in a method body
  * is {@link #InMethodBody}, while code in an attribute's expression is {@link #InAnnotation}.
  * @author Ming Zhou

@@ -55,7 +55,7 @@ import info.julang.util.OneOrMoreList;
  */
 /**
  * Represents a class type defined in Julian scripts.
- * <p/>
+ * <p>
  * Theoretically, any class can be implemented by this class, since it contains all the information of 
  * a class: its name, its parent class ({@link #getParent()}), its members, be it static and instance scope.
  * However, for convenience of implementation, there are also several classes which inherit from this one, 
@@ -322,7 +322,7 @@ public class JClassType extends JInterfaceType implements IMapped {
 	
 	/**
 	 * Get the corresponding value's kind for this type.
-	 * <p/>
+	 * <p>
 	 * Will only check special class types which are directly supported by Julian language for type declaration, 
 	 * such as Enum or Attribute. Will not check if it is an Array, String or Function, in all of which cases 
 	 * simply returns {@link JValueKind#OBJECT}.
@@ -365,7 +365,7 @@ public class JClassType extends JInterfaceType implements IMapped {
 	
 	/**
 	 * Try to get a class member by name.
-	 * <p/>
+	 * <p>
 	 * If the member is overloaded, returns the first one defined in the class.
 	 * 
 	 * @param name
@@ -424,11 +424,11 @@ public class JClassType extends JInterfaceType implements IMapped {
 	}
 
 	/**
-	 * Create a <code><font color="green">System.Type</font></code> object wrapping the given type.
+	 * Create a <code style="color:green">System.Type</code> object wrapping the given type.
 	 * 
 	 * @param runtime
 	 * @param type The type inside JSE internals.
-	 * @return an object value of type <code><font color="green">System.Type</font></code> that represents the specified type in Julian scripting environment.
+	 * @return an object value of type <code style="color:green">System.Type</code> that represents the specified type in Julian scripting environment.
 	 */
 	public static ObjectValue createScriptTypeObject(ThreadRuntime runtime, JType type) {
 		JClassType typeClassType = (JClassType) runtime.getTypeTable().getType(ScriptType.FQCLASSNAME);

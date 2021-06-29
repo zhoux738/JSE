@@ -1,0 +1,5 @@
+EvalConfig config = new EvalConfig();
+
+Environment.evaluate(config, "routines.jul", null);
+
+Environment.evaluate(config, "routines.jul", null);

@@ -32,8 +32,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
  * Read the script file and parse the continuous "<code>import ...;</code>" statements.
- * <p/>
- * There are two possible syntaxes for import statement, <p/>
+ * <p>
+ * There are two possible syntaxes for import statement, <p>
  * either<pre>
  * <code>import a.b.c;</code></pre>
  * or <pre>

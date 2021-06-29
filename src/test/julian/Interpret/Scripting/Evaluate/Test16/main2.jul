@@ -1,0 +1,3 @@
+EvalConfig config = new EvalConfig();
+config.setShareScope(false);
+bool succ = Environment.evaluate(config, "Lib/fun2.jul", arguments);

@@ -1,4 +1,4 @@
-package info.jultest.test.oo;
+package info.jultest.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 
-import info.jultest.test.TestExceptionHandler;
 import info.julang.execution.IScriptEngine;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 

@@ -29,9 +29,9 @@ import info.julang.langspec.ast.JulianParser.ExpressionContext;
 import info.julang.parser.AstInfo;
 
 /**
- * Declaration information about a lambda. {@link #getStartLocation()} returns the position after =>, 
+ * Declaration information about a lambda. {@link #getStartLocation()} returns the position after =&gt;, 
  * where the lambda body starts.
- * <p/>
+ * <p>
  * While this class derives from {@link MethodDeclInfo}, it is not a member of class, but more like a variable definition.
  * 
  * @author Ming Zhou

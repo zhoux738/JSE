@@ -11,6 +11,7 @@ import info.julang.execution.simple.SimpleScriptEngine;
 import info.julang.execution.symboltable.VariableTable;
 import info.julang.external.exceptions.EngineInvocationError;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
 
 // As of 0.1.0, all the exceptions are System.ClassLoadingException

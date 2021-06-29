@@ -1,0 +1,24 @@
+// import System.Reflection;
+
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "../Shared/commons.jul", null);
+
+assert(i == 4, "i != 4");
+assert(s == "abc", "s != \"abc\"");
+assert(o.getSpeed() == 10, "o.getSpeed() != 10");
+
+try {
+  Environment.evaluate(config, "s1.jul", null);
+} catch (Exception ex) {
+  assert(ex.getMessage().contains("i is not defined"), "i is defined");
+}
+
+config = new EvalConfig();
+config.setShareScope(true);
+Environment.evaluate(config, "s1.jul", null);
+
+assert(i == 5, "i != 5");
+assert(s == "def", "s != \"def\"");
+assert(o.getSpeed() == 20, "o.getSpeed() != 20");
+
+return true;

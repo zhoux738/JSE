@@ -1,0 +1,7 @@
+
+include "print";
+include "script";
+
+int i5 = incl("defs.jul");
+
+// print(i5);

@@ -32,7 +32,7 @@ package info.julang.execution;
  *                 | NOT_STARTED |
  *                 +-------------+
  *                        |(call {@link run()})
- *           +----------->|<-----------+
+ *           +----------))|((----------+
  *      (call|            V            |
  *     run())|     +-------------+     |
  *           |     |   RUNNING   |     |(call run())
@@ -46,9 +46,9 @@ package info.julang.execution;
  *      |   SUCCESS   |       |   FAULTED   |
  *      +-------------+       +-------------+  
  * </pre>
- * Note this state is different from, but related to, the state of {@link info.julang.
- * execution.threading.JThread JThread}, which is represented by {@link info.julang.
- * typesystem.jclass.jufc.System.Concurrency.ScriptThread.ScriptThreadState ScriptThreadState} and
+ * Note this state is different from, but related to, the state of 
+ * {@link info.julang.execution.threading.JThread JThread}, which is represented by 
+ * {@link info.julang.typesystem.jclass.jufc.System.Concurrency.ScriptThread.ScriptThreadState ScriptThreadState} and
  * exposed through Julian API. In particular, the state of main thread running in Julian engine
  * is mirrored to the engine's state throughout the execution.
  * 

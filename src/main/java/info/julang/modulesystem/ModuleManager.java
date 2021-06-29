@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import info.julang.execution.Argument;
+import info.julang.execution.Result;
 import info.julang.execution.security.CheckResultKind;
 import info.julang.execution.security.EngineLimit;
 import info.julang.execution.security.EngineLimitPolicy;
@@ -42,6 +44,7 @@ import info.julang.execution.security.IEnginePolicy;
 import info.julang.execution.security.PlatformAccessPolicy;
 import info.julang.execution.security.StatefulEngineLimitPolicy;
 import info.julang.execution.symboltable.ITypeTable;
+import info.julang.execution.symboltable.SymbolDuplicatedDefinitionException;
 import info.julang.execution.symboltable.TypeTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.JThread.MonitorInterruptCondition;
@@ -49,6 +52,7 @@ import info.julang.execution.threading.ThreadRuntime;
 import info.julang.hosting.HostedMethodManager;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.syntax.ParsedTypeName;
+import info.julang.modulesystem.ModuleInfo.DuplicateClassInfoException;
 import info.julang.modulesystem.ModuleInfo.MutableModuleInfo;
 import info.julang.modulesystem.naming.FQName;
 import info.julang.modulesystem.prescanning.CollectScriptInfoStatement;
@@ -97,7 +101,8 @@ public class ModuleManager implements IModuleManager {
 	// Module management
 	private Map<String, ModuleInfo> cache;
 	private ModuleLocator locator;
-	private Map<String, OneOrMoreList<ClassInfo>> allClasses; // Keyed by simple name (NOT fully qualified).
+	/** Keyed by simple name (<b>NOT</b> fully qualified). */
+	private Map<String, OneOrMoreList<ClassInfo>> allClasses; 
 	private Set<String> allUserDefinedClasses;
 	
 	// Platform API mapping
@@ -244,8 +249,10 @@ public class ModuleManager implements IModuleManager {
 		locator.addModulePath(path);
 	}
 	
-	public void clearModulePath() {
+	public void clearExecutionData() {
 		locator.clearModulePath();
+		args = null;
+		gsEvalCache = null;
 	}
 	
 	public boolean isLoaded(String moduleName){
@@ -256,16 +263,16 @@ public class ModuleManager implements IModuleManager {
 	
 	/**
 	 * Load a module of specified name. 
-	 * <p/>
+	 * <p>
 	 * This method will first locate the script files belonging to the specified module, then
 	 * parse those scripts to collect information about the contained types. The method will
 	 * also apply the same procedure to any other required modules encountered along the way.
 	 * By the time this method returns it is guaranteed that the entire module closure is 
 	 * loaded (LCP).
-	 * <p/>
+	 * <p>
 	 * This method is thread safe. Calling it from two competing threads won't result in the 
 	 * module being loaded twice.
-	 * <p/>
+	 * <p>
 	 * 
 	 * @param moduleName
 	 * @return
@@ -321,30 +328,55 @@ public class ModuleManager implements IModuleManager {
 	}
 	
 	/**
-	 * Load a script as module.
+	 * Load a script as module. The module name is specified by <code>mode</code> argument.
+	 * <p>
+	 * This method is used for a couple of different purposes. Most commonly, when the engine starts, it begins with an 
+	 * entrance script, which needs to be loaded as a default module named {@link ModuleInfo#DEFAULT_MODULE_NAME}.
+	 * <p>
+	 * The default module is different from other modules in its mutability. Through include statement or other means more
+	 * types may be discovered and added to the default module. By specifying <code>ScriptModuleLoadingMode == 
+	 * AccumulativeGlobalScript</code> this can be achieved. However, if a type to be added conflicts with the existing 
+	 * type, an exception will be thrown.
+	 * <p>
+	 * In interactive mode, which is mostly associated with REPL, every time a new code snippet is processed it will be
+	 * loaded as a default module as well. This module will replace the existing one, thus replacing all types contained
+	 * therein. This is achieved by specifying <code>ScriptModuleLoadingMode == SubstitutiveGlobalScript</code>. Values 
+	 * which have been created off of the old types will remain functioning, although their integrity might be compromised.
+	 * <p>
+	 * The last usage relates to implicit type binding. When the platform objects are added to the engine's external bindings,
+	 * the engine automatically creates mapped JSE types corresponding to these object's native types. It does so by 
+	 * synthesizing a Julian script containing appropriate type definitions with required platform mapping annotations.
+	 * This script bears the module name {@link ModuleInfo#IMPLICIT_MODULE_NAME}, and will be loaded by this method as well,
+	 * with <code>ScriptModuleLoadingMode == ImplicitModuleScript</code>.
 	 * 
 	 * @param rt Thread runtime
 	 * @param ainfo AST info
-	 * @param synModuleName a mandated module name for this script. Must be a const value from {@link ModuleInfo}, 
-	 * such as {@link ModuleInfo#DEFAULT_MODULE_NAME DEFAULT_MODULE_NAME}.
-	 * @param loadTypesNow if true, force loading all new types into the runtime immediately after module loading.
-	 * @return
+	 * @param mode The loading mode. This mostly affects how the types discovered in the new module are 
+	 * treated with regards to the types in the existing module.
+	 * @return The module info, which has already been added to the module cache.
 	 */
 	public ModuleInfo loadScriptAsModule(
-		ThreadRuntime rt, LazyAstInfo ainfo, String synModuleName, boolean loadTypesNow) {
+		ThreadRuntime rt, LazyAstInfo ainfo, ScriptModuleLoadingMode mode) {
 		synchronized(lock){
 			while(!secureLock()){
 				rt.getJThread().safeWait(lock, condition);
 			}
 		}
 		
+		String synModuleName = mode.getModuleName();
+		
 		RawScriptInfo info = new RawScriptInfo(null, false);// Don't know the module name yet.
 		info.reset(ainfo.getFileName(), ainfo);
 		RawScriptInfo.Option option = info.getOption();
 		option.setPresetModuleName(synModuleName);
 		option.setAllowNameInconsistency(true);
-		CollectScriptInfoStatement csis = new CollectScriptInfoStatement(true); // Load AST now
-		csis.prescan(info);
+		try {
+			CollectScriptInfoStatement csis = new CollectScriptInfoStatement(true, true); // Load AST now
+			csis.prescan(info);
+		} catch (IllegalModuleFileException mex) {
+			throw new IllegalModuleFileException(
+				info, ainfo.getFileName(), 1, "A loose script file must not declare a module name.");
+		}
 		
 		// If the file can be pre-scanned successfully, we should expect the module to be equal to what is given, if it's given.
 		String gModName = info.getModuleName();
@@ -352,7 +384,7 @@ public class ModuleManager implements IModuleManager {
 			&& gModName != null
 			&& !synModuleName.equals(gModName)) {
 			throw new IllegalModuleFileException(
-				info, ainfo.getFileName(), 1, "A loose script file must not declare a module name explicitly.");
+				info, ainfo.getFileName(), 1, "A loose script file must not declare a module name.");
 		}
 		
 		// Load each required module
@@ -383,16 +415,22 @@ public class ModuleManager implements IModuleManager {
 		// also need perform various operations between these steps.
 		MutableModuleInfo mmi = makeModuleInfo(info);
 		ModuleInfo prev = cache.get(gModName);
+		
+		boolean accumulative = mode == ScriptModuleLoadingMode.AccumulativeGlobalScript;
+		if (accumulative) {
+			try {
+				mmi.addFrom(prev);
+			} catch (DuplicateClassInfoException e) {
+				throw new SymbolDuplicatedDefinitionException(e.newClass, mmi);
+			}
+		}
+		
 		Map<String, MutableModuleInfo> tempCache = new HashMap<String, MutableModuleInfo>();
 		tempCache.put(gModName, mmi);
-		populateDependencies(tempCache);
-		
-		// Add all the new modules into the cache in a single move (LCP)
-		// Note this will overwrite the previous existing global script module
-		cache.putAll(tempCache);
+		populateDependencies(tempCache, accumulative);
 		
 		try {
-			if (loadTypesNow) {
+			if (mode.shouldLoadImmediately()) {
 				// Get new types
 				ModuleInfo curr = cache.get(gModName);
 				List<ClassInfo> cis = curr.getClasses();
@@ -486,7 +524,7 @@ public class ModuleManager implements IModuleManager {
 					throw new MissingRequirementException(mod, mli);
 				}
 				
-				MutableModuleInfo mi = makeModuleInfo(mod, mli.getScriptPaths(), mli.isEmbedded());
+				MutableModuleInfo mi = makeModuleInfo(mod, mli);
 				
 				if(firstTime){
 					result = mi;
@@ -513,10 +551,7 @@ public class ModuleManager implements IModuleManager {
 			modsToLoad.addAll(newMods);
 		}
 		
-		populateDependencies(tempCache);
-		
-		// Add all the new modules into the cache in a single move (LCP)
-		cache.putAll(tempCache);
+		populateDependencies(tempCache, false);
 		
 		return result;
 	}
@@ -524,20 +559,18 @@ public class ModuleManager implements IModuleManager {
 	/**
 	 * Create a {@link ModuleInfo} instance based on the information collected from a set of scripts files, including
 	 * requirements, script provider and declared classes.
-	 * 
-	 * @param modName
-	 * @param scriptPaths
-	 * @param isEmbedded
-	 * @return
 	 */
 	private static MutableModuleInfo makeModuleInfo(
-		String modName, List<String> scriptPaths, boolean isEmbedded) 
-		throws FileNotFoundException {
+		String modName, ModuleLocationInfo mli) throws FileNotFoundException {
+		List<String> scriptPaths = mli.getScriptPaths();
+		boolean isEmbedded = mli.isEmbedded();
+		
 		ModuleInfo.Builder builder = new ModuleInfo.Builder(modName);
 		//RawScriptInfo info = new RawScriptInfo(modName, isEmbedded);
 		
 		for(String path : scriptPaths){
-			RawScriptInfo info = loadModuleInfo(modName, path, isEmbedded, false);
+			boolean isFromCustomizedModulePath = mli.isFromCustomizedModulePath(path);
+			RawScriptInfo info = loadModuleInfo(modName, path, isEmbedded, false, !isFromCustomizedModulePath);
 			
 			// Add script info
 			builder.addScript(info);
@@ -547,7 +580,7 @@ public class ModuleManager implements IModuleManager {
 	}
 	
 	private static RawScriptInfo loadModuleInfo(
-		String modName, String path, boolean isEmbedded, boolean analyticalLoad) 
+		String modName, String path, boolean isEmbedded, boolean analyticalLoad, boolean allowImplicitModuleName) 
 		throws FileNotFoundException {
 		
 		RawScriptInfo info = null;
@@ -564,7 +597,7 @@ public class ModuleManager implements IModuleManager {
 				opt.setPresetModuleName(ModuleInfo.DEFAULT_MODULE_NAME);
 			}
 			
-			CollectScriptInfoStatement csis = new CollectScriptInfoStatement(analyticalLoad);
+			CollectScriptInfoStatement csis = new CollectScriptInfoStatement(analyticalLoad, allowImplicitModuleName);
 			csis.prescan(info);
 		}
 		
@@ -585,14 +618,16 @@ public class ModuleManager implements IModuleManager {
 	 */
 	public static RawScriptInfo loadScriptInfoFromPath(String modName, String path) 
 		throws FileNotFoundException {
-		return loadModuleInfo(modName, path, false, true);
+		return loadModuleInfo(modName, path, false, true, true);
 	}
 
 	/**
-	 * Populate module dependency information.
+	 * Populate module dependency information, then add the new modules into the global cache.
+	 * 
 	 * @param tempCache
+	 * @param accumulative
 	 */
-	private void populateDependencies(Map<String, MutableModuleInfo> tempCache) {
+	private void populateDependencies(Map<String, MutableModuleInfo> tempCache, boolean accumulative) {
 		Collection<MutableModuleInfo> newModules = tempCache.values();
 		for(MutableModuleInfo mmi : newModules){
 			List<ModuleInfo> reqs = new ArrayList<ModuleInfo>();
@@ -610,32 +645,82 @@ public class ModuleManager implements IModuleManager {
 			}
 			
 			// Populate requirements
-			for(ModuleInfo req : reqs){
-				mmi.addRequiredModule(req);
+			if (accumulative) {
+				Set<ModuleInfo> miSet = new HashSet<ModuleInfo>();
+				List<ModuleInfo> miList = mmi.getRequirements();
+				miSet.addAll(miList);
+				miSet.addAll(reqs); // Skip the duplicate
+				List<ModuleInfo> miListNew = new ArrayList<>();
+				miListNew.addAll(miSet);
+				mmi.replaceRequirements(miListNew);
+			} else {
+				for (ModuleInfo req : reqs) {
+					mmi.addRequiredModule(req);
+				}
 			}
 			
 			// Add classes to global cache
 			boolean isUserModule = !isSystemModule(mmi.getName());
-			for(ClassInfo ci : mmi.getClasses()){
-				String name = ci.getName();
-				OneOrMoreList<ClassInfo> list = allClasses.get(name);
-				if(list == null){
-					allClasses.put(name, new OneOrMoreList<ClassInfo>(ci));
-				} else {
-					list.add(ci);
-				}
+			
+			if (accumulative) {
+				// The following logic is only efficient if there is only one new module, which is
+				// exactly the case where accumulative is true, while the module is loaded from 
+				// the loose script.
+				Map<ClassInfo, Set<ClassInfo>> cinfoMap = new HashMap<>();
 				
-				if (isUserModule) {
-					if (allUserDefinedClasses == null) {
-						allUserDefinedClasses = new HashSet<>();
+				// Gather classes from existing and new module info
+				for(ClassInfo ci : mmi.getClasses()){
+					Set<ClassInfo> ciSet = cinfoMap.get(ci);
+					if (ciSet == null) {
+						ciSet = new HashSet<>();
+						OneOrMoreList<ClassInfo> list = allClasses.get(ci.getName());
+						if (list != null) {
+							ciSet.addAll(list.getList());
+						}
+						cinfoMap.put(ci, ciSet);
 					}
 					
-					allUserDefinedClasses.add(name);
+					ciSet.add(ci);
+				}
+				
+				// Replace classes stored in global cache
+				for (Entry<ClassInfo, Set<ClassInfo>> entry : cinfoMap.entrySet()) {
+					String name = entry.getKey().getName();
+					OneOrMoreList<ClassInfo> value = new OneOrMoreList<>(entry.getValue());
+					allClasses.put(name, value);
+					
+					if (isUserModule) {
+						if (allUserDefinedClasses == null) {
+							allUserDefinedClasses = new HashSet<>();
+						}
+						
+						allUserDefinedClasses.add(name);
+					}
+				}
+			} else {
+				for(ClassInfo ci : mmi.getClasses()){
+					String name = ci.getName();
+					
+					OneOrMoreList<ClassInfo> list = allClasses.get(name);
+					if(list == null){
+						allClasses.put(name, new OneOrMoreList<ClassInfo>(ci));
+					} else {
+						list.add(ci);
+					}
+					
+					if (isUserModule) {
+						if (allUserDefinedClasses == null) {
+							allUserDefinedClasses = new HashSet<>();
+						}
+						
+						allUserDefinedClasses.add(name);
+					}
 				}
 			}
 		}
 		
-		// once we have populated all the modules, move them to global cache
+		// Add all the new modules into the cache in a single move (LCP)
+		// Note this will overwrite the previous existing global script module
 		cache.putAll(tempCache);
 	}
 	
@@ -684,6 +769,69 @@ public class ModuleManager implements IModuleManager {
 		}
 		
 		return hmm;
+	}
+
+	//----------------- Loose Scripts Management -----------------//
+	
+	private Argument[] args;
+	private Map<String, Result> gsEvalCache; // Global script evaluation cache. Keyed by full canonical path of the executed script.
+	
+	public void initArguments(Argument[] arguments) {
+		this.args = arguments;
+	}
+	
+	public Argument[] getArguments() {
+		return this.args == null ? new Argument[0] : this.args;
+	}
+	
+	Result tryGetResult(String fullScriptPath) {
+		if (gsEvalCache == null) {
+			return null;
+		}
+		
+		return gsEvalCache.get(fullScriptPath);
+	}
+	
+	void replaceResult(String fullScriptPath, Result res) {
+		if (gsEvalCache == null) {
+			synchronized(ModuleManager.class) {
+				if (gsEvalCache == null) {
+					gsEvalCache = new HashMap<>();
+				}
+			}
+		}
+		
+		if (res == null) {
+			gsEvalCache.remove(fullScriptPath);
+		} else {
+			gsEvalCache.put(fullScriptPath, res);
+		}
+	}
+	
+	/**
+	 * Get the current script info for the default module.
+	 * 
+	 * @return null if default module is still not fully loaded.
+	 */
+	public ScriptInfo getScriptInfoForDefaultModule() {
+		ModuleInfo mi = cache.get(ModuleInfo.DEFAULT_MODULE_NAME);
+		return mi != null ? mi.getFirstScript() : null;
+	}
+	
+	/**
+	 * Reset the script info for the default module to a previous one, retaining new requirements and module info though.
+	 * 
+	 * @param psi A previous script info object.
+	 */
+	public void setScriptInfoForDefaultModule(ScriptInfo psi) {
+		ModuleInfo mi = cache.get(ModuleInfo.DEFAULT_MODULE_NAME);
+		if (mi != null) {
+			// Note that module info and script info are cross-referencing each other,
+			// but we can only update them one by one. First create a new script info
+			// using the existing module info, then update the script info in that module.
+			ScriptInfo csi = getScriptInfoForDefaultModule();
+			mi.resetScriptInfo(csi, psi);
+		}
 	}
 	
 	//----------------- Engine Policy Enforcer -----------------//

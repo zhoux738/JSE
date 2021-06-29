@@ -171,12 +171,12 @@ public class ObjectValue extends JValueBase implements IObjectVal {
 	/**
 	 * Get the value of a member specified by the given name and 
 	 * defined at a class equal to or above the given one in the hierarchy.
-	 * <p/>
+	 * <p>
 	 * If we have class C : F : G, all of them defining a method named x, and 
 	 * an instance c of type C, then calling this method against c with name = 
 	 * x and typ = C (or null) would end up retrieving C.x; but if calling by 
 	 * (x, F) we will get F.x; if (x, G), G.x.
-	 * <p/>
+	 * <p>
 	 * If F doesn't define x, calling with (x, F) or (x, G) will both get G.x.
 	 * 
 	 * @param name

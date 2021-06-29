@@ -42,7 +42,7 @@ import info.julang.typesystem.jclass.builtin.JStringType;
 
 /**
  * StringValue represents a string in Julian scripts. 
- * <p/>
+ * <p>
  * StringValue is a special case of {@link ObjectValue}. While still wrapped in a {@link RefValue} like other 
  * object values, string values are replicated whenever they are assigned to other variables, passed as arguments
  * or return values. This nature makes string's manipulation behave more like that of basic values.

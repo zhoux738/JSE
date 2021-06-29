@@ -44,10 +44,10 @@ import info.julang.typesystem.loading.InternalTypeResolver;
 
 /**
  * The runtime context in which a statement is interpreted. 
- * <p/>
+ * <p>
  * From the context one can get access to engine-wide (heap memory, module manager, type table) and 
  * thread-specific resources (variable table).
- * <p/>
+ * <p>
  * The context has its type, which can be {@link ContextType#FUNCTION Function}, {@link ContextType#IMETHOD Instance Method}, etc.
  * This type defines certain behaviors during the execution, such as how to resolve a name.
  *  

@@ -1,0 +1,4 @@
+import System.Concurrency;
+
+Thread t = Thread.getCurrent();
+println(t);

@@ -2,8 +2,8 @@ package info.jultest.test.parser;
 
 import static info.jultest.test.Commons.makeSimpleEngine;
 import info.jultest.test.Commons;
+import info.jultest.test.ExceptionTestsBase;
 import info.jultest.test.TestExceptionHandler;
-import info.jultest.test.oo.ExceptionTestsBase;
 import info.julang.dev.GlobalSetting;
 import info.julang.execution.FileScriptProvider;
 import info.julang.execution.simple.SimpleScriptEngine;

@@ -58,7 +58,7 @@ import info.julang.typesystem.jclass.builtin.JMethodType;
 import info.julang.util.OneOrMoreList;
 
 /**
- * The native implementation of <code><font color="green">System.Reflection.Method</font></code>.
+ * The native implementation of <code style="color:green">System.Reflection.Method</code>.
  * 
  * @author Ming Zhou
  */

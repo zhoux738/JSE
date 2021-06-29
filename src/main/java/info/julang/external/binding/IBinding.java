@@ -43,27 +43,29 @@ public interface IBinding {
 	/**
 	 * Get the {@link BindingKind kind of binding}.
 	 * 
-	 * @return
+	 * @return The kind of binding
 	 */
 	BindingKind getKind();
 	
 	/**
 	 * Convert this binding to an {@link ExtValue} that can be accessed
 	 * by engine internals.
+	 * 
+	 * @return The value in a form that is accessible by engine internals.
 	 */
 	ExtValue toInternal();
 	
 	/**
 	 * Convert this binding to a Java Object instance.
 	 * 
-	 * @return
+	 * @return The value in a form that is accessible by caller's environment (JVM).
 	 */
 	Object toExternal();
 	
 	/**
 	 * Update the binding with a new value.
 	 * 
-	 * @param val
+	 * @param val The value to update.
 	 */
 	void update(IExtValue val);
 	

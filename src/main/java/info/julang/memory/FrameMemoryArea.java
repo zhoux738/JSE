@@ -29,7 +29,7 @@ import info.julang.interpretation.IStackFrameInfo;
 
 /**
  * The frame memory area stores data corresponding to a single frame in stack.
- * <p/>
+ * <p>
  * Note its type is STACK, same to StackMemoryArea.
  * 
  * @author Ming Zhou

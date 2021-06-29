@@ -28,7 +28,7 @@ import info.julang.external.interfaces.IExtMemoryArea;
 
 /**
  * A memory area represents a logical region of the underlying memory.
- * <br/>
+ * <br>
  * 
  * @author Ming Zhou
  * 
@@ -49,29 +49,29 @@ public interface MemoryArea extends IExtMemoryArea {
 	 * @return true if successful.
 	 * @throws JSEOutOfMemoryException
 	 */
-	boolean allocate(IStored value) throws JSEOutOfMemoryException, MemoryOpreationException;
+	boolean allocate(IStored value) throws JSEOutOfMemoryException, MemoryOperationException;
 	
 	/**
 	 * Re-allocate storage for a value.
-	 * <p/>
+	 * <p>
 	 * The value must either have been allocated storage in the same memory area, or not allocated in any memory area.
 	 * 
 	 * @param value
 	 * @return true if successful.
 	 * @throws JSEOutOfMemoryException if no enough memory to allocate for the value.
-	 * @throws MemoryOpreationException if trying to allocate memory for a value that is stored in other memory area.
+	 * @throws MemoryOperationException if trying to allocate memory for a value that is stored in other memory area.
 	 */
-	boolean reallocate(IStored value) throws JSEOutOfMemoryException, MemoryOpreationException;
+	boolean reallocate(IStored value) throws JSEOutOfMemoryException, MemoryOperationException;
 	
 	/**
 	 * Deallocate storage for a value.
-	 * <p/>
+	 * <p>
 	 * If the value is not stored, this method does nothing.
 	 * 
 	 * @param value
 	 * @return true if successful; false if the value is not stored in this memory area.
-	 * @throws MemoryOpreationException if trying to de-allocate memory for a value that is not stored in any memory area.
+	 * @throws MemoryOperationException if trying to de-allocate memory for a value that is not stored in any memory area.
 	 */
-	boolean deallocate(IStored value) throws MemoryOpreationException;
+	boolean deallocate(IStored value) throws MemoryOperationException;
 	
 }

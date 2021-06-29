@@ -1,0 +1,8 @@
+
+include "print.jul";
+
+class Obj {
+	string toString() { return "obj"; }
+}
+
+print(new Obj());print("abc");print(1);

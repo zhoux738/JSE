@@ -36,9 +36,9 @@ import java.util.Set;
 
 import info.julang.JSERuntimeException;
 import info.julang.execution.Argument;
+import info.julang.execution.ArgumentUtil;
 import info.julang.execution.EngineContext;
 import info.julang.execution.EngineRuntime;
-import info.julang.execution.Executable;
 import info.julang.execution.FileScriptProvider;
 import info.julang.execution.IScriptEngine;
 import info.julang.execution.Result;
@@ -69,27 +69,25 @@ import info.julang.external.interfaces.ResetPolicy;
 import info.julang.hosting.HostedMethodManager;
 import info.julang.hosting.mapped.implicit.ImplicitPlatformTypeMapper;
 import info.julang.hosting.mapped.implicit.ObjectBindingGroup;
+import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.errorhandling.JulianScriptException;
 import info.julang.memory.MemoryArea;
-import info.julang.memory.value.ArrayValue;
 import info.julang.memory.value.JValue;
-import info.julang.memory.value.StringValue;
-import info.julang.memory.value.TempValueFactory;
 import info.julang.memory.value.ValueUtilities;
 import info.julang.modulesystem.IModuleManager;
 import info.julang.modulesystem.ModuleInfo;
 import info.julang.modulesystem.ModuleManager;
+import info.julang.modulesystem.ScriptModuleLoadingMode;
 import info.julang.parser.ANTLRParser;
 import info.julang.parser.LazyAstInfo;
-import info.julang.typesystem.jclass.builtin.JStringType;
 import info.julang.typesystem.loading.ClassLoadingException;
 import info.julang.util.Pair;
 
 /**
  * The simplest implementation of Julian Scripting Engine. Single-thread model; simple context for information sharing.
- * <p/>
+ * <p>
  * The engine runs in a REPL mode. For each invocation of {@link #run(ScriptProvider)}, it will retain the state of
- * script engine's runtime, including variables and types. To reset it, call {@link #reset()}. It must be noted that
+ * script engine's runtime, including variables and types. To reset it, call {@link #reset(ResetPolicy)}. It must be noted that
  * the a class will not be loaded until it is first used. So calling {@link #run(ScriptProvider)} with a script that
  * contains only a class definition will not cause that class to be loaded.
  * 
@@ -189,7 +187,7 @@ public class SimpleScriptEngine implements IScriptEngine {
 		
 		initializeContext();
 		
-		Executable exec = null;
+		InterpretedExecutable exec = null;
 		
 		try {
 			exec = provider.getExecutable(allowReentry);
@@ -207,7 +205,12 @@ public class SimpleScriptEngine implements IScriptEngine {
 		}
 		
 		// Set module paths
-		modManager.clearModulePath();
+		modManager.clearExecutionData();
+		String defaultModPath = provider.getDefaultModulePath();
+		if (defaultModPath != null) {
+			// The default module path, if available, must appear first.
+			modManager.addModulePath(defaultModPath);
+		}
 		for(String path : context.modulePaths){
 			modManager.addModulePath(path);
 		}
@@ -289,7 +292,7 @@ public class SimpleScriptEngine implements IScriptEngine {
 				context.detachedBindings = null;
 			}
 			
-			Argument[] scriptArguments = convertArguments(context.getArguments());
+			Argument[] scriptArguments = ArgumentUtil.convertArguments(runtime.getTypeTable(), context.getArguments());
 			
 			// Clear the result from last run
 			result = null;
@@ -349,7 +352,7 @@ public class SimpleScriptEngine implements IScriptEngine {
 			if (allowReentry) {
 				context.reset();
 				if (!interactiveMode) {
-					modManager.clearModulePath();
+					modManager.clearExecutionData();
 				}
 				
 				if (clearUserBindingsOnExit) {
@@ -391,7 +394,7 @@ public class SimpleScriptEngine implements IScriptEngine {
 		
 		// 4. Map all types.
 		try {
-			mm.loadScriptAsModule(rt, ainfo, ModuleInfo.IMPLICIT_MODULE_NAME, true);
+			mm.loadScriptAsModule(rt, ainfo, ScriptModuleLoadingMode.ImplicitModuleScript);
 			
 			// 5. Create values wrapping the raw objects.
 			List<Pair<String, JValue>> bds = grp.getBindingValues(rt);
@@ -511,22 +514,6 @@ public class SimpleScriptEngine implements IScriptEngine {
 		this.instru = instru;
 	}
 	
-	/**
-	 * Convert context arguments to executable arguments
-	 * @param arguments
-	 * @param staticArea 
-	 * @return
-	 */
-	private Argument[] convertArguments(String[] arguments) {
-		int len = arguments.length;
-		ArrayValue array = TempValueFactory.createTemp1DArrayValue(runtime.getTypeTable(), JStringType.getInstance(), len);
-		for(int i=0;i<len;i++){
-			StringValue sv = TempValueFactory.createTempStringValue(arguments[i]); 
-			sv.assignTo(array.getValueAt(i));
-		}
-		return new Argument[]{new Argument("arguments", array)};
-	}
-	
 	private void initializeContext() {
 		if(context == null){
 			context = new SimpleEngineContext();
@@ -547,8 +534,6 @@ public class SimpleScriptEngine implements IScriptEngine {
 		private List<String> modulePaths = new ArrayList<String>();
 		
 		private Set<String> modulePathSet = new HashSet<String>();
-		
-		private Map<String, String> envVars;
 		
 		private Map<String, IBinding> bindings;
 		
@@ -594,21 +579,6 @@ public class SimpleScriptEngine implements IScriptEngine {
 					detachedBindings.remove(name);
 				}
 			}
-		}
-
-		@Override
-		public void setEnviromentVariable(String name, String value) {
-			if(isMutable()){
-				if(envVars == null){
-					envVars = new HashMap<String, String>(); 
-				}
-				envVars.put(name, value);
-			}
-		}
-
-		@Override
-		public String getEnviromentVariable(String name) {
-			return envVars.get(name);
 		}
 
 		@Override

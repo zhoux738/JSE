@@ -70,11 +70,11 @@ public interface ILoadingState extends IOrderResolvable {
 	
 	/**
 	 * Get the builder for this class type. This builder may be one of the following types:
-	 * <p/>
-	 * For a class: {@link JDefinedClassType} <br/>
-	 * For an enum: {@link JEnumType} <br/>
-	 * For an attribute: {@link JAttributeType} <br/>
-	 * <p/>
+	 * <p>
+	 * For a class: {@link JDefinedClassType} <br>
+	 * For an enum: {@link JEnumType} <br>
+	 * For an attribute: {@link JAttributeType} <br>
+	 * <p>
 	 * See {@link ClassSubtype}.
 	 * @return {@link JClassTypeBuilder} or {@link JInterfaceTypeBuilder}
 	 */

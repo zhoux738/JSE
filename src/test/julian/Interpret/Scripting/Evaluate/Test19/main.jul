@@ -1,0 +1,9 @@
+EvalConfig config = new EvalConfig();
+Environment.evaluate(config, "t19_1.jul", null);
+
+Environment.evaluate(config, "s1.jul", new string[] { "1" });
+
+System.Reflection.Script script = Environment.getScript();
+verify(2, script, "main.jul");
+
+return true;

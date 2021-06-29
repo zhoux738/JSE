@@ -24,28 +24,30 @@ SOFTWARE.
 
 package info.julang.execution.symboltable;
 
-import info.julang.external.interfaces.IExtValue;
-import info.julang.external.interfaces.IExtVariableTable;
-import info.julang.external.interfaces.JValueKind;
-import info.julang.memory.value.JValue;
-import info.julang.memory.value.RefValue;
-import info.julang.memory.value.UntypedValue;
-
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import info.julang.external.interfaces.IExtValue;
+import info.julang.external.interfaces.IExtVariableTable;
+import info.julang.memory.value.JValue;
+import info.julang.memory.value.RefValue;
+import info.julang.memory.value.UntypedValue;
+import info.julang.util.Pair;
+
 /**
  * Variable table stores the script variable information during runtime.
- * <p/>
+ * <p>
  * Like other languages, Julian has the concept of scope. A variable in some inner scope will cloak the 
- * one with same name in outer scope. Scope boundary rules: <br/>
- * (1) function entry/exit or class entry/exit (via method invocation) forms the outermost scope <br/>
- * (2) block enclosed by curly braces { } forms a new scope <br/>
- * (3) for statement forms a new scope <br/>
+ * one with same name in outer scope. Scope boundary rules: <br>
+ * (1) function entry/exit or class entry/exit (via method invocation) forms the outermost scope <br>
+ * (2) block enclosed by curly braces { } forms a new scope <br>
+ * (3) for statement forms a new scope <br>
  * 
  * @author Ming Zhou
  */
@@ -86,7 +88,7 @@ public class VariableTable implements IVariableTable {
 	
 	/**
 	 * Get variable with given name from the variable table.
-	 * <p/>
+	 * <p>
 	 * The search begins from the current scope. If it is not found in current scope, it will look up in the enclosing one. 
 	 * The process is repeated up to the outermost scope. If still not found, try the global variable scope (the outermost
 	 * scope in the global name space).
@@ -111,7 +113,7 @@ public class VariableTable implements IVariableTable {
 	
 	/**
 	 * Get variable with given name from the variable table.
-	 * <p/>
+	 * <p>
 	 * The search begins from the current scope. If it is not found in current scope, it will look up in the enclosing one. 
 	 * The process is repeated up to the outermost scope. If still not found, may optionally try the global variable scope 
 	 * (the outermost scope in the global name space).
@@ -150,7 +152,7 @@ public class VariableTable implements IVariableTable {
 	
 	/**
 	 * Add a new bound value to the variable table. This method should be used only by global variable table.
-	 * <p/>
+	 * <p>
 	 * Adding a binding with an existing name will overwrite the current one.
 	 * @param name
 	 * @param value
@@ -170,6 +172,22 @@ public class VariableTable implements IVariableTable {
 	 */
 	public JValue getBinding(String name){
 		return bindings != null ? bindings.get(name) : null;
+	}
+	
+	/**
+	 * Get all bindings.
+	 */
+	public List<Pair<String, JValue>> getAllBindings(){
+		int size = bindings != null ? bindings.size() : 0;
+		List<Pair<String, JValue>> list = new ArrayList<Pair<String, JValue>>(size);
+		
+		if (size > 0) {
+			for (Entry<String, JValue> entry : bindings.entrySet()) {
+				list.add(new Pair<>(entry.getKey(), entry.getValue()));
+			}
+		}
+		
+		return list;
 	}
 	
 	/**
@@ -201,26 +219,27 @@ public class VariableTable implements IVariableTable {
 	 * Traverse the variable table by scope, delegating actual processing of each scope to a specified traverser.
 	 * 
 	 * @param traverser
-	 * @param topDown true if processing in top-down order; false bottom-up.
+	 * @param topDown true if processing in top-down order (starting from the innermost scope);
+	 * false bottom-up (starting from the outermost scope).
 	 */
 	public void traverse(IVariableTableTraverser traverser, boolean topDown){
 		if(scopes != null){
 			int size = scopes.size();
 			@SuppressWarnings("unchecked")
 			Map<String, JValue>[] array = new Map[size];
-			scopes.toArray(array);
+			scopes.toArray(array); // in the order of top-down ([0] is the innermost scope)
 			
 			int initial = 0;
 			int termination = size;
 			int step = 1;
-			if(topDown){
+			if(!topDown){ // if bottom-up, must go reverse
 				initial = size - 1;
 				termination = -1;
 				step = -1;
 			}
 			
 			for(int i=initial;i!=termination;i+=step){
-				if(traverser.processScope(i, array[i])){
+				if(traverser.processScope(initial - i, array[i])){ // the scope level is the inverse of index (last index => scope level 0)
 					break;
 				}
 			}

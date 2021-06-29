@@ -35,7 +35,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
  * Initially an instance of this class carries only token stream. Whenever any of the methods 
  * exposed on parent class (except {@link #getFileName()}) is called, a full parsing will be 
  * triggered and an AST generated from the stream, barring no errors.
- * <p/>
+ * <p>
  * The expected usage of this class is to call {@link #getTokenStream()} to get a stream to
  * consume its tokens, and at one point call {@link #getAST()} to demand the AST.
  * 

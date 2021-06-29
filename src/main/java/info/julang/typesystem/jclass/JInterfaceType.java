@@ -262,7 +262,7 @@ public class JInterfaceType implements ICompoundType {
 	
 	/**
 	 * An interface is derived from another if any interfaces this one extends from is the target interface.
-	 * <br/><br/>For example, if we have<pre>
+	 * <br><br>For example, if we have<pre>
 	 *  I1 : I2, I3;
 	 *  I2 : I4;
 	 *  I3 : I5, I6;
@@ -616,7 +616,7 @@ public class JInterfaceType implements ICompoundType {
 	
 	/**
 	 * Get the corresponding value's kind for this type.
-	 * <p/>
+	 * <p>
 	 * Will only check special class types which are directly supported by Julian language for type declaration, 
 	 * such as Enum or Attribute. Will not check if it is an Array, String or Function, in all of which cases 
 	 * simply returns {@link JValueKind#OBJECT}.

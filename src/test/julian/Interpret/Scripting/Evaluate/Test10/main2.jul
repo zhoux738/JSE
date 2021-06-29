@@ -1,0 +1,10 @@
+import MyMod;
+
+bool succ = false;
+string mc5 = "";
+
+EvalConfig config = new EvalConfig();
+config.setShareScope(true);
+Environment.evaluate(config, "routines2.jul", null);
+
+string mc5b = MC5.s;

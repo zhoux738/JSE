@@ -35,7 +35,7 @@ import java.util.Map;
 
 /**
  * A class used to store all the loaded members for a class type.
- * <p/>
+ * <p>
  * The members are stored in a hierarchical structure such that a field in subclass
  * may override the one of same name in any of its ancestors.
  * 
@@ -102,7 +102,7 @@ public class ClassMemberMap {
 	
 	/**
 	 * Get an array of all the members for this class.
-	 * <p/>
+	 * <p>
 	 * Member can shadow the one with same name in ancestor classes. For example, if we have class A : B,
 	 * where both A and B defines a member x, then calling this method against A would return an array 
 	 * where we only have member x as defined in A.

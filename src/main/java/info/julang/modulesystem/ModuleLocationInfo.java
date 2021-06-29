@@ -24,22 +24,26 @@ SOFTWARE.
 
 package info.julang.modulesystem;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import info.julang.typesystem.jclass.jufc.FoundationModulesInfo;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * The module info class contains all the necessary information for loading a module.
+ * This class contains file path for each script contained in the specified module. Note since a module 
+ * can be spread across multiple module paths, these script paths may not share the same root directory.
  * 
  * @author Ming Zhou
- *
  */
 public class ModuleLocationInfo {
 
 	private String name;
 	
 	private List<String> filePaths; 
+	
+	private Set<String> filePathsFromCustomizedModulePaths; 
 	
 	private boolean embedded;
 	
@@ -63,15 +67,27 @@ public class ModuleLocationInfo {
 	 * Add a file path. This will have no effect if the module is an embedded one.
 	 * @param path
 	 */
-	void addScriptFile(String path){
+	void addScriptFile(String path, boolean isFromDefaultModulePath){
 		if(embedded){
 			return;
 		}
 		filePaths.add(path);
+		
+		if (!isFromDefaultModulePath) {
+			if (filePathsFromCustomizedModulePaths == null) {
+				filePathsFromCustomizedModulePaths = new HashSet<>();
+			}
+			
+			filePathsFromCustomizedModulePaths.add(path);
+		}
 	}
 	
 	public boolean isFound(){
 		return filePaths.size() > 0;
+	}
+	
+	public boolean isFromCustomizedModulePath(String path) {
+		return filePathsFromCustomizedModulePaths != null && filePathsFromCustomizedModulePaths.contains(path);
 	}
 	
 	/**

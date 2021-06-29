@@ -29,10 +29,15 @@ package info.julang.interpretation.context;
  * 
  * @author Ming Zhou
  *
- * @param <T>
+ * @param <T> The type of the injected context.
  */
 public interface IContextAware<T extends Context> {
 
+	/**
+	 * Set the execution context.
+	 * 
+	 * @param context The execution context.
+	 */
 	void setContext(T context);
 	
 }

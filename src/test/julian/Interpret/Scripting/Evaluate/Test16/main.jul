@@ -1,0 +1,2 @@
+EvalConfig config = new EvalConfig();
+var v = Environment.evaluate(config, "Lib/fun.jul", arguments);

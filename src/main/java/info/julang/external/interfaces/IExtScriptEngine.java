@@ -41,7 +41,8 @@ public interface IExtScriptEngine {
 	/**
 	 * Execute a script file.
 	 * 
-	 * @param filePathName the full path of script file
+	 * @param filePathName the full path of script file.
+	 * @throws EngineInvocationError if the engine encountered a fatal error.
 	 */
 	void runFile(String filePathName) throws EngineInvocationError;
 	
@@ -49,16 +50,16 @@ public interface IExtScriptEngine {
 	 * Execute a script snippet.
 	 * 
 	 * @param script the contents of script
+	 * @throws EngineInvocationError if the engine encountered a fatal error.
 	 */
 	void runSnippet(String script) throws EngineInvocationError;
 	
 	/**
-	 * Return the context of this engine, which is expected, but not guaranteed, 
-	 * to refer to the same context passed into {@link #run}. Can be null if 
+	 * Return the context of this engine. Can be null if 
 	 * {@link info.julang.execution.State state} returns {@link 
 	 * info.julang.execution.State#NOT_STARTED}.
 	 * 
-	 * @return
+	 * @return The execution context.
 	 */
 	IExtEngineContext getContext();
 	
@@ -78,7 +79,7 @@ public interface IExtScriptEngine {
 	
 	/**
 	 * Set a limit for the engine. In runtime if this limit is broken or to be broken 
-	 * a <code><font color="green">System.UnderprivilegeException</font></code> will be thrown, 
+	 * a <code style="color:green">System.UnderprivilegeException</code> will be thrown, 
 	 * possibly crashing the engine.
 	 * <p>
 	 * By default, no limit is set.

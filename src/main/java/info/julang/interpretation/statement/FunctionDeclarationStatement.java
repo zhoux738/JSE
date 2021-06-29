@@ -161,7 +161,7 @@ public class FunctionDeclarationStatement extends StatementBase {
 		NamespacePool nsPool = context.getNamespacePool();
 		String tname = /* ModuleInfo.DEFAULT_MODULE_NAME + "." + */funcName;
 		JFunctionType funcTyp = new JFunctionType(
-			tname, paramsArray, retType, nsPool, new GlobalFunctionExecutable(ainfo.create(bodyAst), nsPool));
+			tname, paramsArray, retType, nsPool, new GlobalFunctionExecutable(funcName, ainfo.create(bodyAst), nsPool));
 		
 		// Add type, with name same to the function itself, to type table
 		// The name uniqueness is guaranteed by enforcing variable name.

@@ -24,29 +24,30 @@ SOFTWARE.
 
 package info.julang.modulesystem;
 
-import info.julang.modulesystem.naming.FQName;
-import info.julang.modulesystem.naming.NFQName;
-import info.julang.modulesystem.naming.QName;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
+import info.julang.external.interfaces.IExtModuleManager;
+import info.julang.modulesystem.naming.FQName;
+import info.julang.modulesystem.naming.NFQName;
+import info.julang.modulesystem.naming.QName;
+
 /**
  * The module locator is a utility class for locating module files from given paths. We take a minimalist 
  * approach to design this class: it is basically language agnostic.
- * <p/>
+ * <p>
  * Generally, when the {@link ModuleManager} is asked to load a module, it will resort to this class to locate 
- * all the script files which belong to that module. The locator scans the paths set by {@link ModuleLocator#
- * addModulePath(String) addModulePath(String)} to find those script files. A script file is considered part 
- * of the module A.B.C if the following criteria are met:<p/>
+ * all the script files which belong to that module. The locator scans the paths set by 
+ * {@link ModuleLocator#addModulePath(String)} to find those script files. A script file is considered part 
+ * of the module A.B.C if the following criteria are met:
  * <ul>
  * <li>The file is found under A/B/C where folder A is located <i>directly</i> under any of module path.</li>
  * <li>And the file has module declaration at its very first line, in form of "<code><b>module</b> A.B.C;</code>"</li>
  * </ul>
  * However, this class won't handle the check for the 2nd criterion, as per our minimalist design principle.
- * <p/>
+ * <p>
  * 
  * @author Ming Zhou
  */
@@ -86,8 +87,11 @@ public class ModuleLocator {
 			return info;
 		}
 		
-		for(String path : paths){
-			findModuleFilesFromPath(path, info);
+		for(int i = 0; i < paths.size(); i++){
+			String path = paths.get(i);
+			boolean isFromDefault =
+				i == 0 && path.endsWith(File.separator + IExtModuleManager.DefaultModuleDirectoryName);
+			findModuleFilesFromPath(path, info, isFromDefault);
 		}
 		
 		if (!info.isFound()){
@@ -97,7 +101,7 @@ public class ModuleLocator {
 		return info;
 	}
 
-	private void findModuleFilesFromPath(String spath, ModuleLocationInfo info) {
+	private void findModuleFilesFromPath(String spath, ModuleLocationInfo info, boolean isFromDefaultModulePath) {
 		// Criteria I: 
 		// The file is found under A/B/C where folder A is located directly under any of module path.
 		
@@ -134,10 +138,12 @@ public class ModuleLocator {
 		
 		for(File f : files){
 			// Criteria II: 
-			// The file has module declaration at its very first line, in form of "module A.B.C;"
+			// The file has module declaration at its very first line, 
+			// in the form of "module;" (default module path only) or "module A.B.C;"
+			//
 			// (Defer this check to caller's end)
 			
-			info.addScriptFile(f.getAbsolutePath());
+			info.addScriptFile(f.getAbsolutePath(), isFromDefaultModulePath);
 		}
 	}
 	

@@ -1,0 +1,3 @@
+EvalConfig config = new EvalConfig();
+var v = Environment.evaluate(config, "../Shared/helper4.jul", arguments);
+return v;

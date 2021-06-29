@@ -35,6 +35,7 @@ import info.julang.execution.symboltable.ITypeTable;
 import info.julang.execution.symboltable.IVariableTable;
 import info.julang.execution.threading.JThread;
 import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.InterpretedExecutable;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.context.ContextType;
@@ -58,15 +59,18 @@ import info.julang.modulesystem.IModuleManager;
 import info.julang.parser.ANTLRHelper;
 import info.julang.parser.AstInfo;
 import info.julang.typesystem.JType;
+import info.julang.typesystem.jclass.builtin.JLambdaType;
 import info.julang.typesystem.loading.InternalTypeResolver;
 
 /**
  * The executable for lambda invocation.
- * <p/>
+ * <p>
  * The lambda executable has two distinct features:
+ * <ul>
  * <li>The namespace pool is inherited from where it is defined.</li>
  * <li>Has a referential environment, a.k.a. display, replicated from the defining site.</li>
- * <br/>
+ * </ul>
+ * 
  * @author Ming Zhou
  */
 public class LambdaExecutable extends InterpretedExecutable {
@@ -85,7 +89,7 @@ public class LambdaExecutable extends InterpretedExecutable {
 	
 	// AST-based initialization
 	public LambdaExecutable(Context context, Display display, LambdaDeclInfo declInfo) {
-		super(null, false, true);
+		super(JLambdaType.Name, null, false, true);
 		this.nsPool = context.getNamespacePool();
 		this.display = display;
 		this.ltyp = declInfo.getLambdaType();
@@ -161,7 +165,7 @@ public class LambdaExecutable extends InterpretedExecutable {
 	 * result.
 	 */
 	@Override
-	protected Result execute(ThreadRuntime runtime, AstInfo<? extends ParserRuleContext> ainfo, StatementOption option, Context ctxt){
+	protected Result execute(ThreadRuntime runtime, AstInfo<? extends ParserRuleContext> ainfo, StatementOption option, Context ctxt) throws EngineInvocationError{
 		option.setPreserveStmtResult(ltyp != LambdaDeclInfo.LambdaType.BLOCK);
 		Result res = super.execute(runtime, ainfo, option, ctxt);
 		if (ltyp == LambdaDeclInfo.LambdaType.THROW){

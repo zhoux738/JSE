@@ -101,15 +101,14 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 /**
  * This statement parses the body of type declaration, which can be a class, enum or attribute.
- * <p/>
+ * <p>
  * The parse starts from '{' and ends with '}'. For example, it parses a class definition 
  * with PC pointed as shown below before {@link #parse(LoadingContext)} is called.
- * <p/>
  * <pre><code> class C : P { 
  *            ^ (PC)
  *   ... 
  * } </code></pre>
- * <p/>
+ * <p>
  * By the end it will have populated all the type members in the stub, which then becomes ready 
  * to be loaded into type table.
  * 
@@ -418,12 +417,13 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 			JParameter[] ptypesArray = sta ? new JParameter[0] : makeThisParams(builder);
 			
 			// 3) executable
+			String name = "<init>-" + fieldDecl.getName();
 			InitializerExecutable exec = new InitializerExecutable(
-				ainfo.create((Expression_statementContext)fieldDecl.getAST()), stub, sta);
+				name, ainfo.create((Expression_statementContext)fieldDecl.getAST()), stub, sta);
 			
 			// 4) assemble the type
 			JMethodType mType = new JMethodType(
-				"<init>-" + fieldDecl.getName(), ptypesArray, retType, exec, stub);
+				name, ptypesArray, retType, exec, stub);
 			
 			JClassInitializerMember mmember = new JClassInitializerMember(
 				stub,
@@ -715,14 +715,15 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 			// 4.1) Check if the constructor has forward call (super()/this())
 			if(fcAst != null){
 				// Assemble forward executable
+				boolean isSuper = !ctorDecl.isForwardingToThis();
 				ConstructorForwardExecutable cfExe = 
-					new ConstructorForwardExecutable(ainfo.create(ctorDecl.getForwardCallAst()), builder.getStub());
-				finfo = new ForwardInfo(cfExe, !ctorDecl.isForwardingToThis());
+					new ConstructorForwardExecutable(isSuper, ainfo.create(ctorDecl.getForwardCallAst()), builder.getStub());
+				finfo = new ForwardInfo(cfExe, isSuper);
 			}
 			
 			// 4.2) main call
 			ParserRuleContext prc = ctorDecl.getAST();
-			exec = new MethodExecutable(ainfo.create(prc), builder.getStub(), sta);
+			exec = new MethodExecutable(ctorDecl.getName(), ainfo.create(prc), builder.getStub(), sta);
 		} else {
 			if(fcAst != null){
 				throw new IllegalClassDefinitionException(context, "A hosted constructor cannot call another constructor.",
@@ -784,9 +785,10 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		JParameter[] ptypesArray = makeThisParams(builder);
 		
 		Method_bodyContext mbc = new Method_bodyContext(null, 0); // Argument irrelevant here
-		MethodExecutable exec = new MethodExecutable(ainfo.create(mbc), builder.getStub(), false);
+		String name = "<ctor-" + fullName + ">";
+		MethodExecutable exec = new MethodExecutable(name, ainfo.create(mbc), builder.getStub(), false);
 		
-		JConstructorType cType = new JConstructorType("<ctor-" + fullName + ">", ptypesArray, exec, builder.getStub());
+		JConstructorType cType = new JConstructorType(name, ptypesArray, exec, builder.getStub());
 		JClassConstructorMember cmember = new JClassConstructorMember(
 			builder.getStub(),
 			fullName.getSimpleName(), 
@@ -922,7 +924,7 @@ public class ClassMemberDeclarationStatement extends ClassLoadingStatement {
 		boolean isStatic) {
 		
 		AstInfo<Method_bodyContext> ast = ainfo.create((Method_bodyContext)methodDecl.getAST());	
-		MethodExecutable exec = new MethodExecutable(ast, builder.getStub(), isStatic);	
+		MethodExecutable exec = new MethodExecutable(methodDecl.getName(), ast, builder.getStub(), isStatic);	
 		
 		return exec;
 	}

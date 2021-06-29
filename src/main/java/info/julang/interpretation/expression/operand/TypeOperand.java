@@ -79,7 +79,7 @@ public class TypeOperand extends Operand {
 	
 	/**
 	 * Get the runtime value for the referenced type.
-	 * <p/>
+	 * <p>
 	 * This will return null if it is a basic type, which doesn't have a runtime value.
 	 * 
 	 * @return

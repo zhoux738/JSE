@@ -877,7 +877,7 @@ public class JFunctionType extends JClassType implements ExecutableType, IDeferr
 	private ObjectValue typeObject;
 	
 	/**
-	 * Get <font color="green"><code>System.Type</code></font> object for this function type. 
+	 * Get <code style="color:green">System.Type</code> object for this function type. 
 	 * This object will be created the first time this method is called.
 	 * 
 	 * @param runtime

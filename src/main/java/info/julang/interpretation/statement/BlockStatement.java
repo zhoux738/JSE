@@ -41,7 +41,7 @@ import org.antlr.v4.runtime.TokenStream;
 
 /**
  * A block statement corresponds to a code block, ended by any of the specified tokens passed along
- * with {@link #BlockStatement(ThreadRuntime, TokenScanner, Token[]) the constructor}. 
+ * with {@link BlockStatement#BlockStatement(ThreadRuntime, AstInfo, StatementOption) the constructor}. 
  * 
  * @author Ming Zhou
  */
@@ -56,9 +56,9 @@ public class BlockStatement extends StatementBase implements IHasResult, IHasExi
 	/**
 	 * Create a new BlockStatement. A block statement represents a code block.
 	 * The code is provided by <b>scanner</b>, and is ended by any of <b>endingTokens</b>.
-	 * <p/>
+	 * <p>
 	 * Ending tokens will also be consumed by this statement.
-	 * <p/>
+	 * <p>
 	 * This block doesn't allow the following statement:
 	 * <ul>
 	 * <li>Continue statement (<code>continue</code>)</li>
@@ -67,7 +67,7 @@ public class BlockStatement extends StatementBase implements IHasResult, IHasExi
 	 * <li>Class definition (<code>class { ... }</code>)</li>
 	 * </ul>
 	 * If any of these is needed, use {@link #BlockStatement(ThreadRuntime, TokenStream, Token[], StatementOption) the alternative constructor} instead.
-	 * <p/>
+	 * <p>
 	 * @param runtime
 	 * @param exec AST for the executable body
 	 * @param stream

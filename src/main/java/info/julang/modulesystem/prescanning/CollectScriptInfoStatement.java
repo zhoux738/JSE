@@ -24,10 +24,13 @@ SOFTWARE.
 
 package info.julang.modulesystem.prescanning;
 
+import org.antlr.v4.runtime.Token;
+
 import info.julang.interpretation.BadSyntaxException;
 import info.julang.langspec.ast.JulianLexer;
 import info.julang.langspec.ast.JulianParser.DeclarationsContext;
 import info.julang.langspec.ast.JulianParser.Import_statementContext;
+import info.julang.langspec.ast.JulianParser.Include_statementContext;
 import info.julang.langspec.ast.JulianParser.Module_definitionContext;
 import info.julang.langspec.ast.JulianParser.PreambleContext;
 import info.julang.langspec.ast.JulianParser.ProgramContext;
@@ -41,15 +44,15 @@ import info.julang.parser.LazyAstInfo;
 import info.julang.scanner.ITokenStream;
 import info.julang.scanner.ITokenStream.StreamPosition;
 
-import org.antlr.v4.runtime.Token;
-
 /**
- * An orchestrating statement that pre-scans a script and collect module information.
+ * An orchestrating statement that pre-scans a script and collects module information.
  * <p>
- * In general, it follows with:<br/>
+ * In general, it follows with:
+ * <ul>
  * <li>Confirming the module name is right. (<code><b>module</b> a.b.c;</code>)</li>
  * <li>Collecting all the imported modules. (<code><b>import</b> d.e.f;</code>)</li>
  * <li>Collecting declared classes. (<code><b>class</b> MyClass { ... }</code>)</li>
+ * </ul>
  * <p>
  * The prescanning happens in two flavors. A full prescanning causes the complete parsing
  * of the input file and assembly of AST, which can be used directly during interpretation.
@@ -64,9 +67,18 @@ import org.antlr.v4.runtime.Token;
 public class CollectScriptInfoStatement implements PrescanStatement {
 	
 	private boolean fullyLoadNow;
+	private boolean allowImplicitModuleName;
 	
-	public CollectScriptInfoStatement(boolean fullyLoadNow){
+	/**
+	 * Create a CollectScriptInfoStatement that can take either full or partial (lazy) loading path.
+	 * 
+	 * @param fullyLoadNow Whether to parse everything out (types etc.) and build ASTs for the entire file.
+	 * The known usage: global script; analytical loading for IDE.
+	 * @param allowImplicitModuleName Whether to allow the first statement to be simply "module;"
+	 */
+	public CollectScriptInfoStatement(boolean fullyLoadNow, boolean allowImplicitModuleName){
 		this.fullyLoadNow = fullyLoadNow;
+		this.allowImplicitModuleName = allowImplicitModuleName;
 	}
 	
 	@Override
@@ -90,6 +102,7 @@ public class CollectScriptInfoStatement implements PrescanStatement {
 	// Fully load the module file and generate AST from it.
 	public void fullyLoad(ProgramContext pctxt, LazyAstInfo ainfo, RawScriptInfo info){
 		// 1) Module info
+		boolean isLooseScript = false;
 		PreambleContext preamble = pctxt.preamble();
 		Module_definitionContext module = preamble.module_definition();
 		if (module == null) {
@@ -98,29 +111,44 @@ public class CollectScriptInfoStatement implements PrescanStatement {
 				throw new IllegalModuleFileException(info, preamble, "A module file must start with module declaration.");
 			} else {
 				// Module name has been mandated externally.
+				isLooseScript = ModuleInfo.DEFAULT_MODULE_NAME.equals(preModName);
 				info.setModuleName(preModName);
 			}
 		} else {
-			ModuleStatement ms = new ModuleStatement(ainfo.create(module));
+			ModuleStatement ms = new ModuleStatement(
+				ainfo.create(module),
+				allowImplicitModuleName ? info.getModuleName() : null);
 			ms.prescan(info);
 		}
 		
 		// 2) Imported modules
-		for (Import_statementContext ictxt : preamble.import_statement()) {
-			ImportStatement is = new ImportStatement(ainfo.create(ictxt));
+		for (Import_statementContext impCntx : preamble.import_statement()) {
+			ImportStatement is = new ImportStatement(ainfo.create(impCntx));
 			is.prescan(info);
 		}
 		
-		// 3) Definitions
+		// 3) Include files
+		if (isLooseScript) {
+			for (Include_statementContext incCntx : preamble.include_statement()) {
+				IncludeStatement is = new IncludeStatement(ainfo.create(incCntx));
+				is.prescan(info);
+			}
+		}
+		
+		// (The following check is not necessary since the syntax prevents a file from having both module and include statements.
+		//  however, we do also demand that include statement be only recognized when the module is default, i.e. loaded from a
+		//  loose script. As of 0.1.34, the preset module name can only be <default> or <implicit>, with the latter synthesized
+		//  internally by the engine, which is guaranteed to not feature any include)
+		//
+		// else if (preamble.include_statement().size() > 0) {
+		//	throw new IllegalModuleFileException(info, preamble, "A loose file must not contain include statements.");
+		// }
+		
+		// 4) Definitions
 		DeclarationsContext decls = pctxt.declarations();
 		for (Type_declarationContext typDecl : decls.type_declaration()){
 			ClassStatement cs = new ClassStatement(ainfo.create(typDecl));
-			//try {
-				cs.prescan(info);
-			//} catch (BadSyntaxException e) {
-				// TODO
-				// Throw later when the code is actually used.
-			//}	
+			cs.prescan(info);
 		}
 	}
 	
@@ -142,7 +170,8 @@ public class CollectScriptInfoStatement implements PrescanStatement {
 			}
 		} else {
 			stream.next();
-			LazyModuleStatement ms = new LazyModuleStatement(reader);
+			LazyModuleStatement ms = new LazyModuleStatement(
+				reader, this.allowImplicitModuleName ? info.getModuleName() : null);
 			ms.prescan(stream, info);
 			tok = stream.peek();
 			hasModStmt = true;

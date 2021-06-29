@@ -40,11 +40,13 @@ import info.julang.util.OSTool;
  */
 public class JLambdaType extends JFunctionType implements ExecutableType {
 
+	public static final String Name = "<Lambda>";
+	
 	private IHasLocationInfoEx locInfo;
 	private String uniqueName;
 	
 	public JLambdaType(IHasLocationInfoEx locInfo, JParameter[] params, Executable executable) {
-		super("<Lambda>", params, null, executable);
+		super(Name, params, null, executable);
 		this.ret = JReturn.UntypedReturn;
 		this.locInfo = locInfo;
 	}

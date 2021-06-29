@@ -27,6 +27,7 @@ package info.julang.typesystem.jclass;
 import info.julang.execution.Argument;
 import info.julang.execution.Result;
 import info.julang.execution.threading.ThreadRuntime;
+import info.julang.external.exceptions.EngineInvocationError;
 import info.julang.interpretation.context.Context;
 import info.julang.interpretation.statement.StatementOption;
 import info.julang.langspec.ast.JulianParser.Expression_statementContext;
@@ -37,25 +38,25 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
  * The executable for method member initialization.
- * <p/>
+ * <p>
  * The main difference of this method from its super-class is to preserve the result.
  * 
  * @author Ming Zhou
  */
 public class InitializerExecutable extends MethodExecutable implements Cloneable {
 
-	public InitializerExecutable(AstInfo<Expression_statementContext> ainfo, ICompoundType ofType, boolean isStatic) {
-		super(ainfo, ofType, isStatic);
+	public InitializerExecutable(String name, AstInfo<Expression_statementContext> ainfo, ICompoundType ofType, boolean isStatic) {
+		super(name, ainfo, ofType, isStatic);
 	}
 	
 	@Override
-	protected Result execute(ThreadRuntime runtime, AstInfo<? extends ParserRuleContext> ainfo, StatementOption option, Context ctxt){
+	protected Result execute(ThreadRuntime runtime, AstInfo<? extends ParserRuleContext> ainfo, StatementOption option, Context ctxt) throws EngineInvocationError {
 		option.setPreserveStmtResult(true);
 		return super.execute(runtime, ainfo, option, ctxt);
 	}
 	
 	@Override
 	protected void prepareArguments(Argument[] args, Context ctxt, IFuncValue func) {
-		super.repliateArgsAndBindings(args, ctxt, func, false);
+		super.replicateArgsAndBindings(args, ctxt, func, false);
 	}
 }

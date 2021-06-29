@@ -1,13 +1,53 @@
 module System;
 
 import System.Reflection;
+import System.Collection;
 
 /*
  * A helper class providing runtime information about the current environment.
  */
- [Bridged(apiset="System.Environment")]
+[Bridged(apiset="System.Environment")]
 final static class Environment {
+
+	[Bridged(name="getEnv")]
+	private hosted static string _getEnv(string name);
 	
+	/*
+	 * Get the value of environment vairable.
+	 *
+	 * [access] System.Environment/read
+	 * [param: name] The environment vairable's name.
+	 * [return] The string value of the environment variable if found, or null if not found.
+	 * [throws: System.ArgumentException] `name` is null.
+	 */
+	static string getEnv(string name) {
+		if (name == null) {
+			throw new ArgumentException("name");
+		}
+		
+		return _getEnv(name);
+	}
+	
+	[Bridged(name="getAllEnv")]
+	private hosted static string[][] _getAllEnv();
+	
+	/*
+	 * Get all environment vairables.
+	 *
+	 * [access] System.Environment/read
+	 * [return] All environment variables stored in a [map](System.Collection.Map), keyed by the variable name.
+	 */
+	static Map getAllEnv() {
+		string[][] kvps = Environment._getAllEnv();
+		
+		Map map = new Map();
+		for (int i = 0; i < kvps.length; i++) {
+			map[kvps[i][0]] = kvps[i][1];
+		}
+		
+		return map;
+	}
+		
 	/*
 	 * Get the script which is running at the line where this method is called.
 	 * 
@@ -18,10 +58,44 @@ final static class Environment {
 	 * Of the most importance, do not wrap this method in another method, as that would always return 
 	 * the script file which contains the wrapper method.
 	 *
+	 * [access] System.Environment/read
 	 * [return] A [Script](type: System.Reflection.Script) object containing the info about the currently running script.
 	 */
 	[Bridged(name="getScript")]
 	hosted static Script getScript();
+	
+    /*
+	 * Evaluate the given script with customized configuration.
+	 * 
+	 * The script must be a module-less script, otherwise this method will throw [System.IllegalStateException].
+	 *
+	 * This method can only be called from a module-less script and outside any form of functions, including lambdas.
+	 * It can indeed be called from inside a nested scope, although any variables defined anywhere other than in the 
+	 * outermost scope won't be visible to the evaluated script.
+	 *
+	 * Consequentially, this method can only be called from the main thread, as there is no way to start a thread
+	 * that executes some random lines from the global script.
+	 *
+	 * This method provides the finest control over the behavior of dynamic script interpretation. For most scenarios,
+	 * consider using the two shortcut global functions instead: [incl(string)](script: script.jul#incl) 
+	 * and [eval(string, string&#91;&#93;)](script: script.jul#eval).
+	 *
+	 * [access] System.Environment/eval
+	 * [param: scriptPath] The path to the script. Must be ended with ".jul". Can be absolute or relative. If relative,
+	 * it will be resolved against the current script's location, or the default module path, depending on the config.
+	 * [param: config] A configuration object to customize the evaluation behavior. In the case of null, it uses the 
+	 * same config as the `include` statement.
+	 * [param: arguments] The arguments to be passed to the script, accessible as a global variable with name `arguments`.
+	 * [throws: System.IllegalStateException] The condition on which script can be evaluated is not satisfied.
+	 * [throws: System.IO.IOException] The script cannot be found.
+	 * [throws: System.Lang.CyclicDependencyException] Attempting to evaluate a script which is already in the 
+	 * process of evaluation. The simplest case is where a script tries to evaluate itself, altough in reality it's more
+	 * likely due to the script being involved in a chain of inclusion that forms circular references.
+	 * [throws: System.DynamicEvaluationException] The script failed to be evaluated.
+	 * [return] The value returned from the script. If the script didn't return anything explicitly, `null` will be returned.
+	 */
+	[Bridged(name="evaluate")]
+	hosted static var evaluate(EvalConfig config, string scriptPath, string[] arguments);
 	
 	/*
 	 * The line separator. "\r\n" on Microsoft Windows; "\n" on Unix, Linux, macOS and other Unix-like systems.
@@ -47,5 +121,76 @@ final static class Environment {
 	static const string separator = _getS();
 	
 	[Bridged(name="getS")]
-	private hosted static string _getS();	
+	private hosted static string _getS();
+}
+
+/*
+ * The behavior customization for dynamic script evaluation.
+ */
+class EvalConfig {
+
+	private bool _shareScope;
+	
+	private bool _useDefaultRoot;
+	
+	private bool _returnException;
+	
+	/*
+	 * Create a new configuration object with default settings.
+	 */
+	EvalConfig() { }
+	
+	/*
+	 * Set whether to share the global scope with the calling script. If true, the changes to global variables
+	 * will remain in effect after the evaluation finishes, and any new global variables defined in the evaluated
+	 * script will stay. 
+	 *
+	 * This doesn't affect module loading and type definition. All scripts evaluated this way always share the 
+	 * same type system so once an evaluated script introduced new types the following one will always be able to 
+	 * use the without loading again.
+	 *
+	 * [param: value] True to share; false to not share (default).
+	 */
+	public void setShareScope(bool value){
+		_shareScope = value;
+	}
+	
+	/*
+	 * Set whether to use the default module directory as the root for resolving relative path.
+	 *
+	 * By default, a relative script path will be resolved against the current script's path. However, with this setting
+	 * one can make it resolve against the default module directory instead. The default module directory refers to
+	 * `jse_modules` directory residing alongside the entrance script.
+	 *
+	 * [param: value] True to use default module directory (`jse_modules`) as the root for resolving relative path; 
+	 * false to use the current script's path (default).
+	 */
+	public void setUseDefaultRoot(bool value){
+		_useDefaultRoot = value;
+	}
+	
+	/*
+	 * Set whether to return, instead rethrowing, the exception thrown from inside the evaluated script.
+	 *
+	 * By default, if the evaluated script throws, its exception will be propagated back to the callsite. With this
+	 * set to `true`, the exception will be returned as a regular value.
+	 *
+	 * [param: value] True to return any thrown exception as the result; false to rethrow the exception (default).
+	 */
+	public void setReturnException(bool value){
+		_returnException = value;
+	}
+}
+
+/*
+ * An exception to be thrown when the engine failed to evaluate a script either referenced via __include__ statement
+ * or invoked through [evaluate()](Environment#evaluate) API.
+ */
+class DynamicEvaluationException : Exception { 
+	/* 
+	 * Create an instance of DynamicEvaluationException with specified message. 
+	 * 
+	 * [param: msg] The message for this exception.
+	 */
+	DynamicEvaluationException(string msg) : super(msg) {} 
 }

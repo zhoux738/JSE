@@ -30,52 +30,39 @@ public interface IExtEngineContext {
 
 	/**
 	 * Get a binding from the context. 
-	 * @param name
-	 * @return
+	 * 
+	 * @param name The name of binding.
+	 * @return null if not found.
 	 */
 	IBinding getBinding(String name);
 	
 	/**
 	 * Add a new binding to this context.
-	 * @param binding
+	 * 
+	 * @param name The name for binding
+	 * @param binding The binding
 	 */
 	void addBinding(String name, IBinding binding);
 	
 	/**
-	 * Set value to an environment variable.
-	 * <p/>
-	 * Will overwrite an existing variable with same name.
-	 * @param name
-	 * @param value
-	 */
-	void setEnviromentVariable(String name, String value);
-	
-	/**
-	 * Get value of an environment variable.
-	 * @param name
-	 * @return
-	 */
-	String getEnviromentVariable(String name);
-	
-	/**
 	 * Set the arguments.
-	 * <p/>
+	 * <p>
 	 * Will overwrite existing arguments whenever called.
-	 * @param args
+	 * @param args The arguments available inside the the global scope of the invoked script.
 	 */
 	void setArguments(String[] args);
 	
 	/**
 	 * Get the arguments.
-	 * @return
+	 * @return The arguments available inside the the global scope of the invoked script.
 	 */
 	String[] getArguments();
 	
 	/**
 	 * Add path to modules.
-	 * <p/>
+	 * <p>
 	 * Duplicate paths will be ignored.
-	 * @param path
+	 * @param path The path to a module directory.
 	 */
 	void addModulePath(String path);
 	

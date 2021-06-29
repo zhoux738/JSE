@@ -31,15 +31,15 @@ public interface IInputer {
 	/**
 	 * Input a string to console.
 	 * 
-	 * @param str
+	 * @param str the string being input.
 	 */
 	void input(String str);
 
 	/**
 	 * Input a single character to console.
 	 * 
-	 * @param c
-	 * @throws IOException
+	 * @param c the char being input.
+	 * @throws IOException An IO error occurred when processing the input.
 	 */
 	void input(char c) throws IOException;
 }

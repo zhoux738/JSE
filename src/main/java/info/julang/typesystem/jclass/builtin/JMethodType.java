@@ -37,7 +37,7 @@ import info.julang.typesystem.jclass.MethodExecutable;
 
 /**
  * The Method type is for method defined in a class
- * <p/>
+ * <p>
  * The 1st parameter returned by {@link #getParams()} refers to <b>this</b> if it is an instance method.
  * 
  * @author Ming Zhou
@@ -127,7 +127,7 @@ public class JMethodType extends JFunctionType implements ExecutableType {
 	
 	/**
 	 * If this method is typed (checking type for arguments according to declaration). 
-	 * <p/>
+	 * <p>
 	 * True by default. And can only be false for hosted methods.
 	 * @return
 	 */

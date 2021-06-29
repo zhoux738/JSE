@@ -48,7 +48,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  * into this session with read, write or both operations. The IO operation will be performed asynchronously by a JVM's
  * worker thread. Upon completion of each operation, a callback defined by the user, if available, will
  * be invoked in the IO thread managed by Julian.
- * <p>
  * <pre>
  * [Thread 0]                       [Thread 0]                [Thread 1]            [Thread 1]     [Thread 2]
  * (Julian worker thread)                                     (JVM worker thread)                  (Julian IO Thread)  
@@ -58,7 +57,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  *                                                                    |
  * #1 Socket.readToEndAsync() +-+                          +----------+
  *                              |                          |
- * #2 Socket.readToEndAsync() +-+-----> register socket ---+   +---> select --+---> read into ---> invoke callback
+ * #2 Socket.readToEndAsync() +-+----)) register socket ---+   +--)) select --+--)) read into --)) invoke callback
  *                              |       for READ              /|\             |     buffer         
  * #N Socket.readToEndAsync() +-+                              |              |
  *                                                             +--- (loop) ---+                                </pre>

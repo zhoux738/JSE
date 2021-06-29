@@ -28,29 +28,32 @@ public interface IExtValue {
 
 	/**
 	 * Get the kind of this value.
-	 * <p/>
+	 * <p>
 	 * If the value is of any non-basic type (i.e. class type), this will always return {@link JValueKind#OBJECT}. 
-	 * To know if it is an array, string or other built-in class type, use <code>{@link info.julang.memory.
-	 * value.ObjectValue#getBuiltInValueKind() ObjectValue.getBuiltInValueKind()}</code>.
-	 * @return
+	 * To know if it is an array, string or other built-in class type, use
+	 * {@link info.julang.memory.value.ObjectValue#getBuiltInValueKind() ObjectValue.getBuiltInValueKind()}.
+	 * 
+	 * @return The kind of value
 	 */
 	JValueKind getKind();
 	
 	/**
-	 * @return true if it is a basic type (int, bool, float, char)
+	 * @return true if it is a basic type (int, bool, float, char, byte).
 	 */
 	boolean isBasic();
 	
 	/**
 	 * Get the mutability of this value.
+	 * 
 	 * @return true if it is constant.
 	 */
 	boolean isConst();
 	
 	/**
 	 * Whether this value is NULL.
-	 * <p/>
+	 * <p>
 	 * Basic values always return false; reference value returns true if it points to null.
+	 * 
 	 * @return true if it is null.
 	 */
 	boolean isNull();

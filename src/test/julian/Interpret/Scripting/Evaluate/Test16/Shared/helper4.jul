@@ -1,0 +1,5 @@
+void fun(){
+	throw new Exception(arguments[0]);
+}
+
+fun();

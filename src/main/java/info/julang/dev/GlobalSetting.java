@@ -65,8 +65,8 @@ public final class GlobalSetting {
 	/**
 	 * Should catch the specified type of exception.
 	 * 
-	 * @param kjse
-	 * @return
+	 * @param kjse The known JSE exception.
+	 * @return True if the exception should be caught.
 	 */
 	public static boolean skipCatch(KnownJSException kjse){
 		if(!EnableJSE || kjse == null){

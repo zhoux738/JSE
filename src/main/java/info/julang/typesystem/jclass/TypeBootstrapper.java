@@ -30,7 +30,7 @@ public interface TypeBootstrapper {
 
 	/**
 	 * Provide a prototype which can serve as a stub during bootstrapping process.
-	 * <p/>
+	 * <p>
 	 * This method should always returns the same object.
 	 * 
 	 * @return
@@ -39,7 +39,7 @@ public interface TypeBootstrapper {
 	
 	/**
 	 * Implement the type: add fields, methods, constructors and initializers to the type prototype.
-	 * <p/>
+	 * <p>
 	 * To refer to other types, use type farm. 
 	 * 
 	 * @param builder the builder used to build this type.
@@ -49,7 +49,7 @@ public interface TypeBootstrapper {
 	
 	/**
 	 * Bootstrap the type. This usually means setting the default instance for the corresponding class.
-	 * <p/>
+	 * <p>
 	 * Calling this method marks the end of type initializing.
 	 * 
 	 * @param builder

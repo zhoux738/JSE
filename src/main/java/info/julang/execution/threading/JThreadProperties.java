@@ -24,11 +24,13 @@ SOFTWARE.
 
 package info.julang.execution.threading;
 
-public class JThreadProperties {
+public class JThreadProperties implements Cloneable {
 
 	private JThreadPriority pripority;
 	
 	private boolean isDaemon;
+	
+	private boolean isReplicated;
 	
 	private boolean io;
 	
@@ -71,5 +73,24 @@ public class JThreadProperties {
 	
 	public void setIOThread(boolean io) {
 		this.io = io;
+	}
+	
+	public boolean isReplicated() {
+		return isReplicated;
+	}
+	
+	public void setReplicated(boolean rep) {
+		this.isReplicated = rep;
+	}
+	
+	@Override
+	public JThreadProperties clone() {
+		JThreadProperties p = new JThreadProperties();
+		p.setDaemon(isDaemon);
+		p.setReplicated(isReplicated);
+		p.setIOThread(io);
+		p.setPriority(pripority);
+		p.setRunCount(rc);
+		return p;
 	}
 }

@@ -102,7 +102,7 @@ public abstract class OnSelf2Op extends Operator {
 	}
 	
 	/**
-	 * Operator &= (bitwise-and-to-self)
+	 * Operator &amp;= (bitwise-and-to-self)
 	 * 
 	 * @author Ming Zhou
 	 */
@@ -156,7 +156,7 @@ public abstract class OnSelf2Op extends Operator {
 	}
 	
 	/**
-	 * Operator >>= (bitwise-rshift-to-self)
+	 * Operator &gt;&gt;= (bitwise-rshift-to-self)
 	 * 
 	 * @author Ming Zhou
 	 */

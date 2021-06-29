@@ -27,6 +27,9 @@ package info.julang.eng.mvnplugin.htmlgen;
 import java.util.Set;
 import java.util.TreeSet;
 
+import info.julang.eng.mvnplugin.docgen.DocModel.DocType;
+import info.julang.eng.mvnplugin.docgen.DocModel.Documented;
+import info.julang.eng.mvnplugin.docgen.DocModel.Script;
 import info.julang.eng.mvnplugin.docgen.DocModel.Type;
 import info.julang.eng.mvnplugin.mdgen.TutorialInfo.IChapterInfo;
 
@@ -49,8 +52,8 @@ public class ApiIndexModel {
 		return root;
 	}
 	
-	public void addType(Type typ){
-		String modName = typ.getModuleName();
+	public void addType(Documented doc){
+		String modName = doc.getDocFolderName();
 		PModule mod = null;
 		if (modName == null || "".equals(modName)){
 			mod = root;
@@ -70,9 +73,26 @@ public class ApiIndexModel {
 		
 		// The more rigorous way to ascertain the Exception type is to check ancestor types, but not worth the efforts for now.
 		PType ptyp = new PType(
-			typ.name, 
-			typ.name.endsWith("Exception") && !"System.Exception".equals(typ.getFullName()));
+			doc.name, 
+			doc.getDocType() == DocType.TYPE && doc.name.endsWith("Exception") && !"System.Exception".equals(((Type)doc).getFullName()));
 		mod.addItem(ptyp);
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (PItem item : root.getItems()) {
+			sb.append(item.name);
+			if (item.isModule()) {
+				sb.append( "(M: ");
+				sb.append(((PModule)item).size());
+				sb.append( ")");
+			}
+
+			sb.append(",");
+		}
+		
+		return sb.substring(0, sb.length() - 1);
 	}
 	
 	//----------------------- Model Classes -----------------------//
@@ -111,6 +131,10 @@ public class ApiIndexModel {
 		public Iterable<PItem> getItems(){
 			return this.types;
 		}
+		
+		public int size() {
+			return this.types.size();
+		}
 
 		@Override
 		public int compareTo(PItem another) {
@@ -119,8 +143,17 @@ public class ApiIndexModel {
 				return -1;
 			}
 			
-			// 2. Sort alphabetically
-			return this.getName().compareTo(another.getName());
+			// 2. Built-in scripts goes first
+			String thisName = this.getName();
+			String thatName = another.getName();
+			if (Script.DOC_FOLDER_NAME.equals(thisName)) {
+				return -1;
+			} else if (Script.DOC_FOLDER_NAME.equals(thatName)) {
+				return 1;
+			} 
+
+			// 3. Sort alphabetically
+			return thisName.compareTo(thatName);
 		}
 	}
 	
